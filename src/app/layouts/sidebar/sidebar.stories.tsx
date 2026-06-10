@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
 import Sidebar from './sidebar.component';
+import { routes } from '~/routes';
 
 const DashboardIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
@@ -50,28 +51,28 @@ export const Default: Story = {
             id: 'dashboard',
             label: 'Dashboard',
             icon: <DashboardIcon />,
-            href: '#',
+            href: routes.dashboard,
             isActive: true,
           },
           {
             id: 'companies',
             label: 'Companies',
-            href: '#',
+            href: routes.companies,
           },
           {
             id: 'assessments',
             label: 'Assessments',
-            href: '#',
+            href: routes.assessments,
           },
           {
             id: 'threats',
             label: 'Threats',
-            href: '#',
+            href: routes.threats,
           },
           {
             id: 'reports',
             label: 'Reports',
-            href: '#',
+            href: routes.reports,
           },
         ],
       },
@@ -82,7 +83,7 @@ export const Default: Story = {
           {
             id: 'settings',
             label: 'Settings',
-            href: '#',
+            href: routes.settings,
           },
         ],
       },
