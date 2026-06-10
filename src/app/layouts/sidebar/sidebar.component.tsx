@@ -16,6 +16,14 @@ const Sidebar = ({
 }: SidebarProps) => {
   const inRouterContext = useInRouterContext();
 
+  const handleItemClick = (itemOnClick?: () => void) => {
+    itemOnClick?.();
+
+    if (isOpen) {
+      onClose?.();
+    }
+  };
+
   return (
     <StyledSidebar
       aria-label={ariaLabel}
@@ -91,10 +99,7 @@ const Sidebar = ({
                             .join(' ')
                         }
                         to={item.href}
-                        onClick={() => {
-                          item.onClick?.();
-                          onClose?.();
-                        }}
+                        onClick={() => handleItemClick(item.onClick)}
                       >
                         {content}
                       </NavLink>
@@ -108,10 +113,7 @@ const Sidebar = ({
                           .join(' ')}
                         href={item.href}
                         aria-current={item.isActive ? 'page' : undefined}
-                        onClick={() => {
-                          item.onClick?.();
-                          onClose?.();
-                        }}
+                        onClick={() => handleItemClick(item.onClick)}
                       >
                         {content}
                       </a>
@@ -124,10 +126,7 @@ const Sidebar = ({
                           .filter(Boolean)
                           .join(' ')}
                         type="button"
-                        onClick={() => {
-                          item.onClick?.();
-                          onClose?.();
-                        }}
+                        onClick={() => handleItemClick(item.onClick)}
                       >
                         {content}
                       </button>

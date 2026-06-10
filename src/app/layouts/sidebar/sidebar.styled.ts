@@ -99,6 +99,8 @@ const StyledSidebar = styled.nav.attrs({ className: 'sidebar' })`
 
     .sidebar-link,
     .sidebar-button {
+      position: relative;
+
       display: flex;
       align-items: center;
       gap: ${spacing.xxs};
@@ -124,6 +126,22 @@ const StyledSidebar = styled.nav.attrs({ className: 'sidebar' })`
     .sidebar-link--active {
       color: ${colors.neutral.white};
       background-color: rgb(255 255 255 / 10%);
+    }
+
+    .sidebar-link--active::before,
+    .sidebar-button--active::before {
+      content: '';
+
+      position: absolute;
+      top: 0.5rem;
+      bottom: 0.5rem;
+      left: 0.375rem;
+
+      width: 0.25rem;
+      border-radius: 999px;
+
+      background-color: ${colors.brand.accent};
+      box-shadow: 0 0 0 1px rgb(255 255 255 / 12%);
     }
 
     .sidebar-link:hover {
