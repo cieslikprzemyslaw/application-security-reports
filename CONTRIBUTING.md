@@ -19,4 +19,3 @@ following:
    Origin.
 
 Please keep changes focused and easy to review.
-
