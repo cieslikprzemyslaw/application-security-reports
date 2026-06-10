@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledRiskSummary = styled.div.attrs({ className: 'risk-summary' })`
   ${({ theme: { colors, radii, spacing, typography } }) => css`

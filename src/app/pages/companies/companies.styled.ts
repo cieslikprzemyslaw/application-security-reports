@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledCompanies = styled.div.attrs({ className: 'companies' })`
   ${({ theme: { colors, radii, shadows, spacing } }) => css`

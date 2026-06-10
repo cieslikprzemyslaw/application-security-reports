@@ -10,13 +10,45 @@ const Sidebar = ({
   navigationGroups,
   footer,
   ariaLabel = 'Primary navigation',
+  isOpen = false,
+  onClose,
   ...rest
 }: SidebarProps) => {
   const inRouterContext = useInRouterContext();
 
   return (
-    <StyledSidebar aria-label={ariaLabel} {...rest}>
-      <div className="sidebar-brand">{brand}</div>
+    <StyledSidebar
+      aria-label={ariaLabel}
+      data-is-open={isOpen ? 'true' : 'false'}
+      {...rest}
+    >
+      <div className="sidebar-brand">
+        <div className="sidebar-brand-content">{brand}</div>
+
+        {onClose && (
+          <div className="sidebar-brand-actions">
+            <button
+              type="button"
+              className="sidebar-close-button"
+              aria-label="Close navigation"
+              onClick={onClose}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6 6 18 18M18 6 6 18"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
+      </div>
 
       <div className="sidebar-body">
         {navigationGroups.map(group => (
@@ -59,7 +91,10 @@ const Sidebar = ({
                             .join(' ')
                         }
                         to={item.href}
-                        onClick={item.onClick}
+                        onClick={() => {
+                          item.onClick?.();
+                          onClose?.();
+                        }}
                       >
                         {content}
                       </NavLink>
@@ -73,7 +108,10 @@ const Sidebar = ({
                           .join(' ')}
                         href={item.href}
                         aria-current={item.isActive ? 'page' : undefined}
-                        onClick={item.onClick}
+                        onClick={() => {
+                          item.onClick?.();
+                          onClose?.();
+                        }}
                       >
                         {content}
                       </a>
@@ -86,7 +124,10 @@ const Sidebar = ({
                           .filter(Boolean)
                           .join(' ')}
                         type="button"
-                        onClick={item.onClick}
+                        onClick={() => {
+                          item.onClick?.();
+                          onClose?.();
+                        }}
                       >
                         {content}
                       </button>

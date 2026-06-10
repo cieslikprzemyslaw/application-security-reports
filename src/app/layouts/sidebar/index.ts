@@ -1,5 +1,4 @@
 export { default } from './sidebar.component';
-
 export type {
   SidebarNavigationGroup,
   SidebarNavigationItem,

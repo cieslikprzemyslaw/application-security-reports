@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledReportPreviewShell = styled.div.attrs({
   className: 'report-preview-shell',
@@ -111,6 +111,21 @@ const StyledReportPreviewShell = styled.div.attrs({
 
         border-top: 0;
         box-shadow: none;
+      }
+    }
+
+    @media print {
+      .report-preview-shell-header,
+      .report-preview-shell-toolbar {
+        display: none !important;
+      }
+
+      .report-preview-shell-stage {
+        min-height: auto;
+        padding: 0;
+
+        border: 0;
+        background: transparent;
       }
     }
   `}

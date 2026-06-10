@@ -3,18 +3,11 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import {
-  BrowserRouter,
-  Link,
-  Navigate,
-  NavLink,
-  Outlet,
-  Route,
-  Routes,
-  useParams,
-} from 'react-router-dom';
+import { ThemeProvider } from 'styled-components';
 
-import { routes, routePatterns } from '~/routes';
+import { defaultTheme } from '~/theme';
+
+import AppRouter from './appRouter';
 
 const renderTick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
 
@@ -56,87 +49,6 @@ const setupDom = (pathname: string) => {
   };
 };
 
-const Shell = () => (
-  <div>
-    <nav aria-label="Primary navigation">
-      <NavLink to={routes.dashboard}>Dashboard</NavLink>
-      <NavLink to={routes.companies}>Companies</NavLink>
-      <NavLink to={routes.assessments}>Assessments</NavLink>
-      <NavLink to={routes.threats}>Threats</NavLink>
-      <NavLink to={routes.reports}>Reports</NavLink>
-      <NavLink to={routes.settings}>Settings</NavLink>
-    </nav>
-
-    <Outlet />
-  </div>
-);
-
-const DashboardPage = () => <h1>Security Dashboard</h1>;
-const CompaniesPage = () => (
-  <section>
-    <h1>Companies</h1>
-    <p>Manage organisations and the assessments associated with them.</p>
-  </section>
-);
-const AssessmentsPage = () => (
-  <section>
-    <h1>Assessments</h1>
-    <p>All application security assessments across your workspace.</p>
-  </section>
-);
-const ThreatsPage = () => (
-  <section>
-    <h1>Threats</h1>
-    <p>Security findings across all active assessments.</p>
-  </section>
-);
-const ReportsPage = () => <h1>Report Preview</h1>;
-const SettingsPage = () => (
-  <section>
-    <h1>Settings</h1>
-    <p>Manage your profile, workspace branding, and report defaults.</p>
-  </section>
-);
-
-const AssessmentDetailsPage = () => {
-  const { assessmentId } = useParams<{
-    assessmentId?: string;
-  }>();
-
-  return <h1>Assessment ID: {assessmentId ?? 'missing'}</h1>;
-};
-
-const NotFoundPage = () => (
-  <section>
-    <h1>Requested page not found</h1>
-    <Link to={routes.dashboard}>Back to Dashboard</Link>
-  </section>
-);
-
-const TestRouter = () => (
-  <BrowserRouter>
-    <Routes>
-      <Route
-        path={routePatterns.root}
-        element={<Navigate replace to={routes.dashboard} />}
-      />
-      <Route element={<Shell />}>
-        <Route path={routePatterns.dashboard} element={<DashboardPage />} />
-        <Route path={routePatterns.companies} element={<CompaniesPage />} />
-        <Route path={routePatterns.assessments} element={<AssessmentsPage />} />
-        <Route
-          path={routePatterns.assessmentDetails}
-          element={<AssessmentDetailsPage />}
-        />
-        <Route path={routePatterns.threats} element={<ThreatsPage />} />
-        <Route path={routePatterns.reports} element={<ReportsPage />} />
-        <Route path={routePatterns.settings} element={<SettingsPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
-    </Routes>
-  </BrowserRouter>
-);
-
 const renderApp = async (pathname: string) => {
   const { container } = setupDom(pathname);
 
@@ -145,7 +57,11 @@ const renderApp = async (pathname: string) => {
   const root = createRoot(container);
 
   await act(async () => {
-    root.render(<TestRouter />);
+    root.render(
+      <ThemeProvider theme={defaultTheme}>
+        <AppRouter />
+      </ThemeProvider>,
+    );
     await renderTick();
   });
 
@@ -201,7 +117,8 @@ await (async () => {
   {
     const { container, root } = await renderApp('/assessments/asm_1');
 
-    assert.ok(textContent(container).includes('Assessment ID: asm_1'));
+    assert.ok(textContent(container).includes('Customer Services Portal'));
+    assert.ok(textContent(container).includes('NSD-CSP-2026-014'));
     assert.equal(window.location.pathname, '/assessments/asm_1');
 
     await act(async () => {

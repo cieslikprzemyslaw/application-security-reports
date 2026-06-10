@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledThreatForm = styled.form.attrs({ className: 'threat-form' })`
   ${({ theme: { colors, mq, spacing } }) => css`

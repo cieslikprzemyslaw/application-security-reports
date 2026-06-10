@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledAppShell = styled.div.attrs({ className: 'app-shell' })`
   ${({ theme: { colors, layoutSizes, mq, transitions, zIndices } }) => css`
@@ -63,6 +63,29 @@ const StyledAppShell = styled.div.attrs({ className: 'app-shell' })`
 
     .app-shell-content {
       min-width: 0;
+    }
+
+    @media print {
+      .app-shell-sidebar,
+      .app-shell-topbar,
+      .app-shell-overlay {
+        display: none !important;
+      }
+
+      .app-shell-main {
+        margin-left: 0 !important;
+        min-height: auto;
+      }
+
+      .app-shell-content {
+        min-height: auto;
+      }
+
+      .app-shell-content > .page-content {
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
     }
   `}
 `;

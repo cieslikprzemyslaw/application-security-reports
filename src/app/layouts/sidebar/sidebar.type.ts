@@ -21,4 +21,6 @@ export interface SidebarProps extends HTMLAttributes<HTMLElement> {
   navigationGroups: SidebarNavigationGroup[];
   footer?: ReactNode;
   ariaLabel?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 }

@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledReportActions = styled.div.attrs({ className: 'report-actions' })`
   ${({ theme: { spacing } }) => css`

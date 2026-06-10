@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledSettings = styled.div.attrs({ className: 'settings' })`
   ${({ theme: { colors, radii, spacing, mq, typography } }) => css`

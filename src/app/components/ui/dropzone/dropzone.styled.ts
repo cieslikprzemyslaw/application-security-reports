@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledDropzone = styled.div.attrs({ className: 'dropzone-field' })`
   ${({ theme: { colors, radii, spacing, transitions, typography } }) => css`

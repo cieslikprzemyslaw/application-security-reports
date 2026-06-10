@@ -6,4 +6,5 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   isSidebarOpen?: boolean;
   onSidebarClose?: () => void;
+  sidebarId?: string;
 }

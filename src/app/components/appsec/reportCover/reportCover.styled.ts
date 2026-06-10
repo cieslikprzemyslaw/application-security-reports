@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
   ${({ theme: { colors, radii, spacing, typography } }) => css`

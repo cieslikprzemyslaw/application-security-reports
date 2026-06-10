@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledSeverityDistribution = styled.div.attrs({
   className: 'severity-distribution',

@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledAssessmentStatusSummary = styled.div.attrs({
   className: 'assessment-status-summary',

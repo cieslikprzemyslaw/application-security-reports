@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledPagination = styled.nav`
   ${({ theme: { colors, radii, spacing } }) => css`

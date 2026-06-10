@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 
 const StyledReports = styled.div.attrs({ className: 'reports' })``;
 
