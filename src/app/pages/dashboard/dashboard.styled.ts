@@ -1,193 +1,144 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledDashboard = styled.div.attrs({ className: 'dashboard' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.l};
-`;
+  ${({ theme: { colors, mq, radii, shadows, spacing, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.l};
 
-export const DashboardHeader = styled.header.attrs({
-  className: 'dashboard-header',
-})`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.s};
+    .dashboard-header {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.s};
 
-  @media ${({ theme }) => theme.mq.min.tablet} {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-`;
+      @media ${mq.min.tablet} {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+    }
 
-export const DashboardTitleGroup = styled.div.attrs({
-  className: 'dashboard-title-group',
-})`
-  min-width: 0;
-`;
+    .dashboard-title-group {
+      min-width: 0;
+    }
 
-export const DashboardTitle = styled.h1.attrs({ className: 'dashboard-title' })`
-  font-size: ${({ theme }) => theme.typography.headings.h3.size};
+    .dashboard-title {
+      font-size: ${typography.headings.h3.size};
+      line-height: ${typography.headings.h3.lineHeight};
+    }
 
-  line-height: ${({ theme }) => theme.typography.headings.h3.lineHeight};
-`;
+    .dashboard-subtitle {
+      margin-top: ${spacing.xxxs};
+      color: ${colors.text.muted};
+    }
 
-export const DashboardSubtitle = styled.p.attrs({
-  className: 'dashboard-subtitle',
-})`
-  margin-top: ${({ theme }) => theme.spacing.xxxs};
+    .dashboard-header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: ${spacing.xxs};
+    }
 
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
+    .dashboard-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+      gap: ${spacing.s};
+    }
 
-export const DashboardHeaderActions = styled.div.attrs({
-  className: 'dashboard-header-actions',
-})`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+    .dashboard-charts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: ${spacing.s};
 
-export const DashboardStatsGrid = styled.div.attrs({
-  className: 'dashboard-stats-grid',
-})`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  gap: ${({ theme }) => theme.spacing.s};
-`;
+      @media ${mq.min.laptop} {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      }
+    }
 
-export const DashboardChartsGrid = styled.div.attrs({
-  className: 'dashboard-charts-grid',
-})`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: ${({ theme }) => theme.spacing.s};
+    .dashboard-bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: ${spacing.s};
 
-  @media ${({ theme }) => theme.mq.min.laptop} {
-    grid-template-columns:
-      minmax(0, 1.15fr)
-      minmax(0, 1fr);
-  }
-`;
+      @media ${mq.min.laptop} {
+        grid-template-columns: minmax(0, 1.5fr) minmax(20rem, 1fr);
+      }
+    }
 
-export const DashboardBottomGrid = styled.div.attrs({
-  className: 'dashboard-bottom-grid',
-})`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: ${({ theme }) => theme.spacing.s};
+    .dashboard-card {
+      overflow: hidden;
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.lg};
+      background-color: ${colors.surface.card};
+      box-shadow: ${shadows.xs};
+    }
 
-  @media ${({ theme }) => theme.mq.min.laptop} {
-    grid-template-columns:
-      minmax(0, 1.5fr)
-      minmax(20rem, 1fr);
-  }
-`;
+    .dashboard-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: ${spacing.s};
 
-export const DashboardCard = styled.section.attrs({
-  className: 'dashboard-card',
-})`
-  overflow: hidden;
+      min-height: 3.75rem;
+      padding: ${spacing.s} ${spacing.m};
 
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
+      border-bottom: 1px solid ${colors.border.subtle};
+    }
 
-  border-radius: ${({ theme }) => theme.radii.lg};
+    .dashboard-card-title-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: ${spacing.xxs};
+    }
 
-  background-color: ${({ theme }) => theme.colors.surface.card};
+    .dashboard-card-title {
+      font-size: ${typography.headings.h6.size};
+      line-height: ${typography.headings.h6.lineHeight};
+    }
 
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-`;
+    .dashboard-card-subtitle {
+      font-size: ${typography.body.small.size};
+      color: ${colors.text.muted};
+    }
 
-export const DashboardCardHeader = styled.header.attrs({
-  className: 'dashboard-card-header',
-})`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.s};
+    .dashboard-card-body {
+      padding: ${spacing.m};
+    }
 
-  min-height: 3.75rem;
-  padding: ${({ theme }) => theme.spacing.s} ${({ theme }) => theme.spacing.m};
+    .dashboard-period-select {
+      min-height: 2rem;
+      padding: 0.375rem 2rem 0.375rem 0.75rem;
 
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
-`;
+      border: 1px solid ${colors.border.default};
+      border-radius: ${radii.md};
 
-export const DashboardCardTitleGroup = styled.div.attrs({
-  className: 'dashboard-card-title-group',
-})`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+      font-size: ${typography.body.small.size};
+      color: ${colors.text.secondary};
+      background-color: ${colors.surface.card};
+    }
 
-export const DashboardCardTitle = styled.h2.attrs({
-  className: 'dashboard-card-title',
-})`
-  font-size: ${({ theme }) => theme.typography.headings.h6.size};
+    .dashboard-view-all-button {
+      display: inline-flex;
+      align-items: center;
+      gap: ${spacing.xxxs};
 
-  line-height: ${({ theme }) => theme.typography.headings.h6.lineHeight};
-`;
+      padding: 0;
 
-export const DashboardCardSubtitle = styled.span.attrs({
-  className: 'dashboard-card-subtitle',
-})`
-  font-size: ${({ theme }) => theme.typography.body.small.size};
+      border: 0;
 
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
+      font-size: ${typography.body.small.size};
+      font-weight: ${typography.fontWeights.medium};
+      color: ${colors.text.link};
 
-export const DashboardCardBody = styled.div.attrs({
-  className: 'dashboard-card-body',
-})`
-  padding: ${({ theme }) => theme.spacing.m};
-`;
+      background: transparent;
+    }
 
-export const DashboardPeriodSelect = styled.select.attrs({
-  className: 'dashboard-period-select',
-})`
-  min-height: 2rem;
-  padding: 0.375rem 2rem 0.375rem 0.75rem;
-
-  border: 1px solid ${({ theme }) => theme.colors.border.default};
-
-  border-radius: ${({ theme }) => theme.radii.md};
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  color: ${({ theme }) => theme.colors.text.secondary};
-
-  background-color: ${({ theme }) => theme.colors.surface.card};
-`;
-
-export const DashboardViewAllButton = styled.button.attrs({
-  className: 'dashboard-view-all-button',
-})`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxxs};
-
-  padding: 0;
-
-  border: 0;
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
-
-  color: ${({ theme }) => theme.colors.text.link};
-
-  background: transparent;
-`;
-
-export const DashboardEmptyState = styled.div.attrs({
-  className: 'dashboard-empty-state',
-})`
-  padding: ${({ theme }) => theme.spacing.xl};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-
-  text-align: center;
+    .dashboard-empty-state {
+      padding: ${spacing.xl};
+      color: ${colors.text.muted};
+      text-align: center;
+    }
+  `}
 `;
 
 export default StyledDashboard;

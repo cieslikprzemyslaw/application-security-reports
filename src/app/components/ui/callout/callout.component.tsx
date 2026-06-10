@@ -1,12 +1,6 @@
 import React from 'react';
 
-import StyledCallout, {
-  CalloutActions,
-  CalloutBody,
-  CalloutContent,
-  CalloutIcon,
-  CalloutTitle,
-} from './callout.styled';
+import StyledCallout from './callout.styled';
 import type { CalloutProps } from './callout.type';
 
 const Callout = ({
@@ -18,23 +12,23 @@ const Callout = ({
   ...rest
 }: CalloutProps) => (
   <StyledCallout
+    className={`callout callout--${variant}`}
     role={variant === 'error' ? 'alert' : 'status'}
-    $variant={variant}
     {...rest}
   >
     {icon && (
-      <CalloutIcon className="callout-icon" aria-hidden="true">
+      <span className="callout-icon" aria-hidden="true">
         {icon}
-      </CalloutIcon>
+      </span>
     )}
 
-    <CalloutContent>
-      {title && <CalloutTitle>{title}</CalloutTitle>}
+    <div className="callout-content">
+      {title && <h4 className="callout-title">{title}</h4>}
 
-      <CalloutBody>{children}</CalloutBody>
-    </CalloutContent>
+      <div className="callout-body">{children}</div>
+    </div>
 
-    {actions && <CalloutActions>{actions}</CalloutActions>}
+    {actions && <div className="callout-actions">{actions}</div>}
   </StyledCallout>
 );
 

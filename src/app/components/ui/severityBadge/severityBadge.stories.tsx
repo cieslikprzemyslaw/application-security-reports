@@ -43,6 +43,11 @@ export const Interactive: Story = {
 };
 
 export const AllSeverities: Story = {
+  args: {
+    severity: 'Critical',
+    size: 'medium',
+    showDot: true,
+  },
   render: () => (
     <div
       style={{

@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { Severity } from '~/app/components/ui/severityBadge';
 
 export type CompanyLogoTone =
@@ -24,4 +26,5 @@ export interface CompanyTableRow {
 export interface CompanyTableProps {
   companies: CompanyTableRow[];
   onCompanyClick?: (company: CompanyTableRow) => void;
+  emptyState?: ReactNode;
 }

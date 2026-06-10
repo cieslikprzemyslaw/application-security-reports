@@ -1,82 +1,79 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledThreatDrawer = styled.aside.attrs({ className: 'threat-drawer' })<{
   $isOpen: boolean;
 }>`
-  position: fixed;
-  inset: 0 0 0 auto;
-  z-index: ${({ theme }) => theme.zIndices.drawer};
+  ${({
+    theme: {
+      colors,
+      radii,
+      shadows,
+      spacing,
+      transitions,
+      typography,
+      zIndices,
+    },
+  }) => css`
+    position: fixed;
+    inset: 0 0 0 auto;
+    z-index: ${zIndices.drawer};
 
-  width: min(100%, 32rem);
-  overflow-y: auto;
+    width: min(100%, 32rem);
+    overflow-y: auto;
 
-  transform: translateX(${({ $isOpen }) => ($isOpen ? '0' : '100%')});
+    transform: translateX(${({ $isOpen }) => ($isOpen ? '0' : '100%')});
+    transition: transform ${transitions.base};
 
-  transition: transform ${({ theme }) => theme.transitions.base};
+    background-color: ${colors.surface.card};
+    box-shadow: ${shadows.lg};
 
-  background-color: ${({ theme }) => theme.colors.surface.card};
+    .threat-drawer-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: ${spacing.s};
 
-  box-shadow: ${({ theme }) => theme.shadows.lg};
-`;
+      padding: ${spacing.m};
+      border-bottom: 1px solid ${colors.border.subtle};
+    }
 
-export const Header = styled.header.attrs({
-  className: 'threat-drawer-header',
-})`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.s};
+    .threat-drawer-body {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.m};
 
-  padding: ${({ theme }) => theme.spacing.m};
+      padding: ${spacing.m};
+    }
 
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
-`;
+    .threat-drawer-title {
+      font-size: ${typography.headings.h5.size};
+    }
 
-export const Body = styled.div.attrs({ className: 'threat-drawer-body' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.m};
+    .threat-drawer-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: ${spacing.xxs};
+    }
 
-  padding: ${({ theme }) => theme.spacing.m};
-`;
+    .threat-drawer-section {
+      padding-top: ${spacing.s};
+      border-top: 1px solid ${colors.border.subtle};
+    }
 
-export const Title = styled.h2.attrs({ className: 'threat-drawer-title' })`
-  font-size: ${({ theme }) => theme.typography.headings.h5.size};
-`;
+    .threat-drawer-section-title {
+      margin-bottom: ${spacing.xxs};
+      font-size: ${typography.headings.h6.size};
+    }
 
-export const Meta = styled.div.attrs({ className: 'threat-drawer-meta' })`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+    .threat-drawer-close-button {
+      padding: 0.375rem;
 
-export const Section = styled.section.attrs({
-  className: 'threat-drawer-section',
-})`
-  padding-top: ${({ theme }) => theme.spacing.s};
-
-  border-top: 1px solid ${({ theme }) => theme.colors.border.subtle};
-`;
-
-export const SectionTitle = styled.h3.attrs({
-  className: 'threat-drawer-section-title',
-})`
-  margin-bottom: ${({ theme }) => theme.spacing.xxs};
-
-  font-size: ${({ theme }) => theme.typography.headings.h6.size};
-`;
-
-export const CloseButton = styled.button.attrs({
-  className: 'threat-drawer-close-button',
-})`
-  padding: 0.375rem;
-
-  border: 0;
-  border-radius: ${({ theme }) => theme.radii.md};
-
-  color: ${({ theme }) => theme.colors.text.secondary};
-
-  background: transparent;
+      border: 0;
+      border-radius: ${radii.md};
+      color: ${colors.text.secondary};
+      background: transparent;
+    }
+  `}
 `;
 
 export default StyledThreatDrawer;

@@ -3,19 +3,7 @@ import React from 'react';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
 
-import StyledAssessmentSummary, {
-  ApplicationName,
-  AssessmentBadges,
-  AssessmentIdentity,
-  AssessmentMetadataGrid,
-  AssessmentMetadataItemStyled,
-  AssessmentMetadataLabel,
-  AssessmentMetadataValue,
-  AssessmentSummaryHeader,
-  AssessmentTitleGroup,
-  CompanyLogo,
-  CompanyName,
-} from './assessmentSummary.styled';
+import StyledAssessmentSummary from './assessmentSummary.styled';
 
 import type {
   AssessmentMetadataItem as AssessmentMetadataItemType,
@@ -61,36 +49,40 @@ const AssessmentSummary = ({
 
   return (
     <StyledAssessmentSummary {...rest}>
-      <AssessmentSummaryHeader>
-        <AssessmentIdentity>
-          {companyLogo && <CompanyLogo>{companyLogo}</CompanyLogo>}
+      <div className="assessment-summary-header">
+        <div className="assessment-summary-identity">
+          {companyLogo && (
+            <div className="assessment-summary-company-logo">{companyLogo}</div>
+          )}
 
-          <AssessmentTitleGroup>
-            <CompanyName>{companyName}</CompanyName>
+          <div className="assessment-summary-title-group">
+            <p className="assessment-summary-company-name">{companyName}</p>
 
-            <ApplicationName>{applicationName}</ApplicationName>
-          </AssessmentTitleGroup>
-        </AssessmentIdentity>
+            <h2 className="assessment-summary-application-name">
+              {applicationName}
+            </h2>
+          </div>
+        </div>
 
-        <AssessmentBadges>
+        <div className="assessment-summary-badges">
           <SeverityBadge severity={overallRisk} />
 
           <StatusBadge status={status} />
-        </AssessmentBadges>
-      </AssessmentSummaryHeader>
+        </div>
+      </div>
 
-      <AssessmentMetadataGrid>
+      <dl className="assessment-summary-metadata-grid">
         {allMetadata.map(item => (
-          <AssessmentMetadataItemStyled key={item.label}>
-            <AssessmentMetadataLabel>{item.label}</AssessmentMetadataLabel>
+          <div key={item.label} className="assessment-summary-metadata-item">
+            <dt className="assessment-summary-metadata-label">{item.label}</dt>
 
-            <AssessmentMetadataValue>
+            <dd className="assessment-summary-metadata-value">
               {item.icon}
               {item.value}
-            </AssessmentMetadataValue>
-          </AssessmentMetadataItemStyled>
+            </dd>
+          </div>
         ))}
-      </AssessmentMetadataGrid>
+      </dl>
     </StyledAssessmentSummary>
   );
 };

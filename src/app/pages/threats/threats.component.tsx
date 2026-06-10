@@ -6,18 +6,7 @@ import Button from '~/app/components/ui/button';
 import SearchInput from '~/app/components/ui/searchInput';
 import Select from '~/app/components/ui/select';
 
-import StyledThreats, {
-  Card,
-  Filters,
-  Footer,
-  Header,
-  HeaderActions,
-  SearchWrap,
-  Subtitle,
-  Summary,
-  Title,
-  Toolbar,
-} from './threats.styled';
+import StyledThreats from './threats.styled';
 
 import type { ThreatsProps } from './threats.type';
 
@@ -66,59 +55,46 @@ const Threats = ({
 
   return (
     <StyledThreats>
-      <Header>
+      <header className="threats-header">
         <div>
-          <Title>Threats</Title>
+          <h1 className="threats-title">Threats</h1>
 
-          <Subtitle>Security findings across all active assessments.</Subtitle>
+          <p className="threats-subtitle">
+            Security findings across all active assessments.
+          </p>
         </div>
 
-        <HeaderActions>
+        <div className="threats-header-actions">
           {onExport && (
             <Button title="Export" variant="secondary" onClick={onExport} />
           )}
 
           {onAddThreat && <Button title="Add Threat" onClick={onAddThreat} />}
-        </HeaderActions>
-      </Header>
+        </div>
+      </header>
 
-      <Card>
-        <Toolbar>
-          <SearchWrap>
+      <section className="threats-card">
+        <div className="threats-toolbar">
+          <div className="threats-search-wrap">
             <SearchInput
               value={searchValue}
               placeholder="Search threats..."
               onChange={event => onSearchChange(event.target.value)}
               onClear={() => onSearchChange('')}
             />
-          </SearchWrap>
+          </div>
 
-          <Filters>
+          <div className="threats-filters">
             <Select
               label="Severity"
               hideLabel
               value={severityFilter}
               options={[
-                {
-                  label: 'All Severity',
-                  value: 'all',
-                },
-                {
-                  label: 'Critical',
-                  value: 'Critical',
-                },
-                {
-                  label: 'High',
-                  value: 'High',
-                },
-                {
-                  label: 'Medium',
-                  value: 'Medium',
-                },
-                {
-                  label: 'Low',
-                  value: 'Low',
-                },
+                { label: 'All Severity', value: 'all' },
+                { label: 'Critical', value: 'Critical' },
+                { label: 'High', value: 'High' },
+                { label: 'Medium', value: 'Medium' },
+                { label: 'Low', value: 'Low' },
               ]}
               onChange={event => onSeverityFilterChange(event.target.value)}
             />
@@ -128,30 +104,12 @@ const Threats = ({
               hideLabel
               value={statusFilter}
               options={[
-                {
-                  label: 'All Status',
-                  value: 'all',
-                },
-                {
-                  label: 'Open',
-                  value: 'Open',
-                },
-                {
-                  label: 'In Progress',
-                  value: 'In Progress',
-                },
-                {
-                  label: 'Resolved',
-                  value: 'Resolved',
-                },
-                {
-                  label: 'Retest Required',
-                  value: 'Retest Required',
-                },
-                {
-                  label: 'Accepted Risk',
-                  value: 'Accepted Risk',
-                },
+                { label: 'All Status', value: 'all' },
+                { label: 'Open', value: 'Open' },
+                { label: 'In Progress', value: 'In Progress' },
+                { label: 'Resolved', value: 'Resolved' },
+                { label: 'Retest Required', value: 'Retest Required' },
+                { label: 'Accepted Risk', value: 'Accepted Risk' },
               ]}
               onChange={event => onStatusFilterChange(event.target.value)}
             />
@@ -161,10 +119,7 @@ const Threats = ({
               hideLabel
               value={applicationFilter}
               options={[
-                {
-                  label: 'All Applications',
-                  value: 'all',
-                },
+                { label: 'All Applications', value: 'all' },
                 ...applications.map(application => ({
                   label: application,
                   value: application,
@@ -172,22 +127,23 @@ const Threats = ({
               ]}
               onChange={event => onApplicationFilterChange(event.target.value)}
             />
-          </Filters>
+          </div>
 
-          <Summary>{filteredThreats.length} threats</Summary>
-        </Toolbar>
+          <span className="threats-summary">
+            {filteredThreats.length} threats
+          </span>
+        </div>
 
         <GlobalThreatTable
           threats={filteredThreats}
           onThreatClick={onThreatClick}
         />
 
-        <Footer>
+        <div className="threats-footer">
           <span>Showing {filteredThreats.length} results</span>
-
           <span>Page 1 of 1</span>
-        </Footer>
-      </Card>
+        </div>
+      </section>
 
       <ThreatDrawer
         isOpen={isDrawerOpen}

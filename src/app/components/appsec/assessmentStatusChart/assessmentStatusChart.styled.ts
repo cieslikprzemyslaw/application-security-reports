@@ -1,128 +1,115 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-const StyledAssessmentStatusChart = styled.div.attrs({
-  className: 'assessment-status-chart',
-})`
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.l};
-`;
+import type { AssessmentStatusTone } from './assessmentStatusChart.type';
 
-export const DonutChart = styled.div.attrs({
-  className: 'assessment-status-chart-donut-chart',
-})<{
-  $background: string;
-}>`
-  position: relative;
+const StyledAssessmentStatusChart = styled.div<{ $background: string }>`
+  ${({ theme: { colors, radii, spacing, typography }, $background }) => css`
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: ${spacing.l};
 
-  display: grid;
-  place-items: center;
+    .assessment-status-chart__donut {
+      position: relative;
 
-  width: 8.5rem;
-  height: 8.5rem;
+      display: grid;
+      place-items: center;
 
-  border-radius: ${({ theme }) => theme.radii.circle};
+      width: 8.5rem;
+      height: 8.5rem;
 
-  background: conic-gradient(${({ $background }) => $background});
+      border-radius: ${radii.circle};
 
-  &::after {
-    content: '';
+      background: conic-gradient(${$background});
+    }
 
-    position: absolute;
+    .assessment-status-chart__donut::after {
+      content: '';
 
-    width: 5.5rem;
-    height: 5.5rem;
+      position: absolute;
 
-    border-radius: ${({ theme }) => theme.radii.circle};
+      width: 5.5rem;
+      height: 5.5rem;
 
-    background-color: ${({ theme }) => theme.colors.surface.card};
-  }
-`;
+      border-radius: ${radii.circle};
 
-export const DonutChartCentre = styled.div.attrs({
-  className: 'assessment-status-chart-donut-chart-centre',
-})`
-  position: relative;
-  z-index: 1;
+      background-color: ${colors.surface.card};
+    }
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
+    .assessment-status-chart__donut-centre {
+      position: relative;
+      z-index: 1;
 
-export const DonutChartValue = styled.strong.attrs({
-  className: 'assessment-status-chart-donut-chart-value',
-})`
-  font-size: ${({ theme }) => theme.typography.headings.h4.size};
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-  line-height: ${({ theme }) => theme.typography.headings.h4.lineHeight};
+    .assessment-status-chart__donut-value {
+      font-size: ${typography.headings.h4.size};
 
-  color: ${({ theme }) => theme.colors.text.primary};
-`;
+      line-height: ${typography.headings.h4.lineHeight};
 
-export const DonutChartLabel = styled.span.attrs({
-  className: 'assessment-status-chart-donut-chart-label',
-})`
-  font-size: ${({ theme }) => theme.typography.body.small.size};
+      color: ${colors.text.primary};
+    }
 
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
+    .assessment-status-chart__donut-label {
+      font-size: ${typography.body.small.size};
 
-export const StatusLegend = styled.ul.attrs({
-  className: 'assessment-status-chart-status-legend',
-})`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xxs};
+      color: ${colors.text.muted};
+    }
 
-  margin: 0;
-  padding: 0;
+    .assessment-status-chart__legend {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.xxs};
 
-  list-style: none;
-`;
+      margin: 0;
+      padding: 0;
 
-export const StatusLegendItem = styled.li.attrs({
-  className: 'assessment-status-chart-status-legend-item',
-})`
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+      list-style: none;
+    }
 
-export const StatusLegendDot = styled.span.attrs({
-  className: 'assessment-status-chart-status-legend-dot',
-})<{
-  $tone: AssessmentStatusTone;
-}>`
-  width: 0.5rem;
-  height: 0.5rem;
+    .assessment-status-chart__legend-item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: ${spacing.xxs};
+    }
 
-  border-radius: ${({ theme }) => theme.radii.xs};
+    .assessment-status-chart__legend-dot {
+      width: 0.5rem;
+      height: 0.5rem;
 
-  background-color: ${({ theme, $tone }) => {
-    const tones = {
-      completed: theme.colors.severity.low.solid,
-      inProgress: theme.colors.brand.primary,
-      inReview: theme.colors.severity.medium.solid,
-      draft: theme.colors.neutral.grey400,
-    } as const;
+      border-radius: ${radii.xs};
+    }
 
-    return tones[$tone];
-  }};
-`;
+    .assessment-status-chart__legend-dot--completed {
+      background-color: ${colors.severity.low.solid};
+    }
 
-export const StatusLegendLabel = styled.span.attrs({
-  className: 'assessment-status-chart-status-legend-label',
-})`
-  color: ${({ theme }) => theme.colors.text.secondary};
-`;
+    .assessment-status-chart__legend-dot--inProgress {
+      background-color: ${colors.brand.primary};
+    }
 
-export const StatusLegendValue = styled.strong.attrs({
-  className: 'assessment-status-chart-status-legend-value',
-})`
-  color: ${({ theme }) => theme.colors.text.primary};
+    .assessment-status-chart__legend-dot--inReview {
+      background-color: ${colors.severity.medium.solid};
+    }
+
+    .assessment-status-chart__legend-dot--draft {
+      background-color: ${colors.neutral.grey400};
+    }
+
+    .assessment-status-chart__legend-label {
+      color: ${colors.text.secondary};
+    }
+
+    .assessment-status-chart__legend-value {
+      color: ${colors.text.primary};
+    }
+  `}
 `;
 
 export default StyledAssessmentStatusChart;
+
+export type { AssessmentStatusTone };

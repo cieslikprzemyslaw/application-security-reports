@@ -1,19 +1,6 @@
 import React from 'react';
 
-import StyledSidebar, {
-  SidebarBody,
-  SidebarBrand,
-  SidebarButton,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarItem,
-  SidebarItemBadge,
-  SidebarItemIcon,
-  SidebarItemLabel,
-  SidebarLink,
-  SidebarList,
-} from './sidebar.styled';
+import StyledSidebar from './sidebar.styled';
 
 import type { SidebarProps } from './sidebar.type';
 
@@ -25,60 +12,70 @@ const Sidebar = ({
   ...rest
 }: SidebarProps) => (
   <StyledSidebar aria-label={ariaLabel} {...rest}>
-    <SidebarBrand>{brand}</SidebarBrand>
+    <div className="sidebar-brand">{brand}</div>
 
-    <SidebarBody>
+    <div className="sidebar-body">
       {navigationGroups.map(group => (
-        <SidebarGroup key={group.id}>
-          {group.label && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
+        <div key={group.id} className="sidebar-group">
+          {group.label && <p className="sidebar-group-label">{group.label}</p>}
 
-          <SidebarList>
+          <ul className="sidebar-list">
             {group.items.map(item => {
               const content = (
                 <>
                   {item.icon && (
-                    <SidebarItemIcon aria-hidden="true">
+                    <span className="sidebar-item-icon" aria-hidden="true">
                       {item.icon}
-                    </SidebarItemIcon>
+                    </span>
                   )}
 
-                  <SidebarItemLabel>{item.label}</SidebarItemLabel>
+                  <span className="sidebar-item-label">{item.label}</span>
 
                   {item.badge && (
-                    <SidebarItemBadge>{item.badge}</SidebarItemBadge>
+                    <span className="sidebar-item-badge">{item.badge}</span>
                   )}
                 </>
               );
 
               return (
-                <SidebarItem key={item.id}>
+                <li key={item.id} className="sidebar-item">
                   {item.href ? (
-                    <SidebarLink
+                    <a
+                      className={[
+                        'sidebar-link',
+                        item.isActive ? 'sidebar-link--active' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
                       href={item.href}
                       aria-current={item.isActive ? 'page' : undefined}
-                      $isActive={Boolean(item.isActive)}
                       onClick={item.onClick}
                     >
                       {content}
-                    </SidebarLink>
+                    </a>
                   ) : (
-                    <SidebarButton
+                    <button
+                      className={[
+                        'sidebar-button',
+                        item.isActive ? 'sidebar-button--active' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
                       type="button"
-                      $isActive={Boolean(item.isActive)}
                       onClick={item.onClick}
                     >
                       {content}
-                    </SidebarButton>
+                    </button>
                   )}
-                </SidebarItem>
+                </li>
               );
             })}
-          </SidebarList>
-        </SidebarGroup>
+          </ul>
+        </div>
       ))}
-    </SidebarBody>
+    </div>
 
-    {footer && <SidebarFooter>{footer}</SidebarFooter>}
+    {footer && <div className="sidebar-footer">{footer}</div>}
   </StyledSidebar>
 );
 

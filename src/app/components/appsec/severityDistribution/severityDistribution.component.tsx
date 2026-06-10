@@ -2,13 +2,7 @@ import React from 'react';
 
 import SeverityBadge from '~/app/components/ui/severityBadge';
 
-import StyledSeverityDistribution, {
-  SeverityDistributionBar,
-  SeverityLegend,
-  SeverityLegendItem,
-  SeverityLegendValue,
-  SeveritySegment,
-} from './severityDistribution.styled';
+import StyledSeverityDistribution from './severityDistribution.styled';
 
 import type { SeverityDistributionProps } from './severityDistribution.type';
 
@@ -29,35 +23,51 @@ const SeverityDistribution = ({
 
   return (
     <StyledSeverityDistribution {...rest}>
-      <SeverityDistributionBar
+      <div
+        className="severity-distribution-bar"
         aria-label={`Severity distribution. ${total} total findings.`}
       >
         {items.map(item => (
-          <SeveritySegment
+          <div
             key={item.severity}
-            $severity={severityKeyMap[item.severity]}
-            $width={total === 0 ? 0 : (item.count / total) * 100}
+            className={[
+              'severity-distribution-segment',
+              `severity-distribution-segment--${severityKeyMap[item.severity]}`,
+              total === 0 ? 'severity-distribution-segment--empty' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            style={{
+              width: `${total === 0 ? 0 : (item.count / total) * 100}%`,
+            }}
           />
         ))}
-      </SeverityDistributionBar>
+      </div>
 
-      <SeverityLegend>
+      <div className="severity-distribution-legend">
         {items.map(item => (
-          <SeverityLegendItem key={item.severity}>
+          <div
+            key={item.severity}
+            className="severity-distribution-legend-item"
+          >
             <SeverityBadge severity={item.severity} size="small" showDot />
 
-            <SeverityLegendValue>{item.count}</SeverityLegendValue>
-          </SeverityLegendItem>
+            <strong className="severity-distribution-legend-value">
+              {item.count}
+            </strong>
+          </div>
         ))}
 
         {showTotal && (
-          <SeverityLegendItem>
+          <div className="severity-distribution-legend-item">
             <span>Total</span>
 
-            <SeverityLegendValue>{total}</SeverityLegendValue>
-          </SeverityLegendItem>
+            <strong className="severity-distribution-legend-value">
+              {total}
+            </strong>
+          </div>
         )}
-      </SeverityLegend>
+      </div>
     </StyledSeverityDistribution>
   );
 };

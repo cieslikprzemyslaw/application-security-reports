@@ -1,15 +1,6 @@
 import React, { useEffect, useId, useRef } from 'react';
 
-import {
-  CheckboxContent,
-  CheckboxControl,
-  CheckboxDescription,
-  CheckboxError,
-  CheckboxField,
-  CheckboxInput,
-  CheckboxLabel,
-  CheckboxText,
-} from './checkbox.styled';
+import StyledCheckbox from './checkbox.styled';
 import type { CheckboxProps } from './checkbox.type';
 
 const CheckIcon = ({ indeterminate }: { indeterminate: boolean }) => (
@@ -48,10 +39,11 @@ const Checkbox = ({
   }, [indeterminate]);
 
   return (
-    <CheckboxField>
-      <CheckboxLabel htmlFor={checkboxId}>
-        <CheckboxInput
+    <StyledCheckbox>
+      <label className="checkbox-label" htmlFor={checkboxId}>
+        <input
           ref={inputRef}
+          className="checkbox-input"
           id={checkboxId}
           type="checkbox"
           disabled={disabled}
@@ -60,24 +52,24 @@ const Checkbox = ({
           {...rest}
         />
 
-        <CheckboxControl aria-hidden="true">
+        <span className="checkbox-control" aria-hidden="true">
           <CheckIcon indeterminate={indeterminate} />
-        </CheckboxControl>
+        </span>
 
-        <CheckboxContent>
-          <CheckboxText>
+        <span className="checkbox-content">
+          <span className="checkbox-text">
             {label}
             {labelAddon}
-          </CheckboxText>
+          </span>
 
           {description && (
-            <CheckboxDescription>{description}</CheckboxDescription>
+            <span className="checkbox-description">{description}</span>
           )}
-        </CheckboxContent>
-      </CheckboxLabel>
+        </span>
+      </label>
 
-      {error && <CheckboxError>{error}</CheckboxError>}
-    </CheckboxField>
+      {error && <p className="checkbox-error">{error}</p>}
+    </StyledCheckbox>
   );
 };
 

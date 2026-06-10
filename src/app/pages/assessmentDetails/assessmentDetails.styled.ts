@@ -1,94 +1,111 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledAssessmentDetails = styled.div.attrs({
   className: 'assessment-details',
 })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.l};
-`;
+  ${({ theme: { colors, mq, radii, spacing, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.l};
 
-export const Header = styled.header.attrs({
-  className: 'assessment-details-header',
-})`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.s};
+    .assessment-details-header {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.s};
 
-  @media ${({ theme }) => theme.mq.min.tablet} {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-`;
+      @media ${mq.min.tablet} {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+    }
 
-export const HeaderActions = styled.div.attrs({
-  className: 'assessment-details-header-actions',
-})`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+    .assessment-details-header-actions {
+      display: flex;
+      gap: ${spacing.xxs};
+    }
 
-export const Title = styled.h1.attrs({ className: 'assessment-details-title' })`
-  font-size: ${({ theme }) => theme.typography.headings.h3.size};
-`;
+    .assessment-details-title {
+      font-size: ${typography.headings.h3.size};
+    }
 
-export const Subtitle = styled.p.attrs({
-  className: 'assessment-details-subtitle',
-})`
-  margin-top: ${({ theme }) => theme.spacing.xxxs};
+    .assessment-details-subtitle {
+      margin-top: ${spacing.xxxs};
+      color: ${colors.text.muted};
+    }
 
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
+    .assessment-details-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+      gap: ${spacing.s};
+    }
 
-export const SummaryGrid = styled.div.attrs({
-  className: 'assessment-details-summary-grid',
-})`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-  gap: ${({ theme }) => theme.spacing.s};
-`;
+    .assessment-details-summary-card {
+      padding: ${spacing.s};
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.md};
+      background-color: ${colors.surface.card};
+    }
 
-export const SummaryCard = styled.div.attrs({
-  className: 'assessment-details-summary-card',
-})`
-  padding: ${({ theme }) => theme.spacing.s};
+    .assessment-details-section {
+      overflow: hidden;
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.lg};
+      background-color: ${colors.surface.card};
+    }
 
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
+    .assessment-details-section-header {
+      display: flex;
+      justify-content: space-between;
+      gap: ${spacing.s};
+      padding: ${spacing.s} ${spacing.m};
+      border-bottom: 1px solid ${colors.border.subtle};
+    }
 
-  border-radius: ${({ theme }) => theme.radii.md};
+    .assessment-details-section-body {
+      padding: ${spacing.m};
+    }
 
-  background-color: ${({ theme }) => theme.colors.surface.card};
-`;
+    .assessment-details__status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.5rem;
+      border: 1px solid;
+      border-radius: ${radii.sm};
+      font-size: ${typography.body.small.size};
+      font-weight: ${typography.fontWeights.medium};
+    }
 
-export const Section = styled.section.attrs({
-  className: 'assessment-details-section',
-})`
-  overflow: hidden;
+    .assessment-details__status-badge--Draft {
+      color: ${colors.text.secondary};
+      background-color: ${colors.neutral.grey100};
+      border-color: ${colors.border.subtle};
+    }
 
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
+    .assessment-details__status-badge--In-Progress {
+      color: ${colors.status.inProgress.text};
+      background-color: ${colors.status.inProgress.background};
+      border-color: ${colors.border.focus};
+    }
 
-  border-radius: ${({ theme }) => theme.radii.lg};
+    .assessment-details__status-badge--In-Review {
+      color: ${colors.severity.medium.text};
+      background-color: ${colors.severity.medium.background};
+      border-color: ${colors.severity.medium.solid};
+    }
 
-  background-color: ${({ theme }) => theme.colors.surface.card};
-`;
+    .assessment-details__status-badge--Completed {
+      color: ${colors.status.resolved.text};
+      background-color: ${colors.status.resolved.background};
+      border-color: ${colors.severity.low.solid};
+    }
 
-export const SectionHeader = styled.header.attrs({
-  className: 'assessment-details-section-header',
-})`
-  display: flex;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.s};
-
-  padding: ${({ theme }) => theme.spacing.s} ${({ theme }) => theme.spacing.m};
-
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
-`;
-
-export const SectionBody = styled.div.attrs({
-  className: 'assessment-details-section-body',
-})`
-  padding: ${({ theme }) => theme.spacing.m};
+    .assessment-details__status-badge--Retest-Required {
+      color: ${colors.status.retestRequired.text};
+      background-color: ${colors.status.retestRequired.background};
+      border-color: ${colors.status.retestRequired.text};
+    }
+  `}
 `;
 
 export default StyledAssessmentDetails;

@@ -1,11 +1,6 @@
 import React from 'react';
 
-import {
-  ClearButton,
-  SearchIcon,
-  SearchInputWrapper,
-  StyledSearchInput,
-} from './searchInput.styled';
+import StyledSearchInput from './searchInput.styled';
 import type { SearchInputProps } from './searchInput.type';
 
 const SearchSvg = () => (
@@ -37,12 +32,13 @@ const SearchInput = ({
         : false;
 
   return (
-    <SearchInputWrapper>
-      <SearchIcon>
+    <StyledSearchInput className="search-input-wrapper">
+      <span className="search-input-search-icon">
         <SearchSvg />
-      </SearchIcon>
+      </span>
 
-      <StyledSearchInput
+      <input
+        className="search-input"
         type="search"
         aria-label={label}
         value={value}
@@ -51,11 +47,16 @@ const SearchInput = ({
       />
 
       {hasValue && onClear && (
-        <ClearButton type="button" aria-label={clearLabel} onClick={onClear}>
+        <button
+          className="search-input-clear-button"
+          type="button"
+          aria-label={clearLabel}
+          onClick={onClear}
+        >
           <CloseSvg />
-        </ClearButton>
+        </button>
       )}
-    </SearchInputWrapper>
+    </StyledSearchInput>
   );
 };
 

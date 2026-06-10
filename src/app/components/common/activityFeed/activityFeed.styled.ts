@@ -1,32 +1,29 @@
 import styled, { css } from 'styled-components';
 
-import type {
-  ActivityFeedIconStyledProps,
-  ActivityTone,
-} from './activityFeed.type';
+import type { ActivityTone } from './activityFeed.type';
 
 const getToneStyles = (tone: ActivityTone) => css`
-  ${({ theme }) => {
+  ${({ theme: { colors } }) => {
     const tones = {
       brand: {
-        color: theme.colors.brand.primary,
-        background: theme.colors.brand.wash,
+        color: colors.brand.primary,
+        background: colors.brand.wash,
       },
       success: {
-        color: theme.colors.severity.low.text,
-        background: theme.colors.severity.low.background,
+        color: colors.severity.low.text,
+        background: colors.severity.low.background,
       },
       warning: {
-        color: theme.colors.severity.medium.text,
-        background: theme.colors.severity.medium.background,
+        color: colors.severity.medium.text,
+        background: colors.severity.medium.background,
       },
       error: {
-        color: theme.colors.severity.critical.text,
-        background: theme.colors.severity.critical.background,
+        color: colors.severity.critical.text,
+        background: colors.severity.critical.background,
       },
       neutral: {
-        color: theme.colors.text.secondary,
-        background: theme.colors.neutral.grey100,
+        color: colors.text.secondary,
+        background: colors.neutral.grey100,
       },
     } as const;
 
@@ -39,79 +36,105 @@ const getToneStyles = (tone: ActivityTone) => css`
   }}
 `;
 
-export const StyledActivityFeed = styled.div.attrs({
-  className: 'activity-feed',
-})`
-  display: flex;
-  flex-direction: column;
+const StyledActivityFeed = styled.div.attrs({ className: 'activity-feed' })`
+  ${({ theme: { colors, radii, spacing, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+
+    .activity-feed-item {
+      position: relative;
+
+      display: grid;
+      grid-template-columns: 2rem minmax(0, 1fr);
+      gap: ${spacing.xxs};
+
+      padding: 0 0 ${spacing.m};
+    }
+
+    .activity-feed-item:not(:last-child)::after {
+      content: '';
+
+      position: absolute;
+      top: 2rem;
+      left: calc(1rem - 0.5px);
+
+      width: 1px;
+      height: calc(100% - 2rem);
+
+      background-color: ${colors.border.subtle};
+    }
+
+    .activity-feed-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .activity-feed-icon {
+      position: relative;
+      z-index: 1;
+
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 2rem;
+      height: 2rem;
+
+      border: 1px solid;
+      border-radius: ${radii.circle};
+
+      svg {
+        width: 0.875rem;
+        height: 0.875rem;
+      }
+    }
+
+    .activity-feed-icon--brand {
+      ${getToneStyles('brand')}
+    }
+
+    .activity-feed-icon--success {
+      ${getToneStyles('success')}
+    }
+
+    .activity-feed-icon--warning {
+      ${getToneStyles('warning')}
+    }
+
+    .activity-feed-icon--error {
+      ${getToneStyles('error')}
+    }
+
+    .activity-feed-icon--neutral {
+      ${getToneStyles('neutral')}
+    }
+
+    .activity-feed-content {
+      min-width: 0;
+      padding-top: 0.125rem;
+    }
+
+    .activity-feed-title {
+      color: ${colors.text.secondary};
+    }
+
+    .activity-feed-title strong {
+      color: ${colors.text.primary};
+    }
+
+    .activity-feed-meta {
+      margin-top: 0.125rem;
+
+      font-size: ${typography.body.small.size};
+      line-height: ${typography.body.small.lineHeight};
+      color: ${colors.text.muted};
+    }
+
+    .activity-feed-empty {
+      padding: ${spacing.l};
+      color: ${colors.text.muted};
+      text-align: center;
+    }
+  `}
 `;
 
-export const ActivityFeedItem = styled.div.attrs({
-  className: 'activity-feed-item',
-})`
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: ${({ theme }) => theme.spacing.xxs};
-
-  padding: ${({ theme }) => theme.spacing.s} 0;
-
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
-
-  &:last-child {
-    border-bottom: 0;
-  }
-`;
-
-export const ActivityFeedIcon = styled.span.attrs({
-  className: 'activity-feed-icon',
-})<ActivityFeedIconStyledProps>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 2rem;
-  height: 2rem;
-
-  border-radius: ${({ theme }) => theme.radii.circle};
-
-  ${({ $tone }) => getToneStyles($tone)}
-
-  svg {
-    width: 1rem;
-    height: 1rem;
-  }
-`;
-
-export const ActivityFeedContent = styled.div.attrs({
-  className: 'activity-feed-content',
-})`
-  min-width: 0;
-`;
-
-export const ActivityFeedTitle = styled.div.attrs({
-  className: 'activity-feed-title',
-})`
-  color: ${({ theme }) => theme.colors.text.secondary};
-`;
-
-export const ActivityFeedMeta = styled.div.attrs({
-  className: 'activity-feed-meta',
-})`
-  margin-top: 0.125rem;
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  line-height: ${({ theme }) => theme.typography.body.small.lineHeight};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const ActivityFeedEmpty = styled.div.attrs({
-  className: 'activity-feed-empty',
-})`
-  padding: ${({ theme }) => theme.spacing.l};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-
-  text-align: center;
-`;
+export default StyledActivityFeed;

@@ -1,15 +1,6 @@
 import React from 'react';
 
-import {
-  CardActions,
-  CardBody,
-  CardFooter,
-  CardHeader,
-  CardSubtitle,
-  CardTitle,
-  CardTitleGroup,
-  StyledCard,
-} from './card.styled';
+import StyledCard, { getPadding } from './card.styled';
 import type { CardProps } from './card.type';
 
 const Card = ({
@@ -22,22 +13,27 @@ const Card = ({
   as = 'section',
   ...rest
 }: CardProps) => (
-  <StyledCard as={as} {...rest}>
+  <StyledCard
+    as={as}
+    className="card"
+    style={{ '--card-padding': getPadding(padding) } as React.CSSProperties}
+    {...rest}
+  >
     {(title || subtitle || actions) && (
-      <CardHeader>
-        <CardTitleGroup>
-          {title && <CardTitle>{title}</CardTitle>}
+      <header className="card-header">
+        <div className="card-title-group">
+          {title && <h3 className="card-title">{title}</h3>}
 
-          {subtitle && <CardSubtitle>{subtitle}</CardSubtitle>}
-        </CardTitleGroup>
+          {subtitle && <p className="card-subtitle">{subtitle}</p>}
+        </div>
 
-        {actions && <CardActions>{actions}</CardActions>}
-      </CardHeader>
+        {actions && <div className="card-actions">{actions}</div>}
+      </header>
     )}
 
-    <CardBody $padding={padding}>{children}</CardBody>
+    <div className="card-body">{children}</div>
 
-    {footer && <CardFooter>{footer}</CardFooter>}
+    {footer && <footer className="card-footer">{footer}</footer>}
   </StyledCard>
 );
 

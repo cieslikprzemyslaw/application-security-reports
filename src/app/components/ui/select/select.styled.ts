@@ -1,119 +1,103 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-import type { SelectWrapperStyledProps } from './select.type';
+const StyledSelect = styled.div`
+  ${({ theme: { colors, radii, spacing, transitions, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.xxxs};
 
-export const SelectField = styled.div.attrs({ className: 'select-field' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xxxs};
+    .select-label {
+      font-family: ${typography.fontFamilies.body};
+      font-size: ${typography.label.medium.size};
+      line-height: ${typography.label.medium.lineHeight};
+      font-weight: ${typography.label.medium.weight};
+      color: ${colors.text.primary};
+    }
+
+    .select-description,
+    .select-error {
+      margin: 0;
+      font-size: ${typography.body.small.size};
+      line-height: ${typography.body.small.lineHeight};
+    }
+
+    .select-description {
+      color: ${colors.text.muted};
+    }
+
+    .select-error {
+      color: ${colors.feedback.error};
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+
+    .select-control {
+      width: 100%;
+      min-width: 0;
+      min-height: 2.5rem;
+      padding: 0.5625rem 2rem 0.5625rem 0.75rem;
+
+      border: 1px solid ${colors.border.default};
+      border-radius: ${radii.md};
+      outline: 0;
+
+      font-family: ${typography.fontFamilies.body};
+      font-size: ${typography.body.medium.size};
+      line-height: ${typography.body.medium.lineHeight};
+      color: ${colors.text.primary};
+      background-color: ${colors.surface.card};
+
+      appearance: none;
+      transition:
+        border-color ${transitions.fast},
+        box-shadow ${transitions.fast};
+    }
+
+    .select-control:focus-visible {
+      border-color: ${colors.border.focus};
+      box-shadow:
+        0 0 0 2px ${colors.neutral.white},
+        0 0 0 4px ${colors.brand.wash};
+    }
+
+    .select-wrapper--has-error .select-control {
+      border-color: ${colors.feedback.error};
+    }
+
+    .select-wrapper--has-error .select-control:focus-visible {
+      border-color: ${colors.feedback.error};
+      box-shadow:
+        0 0 0 2px ${colors.neutral.white},
+        0 0 0 4px ${colors.severity.critical.background};
+    }
+
+    .select-wrapper--disabled .select-control {
+      cursor: not-allowed;
+      color: ${colors.text.muted};
+      background-color: ${colors.neutral.grey100};
+    }
+
+    .select-chevron {
+      position: absolute;
+      top: 50%;
+      right: 0.75rem;
+      transform: translateY(-50%);
+
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      color: ${colors.text.muted};
+      pointer-events: none;
+    }
+
+    .select-chevron svg {
+      width: 1rem;
+      height: 1rem;
+    }
+  `}
 `;
 
-export const SelectLabel = styled.label.attrs({ className: 'select-label' })`
-  font-family: ${({ theme }) => theme.typography.fontFamilies.body};
-
-  font-size: ${({ theme }) => theme.typography.label.medium.size};
-
-  line-height: ${({ theme }) => theme.typography.label.medium.lineHeight};
-
-  font-weight: ${({ theme }) => theme.typography.label.medium.weight};
-
-  color: ${({ theme }) => theme.colors.text.primary};
-`;
-
-export const SelectDescription = styled.p.attrs({
-  className: 'select-description',
-})`
-  margin: 0;
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  line-height: ${({ theme }) => theme.typography.body.small.lineHeight};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const SelectError = styled.p.attrs({ className: 'select-error' })`
-  margin: 0;
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  line-height: ${({ theme }) => theme.typography.body.small.lineHeight};
-
-  color: ${({ theme }) => theme.colors.feedback.error};
-`;
-
-export const SelectWrapper = styled.div.attrs({
-  className: 'select-wrapper',
-})<SelectWrapperStyledProps>`
-  position: relative;
-
-  border: 1px solid
-    ${({ theme, $hasError }) =>
-      $hasError ? theme.colors.feedback.error : theme.colors.border.default};
-
-  border-radius: ${({ theme }) => theme.radii.md};
-
-  background-color: ${({ theme, $isDisabled }) =>
-    $isDisabled ? theme.colors.neutral.grey100 : theme.colors.surface.card};
-
-  transition:
-    border-color ${({ theme }) => theme.transitions.fast},
-    box-shadow ${({ theme }) => theme.transitions.fast};
-
-  &:focus-within {
-    border-color: ${({ theme, $hasError }) =>
-      $hasError ? theme.colors.feedback.error : theme.colors.border.focus};
-
-    box-shadow:
-      0 0 0 2px ${({ theme }) => theme.colors.neutral.white},
-      0 0 0 4px
-        ${({ theme, $hasError }) =>
-          $hasError
-            ? theme.colors.severity.critical.background
-            : theme.colors.brand.wash};
-  }
-`;
-
-export const StyledSelect = styled.select.attrs({ className: 'select' })`
-  width: 100%;
-  min-height: 2.5rem;
-
-  padding: 0.5625rem 2.5rem 0.5625rem 0.75rem;
-
-  border: 0;
-  outline: 0;
-
-  font-size: ${({ theme }) => theme.typography.body.medium.size};
-
-  line-height: ${({ theme }) => theme.typography.body.medium.lineHeight};
-
-  color: ${({ theme }) => theme.colors.text.primary};
-  background: transparent;
-
-  appearance: none;
-
-  &:disabled {
-    cursor: not-allowed;
-    color: ${({ theme }) => theme.colors.text.muted};
-  }
-`;
-
-export const SelectChevron = styled.span.attrs({ className: 'select-chevron' })`
-  position: absolute;
-  top: 50%;
-  right: 0.75rem;
-
-  width: 1rem;
-  height: 1rem;
-
-  color: ${({ theme }) => theme.colors.text.muted};
-
-  pointer-events: none;
-
-  transform: translateY(-50%);
-
-  svg {
-    width: 1rem;
-    height: 1rem;
-  }
-`;
+export default StyledSelect;

@@ -1,25 +1,25 @@
 import styled, { css } from 'styled-components';
 
-import type { ToastStyledProps, ToastVariant } from './toast.type';
+import type { ToastVariant } from './toast.type';
 
 const getToastStyles = (variant: ToastVariant) => css`
-  ${({ theme }) => {
+  ${({ theme: { colors } }) => {
     const variants = {
       success: {
-        border: theme.colors.severity.low.solid,
-        icon: theme.colors.severity.low.text,
+        border: colors.severity.low.solid,
+        icon: colors.severity.low.text,
       },
       warning: {
-        border: theme.colors.severity.medium.solid,
-        icon: theme.colors.severity.medium.text,
+        border: colors.severity.medium.solid,
+        icon: colors.severity.medium.text,
       },
       error: {
-        border: theme.colors.severity.critical.solid,
-        icon: theme.colors.severity.critical.text,
+        border: colors.severity.critical.solid,
+        icon: colors.severity.critical.text,
       },
       info: {
-        border: theme.colors.severity.informational.solid,
-        icon: theme.colors.severity.informational.text,
+        border: colors.severity.informational.solid,
+        icon: colors.severity.informational.text,
       },
     } as const;
 
@@ -35,85 +35,92 @@ const getToastStyles = (variant: ToastVariant) => css`
   }}
 `;
 
-const StyledToast = styled.div.attrs({ className: 'toast' })<ToastStyledProps>`
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: ${({ theme }) => theme.spacing.xxs};
+const StyledToast = styled.div`
+  ${({ theme: { colors, radii, shadows, spacing, typography } }) => css`
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: ${spacing.xxs};
 
-  width: min(100%, 24rem);
-  padding: ${({ theme }) => theme.spacing.s};
+    width: min(100%, 24rem);
+    padding: ${spacing.s};
 
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
+    border: 1px solid ${colors.border.subtle};
+    border-left-width: 0.25rem;
+    border-radius: ${radii.md};
+    background-color: ${colors.surface.card};
+    box-shadow: ${shadows.md};
 
-  border-left-width: 0.25rem;
-  border-radius: ${({ theme }) => theme.radii.md};
+    .toast-icon {
+      display: inline-flex;
+    }
 
-  background-color: ${({ theme }) => theme.colors.surface.card};
+    .toast-icon svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
 
-  box-shadow: ${({ theme }) => theme.shadows.md};
+    .toast-content {
+      min-width: 0;
+    }
 
-  ${({ $variant }) => getToastStyles($variant)}
-`;
+    .toast-title {
+      font-size: ${typography.headings.h6.size};
+      line-height: ${typography.headings.h6.lineHeight};
+    }
 
-export const ToastIcon = styled.span.attrs({ className: 'toast-icon' })`
-  display: inline-flex;
+    .toast-description {
+      margin-top: 0.125rem;
+      color: ${colors.text.muted};
+    }
 
-  svg {
-    width: 1.125rem;
-    height: 1.125rem;
-  }
-`;
+    .toast-actions {
+      display: flex;
+      align-items: flex-start;
+      gap: ${spacing.xxxs};
+    }
 
-export const ToastContent = styled.div.attrs({ className: 'toast-content' })`
-  min-width: 0;
-`;
+    .toast-dismiss-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
 
-export const ToastTitle = styled.h4.attrs({ className: 'toast-title' })`
-  font-size: ${({ theme }) => theme.typography.headings.h6.size};
+      width: 1.75rem;
+      height: 1.75rem;
+      padding: 0;
 
-  line-height: ${({ theme }) => theme.typography.headings.h6.lineHeight};
-`;
+      border: 0;
+      border-radius: ${radii.md};
 
-export const ToastDescription = styled.p.attrs({
-  className: 'toast-description',
-})`
-  margin-top: 0.125rem;
+      color: ${colors.text.muted};
+      background: transparent;
+    }
 
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
+    .toast-dismiss-button:hover {
+      color: ${colors.text.primary};
+      background-color: ${colors.surface.subtle};
+    }
 
-export const ToastActions = styled.div.attrs({ className: 'toast-actions' })`
-  display: flex;
-  align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing.xxxs};
-`;
+    .toast-dismiss-button svg {
+      width: 0.875rem;
+      height: 0.875rem;
+    }
 
-export const ToastDismissButton = styled.button.attrs({
-  className: 'toast-dismiss-button',
-})`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+    &.toast--success {
+      ${getToastStyles('success')}
+    }
 
-  width: 1.75rem;
-  height: 1.75rem;
-  padding: 0;
+    &.toast--warning {
+      ${getToastStyles('warning')}
+    }
 
-  border: 0;
-  border-radius: ${({ theme }) => theme.radii.md};
+    &.toast--error {
+      ${getToastStyles('error')}
+    }
 
-  color: ${({ theme }) => theme.colors.text.muted};
-  background: transparent;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.text.primary};
-    background-color: ${({ theme }) => theme.colors.surface.subtle};
-  }
-
-  svg {
-    width: 0.875rem;
-    height: 0.875rem;
-  }
+    &.toast--info {
+      ${getToastStyles('info')}
+    }
+  `}
 `;
 
 export default StyledToast;

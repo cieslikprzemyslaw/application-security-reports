@@ -1,12 +1,6 @@
 import React from 'react';
 
-import {
-  TabButton,
-  TabCount,
-  TabList,
-  TabPanel,
-  TabsRoot,
-} from './tabs.styled';
+import StyledTabs from './tabs.styled';
 import type { TabsProps } from './tabs.type';
 
 const Tabs = ({ items, activeTabId, onChange, ariaLabel }: TabsProps) => {
@@ -17,42 +11,48 @@ const Tabs = ({ items, activeTabId, onChange, ariaLabel }: TabsProps) => {
   }
 
   return (
-    <TabsRoot>
-      <TabList role="tablist" aria-label={ariaLabel}>
+    <StyledTabs className="tabs-root">
+      <div className="tabs-tab-list" role="tablist" aria-label={ariaLabel}>
         {items.map(item => {
           const isActive = item.id === activeItem.id;
 
           return (
-            <TabButton
+            <button
               key={item.id}
               id={`${item.id}-tab`}
+              className={[
+                'tabs-tab-button',
+                isActive ? 'tabs-tab-button--active' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               type="button"
               role="tab"
               aria-selected={isActive}
               aria-controls={`${item.id}-panel`}
               tabIndex={isActive ? 0 : -1}
               disabled={item.disabled}
-              $isActive={isActive}
               onClick={() => onChange(item.id)}
             >
               {item.label}
 
               {typeof item.count === 'number' && (
-                <TabCount>{item.count}</TabCount>
+                <span className="tabs-tab-count">{item.count}</span>
               )}
-            </TabButton>
+            </button>
           );
         })}
-      </TabList>
+      </div>
 
-      <TabPanel
+      <div
+        className="tabs-tab-panel"
         id={`${activeItem.id}-panel`}
         role="tabpanel"
         aria-labelledby={`${activeItem.id}-tab`}
       >
         {activeItem.content}
-      </TabPanel>
-    </TabsRoot>
+      </div>
+    </StyledTabs>
   );
 };
 

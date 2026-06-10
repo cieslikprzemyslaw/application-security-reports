@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 
 import Drawer from './drawer.component';
+import type { DrawerProps } from './drawer.type';
 
 const meta = {
   title: 'Components/Drawer',
@@ -17,7 +18,14 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Interactive: Story = {
-  render: () => {
+  args: {
+    isOpen: false,
+    title: 'Edit threat',
+    description: 'Update finding details.',
+    children: 'Threat form content',
+    onClose: () => undefined,
+  } satisfies Partial<DrawerProps>,
+  render: args => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -27,9 +35,8 @@ export const Interactive: Story = {
         </button>
 
         <Drawer
+          {...args}
           isOpen={isOpen}
-          title="Edit threat"
-          description="Update finding details."
           onClose={() => setIsOpen(false)}
           footer={
             <>

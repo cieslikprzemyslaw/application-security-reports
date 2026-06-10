@@ -3,17 +3,7 @@ import React from 'react';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
 
-import StyledRecentAssessmentTable, {
-  FindingsCount,
-  RecentAssessmentCell,
-  RecentAssessmentCompany,
-  RecentAssessmentHead,
-  RecentAssessmentHeaderCell,
-  RecentAssessmentName,
-  RecentAssessmentRowStyled,
-  RecentAssessmentTableElement,
-  TypeBadge,
-} from './recentAssessmentTable.styled';
+import StyledRecentAssessmentTable from './recentAssessmentTable.styled';
 
 import type { RecentAssessmentTableProps } from './recentAssessmentTable.type';
 
@@ -22,26 +12,31 @@ const RecentAssessmentTable = ({
   onAssessmentClick,
 }: RecentAssessmentTableProps) => (
   <StyledRecentAssessmentTable>
-    <RecentAssessmentTableElement>
-      <RecentAssessmentHead>
+    <table className="recent-assessment-table-element">
+      <thead className="recent-assessment-table-head">
         <tr>
-          <RecentAssessmentHeaderCell>Application</RecentAssessmentHeaderCell>
+          <th className="recent-assessment-table-header-cell">Application</th>
 
-          <RecentAssessmentHeaderCell>Type</RecentAssessmentHeaderCell>
+          <th className="recent-assessment-table-header-cell">Type</th>
 
-          <RecentAssessmentHeaderCell>Risk</RecentAssessmentHeaderCell>
+          <th className="recent-assessment-table-header-cell">Risk</th>
 
-          <RecentAssessmentHeaderCell>Findings</RecentAssessmentHeaderCell>
+          <th className="recent-assessment-table-header-cell">Findings</th>
 
-          <RecentAssessmentHeaderCell>Status</RecentAssessmentHeaderCell>
+          <th className="recent-assessment-table-header-cell">Status</th>
         </tr>
-      </RecentAssessmentHead>
+      </thead>
 
       <tbody>
         {assessments.map(assessment => (
-          <RecentAssessmentRowStyled
+          <tr
             key={assessment.id}
-            $isClickable={Boolean(onAssessmentClick)}
+            className={[
+              'recent-assessment-table-row',
+              onAssessmentClick ? 'recent-assessment-table-row--clickable' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             tabIndex={onAssessmentClick ? 0 : undefined}
             onClick={() => onAssessmentClick?.(assessment)}
             onKeyDown={event => {
@@ -55,35 +50,39 @@ const RecentAssessmentTable = ({
               }
             }}
           >
-            <RecentAssessmentCell>
-              <RecentAssessmentName>
+            <td className="recent-assessment-table-cell">
+              <strong className="recent-assessment-table-name">
                 {assessment.applicationName}
-              </RecentAssessmentName>
+              </strong>
 
-              <RecentAssessmentCompany>
+              <span className="recent-assessment-table-company">
                 {assessment.companyName}
-              </RecentAssessmentCompany>
-            </RecentAssessmentCell>
+              </span>
+            </td>
 
-            <RecentAssessmentCell>
-              <TypeBadge>{assessment.assessmentType}</TypeBadge>
-            </RecentAssessmentCell>
+            <td className="recent-assessment-table-cell">
+              <span className="recent-assessment-table-type-badge">
+                {assessment.assessmentType}
+              </span>
+            </td>
 
-            <RecentAssessmentCell>
+            <td className="recent-assessment-table-cell">
               <SeverityBadge severity={assessment.severity} size="small" />
-            </RecentAssessmentCell>
+            </td>
 
-            <RecentAssessmentCell>
-              <FindingsCount>{assessment.findingsCount}</FindingsCount>
-            </RecentAssessmentCell>
+            <td className="recent-assessment-table-cell">
+              <strong className="recent-assessment-table-findings-count">
+                {assessment.findingsCount}
+              </strong>
+            </td>
 
-            <RecentAssessmentCell>
+            <td className="recent-assessment-table-cell">
               <StatusBadge status={assessment.status} size="small" />
-            </RecentAssessmentCell>
-          </RecentAssessmentRowStyled>
+            </td>
+          </tr>
         ))}
       </tbody>
-    </RecentAssessmentTableElement>
+    </table>
   </StyledRecentAssessmentTable>
 );
 

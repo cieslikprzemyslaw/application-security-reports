@@ -51,27 +51,25 @@ const getSizeStyles = (size: ButtonSize, isIconOnly: boolean) => {
 };
 
 const getTertiaryStyles = (isSelected: boolean) => css`
-  ${({ theme }) => css`
-    color: ${isSelected
-      ? theme.colors.brand.primary
-      : theme.colors.text.secondary};
+  ${({ theme: { colors } }) => css`
+    color: ${isSelected ? colors.brand.primary : colors.text.secondary};
 
-    background-color: ${isSelected ? theme.colors.brand.wash : 'transparent'};
+    background-color: ${isSelected ? colors.brand.wash : 'transparent'};
 
     border-color: transparent;
 
     &:hover:not(:disabled) {
-      color: ${theme.colors.text.primary};
-      background-color: ${theme.colors.surface.subtle};
+      color: ${colors.text.primary};
+      background-color: ${colors.surface.subtle};
     }
 
     &:active:not(:disabled) {
-      color: ${theme.colors.text.primary};
-      background-color: ${theme.colors.neutral.grey200};
+      color: ${colors.text.primary};
+      background-color: ${colors.neutral.grey200};
     }
 
     &:disabled {
-      color: ${theme.colors.neutral.grey400};
+      color: ${colors.neutral.grey400};
       background-color: transparent;
       border-color: transparent;
     }
@@ -82,8 +80,8 @@ const getStandardVariantStyles = (
   variant: Exclude<ButtonVariant, 'tertiary'>,
   isSelected: boolean,
 ) => css`
-  ${({ theme }) => {
-    const buttonColors = theme.colors.button[variant];
+  ${({ theme: { colors } }) => {
+    const buttonColors = colors.button[variant];
 
     return css`
       color: ${isSelected
@@ -130,83 +128,80 @@ const getVariantStyles = (variant: ButtonVariant, isSelected: boolean) => {
 const StyledButton = styled.button.attrs({
   className: 'button',
 })<ButtonStyledProps>`
-  display: inline-flex;
-  flex-direction: ${({ $iconPosition }) =>
-    $iconPosition === 'right' ? 'row-reverse' : 'row'};
+  ${({ theme: { colors, radii, spacing, transitions, typography } }) => css`
+    display: inline-flex;
+    flex-direction: ${({ $iconPosition }) =>
+      $iconPosition === 'right' ? 'row-reverse' : 'row'};
 
-  align-items: center;
-  justify-content: center;
-  gap: ${({ theme }) => theme.spacing.xxs};
+    align-items: center;
+    justify-content: center;
+    gap: ${spacing.xxs};
 
-  width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'fit-content')};
+    width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'fit-content')};
 
-  margin: 0;
-  border: 1px solid;
-  border-radius: ${({ theme }) => theme.radii.md};
+    margin: 0;
+    border: 1px solid;
+    border-radius: ${radii.md};
 
-  font-family: ${({ theme }) => theme.typography.fontFamilies.body};
+    font-family: ${typography.fontFamilies.body};
+    font-weight: ${typography.fontWeights.semibold};
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
 
-  font-weight: ${({ theme }) => theme.typography.fontWeights.semibold};
+    cursor: pointer;
+    user-select: none;
 
-  text-align: center;
-  text-decoration: none;
-  white-space: nowrap;
+    transition:
+      color ${transitions.fast},
+      background-color ${transitions.fast},
+      border-color ${transitions.fast},
+      box-shadow ${transitions.fast};
 
-  cursor: pointer;
-  user-select: none;
-
-  transition:
-    color ${({ theme }) => theme.transitions.fast},
-    background-color ${({ theme }) => theme.transitions.fast},
-    border-color ${({ theme }) => theme.transitions.fast},
-    box-shadow ${({ theme }) => theme.transitions.fast};
-
-  ${({ $size, $isIconOnly }) => getSizeStyles($size, $isIconOnly)}
-
-  ${({ $variant, $isSelected }) => getVariantStyles($variant, $isSelected)}
+    ${({ $size, $isIconOnly }) => getSizeStyles($size, $isIconOnly)}
+    ${({ $variant, $isSelected }) => getVariantStyles($variant, $isSelected)}
 
   &:disabled {
-    cursor: not-allowed;
-  }
+      cursor: not-allowed;
+    }
 
-  &:focus-visible {
-    outline: none;
+    &:focus-visible {
+      outline: none;
 
-    box-shadow:
-      0 0 0 2px ${({ theme }) => theme.colors.neutral.white},
-      0 0 0 4px ${({ theme }) => theme.colors.border.focus};
-  }
+      box-shadow:
+        0 0 0 2px ${colors.neutral.white},
+        0 0 0 4px ${colors.border.focus};
+    }
 
-  ${({ $isLoading }) =>
-    $isLoading &&
-    css`
-      cursor: wait;
-    `}
+    ${({ $isLoading }) =>
+      $isLoading &&
+      css`
+        cursor: wait;
+      `}
 
-  svg {
-    width: 1rem;
-    height: 1rem;
-    flex-shrink: 0;
-  }
-`;
+    svg {
+      width: 1rem;
+      height: 1rem;
+      flex-shrink: 0;
+    }
 
-export const ButtonLabel = styled.span.attrs({ className: 'button-label' })`
-  display: inline-flex;
-  align-items: center;
-`;
+    .button-label {
+      display: inline-flex;
+      align-items: center;
+    }
 
-export const LoadingSpinner = styled.span.attrs({
-  className: 'button-loading-spinner',
-})`
-  width: 1rem;
-  height: 1rem;
-  flex-shrink: 0;
+    .button-loading-spinner {
+      width: 1rem;
+      height: 1rem;
+      flex-shrink: 0;
 
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: ${({ theme }) => theme.radii.circle};
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: ${radii.circle};
 
-  animation: ${spinAnimation} 0.7s linear infinite;
+      animation: ${spinAnimation} 0.7s linear infinite;
+    }
+  `}
 `;
 
 export default StyledButton;

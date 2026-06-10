@@ -1,10 +1,6 @@
 import React from 'react';
 
-import {
-  PaginationButton,
-  PaginationEllipsis,
-  PaginationNav,
-} from './pagination.styled';
+import StyledPagination from './pagination.styled';
 import type { PaginationProps } from './pagination.type';
 
 const ChevronLeft = () => (
@@ -75,44 +71,55 @@ const Pagination = ({
   const pageRange = createPageRange(currentPage, totalPages, siblingCount);
 
   return (
-    <PaginationNav aria-label={ariaLabel}>
-      <PaginationButton
+    <StyledPagination aria-label={ariaLabel} className="pagination-nav">
+      <button
+        className="pagination-button"
         type="button"
         aria-label="Previous page"
         disabled={currentPage === 1}
         onClick={() => onPageChange(currentPage - 1)}
       >
         <ChevronLeft />
-      </PaginationButton>
+      </button>
 
       {pageRange.map((item, index) =>
         item === 'ellipsis' ? (
-          <PaginationEllipsis key={`ellipsis-${index}`} aria-hidden="true">
+          <span
+            key={`ellipsis-${index}`}
+            className="pagination-ellipsis"
+            aria-hidden="true"
+          >
             …
-          </PaginationEllipsis>
+          </span>
         ) : (
-          <PaginationButton
+          <button
             key={item}
+            className={[
+              'pagination-button',
+              item === currentPage
+                ? 'pagination-button--active'
+                : 'pagination-button--inactive',
+            ].join(' ')}
             type="button"
             aria-label={`Page ${item}`}
             aria-current={item === currentPage ? 'page' : undefined}
-            $isActive={item === currentPage}
             onClick={() => onPageChange(item)}
           >
             {item}
-          </PaginationButton>
+          </button>
         ),
       )}
 
-      <PaginationButton
+      <button
+        className="pagination-button"
         type="button"
         aria-label="Next page"
         disabled={currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}
       >
         <ChevronRight />
-      </PaginationButton>
-    </PaginationNav>
+      </button>
+    </StyledPagination>
   );
 };
 

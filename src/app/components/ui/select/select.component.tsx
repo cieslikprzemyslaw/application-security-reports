@@ -1,14 +1,6 @@
 import React, { useId } from 'react';
 
-import {
-  SelectChevron,
-  SelectDescription,
-  SelectError,
-  SelectField,
-  SelectLabel,
-  SelectWrapper,
-  StyledSelect,
-} from './select.styled';
+import StyledSelect from './select.styled';
 import type { SelectProps } from './select.type';
 
 const ChevronIcon = () => (
@@ -45,21 +37,32 @@ const Select = ({
     [descriptionId, errorId].filter(Boolean).join(' ') || undefined;
 
   return (
-    <SelectField>
-      <SelectLabel
+    <StyledSelect>
+      <label
+        className={hideLabel ? 'select-label visually-hidden' : 'select-label'}
         htmlFor={selectId}
-        className={hideLabel ? 'visually-hidden' : undefined}
       >
         {label}
         {required && ' *'}
-      </SelectLabel>
+      </label>
 
       {description && (
-        <SelectDescription id={descriptionId}>{description}</SelectDescription>
+        <p className="select-description" id={descriptionId}>
+          {description}
+        </p>
       )}
 
-      <SelectWrapper $hasError={Boolean(error)} $isDisabled={disabled}>
-        <StyledSelect
+      <div
+        className={[
+          'select-wrapper',
+          error ? 'select-wrapper--has-error' : '',
+          disabled ? 'select-wrapper--disabled' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        <select
+          className="select-control"
           id={selectId}
           disabled={disabled}
           required={required}
@@ -78,15 +81,19 @@ const Select = ({
               {option.label}
             </option>
           ))}
-        </StyledSelect>
+        </select>
 
-        <SelectChevron>
+        <span className="select-chevron" aria-hidden="true">
           <ChevronIcon />
-        </SelectChevron>
-      </SelectWrapper>
+        </span>
+      </div>
 
-      {error && <SelectError id={errorId}>{error}</SelectError>}
-    </SelectField>
+      {error && (
+        <p className="select-error" id={errorId}>
+          {error}
+        </p>
+      )}
+    </StyledSelect>
   );
 };
 

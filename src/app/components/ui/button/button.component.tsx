@@ -1,6 +1,6 @@
 import React from 'react';
 
-import StyledButton, { ButtonLabel, LoadingSpinner } from './button.styled';
+import StyledButton from './button.styled';
 import type { ButtonProps } from './button.type';
 
 const Button = ({
@@ -44,9 +44,13 @@ const Button = ({
       $fullWidth={fullWidth}
       {...rest}
     >
-      {isLoading ? <LoadingSpinner aria-hidden="true" /> : icon}
+      {isLoading ? (
+        <span className="button-loading-spinner" aria-hidden="true" />
+      ) : (
+        icon
+      )}
 
-      {title && <ButtonLabel>{title}</ButtonLabel>}
+      {title && <span className="button-label">{title}</span>}
     </StyledButton>
   );
 };

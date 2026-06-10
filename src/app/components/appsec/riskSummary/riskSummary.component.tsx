@@ -2,17 +2,7 @@ import React from 'react';
 
 import SeverityBadge from '~/app/components/ui/severityBadge';
 
-import StyledRiskSummary, {
-  RiskMetric,
-  RiskMetricLabel,
-  RiskMetricValue,
-  RiskSummaryGrid,
-  SeverityBarFill,
-  SeverityBarTrack,
-  SeverityBreakdown,
-  SeverityBreakdownRow,
-  SeverityCountValue,
-} from './riskSummary.styled';
+import StyledRiskSummary from './riskSummary.styled';
 
 import type { RiskSummaryProps } from './riskSummary.type';
 
@@ -36,51 +26,64 @@ const RiskSummary = ({
 
   return (
     <StyledRiskSummary {...rest}>
-      <RiskSummaryGrid>
-        <RiskMetric>
-          <RiskMetricLabel>Overall risk</RiskMetricLabel>
+      <div className="risk-summary-grid">
+        <div className="risk-summary-metric">
+          <span className="risk-summary-metric-label">Overall risk</span>
 
           <SeverityBadge severity={overallRisk} />
-        </RiskMetric>
+        </div>
 
-        <RiskMetric>
-          <RiskMetricLabel>Total findings</RiskMetricLabel>
+        <div className="risk-summary-metric">
+          <span className="risk-summary-metric-label">Total findings</span>
 
-          <RiskMetricValue>{totalFindings}</RiskMetricValue>
-        </RiskMetric>
+          <strong className="risk-summary-metric-value">{totalFindings}</strong>
+        </div>
 
-        <RiskMetric>
-          <RiskMetricLabel>Open threats</RiskMetricLabel>
+        <div className="risk-summary-metric">
+          <span className="risk-summary-metric-label">Open threats</span>
 
-          <RiskMetricValue>{openThreats}</RiskMetricValue>
-        </RiskMetric>
+          <strong className="risk-summary-metric-value">{openThreats}</strong>
+        </div>
 
-        <RiskMetric>
-          <RiskMetricLabel>Retest required</RiskMetricLabel>
+        <div className="risk-summary-metric">
+          <span className="risk-summary-metric-label">Retest required</span>
 
-          <RiskMetricValue>{retestRequired}</RiskMetricValue>
-        </RiskMetric>
-      </RiskSummaryGrid>
+          <strong className="risk-summary-metric-value">
+            {retestRequired}
+          </strong>
+        </div>
+      </div>
 
-      <SeverityBreakdown>
+      <div className="risk-summary-severity-breakdown">
         {severityCounts.map(item => {
           const severityKey = severityKeyMap[item.severity];
 
           const width = (item.count / highestCount) * 100;
 
           return (
-            <SeverityBreakdownRow key={item.severity}>
+            <div
+              key={item.severity}
+              className="risk-summary-severity-breakdown-row"
+            >
               <SeverityBadge severity={item.severity} size="small" />
 
-              <SeverityBarTrack>
-                <SeverityBarFill $severity={severityKey} $width={width} />
-              </SeverityBarTrack>
+              <div className="risk-summary-severity-bar-track">
+                <div
+                  className={[
+                    'risk-summary-severity-bar-fill',
+                    `risk-summary-severity-bar-fill--${severityKey}`,
+                  ].join(' ')}
+                  style={{ width: `${width}%` }}
+                />
+              </div>
 
-              <SeverityCountValue>{item.count}</SeverityCountValue>
-            </SeverityBreakdownRow>
+              <span className="risk-summary-severity-count-value">
+                {item.count}
+              </span>
+            </div>
           );
         })}
-      </SeverityBreakdown>
+      </div>
     </StyledRiskSummary>
   );
 };

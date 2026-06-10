@@ -1,32 +1,27 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-export const ReportNameCell = styled.div.attrs({
-  className: 'report-table-report-name-cell',
-})`
-  min-width: 14rem;
+const StyledReportTable = styled.div`
+  ${({ theme: { colors } }) => css`
+    .report-table-report-name-cell {
+      min-width: 14rem;
+    }
+
+    .report-table-report-name {
+      display: block;
+      color: ${colors.text.primary};
+    }
+
+    .report-table-report-company {
+      display: block;
+      margin-top: 0.125rem;
+      color: ${colors.text.muted};
+    }
+
+    .report-table-report-date {
+      white-space: nowrap;
+      color: ${colors.text.muted};
+    }
+  `}
 `;
 
-export const ReportName = styled.strong.attrs({
-  className: 'report-table-report-name',
-})`
-  display: block;
-
-  color: ${({ theme }) => theme.colors.text.primary};
-`;
-
-export const ReportCompany = styled.span.attrs({
-  className: 'report-table-report-company',
-})`
-  display: block;
-  margin-top: 0.125rem;
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const ReportDate = styled.time.attrs({
-  className: 'report-table-report-date',
-})`
-  white-space: nowrap;
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
+export default StyledReportTable;

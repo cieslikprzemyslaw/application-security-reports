@@ -1,15 +1,6 @@
 import React from 'react';
 
-import {
-  BreadcrumbItem as StyledBreadcrumbItem,
-  BreadcrumbList,
-  PageHeaderActions,
-  PageHeaderContent,
-  PageHeaderEyebrow,
-  PageHeaderSubtitle,
-  PageHeaderTitle,
-  StyledPageHeader,
-} from './pageHeader.styled';
+import StyledPageHeader from './pageHeader.styled';
 import type { PageHeaderProps } from './pageHeader.type';
 
 const PageHeader = ({
@@ -20,13 +11,13 @@ const PageHeader = ({
   breadcrumbs,
   ...rest
 }: PageHeaderProps) => (
-  <StyledPageHeader {...rest}>
-    <PageHeaderContent>
+  <StyledPageHeader className="page-header" {...rest}>
+    <div className="page-header-content">
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav aria-label="Breadcrumb">
-          <BreadcrumbList>
+          <ol className="page-header-breadcrumb-list">
             {breadcrumbs.map(item => (
-              <StyledBreadcrumbItem key={item.label}>
+              <li key={item.label} className="page-header-breadcrumb-item">
                 {item.onClick ? (
                   <button type="button" onClick={item.onClick}>
                     {item.label}
@@ -34,20 +25,20 @@ const PageHeader = ({
                 ) : (
                   <span>{item.label}</span>
                 )}
-              </StyledBreadcrumbItem>
+              </li>
             ))}
-          </BreadcrumbList>
+          </ol>
         </nav>
       )}
 
-      {eyebrow && <PageHeaderEyebrow>{eyebrow}</PageHeaderEyebrow>}
+      {eyebrow && <p className="page-header-eyebrow">{eyebrow}</p>}
 
-      <PageHeaderTitle>{title}</PageHeaderTitle>
+      <h1 className="page-header-title">{title}</h1>
 
-      {subtitle && <PageHeaderSubtitle>{subtitle}</PageHeaderSubtitle>}
-    </PageHeaderContent>
+      {subtitle && <p className="page-header-subtitle">{subtitle}</p>}
+    </div>
 
-    {actions && <PageHeaderActions>{actions}</PageHeaderActions>}
+    {actions && <div className="page-header-actions">{actions}</div>}
   </StyledPageHeader>
 );
 

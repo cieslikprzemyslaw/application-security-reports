@@ -40,35 +40,31 @@ const getVariantStyles = (
   variant: IconButtonVariant,
   isSelected: boolean,
 ) => css`
-  ${({ theme }) => {
+  ${({ theme: { colors } }) => {
     if (variant === 'tertiary') {
       return css`
-        color: ${isSelected
-          ? theme.colors.brand.primary
-          : theme.colors.text.secondary};
+        color: ${isSelected ? colors.brand.primary : colors.text.secondary};
 
-        background-color: ${isSelected
-          ? theme.colors.brand.wash
-          : 'transparent'};
+        background-color: ${isSelected ? colors.brand.wash : 'transparent'};
 
         border-color: transparent;
 
         &:hover:not(:disabled) {
-          color: ${theme.colors.text.primary};
-          background-color: ${theme.colors.surface.subtle};
+          color: ${colors.text.primary};
+          background-color: ${colors.surface.subtle};
         }
 
         &:active:not(:disabled) {
-          background-color: ${theme.colors.neutral.grey200};
+          background-color: ${colors.neutral.grey200};
         }
 
         &:disabled {
-          color: ${theme.colors.neutral.grey400};
+          color: ${colors.neutral.grey400};
         }
       `;
     }
 
-    const buttonColors = theme.colors.button[variant];
+    const buttonColors = colors.button[variant];
 
     return css`
       color: ${isSelected
@@ -107,57 +103,56 @@ const getVariantStyles = (
 const StyledIconButton = styled.button.attrs({
   className: 'icon-button',
 })<IconButtonStyledProps>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  ${({ theme: { colors, radii, transitions } }) => css`
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
-  padding: 0;
-  margin: 0;
+    padding: 0;
+    margin: 0;
 
-  border: 1px solid;
-  border-radius: ${({ theme }) => theme.radii.md};
+    border: 1px solid;
+    border-radius: ${radii.md};
 
-  cursor: pointer;
+    cursor: pointer;
 
-  transition:
-    color ${({ theme }) => theme.transitions.fast},
-    background-color ${({ theme }) => theme.transitions.fast},
-    border-color ${({ theme }) => theme.transitions.fast},
-    box-shadow ${({ theme }) => theme.transitions.fast};
+    transition:
+      color ${transitions.fast},
+      background-color ${transitions.fast},
+      border-color ${transitions.fast},
+      box-shadow ${transitions.fast};
 
-  ${({ $size }) => getSizeStyles($size)}
+    ${({ $size }) => getSizeStyles($size)}
+    ${({ $variant, $isSelected }) => getVariantStyles($variant, $isSelected)}
 
-  ${({ $variant, $isSelected }) => getVariantStyles($variant, $isSelected)}
+  &:focus-visible {
+      outline: none;
+      box-shadow:
+        0 0 0 2px ${colors.neutral.white},
+        0 0 0 4px ${colors.border.focus};
+    }
 
-    &:focus-visible {
-    outline: none;
-    box-shadow:
-      0 0 0 2px ${({ theme }) => theme.colors.neutral.white},
-      0 0 0 4px ${({ theme }) => theme.colors.border.focus};
-  }
+    &:disabled {
+      cursor: not-allowed;
+    }
 
-  &:disabled {
-    cursor: not-allowed;
-  }
+    ${({ $isLoading }) =>
+      $isLoading &&
+      css`
+        cursor: wait;
+      `}
 
-  ${({ $isLoading }) =>
-    $isLoading &&
-    css`
-      cursor: wait;
-    `}
-`;
+    .icon-button-spinner {
+      width: 1rem;
+      height: 1rem;
 
-export const IconButtonSpinner = styled.span.attrs({
-  className: 'icon-button-spinner',
-})`
-  width: 1rem;
-  height: 1rem;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: ${radii.circle};
 
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: ${({ theme }) => theme.radii.circle};
-
-  animation: ${spinAnimation} 0.7s linear infinite;
+      animation: ${spinAnimation} 0.7s linear infinite;
+    }
+  `}
 `;
 
 export default StyledIconButton;

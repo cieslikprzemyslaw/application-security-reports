@@ -1,64 +1,56 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-const StyledEmptyState = styled.div.attrs({ className: 'empty-state' })`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+const StyledEmptyState = styled.div`
+  ${({ theme: { colors, radii, spacing, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
-  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.m};
+    padding: ${spacing.xxl} ${spacing.m};
 
-  text-align: center;
-`;
+    text-align: center;
 
-export const EmptyStateIcon = styled.span.attrs({
-  className: 'empty-state-icon',
-})`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+    .empty-state-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
 
-  width: 3rem;
-  height: 3rem;
-  margin-bottom: ${({ theme }) => theme.spacing.s};
+      width: 3rem;
+      height: 3rem;
+      margin-bottom: ${spacing.s};
 
-  border-radius: ${({ theme }) => theme.radii.circle};
+      border-radius: ${radii.circle};
 
-  color: ${({ theme }) => theme.colors.brand.primary};
-  background-color: ${({ theme }) => theme.colors.brand.wash};
+      color: ${colors.brand.primary};
+      background-color: ${colors.brand.wash};
+    }
 
-  svg {
-    width: 1.5rem;
-    height: 1.5rem;
-  }
-`;
+    .empty-state-icon svg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
 
-export const EmptyStateTitle = styled.h3.attrs({
-  className: 'empty-state-title',
-})`
-  margin-bottom: ${({ theme }) => theme.spacing.xxxs};
+    .empty-state-title {
+      margin-bottom: ${spacing.xxxs};
 
-  font-size: ${({ theme }) => theme.typography.headings.h5.size};
+      font-size: ${typography.headings.h5.size};
+      line-height: ${typography.headings.h5.lineHeight};
+    }
 
-  line-height: ${({ theme }) => theme.typography.headings.h5.lineHeight};
-`;
+    .empty-state-description {
+      max-width: 30rem;
+      color: ${colors.text.muted};
+    }
 
-export const EmptyStateDescription = styled.p.attrs({
-  className: 'empty-state-description',
-})`
-  max-width: 30rem;
+    .empty-state-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: ${spacing.xxs};
 
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const EmptyStateActions = styled.div.attrs({
-  className: 'empty-state-actions',
-})`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: ${({ theme }) => theme.spacing.xxs};
-
-  margin-top: ${({ theme }) => theme.spacing.m};
+      margin-top: ${spacing.m};
+    }
+  `}
 `;
 
 export default StyledEmptyState;

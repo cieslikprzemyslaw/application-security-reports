@@ -1,6 +1,6 @@
 import React from 'react';
 
-import StyledIconButton, { IconButtonSpinner } from './iconButton.styled';
+import StyledIconButton from './iconButton.styled';
 import type { IconButtonProps } from './iconButton.type';
 
 const IconButton = ({
@@ -25,7 +25,11 @@ const IconButton = ({
     $isLoading={isLoading}
     {...rest}
   >
-    {isLoading ? <IconButtonSpinner aria-hidden="true" /> : icon}
+    {isLoading ? (
+      <span className="icon-button-spinner" aria-hidden="true" />
+    ) : (
+      icon
+    )}
   </StyledIconButton>
 );
 

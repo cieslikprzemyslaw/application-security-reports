@@ -1,57 +1,50 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-export const StyledFilterToolbar = styled.div.attrs({
-  className: 'filter-toolbar',
-})`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.s};
+const StyledFilterToolbar = styled.div`
+  ${({ theme: { colors, mq, spacing, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.s};
 
-  padding: ${({ theme }) => theme.spacing.s};
+    padding: ${spacing.s};
 
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
+    border-bottom: 1px solid ${colors.border.subtle};
 
-  @media ${({ theme }) => theme.mq.min.tablet} {
-    flex-direction: row;
-    align-items: center;
-  }
+    @media ${mq.min.tablet} {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .filter-toolbar-main {
+      display: flex;
+      flex: 1;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: ${spacing.xxs};
+    }
+
+    .filter-toolbar-search {
+      width: 100%;
+
+      @media ${mq.min.tablet} {
+        width: min(18rem, 100%);
+      }
+    }
+
+    .filter-toolbar-summary {
+      margin-left: auto;
+
+      font-size: ${typography.body.small.size};
+      color: ${colors.text.muted};
+    }
+
+    .filter-toolbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: ${spacing.xxs};
+    }
+  `}
 `;
 
-export const FilterToolbarMain = styled.div.attrs({
-  className: 'filter-toolbar-main',
-})`
-  display: flex;
-  flex: 1;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
-
-export const FilterToolbarSearch = styled.div.attrs({
-  className: 'filter-toolbar-search',
-})`
-  width: 100%;
-
-  @media ${({ theme }) => theme.mq.min.tablet} {
-    width: min(18rem, 100%);
-  }
-`;
-
-export const FilterToolbarSummary = styled.div.attrs({
-  className: 'filter-toolbar-summary',
-})`
-  margin-left: auto;
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const FilterToolbarActions = styled.div.attrs({
-  className: 'filter-toolbar-actions',
-})`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+export default StyledFilterToolbar;

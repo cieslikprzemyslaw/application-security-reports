@@ -1,102 +1,86 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledAssessments = styled.div.attrs({ className: 'assessments' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.l};
-`;
+  ${({ theme: { colors, mq, radii, shadows, spacing, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.l};
 
-export const Header = styled.header.attrs({ className: 'assessments-header' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.s};
+    .assessments-header {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.s};
 
-  @media ${({ theme }) => theme.mq.min.tablet} {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-`;
+      @media ${mq.min.tablet} {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+    }
 
-export const HeaderText = styled.div.attrs({
-  className: 'assessments-header-text',
-})`
-  min-width: 0;
-`;
+    .assessments-header-text {
+      min-width: 0;
+    }
 
-export const Title = styled.h1.attrs({ className: 'assessments-title' })`
-  font-size: ${({ theme }) => theme.typography.headings.h3.size};
+    .assessments-title {
+      font-size: ${typography.headings.h3.size};
+      line-height: ${typography.headings.h3.lineHeight};
+    }
 
-  line-height: ${({ theme }) => theme.typography.headings.h3.lineHeight};
-`;
+    .assessments-subtitle {
+      margin-top: ${spacing.xxxs};
+      color: ${colors.text.muted};
+    }
 
-export const Subtitle = styled.p.attrs({ className: 'assessments-subtitle' })`
-  margin-top: ${({ theme }) => theme.spacing.xxxs};
+    .assessments-header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: ${spacing.xxs};
+    }
 
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
+    .assessments-search-wrapper {
+      width: min(100%, 15rem);
+    }
 
-export const HeaderActions = styled.div.attrs({
-  className: 'assessments-header-actions',
-})`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+    .assessments-card {
+      overflow: hidden;
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.lg};
+      background-color: ${colors.surface.card};
+      box-shadow: ${shadows.xs};
+    }
 
-export const SearchWrapper = styled.div.attrs({
-  className: 'assessments-search-wrapper',
-})`
-  width: min(100%, 15rem);
-`;
+    .assessments-toolbar {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.xxs};
+      padding: ${spacing.s};
+      border-bottom: 1px solid ${colors.border.subtle};
 
-export const Card = styled.section.attrs({ className: 'assessments-card' })`
-  overflow: hidden;
+      @media ${mq.min.tablet} {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
 
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
+    .assessments-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: ${spacing.xxs};
+    }
 
-  border-radius: ${({ theme }) => theme.radii.lg};
+    .assessments-summary {
+      margin-left: auto;
+      font-size: ${typography.body.small.size};
+      color: ${colors.text.muted};
+    }
 
-  background-color: ${({ theme }) => theme.colors.surface.card};
-
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-`;
-
-export const Toolbar = styled.div.attrs({ className: 'assessments-toolbar' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xxs};
-
-  padding: ${({ theme }) => theme.spacing.s};
-
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
-
-  @media ${({ theme }) => theme.mq.min.tablet} {
-    flex-direction: row;
-    align-items: center;
-  }
-`;
-
-export const Filters = styled.div.attrs({ className: 'assessments-filters' })`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
-
-export const Summary = styled.span.attrs({ className: 'assessments-summary' })`
-  margin-left: auto;
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const Empty = styled.div.attrs({ className: 'assessments-empty' })`
-  padding: ${({ theme }) => theme.spacing.xl};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-
-  text-align: center;
+    .assessments-empty {
+      padding: ${spacing.xl};
+      color: ${colors.text.muted};
+      text-align: center;
+    }
+  `}
 `;
 
 export default StyledAssessments;

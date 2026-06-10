@@ -5,11 +5,7 @@ import Input from '~/app/components/ui/input';
 import Select from '~/app/components/ui/select';
 import Textarea from '~/app/components/ui/textarea';
 
-import StyledThreatForm, {
-  ThreatFormActions,
-  ThreatFormFullWidth,
-  ThreatFormGrid,
-} from './threatForm.styled';
+import StyledThreatForm from './threatForm.styled';
 
 import type { ThreatFormProps, ThreatFormValue } from './threatForm.type';
 
@@ -31,8 +27,8 @@ const ThreatForm = ({
   onSubmit,
 }: ThreatFormProps) => (
   <StyledThreatForm onSubmit={onSubmit}>
-    <ThreatFormGrid>
-      <ThreatFormFullWidth>
+    <div className="threat-form-grid">
+      <div className="threat-form-full-width">
         <Input
           label="Title"
           value={value.title}
@@ -42,7 +38,7 @@ const ThreatForm = ({
             onChange(updateField(value, 'title', event.target.value))
           }
         />
-      </ThreatFormFullWidth>
+      </div>
 
       <Select
         label="STRIDE category"
@@ -171,7 +167,7 @@ const ThreatForm = ({
         }
       />
 
-      <ThreatFormFullWidth>
+      <div className="threat-form-full-width">
         <Input
           label="Affected endpoint"
           value={value.affectedEndpoint}
@@ -181,9 +177,9 @@ const ThreatForm = ({
             onChange(updateField(value, 'affectedEndpoint', event.target.value))
           }
         />
-      </ThreatFormFullWidth>
+      </div>
 
-      <ThreatFormFullWidth>
+      <div className="threat-form-full-width">
         <Textarea
           label="Observation"
           value={value.observation}
@@ -193,9 +189,9 @@ const ThreatForm = ({
             onChange(updateField(value, 'observation', event.target.value))
           }
         />
-      </ThreatFormFullWidth>
+      </div>
 
-      <ThreatFormFullWidth>
+      <div className="threat-form-full-width">
         <Textarea
           label="Risk"
           value={value.risk}
@@ -205,9 +201,9 @@ const ThreatForm = ({
             onChange(updateField(value, 'risk', event.target.value))
           }
         />
-      </ThreatFormFullWidth>
+      </div>
 
-      <ThreatFormFullWidth>
+      <div className="threat-form-full-width">
         <Textarea
           label="Recommendation"
           value={value.recommendation}
@@ -217,9 +213,9 @@ const ThreatForm = ({
             onChange(updateField(value, 'recommendation', event.target.value))
           }
         />
-      </ThreatFormFullWidth>
+      </div>
 
-      <ThreatFormFullWidth>
+      <div className="threat-form-full-width">
         <Input
           label="References"
           value={value.references}
@@ -229,16 +225,16 @@ const ThreatForm = ({
             onChange(updateField(value, 'references', event.target.value))
           }
         />
-      </ThreatFormFullWidth>
-    </ThreatFormGrid>
+      </div>
+    </div>
 
-    <ThreatFormActions>
+    <div className="threat-form-actions">
       <Button
         type="submit"
         title={isSubmitting ? 'Saving' : submitLabel}
         isLoading={isSubmitting}
       />
-    </ThreatFormActions>
+    </div>
   </StyledThreatForm>
 );
 

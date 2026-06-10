@@ -33,11 +33,17 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Interactive: Story = {
-  render: () => {
+  args: {
+    value: initialValue,
+    onChange: () => undefined,
+    onSubmit: event => event.preventDefault(),
+  },
+  render: args => {
     const [value, setValue] = useState(initialValue);
 
     return (
       <ThreatForm
+        {...args}
         value={value}
         onChange={setValue}
         onSubmit={event => {

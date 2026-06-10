@@ -8,26 +8,7 @@ import StatCard from '~/app/components/common/statCard';
 import Button from '~/app/components/ui/button';
 import SearchInput from '~/app/components/ui/searchInput';
 
-import StyledDashboard, {
-  DashboardBottomGrid,
-  DashboardCard,
-  DashboardCardBody,
-  DashboardCardHeader,
-  DashboardCardSubtitle,
-  DashboardCardTitle,
-  DashboardCardTitleGroup,
-  DashboardChartsGrid,
-  DashboardEmptyState,
-  DashboardHeader,
-  DashboardHeaderActions,
-  DashboardPeriodSelect,
-  DashboardStatsGrid,
-  DashboardSubtitle,
-  DashboardTitle,
-  DashboardTitleGroup,
-  DashboardViewAllButton,
-} from './dashboard.styled';
-
+import StyledDashboard from './dashboard.styled';
 import type { DashboardPeriod, DashboardProps } from './dashboard.type';
 
 const ClipboardIcon = () => (
@@ -97,16 +78,16 @@ const Dashboard = ({
   onAssessmentClick,
 }: DashboardProps) => (
   <StyledDashboard>
-    <DashboardHeader>
-      <DashboardTitleGroup>
-        <DashboardTitle>Security Dashboard</DashboardTitle>
+    <header className="dashboard-header">
+      <div className="dashboard-title-group">
+        <h1 className="dashboard-title">Security Dashboard</h1>
 
-        <DashboardSubtitle>
+        <p className="dashboard-subtitle">
           Posture across all active application security assessments.
-        </DashboardSubtitle>
-      </DashboardTitleGroup>
+        </p>
+      </div>
 
-      <DashboardHeaderActions>
+      <div className="dashboard-header-actions">
         <SearchInput
           label="Filter dashboard"
           placeholder="Filter dashboard..."
@@ -115,10 +96,10 @@ const Dashboard = ({
         {onCreateAssessment && (
           <Button title="New Assessment" onClick={onCreateAssessment} />
         )}
-      </DashboardHeaderActions>
-    </DashboardHeader>
+      </div>
+    </header>
 
-    <DashboardStatsGrid>
+    <div className="dashboard-stats-grid">
       <StatCard
         label="Total Assessments"
         value={stats.totalAssessments}
@@ -162,20 +143,20 @@ const Dashboard = ({
         trendValue={Math.abs(stats.retestRequiredChange).toString()}
         helperText="awaiting verification"
       />
-    </DashboardStatsGrid>
+    </div>
 
-    <DashboardChartsGrid>
-      <DashboardCard>
-        <DashboardCardHeader>
-          <DashboardCardTitleGroup>
-            <DashboardCardTitle>Findings by Severity</DashboardCardTitle>
-
-            <DashboardCardSubtitle>
+    <div className="dashboard-charts-grid">
+      <section className="dashboard-card">
+        <header className="dashboard-card-header">
+          <div className="dashboard-card-title-group">
+            <h2 className="dashboard-card-title">Findings by Severity</h2>
+            <span className="dashboard-card-subtitle">
               Across open assessments
-            </DashboardCardSubtitle>
-          </DashboardCardTitleGroup>
+            </span>
+          </div>
 
-          <DashboardPeriodSelect
+          <select
+            className="dashboard-period-select"
             aria-label="Findings period"
             value={selectedPeriod}
             onChange={event =>
@@ -183,59 +164,58 @@ const Dashboard = ({
             }
           >
             <option value="90">Last 90 days</option>
-
             <option value="30">Last 30 days</option>
-
             <option value="all">All time</option>
-          </DashboardPeriodSelect>
-        </DashboardCardHeader>
+          </select>
+        </header>
 
-        <DashboardCardBody>
+        <div className="dashboard-card-body">
           <SeverityDistribution
             items={severityDistribution}
             showTotal={false}
           />
-        </DashboardCardBody>
-      </DashboardCard>
+        </div>
+      </section>
 
-      <DashboardCard>
-        <DashboardCardHeader>
-          <DashboardCardTitleGroup>
-            <DashboardCardTitle>Assessments by Status</DashboardCardTitle>
+      <section className="dashboard-card">
+        <header className="dashboard-card-header">
+          <div className="dashboard-card-title-group">
+            <h2 className="dashboard-card-title">Assessments by Status</h2>
 
-            <DashboardCardSubtitle>
+            <span className="dashboard-card-subtitle">
               {assessmentStatuses.reduce(
                 (total, item) => total + item.count,
                 0,
               )}{' '}
               total
-            </DashboardCardSubtitle>
-          </DashboardCardTitleGroup>
-        </DashboardCardHeader>
+            </span>
+          </div>
+        </header>
 
-        <DashboardCardBody>
+        <div className="dashboard-card-body">
           <AssessmentStatusChart items={assessmentStatuses} />
-        </DashboardCardBody>
-      </DashboardCard>
-    </DashboardChartsGrid>
+        </div>
+      </section>
+    </div>
 
-    <DashboardBottomGrid>
-      <DashboardCard>
-        <DashboardCardHeader>
-          <DashboardCardTitleGroup>
-            <DashboardCardTitle>Recent Assessments</DashboardCardTitle>
-          </DashboardCardTitleGroup>
+    <div className="dashboard-bottom-grid">
+      <section className="dashboard-card">
+        <header className="dashboard-card-header">
+          <div className="dashboard-card-title-group">
+            <h2 className="dashboard-card-title">Recent Assessments</h2>
+          </div>
 
           {onViewAllAssessments && (
-            <DashboardViewAllButton
+            <button
+              className="dashboard-view-all-button"
               type="button"
               onClick={onViewAllAssessments}
             >
               View all
               <span aria-hidden="true">→</span>
-            </DashboardViewAllButton>
+            </button>
           )}
-        </DashboardCardHeader>
+        </header>
 
         {recentAssessments.length > 0 ? (
           <RecentAssessmentTable
@@ -243,22 +223,22 @@ const Dashboard = ({
             onAssessmentClick={onAssessmentClick}
           />
         ) : (
-          <DashboardEmptyState>No assessments yet.</DashboardEmptyState>
+          <div className="dashboard-empty-state">No assessments yet.</div>
         )}
-      </DashboardCard>
+      </section>
 
-      <DashboardCard>
-        <DashboardCardHeader>
-          <DashboardCardTitleGroup>
-            <DashboardCardTitle>Recent Activity</DashboardCardTitle>
-          </DashboardCardTitleGroup>
-        </DashboardCardHeader>
+      <section className="dashboard-card">
+        <header className="dashboard-card-header">
+          <div className="dashboard-card-title-group">
+            <h2 className="dashboard-card-title">Recent Activity</h2>
+          </div>
+        </header>
 
-        <DashboardCardBody>
+        <div className="dashboard-card-body">
           <ActivityFeed items={recentActivity.slice(0, 5)} />
-        </DashboardCardBody>
-      </DashboardCard>
-    </DashboardBottomGrid>
+        </div>
+      </section>
+    </div>
   </StyledDashboard>
 );
 

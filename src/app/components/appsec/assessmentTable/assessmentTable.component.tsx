@@ -2,55 +2,49 @@ import React from 'react';
 
 import SeverityBadge from '~/app/components/ui/severityBadge';
 
-import StyledAssessmentTable, {
-  AssessmentStatusBadge,
-  Cell,
-  Chevron,
-  Findings,
-  Head,
-  HeaderCell,
-  Identity,
-  Initials,
-  Meta,
-  Name,
-  Row,
-  Table,
-  TypeBadge,
-} from './assessmentTable.styled';
+import StyledAssessmentTable from './assessmentTable.styled';
 
 import type { AssessmentTableProps } from './assessmentTable.type';
+
+const toStatusClassName = (status: string) => status.replace(/\s+/g, '-');
 
 const AssessmentTable = ({
   assessments,
   onAssessmentClick,
 }: AssessmentTableProps) => (
   <StyledAssessmentTable>
-    <Table>
-      <Head>
+    <table className="assessment-table__table">
+      <thead className="assessment-table__head">
         <tr>
-          <HeaderCell>Application</HeaderCell>
-
-          <HeaderCell>Type</HeaderCell>
-
-          <HeaderCell>Environment</HeaderCell>
-
-          <HeaderCell>Risk</HeaderCell>
-
-          <HeaderCell>Findings</HeaderCell>
-
-          <HeaderCell>Tester</HeaderCell>
-
-          <HeaderCell>Status</HeaderCell>
-
-          <HeaderCell aria-label="Open" />
+          <th className="assessment-table__header-cell">Application</th>
+          <th className="assessment-table__header-cell">Type</th>
+          <th className="assessment-table__header-cell">Environment</th>
+          <th className="assessment-table__header-cell">Risk</th>
+          <th className="assessment-table__header-cell">Findings</th>
+          <th className="assessment-table__header-cell">Tester</th>
+          <th className="assessment-table__header-cell">Status</th>
+          <th className="assessment-table__header-cell" aria-label="Open" />
         </tr>
-      </Head>
+      </thead>
 
       <tbody>
+        {assessments.length === 0 && (
+          <tr>
+            <td className="assessment-table__empty-cell" colSpan={8}>
+              No assessments found.
+            </td>
+          </tr>
+        )}
+
         {assessments.map(assessment => (
-          <Row
+          <tr
             key={assessment.id}
-            $clickable={Boolean(onAssessmentClick)}
+            className={[
+              'assessment-table__row',
+              onAssessmentClick ? 'assessment-table__row--clickable' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             tabIndex={onAssessmentClick ? 0 : undefined}
             onClick={() => onAssessmentClick?.(assessment)}
             onKeyDown={event => {
@@ -59,41 +53,49 @@ const AssessmentTable = ({
                 (event.key === 'Enter' || event.key === ' ')
               ) {
                 event.preventDefault();
-
                 onAssessmentClick(assessment);
               }
             }}
           >
-            <Cell>
-              <Identity>
-                <Initials $tone={assessment.logoTone ?? 'blue'}>
+            <td className="assessment-table__cell">
+              <div className="assessment-table__identity">
+                <span
+                  className={[
+                    'assessment-table__initials',
+                    `assessment-table__initials--${assessment.logoTone ?? 'blue'}`,
+                  ].join(' ')}
+                >
                   {assessment.initials}
-                </Initials>
+                </span>
 
                 <div>
-                  <Name>{assessment.applicationName}</Name>
+                  <strong className="assessment-table__name">
+                    {assessment.applicationName}
+                  </strong>
 
-                  <Meta>
+                  <span className="assessment-table__meta">
                     {assessment.companyName}
                     {' · '}
                     {assessment.code}
-                  </Meta>
+                  </span>
                 </div>
-              </Identity>
-            </Cell>
+              </div>
+            </td>
 
-            <Cell>
-              <TypeBadge>{assessment.assessmentType}</TypeBadge>
-            </Cell>
+            <td className="assessment-table__cell">
+              <span className="assessment-table__type-badge">
+                {assessment.assessmentType}
+              </span>
+            </td>
 
-            <Cell>{assessment.environment}</Cell>
+            <td className="assessment-table__cell">{assessment.environment}</td>
 
-            <Cell>
+            <td className="assessment-table__cell">
               <SeverityBadge severity={assessment.overallRisk} size="small" />
-            </Cell>
+            </td>
 
-            <Cell>
-              <Findings>
+            <td className="assessment-table__cell">
+              <div className="assessment-table__findings">
                 <strong>{assessment.findingsCount}</strong>
 
                 {(assessment.criticalCount || assessment.highCount) && (
@@ -104,24 +106,31 @@ const AssessmentTable = ({
                     {assessment.highCount ? `${assessment.highCount}H` : ''}
                   </span>
                 )}
-              </Findings>
-            </Cell>
+              </div>
+            </td>
 
-            <Cell>{assessment.testerName}</Cell>
+            <td className="assessment-table__cell">{assessment.testerName}</td>
 
-            <Cell>
-              <AssessmentStatusBadge $status={assessment.status}>
+            <td className="assessment-table__cell">
+              <span
+                className={[
+                  'assessment-table__status-badge',
+                  `assessment-table__status-badge--${toStatusClassName(assessment.status)}`,
+                ].join(' ')}
+              >
                 {assessment.status}
-              </AssessmentStatusBadge>
-            </Cell>
+              </span>
+            </td>
 
-            <Cell>
-              <Chevron aria-hidden="true">›</Chevron>
-            </Cell>
-          </Row>
+            <td className="assessment-table__cell">
+              <span className="assessment-table__chevron" aria-hidden="true">
+                ›
+              </span>
+            </td>
+          </tr>
         ))}
       </tbody>
-    </Table>
+    </table>
   </StyledAssessmentTable>
 );
 

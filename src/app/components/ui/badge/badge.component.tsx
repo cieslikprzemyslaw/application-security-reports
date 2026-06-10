@@ -1,6 +1,6 @@
 import React from 'react';
 
-import StyledBadge, { BadgeDot } from './badge.styled';
+import StyledBadge from './badge.styled';
 import type { BadgeProps } from './badge.type';
 
 const Badge = ({
@@ -17,7 +17,7 @@ const Badge = ({
 
   return (
     <StyledBadge $variant={variant} $size={size} {...rest}>
-      {showDot && <BadgeDot aria-hidden="true" />}
+      {showDot && <span className="badge-dot" aria-hidden="true" />}
 
       {icon}
 

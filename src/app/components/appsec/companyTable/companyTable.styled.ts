@@ -2,246 +2,196 @@ import styled, { css } from 'styled-components';
 
 import type { CompanyLogoTone } from './companyTable.type';
 
-const getLogoToneStyles = (tone: CompanyLogoTone) => css`
-  ${({ theme }) => {
-    const tones = {
-      blue: theme.colors.brand.primary,
-      cyan: theme.colors.severity.informational.solid,
-      orange: theme.colors.severity.high.solid,
-      green: theme.colors.severity.low.solid,
-      purple: theme.colors.status.retestRequired.text,
-      slate: theme.colors.neutral.grey600,
-    } as const;
+const StyledCompanyTable = styled.div`
+  ${({ theme: { colors, radii, spacing, transitions, typography } }) => css`
+    width: 100%;
+    overflow-x: auto;
 
-    return css`
-      color: ${theme.colors.neutral.white};
-      background-color: ${tones[tone]};
-    `;
-  }}
-`;
+    .company-table__table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
 
-const StyledCompanyTable = styled.div.attrs({ className: 'company-table' })`
-  width: 100%;
-  overflow-x: auto;
-`;
+    .company-table__head {
+      background-color: ${colors.neutral.grey50};
+    }
 
-export const CompanyTableElement = styled.table.attrs({
-  className: 'company-table-element',
-})`
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-`;
+    .company-table__header-cell {
+      padding: 0.75rem ${spacing.s};
 
-export const CompanyTableHead = styled.thead.attrs({
-  className: 'company-table-head',
-})`
-  background-color: ${({ theme }) => theme.colors.neutral.grey50};
-`;
+      border-bottom: 1px solid ${colors.border.subtle};
 
-export const CompanyTableHeaderCell = styled.th.attrs({
-  className: 'company-table-header-cell',
-})`
-  padding: 0.75rem ${({ theme }) => theme.spacing.s};
+      font-size: ${typography.label.small.size};
+      line-height: ${typography.label.small.lineHeight};
+      font-weight: ${typography.fontWeights.semibold};
 
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
+      color: ${colors.text.muted};
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
 
-  font-size: ${({ theme }) => theme.typography.label.small.size};
+    .company-table__row {
+      cursor: default;
+      transition:
+        background-color ${transitions.fast},
+        box-shadow ${transitions.fast};
+    }
 
-  line-height: ${({ theme }) => theme.typography.label.small.lineHeight};
+    .company-table__row > td {
+      border-bottom: 1px solid ${colors.border.subtle};
+      background-color: ${colors.surface.card};
+      transition: background-color ${transitions.fast};
+    }
 
-  font-weight: ${({ theme }) => theme.typography.fontWeights.semibold};
+    .company-table__row:last-child > td {
+      border-bottom: 0;
+    }
 
-  color: ${({ theme }) => theme.colors.text.muted};
+    .company-table__row--clickable {
+      cursor: pointer;
+    }
 
-  text-align: left;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-`;
+    .company-table__row--clickable:hover > td,
+    .company-table__row--clickable:focus-within > td {
+      background-color: ${colors.brand.wash};
+    }
 
-export const CompanyTableRowStyled = styled.tr.attrs({
-  className: 'company-table-row-styled',
-})<{
-  $isClickable: boolean;
-}>`
-  cursor: ${({ $isClickable }) => ($isClickable ? 'pointer' : 'default')};
+    .company-table__row:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: -2px;
+    }
 
-  transition:
-    background-color ${({ theme }) => theme.transitions.fast},
-    box-shadow ${({ theme }) => theme.transitions.fast};
+    .company-table__cell {
+      padding: 0.375rem ${spacing.s};
+      color: ${colors.text.secondary};
+      vertical-align: middle;
+    }
 
-  & > td {
-    border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
+    .company-table__identity {
+      display: grid;
+      grid-template-columns: 2.25rem minmax(0, 1fr);
+      align-items: center;
+      gap: ${spacing.xxs};
+      min-width: 13rem;
+    }
 
-    background-color: ${({ theme }) => theme.colors.surface.card};
+    .company-table__initials {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
 
-    transition: background-color ${({ theme }) => theme.transitions.fast};
-  }
+      width: 2.25rem;
+      height: 2.25rem;
 
-  &:last-child > td {
-    border-bottom: 0;
-  }
+      border-radius: ${radii.md};
+      font-size: ${typography.body.small.size};
+      font-weight: ${typography.fontWeights.medium};
+      color: ${colors.neutral.white};
+    }
 
-  &:hover > td,
-  &:focus-within > td {
-    background-color: ${({ theme, $isClickable }) =>
-      $isClickable ? theme.colors.brand.wash : theme.colors.surface.card};
-  }
+    .company-table__initials--blue {
+      background-color: ${colors.brand.primary};
+    }
 
-  &:hover ${'' /* force nested styles below */} {
-  }
+    .company-table__initials--cyan {
+      background-color: ${colors.severity.informational.solid};
+    }
 
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.border.focus};
+    .company-table__initials--orange {
+      background-color: ${colors.severity.high.solid};
+    }
 
-    outline-offset: -2px;
-  }
-`;
+    .company-table__initials--green {
+      background-color: ${colors.severity.low.solid};
+    }
 
-export const CompanyTableCell = styled.td.attrs({
-  className: 'company-table-cell',
-})`
-  padding: 0.375rem ${({ theme }) => theme.spacing.s};
+    .company-table__initials--purple {
+      background-color: ${colors.status.retestRequired.text};
+    }
 
-  color: ${({ theme }) => theme.colors.text.secondary};
+    .company-table__initials--slate {
+      background-color: ${colors.neutral.grey600};
+    }
 
-  vertical-align: middle;
-`;
+    .company-table__name {
+      display: block;
+      color: ${colors.text.primary};
+    }
 
-export const CompanyIdentity = styled.div.attrs({
-  className: 'company-table-company-identity',
-})`
-  display: grid;
-  grid-template-columns:
-    2.25rem
-    minmax(0, 1fr);
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxs};
+    .company-table__applications {
+      display: block;
+      margin-top: 0.125rem;
+      font-size: ${typography.body.small.size};
+      color: ${colors.text.muted};
+    }
 
-  min-width: 13rem;
-`;
+    .company-table__link {
+      color: ${colors.text.secondary};
+      text-decoration: none;
+    }
 
-export const CompanyInitials = styled.span.attrs({
-  className: 'company-table-company-initials',
-})<{
-  $tone: CompanyLogoTone;
-}>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+    .company-table__link:hover {
+      color: ${colors.text.link};
+      text-decoration: underline;
+    }
 
-  width: 2.25rem;
-  height: 2.25rem;
+    .company-table__link:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: 2px;
+    }
 
-  border-radius: ${({ theme }) => theme.radii.md};
+    .company-table__open-threats-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.5rem;
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.sm};
+      font-size: ${typography.body.small.size};
+      font-weight: ${typography.fontWeights.semibold};
+      color: ${colors.text.secondary};
+      background-color: ${colors.neutral.grey100};
+    }
 
-  font-size: ${({ theme }) => theme.typography.body.small.size};
+    .company-table__open-threats-badge--medium {
+      border-color: ${colors.severity.medium.solid};
+      color: ${colors.severity.medium.text};
+      background-color: ${colors.severity.medium.background};
+    }
 
-  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
+    .company-table__open-threats-badge--high {
+      border-color: ${colors.severity.high.solid};
+      color: ${colors.severity.high.text};
+      background-color: ${colors.severity.high.background};
+    }
 
-  ${({ $tone }) => getLogoToneStyles($tone)}
-`;
+    .company-table__chevron {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: ${colors.neutral.grey400};
+      font-size: 1.25rem;
+      transition:
+        transform ${transitions.fast},
+        color ${transitions.fast};
+    }
 
-export const CompanyName = styled.strong.attrs({
-  className: 'company-table-company-name',
-})`
-  display: block;
+    .company-table__row--clickable:hover .company-table__chevron,
+    .company-table__row--clickable:focus-visible .company-table__chevron {
+      color: ${colors.brand.primary};
+      transform: translateX(0.1875rem);
+    }
 
-  color: ${({ theme }) => theme.colors.text.primary};
-`;
-
-export const CompanyApplications = styled.span.attrs({
-  className: 'company-table-company-applications',
-})`
-  display: block;
-  margin-top: 0.125rem;
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const CompanyLink = styled.a.attrs({
-  className: 'company-table-company-link',
-})`
-  color: ${({ theme }) => theme.colors.text.secondary};
-
-  text-decoration: none;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.text.link};
-
-    text-decoration: underline;
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.border.focus};
-
-    outline-offset: 2px;
-  }
-`;
-
-export const OpenThreatsBadge = styled.span.attrs({
-  className: 'company-table-open-threats-badge',
-})<{
-  $count: number;
-}>`
-  display: inline-flex;
-  align-items: center;
-
-  padding: 0.125rem 0.5rem;
-
-  border: 1px solid
-    ${({ theme, $count }) =>
-      $count >= 15
-        ? theme.colors.severity.high.solid
-        : $count >= 10
-          ? theme.colors.severity.medium.solid
-          : theme.colors.border.subtle};
-
-  border-radius: ${({ theme }) => theme.radii.sm};
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  font-weight: ${({ theme }) => theme.typography.fontWeights.semibold};
-
-  color: ${({ theme, $count }) =>
-    $count >= 15
-      ? theme.colors.severity.high.text
-      : $count >= 10
-        ? theme.colors.severity.medium.text
-        : theme.colors.text.secondary};
-
-  background-color: ${({ theme, $count }) =>
-    $count >= 15
-      ? theme.colors.severity.high.background
-      : $count >= 10
-        ? theme.colors.severity.medium.background
-        : theme.colors.neutral.grey100};
-`;
-
-export const CompanyChevron = styled.span.attrs({
-  className: 'company-table-company-chevron',
-})`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  color: ${({ theme }) => theme.colors.neutral.grey400};
-
-  font-size: 1.25rem;
-
-  transition:
-    transform ${({ theme }) => theme.transitions.fast},
-    color ${({ theme }) => theme.transitions.fast};
-
-  ${CompanyTableRowStyled}:hover &,
-  ${CompanyTableRowStyled}:focus-visible & {
-    color: ${({ theme }) => theme.colors.brand.primary};
-
-    transform: translateX(0.1875rem);
-  }
+    .company-table__empty-cell {
+      padding: 1rem ${spacing.s};
+      color: ${colors.text.muted};
+      text-align: center;
+    }
+  `}
 `;
 
 export default StyledCompanyTable;
+
+export type { CompanyLogoTone };

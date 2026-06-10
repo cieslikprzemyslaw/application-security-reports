@@ -1,163 +1,154 @@
 import styled, { css } from 'styled-components';
 
-import type {
-  StatCardIconStyledProps,
-  StatIconTone,
-  StatTrendValueStyledProps,
-} from './statCard.type';
+import type { StatIconTone, StatTrendTone } from './statCard.type';
 
-const getIconToneStyles = (tone: StatIconTone) => css`
-  ${({ theme }) => {
-    const tones = {
-      brand: {
-        color: theme.colors.brand.primary,
-        background: theme.colors.brand.wash,
-      },
-      critical: {
-        color: theme.colors.severity.critical.text,
-        background: theme.colors.severity.critical.background,
-      },
-      high: {
-        color: theme.colors.severity.high.text,
-        background: theme.colors.severity.high.background,
-      },
-      medium: {
-        color: theme.colors.severity.medium.text,
-        background: theme.colors.severity.medium.background,
-      },
-      low: {
-        color: theme.colors.severity.low.text,
-        background: theme.colors.severity.low.background,
-      },
-      informational: {
-        color: theme.colors.severity.informational.text,
-        background: theme.colors.severity.informational.background,
-      },
-      purple: {
-        color: theme.colors.status.retestRequired.text,
-        background: theme.colors.status.retestRequired.background,
-      },
-      neutral: {
-        color: theme.colors.text.secondary,
-        background: theme.colors.neutral.grey100,
-      },
-    } as const;
+const getIconToneStyles = (
+  tone: StatIconTone,
+  colors: {
+    brand: { primary: string; wash: string };
+    severity: {
+      critical: { text: string; background: string };
+      high: { text: string; background: string };
+      medium: { text: string; background: string };
+      low: { text: string; background: string };
+      informational: { text: string; background: string };
+    };
+    status: {
+      retestRequired: { text: string; background: string };
+    };
+    text: { secondary: string; muted: string; primary: string };
+    neutral: { grey100: string };
+  },
+) => {
+  const tones = {
+    brand: {
+      color: colors.brand.primary,
+      background: colors.brand.wash,
+    },
+    critical: {
+      color: colors.severity.critical.text,
+      background: colors.severity.critical.background,
+    },
+    high: {
+      color: colors.severity.high.text,
+      background: colors.severity.high.background,
+    },
+    medium: {
+      color: colors.severity.medium.text,
+      background: colors.severity.medium.background,
+    },
+    low: {
+      color: colors.severity.low.text,
+      background: colors.severity.low.background,
+    },
+    informational: {
+      color: colors.severity.informational.text,
+      background: colors.severity.informational.background,
+    },
+    purple: {
+      color: colors.status.retestRequired.text,
+      background: colors.status.retestRequired.background,
+    },
+    neutral: {
+      color: colors.text.secondary,
+      background: colors.neutral.grey100,
+    },
+  } as const;
 
-    const selectedTone = tones[tone];
+  return tones[tone];
+};
 
-    return css`
-      color: ${selectedTone.color};
-      background-color: ${selectedTone.background};
-    `;
-  }}
-`;
+const StyledStatCard = styled.div.attrs({ className: 'stat-card' })<{
+  $iconTone: StatIconTone;
+  $trendTone: StatTrendTone;
+}>`
+  ${({
+    theme: { colors, radii, shadows, spacing, typography },
+    $iconTone,
+    $trendTone,
+  }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.s};
 
-export const StyledStatCard = styled.div.attrs({ className: 'stat-card' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.s};
+    padding: ${spacing.m};
 
-  padding: ${({ theme }) => theme.spacing.m};
+    border: 1px solid ${colors.border.subtle};
+    border-radius: ${radii.lg};
+    background-color: ${colors.surface.card};
+    box-shadow: ${shadows.xs};
 
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
-
-  border-radius: ${({ theme }) => theme.radii.lg};
-
-  background-color: ${({ theme }) => theme.colors.surface.card};
-
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-`;
-
-export const StatCardTop = styled.div.attrs({ className: 'stat-card-top' })`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
-
-export const StatCardIcon = styled.span.attrs({
-  className: 'stat-card-icon',
-})<StatCardIconStyledProps>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 2rem;
-  height: 2rem;
-  flex-shrink: 0;
-
-  border-radius: ${({ theme }) => theme.radii.md};
-
-  ${({ $tone }) => getIconToneStyles($tone)}
-
-  svg {
-    width: 1rem;
-    height: 1rem;
-  }
-`;
-
-export const StatCardLabel = styled.span.attrs({
-  className: 'stat-card-label',
-})`
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  line-height: ${({ theme }) => theme.typography.body.small.lineHeight};
-
-  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const StatCardValue = styled.strong.attrs({
-  className: 'stat-card-value',
-})`
-  font-size: ${({ theme }) => theme.typography.headings.h2.size};
-
-  line-height: ${({ theme }) => theme.typography.headings.h2.lineHeight};
-
-  font-weight: ${({ theme }) => theme.typography.headings.h2.weight};
-
-  color: ${({ theme }) => theme.colors.text.primary};
-`;
-
-export const StatCardFooter = styled.div.attrs({
-  className: 'stat-card-footer',
-})`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxxs};
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  line-height: ${({ theme }) => theme.typography.body.small.lineHeight};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const StatTrendValue = styled.span.attrs({
-  className: 'stat-card-stat-trend-value',
-})<StatTrendValueStyledProps>`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.125rem;
-
-  font-weight: ${({ theme }) => theme.typography.fontWeights.semibold};
-
-  color: ${({ theme, $tone }) => {
-    if ($tone === 'positive') {
-      return theme.colors.feedback.success;
+    .stat-card-top {
+      display: flex;
+      align-items: center;
+      gap: ${spacing.xxs};
     }
 
-    if ($tone === 'negative') {
-      return theme.colors.feedback.error;
+    .stat-card-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 2rem;
+      height: 2rem;
+      flex-shrink: 0;
+
+      border-radius: ${radii.md};
+
+      color: ${getIconToneStyles($iconTone, colors).color};
+      background-color: ${getIconToneStyles($iconTone, colors).background};
     }
 
-    return theme.colors.text.muted;
-  }};
+    .stat-card-icon svg {
+      width: 1rem;
+      height: 1rem;
+    }
 
-  svg {
-    width: 0.75rem;
-    height: 0.75rem;
-    flex-shrink: 0;
-  }
+    .stat-card-label {
+      font-size: ${typography.body.small.size};
+      line-height: ${typography.body.small.lineHeight};
+      font-weight: ${typography.fontWeights.medium};
+      color: ${colors.text.muted};
+    }
+
+    .stat-card-value {
+      font-size: ${typography.headings.h2.size};
+      line-height: ${typography.headings.h2.lineHeight};
+      font-weight: ${typography.headings.h2.weight};
+      color: ${colors.text.primary};
+    }
+
+    .stat-card-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: ${spacing.xxxs};
+
+      font-size: ${typography.body.small.size};
+      line-height: ${typography.body.small.lineHeight};
+      color: ${colors.text.muted};
+    }
+
+    .stat-card-stat-trend-value {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.125rem;
+
+      font-weight: ${typography.fontWeights.semibold};
+
+      color: ${$trendTone === 'positive'
+        ? colors.feedback.success
+        : $trendTone === 'negative'
+          ? colors.feedback.error
+          : colors.text.muted};
+    }
+
+    .stat-card-stat-trend-value svg {
+      width: 0.75rem;
+      height: 0.75rem;
+      flex-shrink: 0;
+    }
+  `}
 `;
+
+export default StyledStatCard;

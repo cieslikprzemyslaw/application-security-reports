@@ -33,5 +33,6 @@ export const Interactive: Story = {
     description: 'PNG, JPG, PDF or HAR up to 10 MB.',
     acceptedTypes: '.png,.jpg,.jpeg,.pdf,.har',
     multiple: true,
+    onFilesSelected: () => undefined,
   },
 };

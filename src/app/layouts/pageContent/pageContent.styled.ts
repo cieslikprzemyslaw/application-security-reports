@@ -13,28 +13,37 @@ const getMaxWidth = (maxWidth: NonNullable<PageContentProps['maxWidth']>) => {
   return values[maxWidth];
 };
 
-const getSpacing = (spacing: NonNullable<PageContentProps['spacing']>) => {
-  if (spacing === 'compact') {
+const getSpacing = (
+  spacingSize: NonNullable<PageContentProps['spacing']>,
+  {
+    spacing,
+    mq,
+  }: {
+    spacing: { s: string; m: string; l: string; xl: string };
+    mq: { min: { tablet: string } };
+  },
+) => {
+  if (spacingSize === 'compact') {
     return css`
-      padding: ${({ theme }) => theme.spacing.s};
+      padding: ${spacing.s};
     `;
   }
 
-  if (spacing === 'comfortable') {
+  if (spacingSize === 'comfortable') {
     return css`
-      padding: ${({ theme }) => theme.spacing.l};
+      padding: ${spacing.l};
 
-      @media ${({ theme }) => theme.mq.min.tablet} {
-        padding: ${({ theme }) => theme.spacing.xl};
+      @media ${mq.min.tablet} {
+        padding: ${spacing.xl};
       }
     `;
   }
 
   return css`
-    padding: ${({ theme }) => theme.spacing.m};
+    padding: ${spacing.m};
 
-    @media ${({ theme }) => theme.mq.min.tablet} {
-      padding: ${({ theme }) => theme.spacing.l};
+    @media ${mq.min.tablet} {
+      padding: ${spacing.l};
     }
   `;
 };
@@ -43,12 +52,14 @@ const StyledPageContent = styled.div.attrs({ className: 'page-content' })<{
   $maxWidth: NonNullable<PageContentProps['maxWidth']>;
   $spacing: NonNullable<PageContentProps['spacing']>;
 }>`
-  width: 100%;
-  max-width: ${({ $maxWidth }) => getMaxWidth($maxWidth)};
+  ${({ theme: { mq, spacing } }) => css`
+    width: 100%;
+    max-width: ${({ $maxWidth }) => getMaxWidth($maxWidth)};
 
-  margin: 0 auto;
+    margin: 0 auto;
 
-  ${({ $spacing }) => getSpacing($spacing)}
+    ${({ $spacing }) => getSpacing($spacing, { spacing, mq })}
+  `}
 `;
 
 export default StyledPageContent;

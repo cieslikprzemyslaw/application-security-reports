@@ -1,103 +1,78 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledReportHeader = styled.header.attrs({ className: 'report-header' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.l};
+  ${({ theme: { colors, spacing, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.l};
 
-  padding-bottom: ${({ theme }) => theme.spacing.l};
+    padding-bottom: ${spacing.l};
 
-  border-bottom: 2px solid ${({ theme }) => theme.colors.border.strong};
-`;
+    border-bottom: 2px solid ${colors.border.strong};
 
-export const ReportBrandRow = styled.div.attrs({
-  className: 'report-header-report-brand-row',
-})`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.m};
-`;
+    .report-header-brand-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: ${spacing.m};
+    }
 
-export const ReportCompany = styled.div.attrs({
-  className: 'report-header-report-company',
-})`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.s};
-`;
+    .report-header-company {
+      display: flex;
+      align-items: center;
+      gap: ${spacing.s};
+    }
 
-export const ReportLogo = styled.div.attrs({
-  className: 'report-header-report-logo',
-})`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+    .report-header-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
 
-  max-width: 10rem;
-  max-height: 3rem;
-`;
+      max-width: 10rem;
+      max-height: 3rem;
+    }
 
-export const ReportCompanyName = styled.strong.attrs({
-  className: 'report-header-report-company-name',
-})`
-  color: ${({ theme }) => theme.colors.text.primary};
-`;
+    .report-header-company-name {
+      color: ${colors.text.primary};
+    }
 
-export const ReportMeta = styled.dl.attrs({
-  className: 'report-header-report-meta',
-})`
-  margin: 0;
+    .report-header-meta {
+      margin: 0;
 
-  font-size: ${({ theme }) => theme.typography.body.small.size};
+      font-size: ${typography.body.small.size};
+      color: ${colors.text.muted};
+      text-align: right;
+    }
 
-  color: ${({ theme }) => theme.colors.text.muted};
+    .report-header-meta-row {
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: ${spacing.xxs};
+    }
 
-  text-align: right;
-`;
+    .report-header-meta-label {
+      font-weight: ${typography.fontWeights.medium};
+    }
 
-export const ReportMetaRow = styled.div.attrs({
-  className: 'report-header-report-meta-row',
-})`
-  display: grid;
-  grid-template-columns:
-    auto
-    auto;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+    .report-header-meta-value {
+      margin: 0;
+    }
 
-export const ReportMetaLabel = styled.dt.attrs({
-  className: 'report-header-report-meta-label',
-})`
-  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
-`;
+    .report-header-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.xxxs};
+    }
 
-export const ReportMetaValue = styled.dd.attrs({
-  className: 'report-header-report-meta-value',
-})`
-  margin: 0;
-`;
+    .report-header-title {
+      font-size: ${typography.headings.h2.size};
+      line-height: ${typography.headings.h2.lineHeight};
+    }
 
-export const ReportTitleGroup = styled.div.attrs({
-  className: 'report-header-report-title-group',
-})`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xxxs};
-`;
-
-export const ReportTitle = styled.h1.attrs({
-  className: 'report-header-report-title',
-})`
-  font-size: ${({ theme }) => theme.typography.headings.h2.size};
-
-  line-height: ${({ theme }) => theme.typography.headings.h2.lineHeight};
-`;
-
-export const ReportSubtitle = styled.p.attrs({
-  className: 'report-header-report-subtitle',
-})`
-  color: ${({ theme }) => theme.colors.text.secondary};
+    .report-header-subtitle {
+      color: ${colors.text.secondary};
+    }
+  `}
 `;
 
 export default StyledReportHeader;

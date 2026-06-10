@@ -1,17 +1,8 @@
 import React, { useEffect, useId } from 'react';
+import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 
-import {
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerOverlay,
-  DrawerPanel,
-  DrawerTitle,
-  DrawerTitleGroup,
-} from './drawer.styled';
+import StyledDrawer, { getDrawerWidth } from './drawer.styled';
 import type { DrawerProps } from './drawer.type';
 
 const CloseIcon = () => (
@@ -60,45 +51,52 @@ const Drawer = ({
   }
 
   return createPortal(
-    <DrawerOverlay
-      onMouseDown={event => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
-    >
-      <DrawerPanel
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={description ? descriptionId : undefined}
-        $size={size}
+    <StyledDrawer>
+      <div
+        className="drawer-overlay"
+        onMouseDown={event => {
+          if (event.target === event.currentTarget) {
+            onClose();
+          }
+        }}
       >
-        <DrawerHeader>
-          <DrawerTitleGroup>
-            <DrawerTitle id={titleId}>{title}</DrawerTitle>
+        <aside
+          className="drawer-panel"
+          style={{ '--drawer-width': getDrawerWidth(size) } as CSSProperties}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          aria-describedby={description ? descriptionId : undefined}
+        >
+          <header className="drawer-header">
+            <div className="drawer-title-group">
+              <h2 id={titleId} className="drawer-title">
+                {title}
+              </h2>
 
-            {description && (
-              <DrawerDescription id={descriptionId}>
-                {description}
-              </DrawerDescription>
-            )}
-          </DrawerTitleGroup>
+              {description && (
+                <p id={descriptionId} className="drawer-description">
+                  {description}
+                </p>
+              )}
+            </div>
 
-          <DrawerCloseButton
-            type="button"
-            aria-label={closeLabel}
-            onClick={onClose}
-          >
-            <CloseIcon />
-          </DrawerCloseButton>
-        </DrawerHeader>
+            <button
+              className="drawer-close-button"
+              type="button"
+              aria-label={closeLabel}
+              onClick={onClose}
+            >
+              <CloseIcon />
+            </button>
+          </header>
 
-        <DrawerBody>{children}</DrawerBody>
+          <div className="drawer-body">{children}</div>
 
-        {footer && <DrawerFooter>{footer}</DrawerFooter>}
-      </DrawerPanel>
-    </DrawerOverlay>,
+          {footer && <footer className="drawer-footer">{footer}</footer>}
+        </aside>
+      </div>
+    </StyledDrawer>,
     document.body,
   );
 };

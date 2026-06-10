@@ -3,33 +3,7 @@ import React from 'react';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
 
-import StyledReportCover, {
-  Brand,
-  BrandMeta,
-  BrandName,
-  BrandRow,
-  Confidential,
-  Eyebrow,
-  Finding,
-  FindingGrid,
-  FindingHeader,
-  FindingSection,
-  FindingsList,
-  FindingTitle,
-  Footer,
-  Logo,
-  MetaGrid,
-  MetaItem,
-  MetaLabel,
-  MetaValue,
-  RiskBox,
-  ScopeList,
-  Section,
-  SectionTitle,
-  Subtitle,
-  SummaryBox,
-  Title,
-} from './reportCover.styled';
+import StyledReportCover from './reportCover.styled';
 
 import type { ReportCoverProps } from './reportCover.type';
 
@@ -54,47 +28,51 @@ const ReportCover = ({
   confidential = true,
 }: ReportCoverProps) => (
   <StyledReportCover>
-    <BrandRow>
-      <Brand>
-        {companyLogo && <Logo>{companyLogo}</Logo>}
+    <div className="report-cover-brand-row">
+      <div className="report-cover-brand">
+        {companyLogo && <div className="report-cover-logo">{companyLogo}</div>}
 
         <div>
-          <BrandName>{companyName}</BrandName>
+          <strong className="report-cover-brand-name">{companyName}</strong>
 
-          <BrandMeta>{companyWebsite}</BrandMeta>
+          <span className="report-cover-brand-meta">{companyWebsite}</span>
 
-          {companyContactEmail && <BrandMeta>{companyContactEmail}</BrandMeta>}
+          {companyContactEmail && (
+            <span className="report-cover-brand-meta">
+              {companyContactEmail}
+            </span>
+          )}
         </div>
-      </Brand>
+      </div>
 
-      <Confidential>
+      <div className="report-cover-confidential">
         {confidential && <strong>● Confidential</strong>}
 
         <span>Report ID: {reportId}</span>
 
         <span>Issued: {issuedDate}</span>
-      </Confidential>
-    </BrandRow>
+      </div>
+    </div>
 
     <div>
-      <Eyebrow>Application Security Assessment</Eyebrow>
+      <p className="report-cover-eyebrow">Application Security Assessment</p>
 
-      <Title>
+      <h1 className="report-cover-title">
         {applicationName}
         <br />
         Security Assessment Report
-      </Title>
+      </h1>
 
-      <Subtitle>
+      <p className="report-cover-subtitle">
         Web Application Security Assessment
         {' — '}
         {environment}
         {' · '}
         Prepared for {companyName}
-      </Subtitle>
+      </p>
     </div>
 
-    <MetaGrid>
+    <dl className="report-cover-meta-grid">
       {[
         ['Application', applicationName],
         ['Environment', environment],
@@ -105,54 +83,56 @@ const ReportCover = ({
         ['Findings', `${findingsCount} confirmed`],
         ['Report ID', reportId],
       ].map(([label, value]) => (
-        <MetaItem key={label}>
-          <MetaLabel>{label}</MetaLabel>
+        <div key={label} className="report-cover-meta-item">
+          <dt className="report-cover-meta-label">{label}</dt>
 
-          <MetaValue>{value}</MetaValue>
-        </MetaItem>
+          <dd className="report-cover-meta-value">{value}</dd>
+        </div>
       ))}
-    </MetaGrid>
+    </dl>
 
-    <Section>
-      <SectionTitle>1. Executive Summary</SectionTitle>
+    <section className="report-cover-section">
+      <h2 className="report-cover-section-title">1. Executive Summary</h2>
 
-      <SummaryBox>
-        <RiskBox $risk={overallRisk}>
+      <div className="report-cover-summary-box">
+        <div className="report-cover-risk-box" data-risk={overallRisk}>
           <span>Overall Risk</span>
 
           <strong>{overallRisk.toUpperCase()}</strong>
-        </RiskBox>
+        </div>
 
         <p>{executiveSummary}</p>
-      </SummaryBox>
-    </Section>
+      </div>
+    </section>
 
     {scope.length > 0 && (
-      <Section>
-        <SectionTitle>2. Scope and Methodology</SectionTitle>
+      <section className="report-cover-section">
+        <h2 className="report-cover-section-title">2. Scope and Methodology</h2>
 
-        <ScopeList>
+        <ul className="report-cover-scope-list">
           {scope.map(item => (
             <li key={item}>{item}</li>
           ))}
-        </ScopeList>
-      </Section>
+        </ul>
+      </section>
     )}
 
     {findings.length > 0 && (
-      <Section>
-        <SectionTitle>3. Detailed Findings</SectionTitle>
+      <section className="report-cover-section">
+        <h2 className="report-cover-section-title">3. Detailed Findings</h2>
 
-        <FindingsList>
+        <div className="report-cover-findings-list">
           {findings.map((finding, index) => (
-            <Finding key={finding.id}>
-              <FindingHeader>
+            <article key={finding.id} className="report-cover-finding">
+              <div className="report-cover-finding-header">
                 <div>
-                  <FindingTitle>
+                  <h3 className="report-cover-finding-title">
                     {index + 1}. {finding.title}
-                  </FindingTitle>
+                  </h3>
 
-                  <BrandMeta>{finding.affectedAsset}</BrandMeta>
+                  <span className="report-cover-brand-meta">
+                    {finding.affectedAsset}
+                  </span>
                 </div>
 
                 <div>
@@ -170,42 +150,44 @@ const ReportCover = ({
                     size="small"
                   />
                 </div>
-              </FindingHeader>
+              </div>
 
-              <FindingGrid>
-                <FindingSection>
+              <div className="report-cover-finding-grid">
+                <div className="report-cover-finding-section">
                   <h4>Observation</h4>
 
                   <p>{finding.observation}</p>
-                </FindingSection>
+                </div>
 
-                <FindingSection>
+                <div className="report-cover-finding-section">
                   <h4>Risk</h4>
 
                   <p>{finding.risk}</p>
-                </FindingSection>
+                </div>
 
-                <FindingSection>
+                <div className="report-cover-finding-section">
                   <h4>Recommendation</h4>
 
                   <p>{finding.recommendation}</p>
-                </FindingSection>
+                </div>
 
                 {finding.evidence && (
-                  <FindingSection>
+                  <div className="report-cover-finding-section">
                     <h4>Evidence</h4>
 
                     <div>{finding.evidence}</div>
-                  </FindingSection>
+                  </div>
                 )}
-              </FindingGrid>
-            </Finding>
+              </div>
+            </article>
           ))}
-        </FindingsList>
-      </Section>
+        </div>
+      </section>
     )}
 
-    {footerText && <Footer>{footerText}</Footer>}
+    {footerText && (
+      <footer className="report-cover-footer">{footerText}</footer>
+    )}
   </StyledReportCover>
 );
 

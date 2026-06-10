@@ -1,14 +1,6 @@
 import React from 'react';
 
-import {
-  StatCardFooter,
-  StatCardIcon,
-  StatCardLabel,
-  StatCardTop,
-  StatCardValue,
-  StatTrendValue,
-  StyledStatCard,
-} from './statCard.styled';
+import StyledStatCard from './statCard.styled';
 
 import type { StatCardProps, StatTrendDirection } from './statCard.type';
 
@@ -86,31 +78,31 @@ const StatCard = ({
   trendValue,
   ...rest
 }: StatCardProps) => (
-  <StyledStatCard {...rest}>
-    <StatCardTop>
+  <StyledStatCard $iconTone={iconTone} $trendTone={trendTone} {...rest}>
+    <div className="stat-card-top">
       {icon && (
-        <StatCardIcon $tone={iconTone} aria-hidden="true">
+        <span className="stat-card-icon" aria-hidden="true">
           {icon}
-        </StatCardIcon>
+        </span>
       )}
 
-      <StatCardLabel>{label}</StatCardLabel>
-    </StatCardTop>
+      <span className="stat-card-label">{label}</span>
+    </div>
 
-    <StatCardValue>{value}</StatCardValue>
+    <strong className="stat-card-value">{value}</strong>
 
     {(trendValue || helperText) && (
-      <StatCardFooter>
+      <div className="stat-card-footer">
         {trendValue && (
-          <StatTrendValue $tone={trendTone}>
+          <span className="stat-card-stat-trend-value">
             <TrendIcon direction={trendDirection} />
 
             {trendValue}
-          </StatTrendValue>
+          </span>
         )}
 
         {helperText && <span>{helperText}</span>}
-      </StatCardFooter>
+      </div>
     )}
   </StyledStatCard>
 );

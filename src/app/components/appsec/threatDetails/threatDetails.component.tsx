@@ -4,21 +4,7 @@ import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
 import Badge from '~/app/components/ui/badge';
 
-import StyledThreatDetails, {
-  ThreatDetailsActions,
-  ThreatDetailsBadges,
-  ThreatDetailsHeader,
-  ThreatDetailsId,
-  ThreatDetailsMetadata,
-  ThreatDetailsSection,
-  ThreatDetailsSectionBody,
-  ThreatDetailsSectionTitle,
-  ThreatDetailsTitle,
-  ThreatDetailsTitleGroup,
-  ThreatMetadataItem,
-  ThreatMetadataLabel,
-  ThreatMetadataValue,
-} from './threatDetails.styled';
+import StyledThreatDetails from './threatDetails.styled';
 
 import type { ThreatDetailsProps } from './threatDetails.type';
 
@@ -39,71 +25,75 @@ const ThreatDetails = ({
   ...rest
 }: ThreatDetailsProps) => (
   <StyledThreatDetails {...rest}>
-    <ThreatDetailsHeader>
-      <ThreatDetailsTitleGroup>
-        <ThreatDetailsTitle>{title}</ThreatDetailsTitle>
+    <header className="threat-details-header">
+      <div className="threat-details-title-group">
+        <h2 className="threat-details-title">{title}</h2>
 
-        <ThreatDetailsId>{threatId}</ThreatDetailsId>
-      </ThreatDetailsTitleGroup>
+        <p className="threat-details-id">{threatId}</p>
+      </div>
 
-      <ThreatDetailsBadges>
+      <div className="threat-details-badges">
         <SeverityBadge severity={severity} />
 
         <StatusBadge status={status} />
 
         <Badge label={strideCategory} variant="neutral" size="small" />
-      </ThreatDetailsBadges>
-    </ThreatDetailsHeader>
+      </div>
+    </header>
 
-    <ThreatDetailsMetadata>
-      <ThreatMetadataItem>
-        <ThreatMetadataLabel>Component</ThreatMetadataLabel>
+    <dl className="threat-details-metadata">
+      <div className="threat-details-metadata-item">
+        <dt className="threat-details-metadata-label">Component</dt>
 
-        <ThreatMetadataValue>{affectedComponent ?? '—'}</ThreatMetadataValue>
-      </ThreatMetadataItem>
+        <dd className="threat-details-metadata-value">
+          {affectedComponent ?? '—'}
+        </dd>
+      </div>
 
-      <ThreatMetadataItem>
-        <ThreatMetadataLabel>Endpoint</ThreatMetadataLabel>
+      <div className="threat-details-metadata-item">
+        <dt className="threat-details-metadata-label">Endpoint</dt>
 
-        <ThreatMetadataValue>{affectedEndpoint ?? '—'}</ThreatMetadataValue>
-      </ThreatMetadataItem>
-    </ThreatDetailsMetadata>
+        <dd className="threat-details-metadata-value">
+          {affectedEndpoint ?? '—'}
+        </dd>
+      </div>
+    </dl>
 
-    <ThreatDetailsSection>
-      <ThreatDetailsSectionTitle>Observation</ThreatDetailsSectionTitle>
+    <section className="threat-details-section">
+      <h3 className="threat-details-section-title">Observation</h3>
 
-      <ThreatDetailsSectionBody>{observation}</ThreatDetailsSectionBody>
-    </ThreatDetailsSection>
+      <div className="threat-details-section-body">{observation}</div>
+    </section>
 
-    <ThreatDetailsSection>
-      <ThreatDetailsSectionTitle>Risk</ThreatDetailsSectionTitle>
+    <section className="threat-details-section">
+      <h3 className="threat-details-section-title">Risk</h3>
 
-      <ThreatDetailsSectionBody>{risk}</ThreatDetailsSectionBody>
-    </ThreatDetailsSection>
+      <div className="threat-details-section-body">{risk}</div>
+    </section>
 
-    <ThreatDetailsSection>
-      <ThreatDetailsSectionTitle>Recommendation</ThreatDetailsSectionTitle>
+    <section className="threat-details-section">
+      <h3 className="threat-details-section-title">Recommendation</h3>
 
-      <ThreatDetailsSectionBody>{recommendation}</ThreatDetailsSectionBody>
-    </ThreatDetailsSection>
+      <div className="threat-details-section-body">{recommendation}</div>
+    </section>
 
     {references && (
-      <ThreatDetailsSection>
-        <ThreatDetailsSectionTitle>References</ThreatDetailsSectionTitle>
+      <section className="threat-details-section">
+        <h3 className="threat-details-section-title">References</h3>
 
-        <ThreatDetailsSectionBody>{references}</ThreatDetailsSectionBody>
-      </ThreatDetailsSection>
+        <div className="threat-details-section-body">{references}</div>
+      </section>
     )}
 
     {evidence && (
-      <ThreatDetailsSection>
-        <ThreatDetailsSectionTitle>Evidence</ThreatDetailsSectionTitle>
+      <section className="threat-details-section">
+        <h3 className="threat-details-section-title">Evidence</h3>
 
-        <ThreatDetailsSectionBody>{evidence}</ThreatDetailsSectionBody>
-      </ThreatDetailsSection>
+        <div className="threat-details-section-body">{evidence}</div>
+      </section>
     )}
 
-    {actions && <ThreatDetailsActions>{actions}</ThreatDetailsActions>}
+    {actions && <div className="threat-details-actions">{actions}</div>}
   </StyledThreatDetails>
 );
 

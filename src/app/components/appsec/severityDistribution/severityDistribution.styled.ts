@@ -1,60 +1,68 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledSeverityDistribution = styled.div.attrs({
   className: 'severity-distribution',
 })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.s};
-`;
+  ${({ theme: { colors, radii, spacing, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.s};
 
-export const SeverityDistributionBar = styled.div.attrs({
-  className: 'severity-distribution-bar',
-})`
-  display: flex;
-  width: 100%;
-  height: 0.75rem;
-  overflow: hidden;
+    .severity-distribution-bar {
+      display: flex;
+      width: 100%;
+      height: 0.75rem;
+      overflow: hidden;
 
-  border-radius: ${({ theme }) => theme.radii.pill};
+      border-radius: ${radii.pill};
+      background-color: ${colors.neutral.grey100};
+    }
 
-  background-color: ${({ theme }) => theme.colors.neutral.grey100};
-`;
+    .severity-distribution-segment {
+      min-width: 0;
+    }
 
-export const SeveritySegment = styled.div.attrs({
-  className: 'severity-distribution-severity-segment',
-})<{
-  $severity: 'critical' | 'high' | 'medium' | 'low' | 'informational';
-  $width: number;
-}>`
-  width: ${({ $width }) => `${$width}%`};
+    .severity-distribution-segment--critical {
+      background-color: ${colors.severity.critical.solid};
+    }
 
-  min-width: ${({ $width }) => ($width > 0 ? '0.25rem' : '0')};
+    .severity-distribution-segment--high {
+      background-color: ${colors.severity.high.solid};
+    }
 
-  background-color: ${({ theme, $severity }) =>
-    theme.colors.severity[$severity].solid};
-`;
+    .severity-distribution-segment--medium {
+      background-color: ${colors.severity.medium.solid};
+    }
 
-export const SeverityLegend = styled.div.attrs({
-  className: 'severity-distribution-severity-legend',
-})`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+    .severity-distribution-segment--low {
+      background-color: ${colors.severity.low.solid};
+    }
 
-export const SeverityLegendItem = styled.div.attrs({
-  className: 'severity-distribution-severity-legend-item',
-})`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxxs};
-`;
+    .severity-distribution-segment--informational {
+      background-color: ${colors.severity.informational.solid};
+    }
 
-export const SeverityLegendValue = styled.strong.attrs({
-  className: 'severity-distribution-severity-legend-value',
-})`
-  color: ${({ theme }) => theme.colors.text.primary};
+    .severity-distribution-segment--empty {
+      min-width: 0;
+    }
+
+    .severity-distribution-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: ${spacing.xxs};
+    }
+
+    .severity-distribution-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: ${spacing.xxxs};
+    }
+
+    .severity-distribution-legend-value {
+      font-weight: ${typography.fontWeights.semibold};
+      color: ${colors.text.primary};
+    }
+  `}
 `;
 
 export default StyledSeverityDistribution;

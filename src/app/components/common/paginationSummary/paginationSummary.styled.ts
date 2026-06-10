@@ -1,15 +1,17 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledPaginationSummary = styled.p.attrs({
   className: 'pagination-summary',
 })`
-  margin: 0;
+  ${({ theme: { colors, typography } }) => css`
+    margin: 0;
 
-  font-size: ${({ theme }) => theme.typography.body.small.size};
+    font-size: ${typography.body.small.size};
 
-  line-height: ${({ theme }) => theme.typography.body.small.lineHeight};
+    line-height: ${typography.body.small.lineHeight};
 
-  color: ${({ theme }) => theme.colors.text.muted};
+    color: ${colors.text.muted};
+  `}
 `;
 
 export default StyledPaginationSummary;

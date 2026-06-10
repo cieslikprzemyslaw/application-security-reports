@@ -1,16 +1,6 @@
 import React from 'react';
 
-import {
-  DataTableBody,
-  DataTableCell,
-  DataTableEmptyCell,
-  DataTableHead,
-  DataTableHeaderCell,
-  DataTableRow,
-  DataTableSkeleton,
-  DataTableWrapper,
-  StyledDataTable,
-} from './dataTable.styled';
+import StyledDataTable from './dataTable.styled';
 import type { DataTableProps } from './dataTable.type';
 
 const DataTable = <T,>({
@@ -28,45 +18,60 @@ const DataTable = <T,>({
   });
 
   return (
-    <DataTableWrapper>
-      <StyledDataTable>
+    <StyledDataTable>
+      <table className="data-table">
         {caption && <caption className="visually-hidden">{caption}</caption>}
 
-        <DataTableHead>
+        <thead className="data-table-head">
           <tr>
             {columns.map(column => (
-              <DataTableHeaderCell
+              <th
                 key={column.id}
                 scope="col"
-                $width={column.width}
-                $align={column.align ?? 'left'}
+                className={[
+                  'data-table-header-cell',
+                  column.align ? `data-table-header-cell--${column.align}` : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                style={{ width: column.width ?? 'auto' }}
               >
                 {column.header}
-              </DataTableHeaderCell>
+              </th>
             ))}
           </tr>
-        </DataTableHead>
+        </thead>
 
-        <DataTableBody>
+        <tbody className="data-table-body">
           {isLoading &&
             loadingItems.map((_, rowIndex) => (
-              <DataTableRow key={`loading-${rowIndex}`} $isClickable={false}>
+              <tr key={`loading-${rowIndex}`} className="data-table-row">
                 {columns.map(column => (
-                  <DataTableCell
+                  <td
                     key={column.id}
-                    $align={column.align ?? 'left'}
+                    className={[
+                      'data-table-cell',
+                      column.align ? `data-table-cell--${column.align}` : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
                   >
-                    <DataTableSkeleton />
-                  </DataTableCell>
+                    <div className="data-table-skeleton" />
+                  </td>
                 ))}
-              </DataTableRow>
+              </tr>
             ))}
 
           {!isLoading &&
             rows.map(row => (
-              <DataTableRow
+              <tr
                 key={getRowKey(row)}
-                $isClickable={Boolean(onRowClick)}
+                className={[
+                  'data-table-row',
+                  onRowClick ? 'data-table-row--clickable' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
                 tabIndex={onRowClick ? 0 : undefined}
                 onClick={() => onRowClick?.(row)}
                 onKeyDown={event => {
@@ -80,26 +85,31 @@ const DataTable = <T,>({
                 }}
               >
                 {columns.map(column => (
-                  <DataTableCell
+                  <td
                     key={column.id}
-                    $align={column.align ?? 'left'}
+                    className={[
+                      'data-table-cell',
+                      column.align ? `data-table-cell--${column.align}` : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
                   >
                     {column.cell(row)}
-                  </DataTableCell>
+                  </td>
                 ))}
-              </DataTableRow>
+              </tr>
             ))}
 
           {!isLoading && rows.length === 0 && (
             <tr>
-              <DataTableEmptyCell colSpan={columns.length}>
+              <td className="data-table-empty-cell" colSpan={columns.length}>
                 {emptyState ?? 'No data available.'}
-              </DataTableEmptyCell>
+              </td>
             </tr>
           )}
-        </DataTableBody>
-      </StyledDataTable>
-    </DataTableWrapper>
+        </tbody>
+      </table>
+    </StyledDataTable>
   );
 };
 

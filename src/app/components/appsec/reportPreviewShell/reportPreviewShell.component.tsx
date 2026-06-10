@@ -2,18 +2,7 @@ import React, { useState } from 'react';
 
 import Button from '~/app/components/ui/button';
 
-import StyledReportPreviewShell, {
-  Actions,
-  AutoSaved,
-  Header,
-  Paper,
-  Stage,
-  Subtitle,
-  TabButton,
-  Tabs,
-  Title,
-  Toolbar,
-} from './reportPreviewShell.styled';
+import StyledReportPreviewShell from './reportPreviewShell.styled';
 
 import type { ReportPreviewShellProps } from './reportPreviewShell.type';
 
@@ -30,39 +19,53 @@ const ReportPreviewShell = ({
 
   return (
     <StyledReportPreviewShell>
-      <Header>
+      <header className="report-preview-shell-header">
         <div>
-          <Title>Report Preview</Title>
+          <h1 className="report-preview-shell-title">Report Preview</h1>
 
-          <Subtitle>
+          <p className="report-preview-shell-subtitle">
             {applicationName}
             {' · '}
             {assessmentCode}
-          </Subtitle>
+          </p>
         </div>
-      </Header>
+      </header>
 
-      <Toolbar>
-        <Tabs>
-          <TabButton
+      <div className="report-preview-shell-toolbar">
+        <div className="report-preview-shell-tabs">
+          <button
+            className={[
+              'report-preview-shell-tab-button',
+              activeTab === 'preview'
+                ? 'report-preview-shell-tab-button--active'
+                : 'report-preview-shell-tab-button--inactive',
+            ].join(' ')}
             type="button"
-            $active={activeTab === 'preview'}
             onClick={() => setActiveTab('preview')}
           >
             Preview
-          </TabButton>
+          </button>
 
-          <TabButton
+          <button
+            className={[
+              'report-preview-shell-tab-button',
+              activeTab === 'data'
+                ? 'report-preview-shell-tab-button--active'
+                : 'report-preview-shell-tab-button--inactive',
+            ].join(' ')}
             type="button"
-            $active={activeTab === 'data'}
             onClick={() => setActiveTab('data')}
           >
             Data
-          </TabButton>
-        </Tabs>
+          </button>
+        </div>
 
-        <Actions>
-          {autoSaved && <AutoSaved>✓ Auto-saved</AutoSaved>}
+        <div className="report-preview-shell-actions">
+          {autoSaved && (
+            <span className="report-preview-shell-auto-saved">
+              ✓ Auto-saved
+            </span>
+          )}
 
           {onPrint && (
             <Button title="Print" variant="secondary" onClick={onPrint} />
@@ -71,12 +74,14 @@ const ReportPreviewShell = ({
           {onDownloadPdf && (
             <Button title="Download PDF" onClick={onDownloadPdf} />
           )}
-        </Actions>
-      </Toolbar>
+        </div>
+      </div>
 
-      <Stage>
-        <Paper>{activeTab === 'preview' ? preview : dataView}</Paper>
-      </Stage>
+      <div className="report-preview-shell-stage">
+        <div className="report-preview-shell-paper">
+          {activeTab === 'preview' ? preview : dataView}
+        </div>
+      </div>
     </StyledReportPreviewShell>
   );
 };

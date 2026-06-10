@@ -1,6 +1,6 @@
 import React from 'react';
 
-import StyledSeverityBadge, { SeverityDot } from './severityBadge.styled';
+import StyledSeverityBadge from './severityBadge.styled';
 
 import type { Severity, SeverityBadgeProps } from './severityBadge.type';
 
@@ -27,7 +27,7 @@ const SeverityBadge = ({
 
   return (
     <StyledSeverityBadge $severity={safeSeverity} $size={size} {...rest}>
-      {showDot && <SeverityDot />}
+      {showDot && <span className="severity-badge-severity-dot" />}
 
       {safeSeverity}
     </StyledSeverityBadge>

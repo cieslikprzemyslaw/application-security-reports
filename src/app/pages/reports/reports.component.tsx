@@ -4,8 +4,9 @@ import ReportCover from '~/app/components/appsec/reportCover';
 import ReportPreviewShell from '~/app/components/appsec/reportPreviewShell';
 
 import type { ReportsProps } from './reports.type';
+import type { ReportCoverProps } from '~/app/components/appsec/reportCover';
 
-const fallbackCover = {
+const fallbackCover: ReportCoverProps = {
   companyName: 'Company name',
   companyWebsite: 'company.example',
   reportId: 'REPORT-DRAFT',
@@ -21,7 +22,7 @@ const fallbackCover = {
   scope: [],
   findings: [],
   confidential: true,
-} as const;
+};
 
 const Reports = ({
   cover = fallbackCover,

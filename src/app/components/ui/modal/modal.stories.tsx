@@ -17,6 +17,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Interactive: Story = {
+  args: {
+    isOpen: false,
+    title: 'Delete threat',
+    children: 'Are you sure you want to delete this threat?',
+    onClose: () => undefined,
+  },
   render: () => {
     const [isOpen, setIsOpen] = useState(false);
 

@@ -1,45 +1,37 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-export const StyledSectionHeader = styled.header.attrs({
-  className: 'section-header',
-})`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xxs};
+const StyledSectionHeader = styled.header`
+  ${({ theme: { colors, mq, spacing, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.xxs};
 
-  @media ${({ theme }) => theme.mq.min.tablet} {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
+    @media ${mq.min.tablet} {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-header-text {
+      min-width: 0;
+    }
+
+    .section-header-title {
+      font-size: ${typography.headings.h4.size};
+      line-height: ${typography.headings.h4.lineHeight};
+    }
+
+    .section-header-subtitle {
+      margin-top: ${spacing.xxxs};
+      color: ${colors.text.muted};
+    }
+
+    .section-header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: ${spacing.xxs};
+    }
+  `}
 `;
 
-export const SectionHeaderText = styled.div.attrs({
-  className: 'section-header-text',
-})`
-  min-width: 0;
-`;
-
-export const SectionHeaderTitle = styled.h2.attrs({
-  className: 'section-header-title',
-})`
-  font-size: ${({ theme }) => theme.typography.headings.h4.size};
-
-  line-height: ${({ theme }) => theme.typography.headings.h4.lineHeight};
-`;
-
-export const SectionHeaderSubtitle = styled.p.attrs({
-  className: 'section-header-subtitle',
-})`
-  margin-top: ${({ theme }) => theme.spacing.xxxs};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const SectionHeaderActions = styled.div.attrs({
-  className: 'section-header-actions',
-})`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+export default StyledSectionHeader;

@@ -4,15 +4,7 @@ import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
 import Button from '~/app/components/ui/button';
 
-import StyledThreatDrawer, {
-  Body,
-  CloseButton,
-  Header,
-  Meta,
-  Section,
-  SectionTitle,
-  Title,
-} from './threatDrawer.styled';
+import StyledThreatDrawer from './threatDrawer.styled';
 
 import type { ThreatDrawerProps } from './threatDrawer.type';
 
@@ -27,61 +19,62 @@ const ThreatDrawer = ({
   <StyledThreatDrawer $isOpen={isOpen} aria-hidden={!isOpen}>
     {threat && (
       <>
-        <Header>
+        <header className="threat-drawer-header">
           <div>
-            <Title>{threat.title}</Title>
+            <h2 className="threat-drawer-title">{threat.title}</h2>
 
-            <Meta>
+            <div className="threat-drawer-meta">
               <SeverityBadge severity={threat.severity} size="small" />
 
               <StatusBadge status={threat.status} size="small" />
-            </Meta>
+            </div>
           </div>
 
-          <CloseButton
+          <button
+            className="threat-drawer-close-button"
             type="button"
             aria-label="Close threat details"
             onClick={onClose}
           >
             ×
-          </CloseButton>
-        </Header>
+          </button>
+        </header>
 
-        <Body>
-          <Section>
-            <SectionTitle>Application</SectionTitle>
+        <div className="threat-drawer-body">
+          <section className="threat-drawer-section">
+            <h3 className="threat-drawer-section-title">Application</h3>
 
             <p>
               {threat.applicationName}
               {' · '}
               {threat.companyName}
             </p>
-          </Section>
+          </section>
 
-          <Section>
-            <SectionTitle>STRIDE</SectionTitle>
+          <section className="threat-drawer-section">
+            <h3 className="threat-drawer-section-title">STRIDE</h3>
 
             <p>{threat.strideCategory}</p>
-          </Section>
+          </section>
 
           {description && (
-            <Section>
-              <SectionTitle>Observation</SectionTitle>
+            <section className="threat-drawer-section">
+              <h3 className="threat-drawer-section-title">Observation</h3>
 
               {description}
-            </Section>
+            </section>
           )}
 
           {recommendation && (
-            <Section>
-              <SectionTitle>Recommendation</SectionTitle>
+            <section className="threat-drawer-section">
+              <h3 className="threat-drawer-section-title">Recommendation</h3>
 
               {recommendation}
-            </Section>
+            </section>
           )}
 
           {onEdit && <Button title="Edit threat" onClick={onEdit} />}
-        </Body>
+        </div>
       </>
     )}
   </StyledThreatDrawer>

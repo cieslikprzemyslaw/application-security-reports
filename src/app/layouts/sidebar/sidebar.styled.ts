@@ -1,180 +1,154 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledSidebar = styled.nav.attrs({ className: 'sidebar' })`
-  display: flex;
-  flex-direction: column;
+  ${({
+    theme: { colors, layoutSizes, radii, spacing, transitions, typography },
+  }) => css`
+    display: flex;
+    flex-direction: column;
 
-  width: 100%;
-  height: 100%;
-  min-height: 100vh;
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
 
-  color: ${({ theme }) => theme.colors.text.inverse};
+    color: ${colors.text.inverse};
+    background-color: ${colors.surface.inverse};
 
-  background-color: ${({ theme }) => theme.colors.surface.inverse};
-`;
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
 
-export const SidebarBrand = styled.div.attrs({ className: 'sidebar-brand' })`
-  display: flex;
-  align-items: center;
+      min-height: ${layoutSizes.topbarHeight};
+      padding: 0 ${spacing.s};
 
-  min-height: ${({ theme }) => theme.layoutSizes.topbarHeight};
+      border-bottom: 1px solid rgb(255 255 255 / 10%);
+    }
 
-  padding: 0 ${({ theme }) => theme.spacing.s};
+    .sidebar-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: ${spacing.s};
+    }
 
-  border-bottom: 1px solid rgb(255 255 255 / 10%);
-`;
+    .sidebar-group + .sidebar-group {
+      margin-top: ${spacing.m};
+    }
 
-export const SidebarBody = styled.div.attrs({ className: 'sidebar-body' })`
-  flex: 1;
-  overflow-y: auto;
+    .sidebar-group-label {
+      margin: 0 0 ${spacing.xxs};
+      padding: 0 ${spacing.xxs};
 
-  padding: ${({ theme }) => theme.spacing.s};
-`;
+      font-size: ${typography.label.small.size};
+      line-height: ${typography.label.small.lineHeight};
+      font-weight: ${typography.label.small.weight};
+      color: ${colors.neutral.grey400};
 
-export const SidebarGroup = styled.div.attrs({ className: 'sidebar-group' })`
-  & + & {
-    margin-top: ${({ theme }) => theme.spacing.m};
-  }
-`;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
 
-export const SidebarGroupLabel = styled.p.attrs({
-  className: 'sidebar-group-label',
-})`
-  margin: 0 0 ${({ theme }) => theme.spacing.xxs};
+    .sidebar-list {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.xxxs};
 
-  padding: 0 ${({ theme }) => theme.spacing.xxs};
+      margin: 0;
+      padding: 0;
 
-  font-size: ${({ theme }) => theme.typography.label.small.size};
+      list-style: none;
+    }
 
-  line-height: ${({ theme }) => theme.typography.label.small.lineHeight};
+    .sidebar-link,
+    .sidebar-button {
+      display: flex;
+      align-items: center;
+      gap: ${spacing.xxs};
 
-  font-weight: ${({ theme }) => theme.typography.label.small.weight};
+      min-height: 2.5rem;
+      padding: 0.5rem 0.75rem;
 
-  color: ${({ theme }) => theme.colors.neutral.grey400};
+      border: 0;
+      border-radius: ${radii.md};
 
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-`;
+      text-decoration: none;
+      text-align: left;
+      transition:
+        color ${transitions.fast},
+        background-color ${transitions.fast};
+    }
 
-export const SidebarList = styled.ul.attrs({ className: 'sidebar-list' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xxxs};
+    .sidebar-link {
+      color: ${colors.neutral.grey300};
+      background-color: transparent;
+    }
 
-  margin: 0;
-  padding: 0;
+    .sidebar-link--active {
+      color: ${colors.neutral.white};
+      background-color: rgb(255 255 255 / 10%);
+    }
 
-  list-style: none;
-`;
+    .sidebar-link:hover {
+      color: ${colors.neutral.white};
+      background-color: rgb(255 255 255 / 8%);
+    }
 
-export const SidebarItem = styled.li.attrs({ className: 'sidebar-item' })``;
+    .sidebar-button {
+      width: 100%;
+      color: ${colors.neutral.grey300};
+      background-color: transparent;
+    }
 
-export const SidebarLink = styled.a.attrs({ className: 'sidebar-link' })<{
-  $isActive: boolean;
-}>`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxs};
+    .sidebar-button--active {
+      color: ${colors.neutral.white};
+      background-color: rgb(255 255 255 / 10%);
+    }
 
-  min-height: 2.5rem;
-  padding: 0.5rem 0.75rem;
+    .sidebar-button:hover {
+      color: ${colors.neutral.white};
+      background-color: rgb(255 255 255 / 8%);
+    }
 
-  border-radius: ${({ theme }) => theme.radii.md};
+    .sidebar-link:focus-visible,
+    .sidebar-button:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: 2px;
+    }
 
-  color: ${({ theme, $isActive }) =>
-    $isActive ? theme.colors.neutral.white : theme.colors.neutral.grey300};
+    .sidebar-item {
+    }
 
-  background-color: ${({ $isActive }) =>
-    $isActive ? 'rgb(255 255 255 / 10%)' : 'transparent'};
+    .sidebar-item-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
 
-  text-decoration: none;
+      width: 1.25rem;
+      height: 1.25rem;
+      flex-shrink: 0;
+    }
 
-  transition:
-    color ${({ theme }) => theme.transitions.fast},
-    background-color ${({ theme }) => theme.transitions.fast};
+    .sidebar-item-icon svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
 
-  &:hover {
-    color: ${({ theme }) => theme.colors.neutral.white};
+    .sidebar-item-label {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
-    background-color: rgb(255 255 255 / 8%);
-  }
+    .sidebar-item-badge {
+      flex-shrink: 0;
+    }
 
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.border.focus};
-
-    outline-offset: 2px;
-  }
-`;
-
-export const SidebarButton = styled.button.attrs({
-  className: 'sidebar-button',
-})<{
-  $isActive: boolean;
-}>`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxs};
-
-  width: 100%;
-  min-height: 2.5rem;
-  padding: 0.5rem 0.75rem;
-
-  border: 0;
-  border-radius: ${({ theme }) => theme.radii.md};
-
-  color: ${({ theme, $isActive }) =>
-    $isActive ? theme.colors.neutral.white : theme.colors.neutral.grey300};
-
-  background-color: ${({ $isActive }) =>
-    $isActive ? 'rgb(255 255 255 / 10%)' : 'transparent'};
-
-  text-align: left;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.neutral.white};
-
-    background-color: rgb(255 255 255 / 8%);
-  }
-`;
-
-export const SidebarItemIcon = styled.span.attrs({
-  className: 'sidebar-item-icon',
-})`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 1.25rem;
-  height: 1.25rem;
-  flex-shrink: 0;
-
-  svg {
-    width: 1.125rem;
-    height: 1.125rem;
-  }
-`;
-
-export const SidebarItemLabel = styled.span.attrs({
-  className: 'sidebar-item-label',
-})`
-  min-width: 0;
-  flex: 1;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-export const SidebarItemBadge = styled.span.attrs({
-  className: 'sidebar-item-badge',
-})`
-  flex-shrink: 0;
-`;
-
-export const SidebarFooter = styled.div.attrs({ className: 'sidebar-footer' })`
-  padding: ${({ theme }) => theme.spacing.s};
-
-  border-top: 1px solid rgb(255 255 255 / 10%);
+    .sidebar-footer {
+      padding: ${spacing.s};
+      border-top: 1px solid rgb(255 255 255 / 10%);
+    }
+  `}
 `;
 
 export default StyledSidebar;

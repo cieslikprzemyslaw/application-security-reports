@@ -28,48 +28,56 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: args => {
     const [searchValue, setSearchValue] = useState('');
-    const [selectedSeverity, setSelectedSeverity] = useState('all');
-    const [selectedStatus, setSelectedStatus] = useState('all');
+    const [severityFilter, setSeverityFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [applicationFilter, setApplicationFilter] = useState('all');
 
     return (
       <Threats
         {...args}
         searchValue={searchValue}
-        selectedSeverity={selectedSeverity}
-        selectedStatus={selectedStatus}
+        severityFilter={severityFilter}
+        statusFilter={statusFilter}
+        applicationFilter={applicationFilter}
         onSearchChange={setSearchValue}
-        onSeverityChange={setSelectedSeverity}
-        onStatusChange={setSelectedStatus}
+        onSeverityFilterChange={setSeverityFilter}
+        onStatusFilterChange={setStatusFilter}
+        onApplicationFilterChange={setApplicationFilter}
       />
     );
   },
   args: {
     searchValue: '',
-    selectedSeverity: 'all',
-    selectedStatus: 'all',
     onSearchChange: () => undefined,
-    onSeverityChange: () => undefined,
-    onStatusChange: () => undefined,
+    severityFilter: 'all',
+    statusFilter: 'all',
+    applicationFilter: 'all',
+    isDrawerOpen: false,
+    onSeverityFilterChange: () => undefined,
+    onStatusFilterChange: () => undefined,
+    onApplicationFilterChange: () => undefined,
+    onThreatClick: () => undefined,
+    onDrawerClose: () => undefined,
     threats: [
       {
         id: 'thr_1',
         title: 'Missing Server-Side Authorization',
-        endpoint: '/api/v1/orders/{id}',
+        applicationName: 'Orders API',
+        companyName: 'Northstar Digital',
         strideCategory: 'Elevation of Privilege',
         severity: 'Critical',
         status: 'Open',
-        component: 'Orders API',
         updatedAt: '28 May 2026',
       },
       {
         id: 'thr_2',
         title: 'Verbose Error Messages',
-        endpoint: '/api/v1/orders',
+        applicationName: 'Orders API',
+        companyName: 'Northstar Digital',
         strideCategory: 'Information Disclosure',
         severity: 'Medium',
         status: 'Resolved',
-        component: 'Orders API',
-        updatedAt: '24 May 2026',
+        updatedAt: '28 May 2026',
       },
     ],
   },

@@ -1,23 +1,18 @@
 import React from 'react';
 
-import StyledSettingsPanel, {
-  Body,
-  Header,
-  Subtitle,
-  Title,
-} from './settingsPanel.styled';
+import StyledSettingsPanel from './settingsPanel.styled';
 
 import type { SettingsPanelProps } from './settingsPanel.type';
 
 const SettingsPanel = ({ title, subtitle, children }: SettingsPanelProps) => (
   <StyledSettingsPanel>
-    <Header>
-      <Title>{title}</Title>
+    <header className="settings-panel-header">
+      <h2 className="settings-panel-title">{title}</h2>
 
-      {subtitle && <Subtitle>{subtitle}</Subtitle>}
-    </Header>
+      {subtitle && <span className="settings-panel-subtitle">{subtitle}</span>}
+    </header>
 
-    <Body>{children}</Body>
+    <div className="settings-panel-body">{children}</div>
   </StyledSettingsPanel>
 );
 

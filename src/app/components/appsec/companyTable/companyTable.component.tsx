@@ -2,49 +2,50 @@ import React from 'react';
 
 import SeverityBadge from '~/app/components/ui/severityBadge';
 
-import StyledCompanyTable, {
-  CompanyApplications,
-  CompanyChevron,
-  CompanyIdentity,
-  CompanyInitials,
-  CompanyLink,
-  CompanyName,
-  CompanyTableCell,
-  CompanyTableElement,
-  CompanyTableHead,
-  CompanyTableHeaderCell,
-  CompanyTableRowStyled,
-  OpenThreatsBadge,
-} from './companyTable.styled';
+import StyledCompanyTable from './companyTable.styled';
 
 import type { CompanyTableProps } from './companyTable.type';
 
-const CompanyTable = ({ companies, onCompanyClick }: CompanyTableProps) => (
+const CompanyTable = ({
+  companies,
+  onCompanyClick,
+  emptyState,
+}: CompanyTableProps) => (
   <StyledCompanyTable>
-    <CompanyTableElement>
-      <CompanyTableHead>
+    <table className="company-table__table">
+      <thead className="company-table__head">
         <tr>
-          <CompanyTableHeaderCell>Company</CompanyTableHeaderCell>
-
-          <CompanyTableHeaderCell>Website</CompanyTableHeaderCell>
-
-          <CompanyTableHeaderCell>Primary contact</CompanyTableHeaderCell>
-
-          <CompanyTableHeaderCell>Assessments</CompanyTableHeaderCell>
-
-          <CompanyTableHeaderCell>Open threats</CompanyTableHeaderCell>
-
-          <CompanyTableHeaderCell>Risk posture</CompanyTableHeaderCell>
-
-          <CompanyTableHeaderCell aria-label="Open company" />
+          <th className="company-table__header-cell">Company</th>
+          <th className="company-table__header-cell">Website</th>
+          <th className="company-table__header-cell">Primary contact</th>
+          <th className="company-table__header-cell">Assessments</th>
+          <th className="company-table__header-cell">Open threats</th>
+          <th className="company-table__header-cell">Risk posture</th>
+          <th
+            className="company-table__header-cell"
+            aria-label="Open company"
+          />
         </tr>
-      </CompanyTableHead>
+      </thead>
 
       <tbody>
+        {companies.length === 0 && (
+          <tr>
+            <td className="company-table__empty-cell" colSpan={7}>
+              {emptyState ?? 'No companies found.'}
+            </td>
+          </tr>
+        )}
+
         {companies.map(company => (
-          <CompanyTableRowStyled
+          <tr
             key={company.id}
-            $isClickable={Boolean(onCompanyClick)}
+            className={[
+              'company-table__row',
+              onCompanyClick ? 'company-table__row--clickable' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             tabIndex={onCompanyClick ? 0 : undefined}
             onClick={() => onCompanyClick?.(company)}
             onKeyDown={event => {
@@ -57,27 +58,35 @@ const CompanyTable = ({ companies, onCompanyClick }: CompanyTableProps) => (
               }
             }}
           >
-            <CompanyTableCell>
-              <CompanyIdentity>
-                <CompanyInitials $tone={company.logoTone ?? 'blue'}>
+            <td className="company-table__cell">
+              <div className="company-table__identity">
+                <span
+                  className={[
+                    'company-table__initials',
+                    `company-table__initials--${company.logoTone ?? 'blue'}`,
+                  ].join(' ')}
+                >
                   {company.initials}
-                </CompanyInitials>
+                </span>
 
                 <div>
-                  <CompanyName>{company.name}</CompanyName>
+                  <strong className="company-table__name">
+                    {company.name}
+                  </strong>
 
-                  <CompanyApplications>
+                  <span className="company-table__applications">
                     {company.applicationCount}{' '}
                     {company.applicationCount === 1
                       ? 'application'
                       : 'applications'}
-                  </CompanyApplications>
+                  </span>
                 </div>
-              </CompanyIdentity>
-            </CompanyTableCell>
+              </div>
+            </td>
 
-            <CompanyTableCell>
-              <CompanyLink
+            <td className="company-table__cell">
+              <a
+                className="company-table__link"
                 href={
                   company.website.startsWith('http')
                     ? company.website
@@ -88,37 +97,51 @@ const CompanyTable = ({ companies, onCompanyClick }: CompanyTableProps) => (
                 onClick={event => event.stopPropagation()}
               >
                 {company.website.replace(/^https?:\/\//, '')}
-              </CompanyLink>
-            </CompanyTableCell>
+              </a>
+            </td>
 
-            <CompanyTableCell>
-              <CompanyLink
+            <td className="company-table__cell">
+              <a
+                className="company-table__link"
                 href={`mailto:${company.primaryContact}`}
                 onClick={event => event.stopPropagation()}
               >
                 {company.primaryContact}
-              </CompanyLink>
-            </CompanyTableCell>
+              </a>
+            </td>
 
-            <CompanyTableCell>{company.assessmentCount}</CompanyTableCell>
+            <td className="company-table__cell">{company.assessmentCount}</td>
 
-            <CompanyTableCell>
-              <OpenThreatsBadge $count={company.openThreats}>
+            <td className="company-table__cell">
+              <span
+                className={[
+                  'company-table__open-threats-badge',
+                  company.openThreats >= 15
+                    ? 'company-table__open-threats-badge--high'
+                    : company.openThreats >= 10
+                      ? 'company-table__open-threats-badge--medium'
+                      : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
                 {company.openThreats} open
-              </OpenThreatsBadge>
-            </CompanyTableCell>
+              </span>
+            </td>
 
-            <CompanyTableCell>
+            <td className="company-table__cell">
               <SeverityBadge severity={company.riskPosture} size="small" />
-            </CompanyTableCell>
+            </td>
 
-            <CompanyTableCell>
-              <CompanyChevron aria-hidden="true">›</CompanyChevron>
-            </CompanyTableCell>
-          </CompanyTableRowStyled>
+            <td className="company-table__cell">
+              <span className="company-table__chevron" aria-hidden="true">
+                ›
+              </span>
+            </td>
+          </tr>
         ))}
       </tbody>
-    </CompanyTableElement>
+    </table>
   </StyledCompanyTable>
 );
 

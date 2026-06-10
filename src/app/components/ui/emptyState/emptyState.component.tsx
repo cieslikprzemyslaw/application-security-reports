@@ -1,11 +1,6 @@
 import React from 'react';
 
-import StyledEmptyState, {
-  EmptyStateActions,
-  EmptyStateDescription,
-  EmptyStateIcon,
-  EmptyStateTitle,
-} from './emptyState.styled';
+import StyledEmptyState from './emptyState.styled';
 import type { EmptyStateProps } from './emptyState.type';
 
 const EmptyState = ({
@@ -16,20 +11,22 @@ const EmptyState = ({
   secondaryAction,
   ...rest
 }: EmptyStateProps) => (
-  <StyledEmptyState {...rest}>
-    {icon && <EmptyStateIcon aria-hidden="true">{icon}</EmptyStateIcon>}
-
-    <EmptyStateTitle>{title}</EmptyStateTitle>
-
-    {description && (
-      <EmptyStateDescription>{description}</EmptyStateDescription>
+  <StyledEmptyState className="empty-state" {...rest}>
+    {icon && (
+      <span className="empty-state-icon" aria-hidden="true">
+        {icon}
+      </span>
     )}
 
+    <h3 className="empty-state-title">{title}</h3>
+
+    {description && <p className="empty-state-description">{description}</p>}
+
     {(primaryAction || secondaryAction) && (
-      <EmptyStateActions>
+      <div className="empty-state-actions">
         {primaryAction}
         {secondaryAction}
-      </EmptyStateActions>
+      </div>
     )}
   </StyledEmptyState>
 );

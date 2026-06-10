@@ -1,10 +1,12 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledReportActions = styled.div.attrs({ className: 'report-actions' })`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxs};
+  ${({ theme: { spacing } }) => css`
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: ${spacing.xxs};
+  `}
 `;
 
 export default StyledReportActions;

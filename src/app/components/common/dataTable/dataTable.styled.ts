@@ -1,110 +1,109 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-export const DataTableWrapper = styled.div.attrs({
+const StyledDataTable = styled.div.attrs({
   className: 'data-table-wrapper',
 })`
-  width: 100%;
-  overflow-x: auto;
-`;
+  ${({ theme: { colors, radii, spacing, typography } }) => css`
+    width: 100%;
+    overflow-x: auto;
 
-export const StyledDataTable = styled.table.attrs({ className: 'data-table' })`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-export const DataTableHead = styled.thead.attrs({
-  className: 'data-table-head',
-})`
-  background-color: ${({ theme }) => theme.colors.neutral.grey50};
-`;
-
-export const DataTableHeaderCell = styled.th.attrs({
-  className: 'data-table-header-cell',
-})<{
-  $align: 'left' | 'center' | 'right';
-  $width?: string;
-}>`
-  width: ${({ $width }) => $width ?? 'auto'};
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.s};
-
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
-
-  font-size: ${({ theme }) => theme.typography.label.small.size};
-
-  line-height: ${({ theme }) => theme.typography.label.small.lineHeight};
-
-  font-weight: ${({ theme }) => theme.typography.fontWeights.semibold};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-
-  text-align: ${({ $align }) => $align};
-  white-space: nowrap;
-`;
-
-export const DataTableBody = styled.tbody.attrs({
-  className: 'data-table-body',
-})``;
-
-export const DataTableRow = styled.tr.attrs({ className: 'data-table-row' })<{
-  $isClickable: boolean;
-}>`
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
-
-  cursor: ${({ $isClickable }) => ($isClickable ? 'pointer' : 'default')};
-
-  &:hover {
-    background-color: ${({ theme, $isClickable }) =>
-      $isClickable ? theme.colors.neutral.grey50 : 'transparent'};
-  }
-
-  &:last-child {
-    border-bottom: 0;
-  }
-`;
-
-export const DataTableCell = styled.td.attrs({ className: 'data-table-cell' })<{
-  $align: 'left' | 'center' | 'right';
-}>`
-  padding: ${({ theme }) => theme.spacing.s};
-
-  color: ${({ theme }) => theme.colors.text.secondary};
-
-  text-align: ${({ $align }) => $align};
-  vertical-align: middle;
-`;
-
-export const DataTableEmptyCell = styled.td.attrs({
-  className: 'data-table-empty-cell',
-})`
-  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.m};
-`;
-
-export const DataTableSkeleton = styled.div.attrs({
-  className: 'data-table-skeleton',
-})`
-  width: 100%;
-  height: 1rem;
-
-  border-radius: ${({ theme }) => theme.radii.sm};
-
-  background: linear-gradient(
-    90deg,
-    ${({ theme }) => theme.colors.neutral.grey100},
-    ${({ theme }) => theme.colors.neutral.grey200},
-    ${({ theme }) => theme.colors.neutral.grey100}
-  );
-
-  background-size: 200% 100%;
-
-  animation: data-table-loading 1.4s ease infinite;
-
-  @keyframes data-table-loading {
-    from {
-      background-position: 200% 0;
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
     }
 
-    to {
-      background-position: -200% 0;
+    .data-table-head {
+      background-color: ${colors.neutral.grey50};
     }
-  }
+
+    .data-table-header-cell {
+      padding: ${spacing.xs} ${spacing.s};
+
+      border-bottom: 1px solid ${colors.border.subtle};
+
+      font-size: ${typography.label.small.size};
+      line-height: ${typography.label.small.lineHeight};
+      font-weight: ${typography.fontWeights.semibold};
+      color: ${colors.text.muted};
+
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .data-table-header-cell--center {
+      text-align: center;
+    }
+
+    .data-table-header-cell--right {
+      text-align: right;
+    }
+
+    .data-table-body {
+    }
+
+    .data-table-row {
+      border-bottom: 1px solid ${colors.border.subtle};
+      cursor: default;
+    }
+
+    .data-table-row--clickable {
+      cursor: pointer;
+    }
+
+    .data-table-row--clickable:hover {
+      background-color: ${colors.neutral.grey50};
+    }
+
+    .data-table-row:last-child {
+      border-bottom: 0;
+    }
+
+    .data-table-cell {
+      padding: ${spacing.s};
+
+      color: ${colors.text.secondary};
+      vertical-align: middle;
+    }
+
+    .data-table-cell--center {
+      text-align: center;
+    }
+
+    .data-table-cell--right {
+      text-align: right;
+    }
+
+    .data-table-empty-cell {
+      padding: ${spacing.xxl} ${spacing.m};
+    }
+
+    .data-table-skeleton {
+      width: 100%;
+      height: 1rem;
+
+      border-radius: ${radii.sm};
+
+      background: linear-gradient(
+        90deg,
+        ${colors.neutral.grey100},
+        ${colors.neutral.grey200},
+        ${colors.neutral.grey100}
+      );
+
+      background-size: 200% 100%;
+      animation: data-table-loading 1.4s ease infinite;
+    }
+
+    @keyframes data-table-loading {
+      from {
+        background-position: 200% 0;
+      }
+
+      to {
+        background-position: -200% 0;
+      }
+    }
+  `}
 `;
+
+export default StyledDataTable;

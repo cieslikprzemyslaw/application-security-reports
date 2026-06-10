@@ -5,19 +5,7 @@ import Button from '~/app/components/ui/button';
 import SearchInput from '~/app/components/ui/searchInput';
 import Select from '~/app/components/ui/select';
 
-import StyledAssessments, {
-  Card,
-  Empty,
-  Filters,
-  Header,
-  HeaderActions,
-  HeaderText,
-  SearchWrapper,
-  Subtitle,
-  Summary,
-  Title,
-  Toolbar,
-} from './assessments.styled';
+import StyledAssessments from './assessments.styled';
 
 import type { AssessmentsProps } from './assessments.type';
 
@@ -56,63 +44,45 @@ const Assessments = ({
 
   return (
     <StyledAssessments>
-      <Header>
-        <HeaderText>
-          <Title>Assessments</Title>
+      <header className="assessments-header">
+        <div className="assessments-header-text">
+          <h1 className="assessments-title">Assessments</h1>
 
-          <Subtitle>
+          <p className="assessments-subtitle">
             All application security assessments across your workspace.
-          </Subtitle>
-        </HeaderText>
+          </p>
+        </div>
 
-        <HeaderActions>
-          <SearchWrapper>
+        <div className="assessments-header-actions">
+          <div className="assessments-search-wrapper">
             <SearchInput
               value={searchValue}
               placeholder="Search assessments..."
               onChange={event => onSearchChange(event.target.value)}
               onClear={() => onSearchChange('')}
             />
-          </SearchWrapper>
+          </div>
 
           {onCreateAssessment && (
             <Button title="New Assessment" onClick={onCreateAssessment} />
           )}
-        </HeaderActions>
-      </Header>
+        </div>
+      </header>
 
-      <Card>
-        <Toolbar>
-          <Filters>
+      <section className="assessments-card">
+        <div className="assessments-toolbar">
+          <div className="assessments-filters">
             <Select
               label="Status"
               hideLabel
               value={statusFilter}
               options={[
-                {
-                  label: 'All Status',
-                  value: 'all',
-                },
-                {
-                  label: 'Draft',
-                  value: 'Draft',
-                },
-                {
-                  label: 'In Progress',
-                  value: 'In Progress',
-                },
-                {
-                  label: 'In Review',
-                  value: 'In Review',
-                },
-                {
-                  label: 'Completed',
-                  value: 'Completed',
-                },
-                {
-                  label: 'Retest Required',
-                  value: 'Retest Required',
-                },
+                { label: 'All Status', value: 'all' },
+                { label: 'Draft', value: 'Draft' },
+                { label: 'In Progress', value: 'In Progress' },
+                { label: 'In Review', value: 'In Review' },
+                { label: 'Completed', value: 'Completed' },
+                { label: 'Retest Required', value: 'Retest Required' },
               ]}
               onChange={event => onStatusFilterChange(event.target.value)}
             />
@@ -122,26 +92,11 @@ const Assessments = ({
               hideLabel
               value={riskFilter}
               options={[
-                {
-                  label: 'All Risk',
-                  value: 'all',
-                },
-                {
-                  label: 'Critical',
-                  value: 'Critical',
-                },
-                {
-                  label: 'High',
-                  value: 'High',
-                },
-                {
-                  label: 'Medium',
-                  value: 'Medium',
-                },
-                {
-                  label: 'Low',
-                  value: 'Low',
-                },
+                { label: 'All Risk', value: 'all' },
+                { label: 'Critical', value: 'Critical' },
+                { label: 'High', value: 'High' },
+                { label: 'Medium', value: 'Medium' },
+                { label: 'Low', value: 'Low' },
               ]}
               onChange={event => onRiskFilterChange(event.target.value)}
             />
@@ -151,29 +106,19 @@ const Assessments = ({
               hideLabel
               value={typeFilter}
               options={[
-                {
-                  label: 'All Types',
-                  value: 'all',
-                },
-                {
-                  label: 'Web App',
-                  value: 'Web App',
-                },
-                {
-                  label: 'API',
-                  value: 'API',
-                },
-                {
-                  label: 'Mobile',
-                  value: 'Mobile',
-                },
+                { label: 'All Types', value: 'all' },
+                { label: 'Web App', value: 'Web App' },
+                { label: 'API', value: 'API' },
+                { label: 'Mobile', value: 'Mobile' },
               ]}
               onChange={event => onTypeFilterChange(event.target.value)}
             />
-          </Filters>
+          </div>
 
-          <Summary>{filteredAssessments.length} assessments</Summary>
-        </Toolbar>
+          <span className="assessments-summary">
+            {filteredAssessments.length} assessments
+          </span>
+        </div>
 
         {filteredAssessments.length > 0 ? (
           <AssessmentTable
@@ -181,9 +126,9 @@ const Assessments = ({
             onAssessmentClick={onAssessmentClick}
           />
         ) : (
-          <Empty>No assessments found.</Empty>
+          <div className="assessments-empty">No assessments found.</div>
         )}
-      </Card>
+      </section>
     </StyledAssessments>
   );
 };

@@ -1,136 +1,104 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledThreatDetails = styled.article.attrs({
   className: 'threat-details',
 })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.m};
+  ${({ theme: { colors, mq, radii, spacing, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.m};
 
-  padding: ${({ theme }) => theme.spacing.m};
+    padding: ${spacing.m};
 
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
+    border: 1px solid ${colors.border.subtle};
+    border-radius: ${radii.lg};
+    background-color: ${colors.surface.card};
 
-  border-radius: ${({ theme }) => theme.radii.lg};
+    .threat-details-header {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.s};
 
-  background-color: ${({ theme }) => theme.colors.surface.card};
-`;
+      @media ${mq.min.tablet} {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+    }
 
-export const ThreatDetailsHeader = styled.header.attrs({
-  className: 'threat-details-header',
-})`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.s};
+    .threat-details-title-group {
+      min-width: 0;
+    }
 
-  @media ${({ theme }) => theme.mq.min.tablet} {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-`;
+    .threat-details-title {
+      font-size: ${typography.headings.h4.size};
+      line-height: ${typography.headings.h4.lineHeight};
+    }
 
-export const ThreatDetailsTitleGroup = styled.div.attrs({
-  className: 'threat-details-title-group',
-})`
-  min-width: 0;
-`;
+    .threat-details-id {
+      margin-top: 0.125rem;
 
-export const ThreatDetailsTitle = styled.h2.attrs({
-  className: 'threat-details-title',
-})`
-  font-size: ${({ theme }) => theme.typography.headings.h4.size};
+      font-family: ${typography.fontFamilies.mono};
+      font-size: ${typography.mono.small.size};
+      color: ${colors.text.muted};
+    }
 
-  line-height: ${({ theme }) => theme.typography.headings.h4.lineHeight};
-`;
+    .threat-details-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: ${spacing.xxs};
+    }
 
-export const ThreatDetailsId = styled.p.attrs({
-  className: 'threat-details-id',
-})`
-  margin-top: 0.125rem;
+    .threat-details-metadata {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+      gap: ${spacing.s};
 
-  font-family: ${({ theme }) => theme.typography.fontFamilies.mono};
+      margin: 0;
+      padding: ${spacing.s};
 
-  font-size: ${({ theme }) => theme.typography.mono.small.size};
+      border-radius: ${radii.md};
+      background-color: ${colors.surface.subtle};
+    }
 
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
+    .threat-details-metadata-item {
+      min-width: 0;
+    }
 
-export const ThreatDetailsBadges = styled.div.attrs({
-  className: 'threat-details-badges',
-})`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+    .threat-details-metadata-label {
+      margin-bottom: 0.125rem;
 
-export const ThreatDetailsMetadata = styled.dl.attrs({
-  className: 'threat-details-metadata',
-})`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: ${({ theme }) => theme.spacing.s};
+      font-size: ${typography.body.small.size};
+      color: ${colors.text.muted};
+    }
 
-  margin: 0;
-  padding: ${({ theme }) => theme.spacing.s};
+    .threat-details-metadata-value {
+      margin: 0;
+      color: ${colors.text.primary};
+    }
 
-  border-radius: ${({ theme }) => theme.radii.md};
+    .threat-details-section {
+      padding-top: ${spacing.s};
+      border-top: 1px solid ${colors.border.subtle};
+    }
 
-  background-color: ${({ theme }) => theme.colors.surface.subtle};
-`;
+    .threat-details-section-title {
+      margin-bottom: ${spacing.xxs};
 
-export const ThreatMetadataItem = styled.div.attrs({
-  className: 'threat-details-threat-metadata-item',
-})``;
+      font-size: ${typography.headings.h6.size};
+      line-height: ${typography.headings.h6.lineHeight};
+    }
 
-export const ThreatMetadataLabel = styled.dt.attrs({
-  className: 'threat-details-threat-metadata-label',
-})`
-  margin-bottom: 0.125rem;
+    .threat-details-section-body {
+      color: ${colors.text.secondary};
+    }
 
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const ThreatMetadataValue = styled.dd.attrs({
-  className: 'threat-details-threat-metadata-value',
-})`
-  margin: 0;
-
-  color: ${({ theme }) => theme.colors.text.primary};
-`;
-
-export const ThreatDetailsSection = styled.section.attrs({
-  className: 'threat-details-section',
-})`
-  padding-top: ${({ theme }) => theme.spacing.s};
-
-  border-top: 1px solid ${({ theme }) => theme.colors.border.subtle};
-`;
-
-export const ThreatDetailsSectionTitle = styled.h3.attrs({
-  className: 'threat-details-section-title',
-})`
-  margin-bottom: ${({ theme }) => theme.spacing.xxs};
-
-  font-size: ${({ theme }) => theme.typography.headings.h6.size};
-
-  line-height: ${({ theme }) => theme.typography.headings.h6.lineHeight};
-`;
-
-export const ThreatDetailsSectionBody = styled.div.attrs({
-  className: 'threat-details-section-body',
-})`
-  color: ${({ theme }) => theme.colors.text.secondary};
-`;
-
-export const ThreatDetailsActions = styled.div.attrs({
-  className: 'threat-details-actions',
-})`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xxs};
+    .threat-details-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: ${spacing.xxs};
+    }
+  `}
 `;
 
 export default StyledThreatDetails;

@@ -1,12 +1,6 @@
 import React, { useId } from 'react';
 
-import {
-  StyledTextarea,
-  TextareaDescription,
-  TextareaError,
-  TextareaField,
-  TextareaLabel,
-} from './textarea.styled';
+import StyledTextarea from './textarea.styled';
 import type { TextareaProps } from './textarea.type';
 
 const Textarea = ({
@@ -30,33 +24,45 @@ const Textarea = ({
     [descriptionId, errorId].filter(Boolean).join(' ') || undefined;
 
   return (
-    <TextareaField>
-      <TextareaLabel
+    <StyledTextarea>
+      <label
+        className={
+          hideLabel ? 'textarea-label visually-hidden' : 'textarea-label'
+        }
         htmlFor={textareaId}
-        className={hideLabel ? 'visually-hidden' : undefined}
       >
         {label}
         {required && ' *'}
-      </TextareaLabel>
+      </label>
 
       {description && (
-        <TextareaDescription id={descriptionId}>
+        <p className="textarea-description" id={descriptionId}>
           {description}
-        </TextareaDescription>
+        </p>
       )}
 
-      <StyledTextarea
+      <textarea
+        className={[
+          'textarea-control',
+          error ? 'textarea-control--has-error' : '',
+          resize === 'none' ? 'textarea-control--resize-none' : '',
+          resize === 'both' ? 'textarea-control--resize-both' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
         id={textareaId}
         required={required}
         aria-invalid={Boolean(error)}
         aria-describedby={describedBy}
-        $hasError={Boolean(error)}
-        $resize={resize}
         {...rest}
       />
 
-      {error && <TextareaError id={errorId}>{error}</TextareaError>}
-    </TextareaField>
+      {error && (
+        <p className="textarea-error" id={errorId}>
+          {error}
+        </p>
+      )}
+    </StyledTextarea>
   );
 };
 

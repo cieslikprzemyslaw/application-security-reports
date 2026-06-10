@@ -3,37 +3,37 @@ import styled, { css } from 'styled-components';
 import type { BadgeSize, BadgeStyledProps, BadgeVariant } from './badge.type';
 
 const getVariantStyles = (variant: BadgeVariant) => css`
-  ${({ theme }) => {
+  ${({ theme: { colors } }) => {
     const variants = {
       neutral: {
-        background: theme.colors.neutral.grey100,
-        text: theme.colors.neutral.grey700,
-        dot: theme.colors.neutral.grey500,
+        background: colors.neutral.grey100,
+        text: colors.neutral.grey700,
+        dot: colors.neutral.grey500,
       },
       brand: {
-        background: theme.colors.brand.wash,
-        text: theme.colors.brand.primary,
-        dot: theme.colors.brand.primary,
+        background: colors.brand.wash,
+        text: colors.brand.primary,
+        dot: colors.brand.primary,
       },
       success: {
-        background: theme.colors.severity.low.background,
-        text: theme.colors.severity.low.text,
-        dot: theme.colors.severity.low.solid,
+        background: colors.severity.low.background,
+        text: colors.severity.low.text,
+        dot: colors.severity.low.solid,
       },
       warning: {
-        background: theme.colors.severity.medium.background,
-        text: theme.colors.severity.medium.text,
-        dot: theme.colors.severity.medium.solid,
+        background: colors.severity.medium.background,
+        text: colors.severity.medium.text,
+        dot: colors.severity.medium.solid,
       },
       error: {
-        background: theme.colors.severity.critical.background,
-        text: theme.colors.severity.critical.text,
-        dot: theme.colors.severity.critical.solid,
+        background: colors.severity.critical.background,
+        text: colors.severity.critical.text,
+        dot: colors.severity.critical.solid,
       },
       info: {
-        background: theme.colors.severity.informational.background,
-        text: theme.colors.severity.informational.text,
-        dot: theme.colors.severity.informational.solid,
+        background: colors.severity.informational.background,
+        text: colors.severity.informational.text,
+        dot: colors.severity.informational.solid,
       },
     } as const;
 
@@ -43,7 +43,7 @@ const getVariantStyles = (variant: BadgeVariant) => css`
       color: ${selectedVariant.text};
       background-color: ${selectedVariant.background};
 
-      &::before {
+      .badge-dot {
         background-color: ${selectedVariant.dot};
       }
     `;
@@ -71,38 +71,37 @@ const getSizeStyles = (size: BadgeSize) => {
 };
 
 const StyledBadge = styled.span.attrs({ className: 'badge' })<BadgeStyledProps>`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxxs};
+  ${({ theme: { radii, spacing, typography }, $variant, $size }) => css`
+    display: inline-flex;
+    align-items: center;
+    gap: ${spacing.xxxs};
 
-  width: fit-content;
-  border-radius: ${({ theme }) => theme.radii.pill};
+    width: fit-content;
+    border-radius: ${radii.pill};
 
-  font-family: ${({ theme }) => theme.typography.fontFamilies.body};
+    font-family: ${typography.fontFamilies.body};
+    font-weight: ${typography.fontWeights.medium};
+    white-space: nowrap;
 
-  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
+    ${getVariantStyles($variant)}
+    ${getSizeStyles($size)}
 
-  white-space: nowrap;
+    svg {
+      width: 0.875rem;
+      height: 0.875rem;
+      flex-shrink: 0;
+    }
 
-  ${({ $variant }) => getVariantStyles($variant)}
+    .badge-dot {
+      width: 0.375rem;
+      height: 0.375rem;
+      flex-shrink: 0;
 
-  ${({ $size }) => getSizeStyles($size)}
+      border-radius: ${radii.circle};
 
-  svg {
-    width: 0.875rem;
-    height: 0.875rem;
-    flex-shrink: 0;
-  }
-`;
-
-export const BadgeDot = styled.span.attrs({ className: 'badge-dot' })`
-  width: 0.375rem;
-  height: 0.375rem;
-  flex-shrink: 0;
-
-  border-radius: ${({ theme }) => theme.radii.circle};
-
-  background-color: currentColor;
+      background-color: currentColor;
+    }
+  `}
 `;
 
 export default StyledBadge;

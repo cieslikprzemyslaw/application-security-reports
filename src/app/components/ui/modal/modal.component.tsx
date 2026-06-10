@@ -1,17 +1,7 @@
 import React, { useEffect, useId } from 'react';
 import { createPortal } from 'react-dom';
 
-import {
-  ModalBody,
-  ModalCloseButton,
-  ModalDescription,
-  ModalDialog,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  ModalTitle,
-  ModalTitleGroup,
-} from './modal.styled';
+import StyledModal, { getModalWidth } from './modal.styled';
 import type { ModalProps } from './modal.type';
 
 const CloseIcon = () => (
@@ -60,45 +50,52 @@ const Modal = ({
   }
 
   return createPortal(
-    <ModalOverlay
-      onMouseDown={event => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
-    >
-      <ModalDialog
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={description ? descriptionId : undefined}
-        $size={size}
+    <StyledModal>
+      <div
+        className="modal-overlay"
+        onMouseDown={event => {
+          if (event.target === event.currentTarget) {
+            onClose();
+          }
+        }}
       >
-        <ModalHeader>
-          <ModalTitleGroup>
-            <ModalTitle id={titleId}>{title}</ModalTitle>
+        <div
+          className="modal-dialog"
+          style={{ width: `min(100%, ${getModalWidth(size)})` }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          aria-describedby={description ? descriptionId : undefined}
+        >
+          <header className="modal-header">
+            <div className="modal-title-group">
+              <h2 id={titleId} className="modal-title">
+                {title}
+              </h2>
 
-            {description && (
-              <ModalDescription id={descriptionId}>
-                {description}
-              </ModalDescription>
-            )}
-          </ModalTitleGroup>
+              {description && (
+                <p id={descriptionId} className="modal-description">
+                  {description}
+                </p>
+              )}
+            </div>
 
-          <ModalCloseButton
-            type="button"
-            aria-label={closeLabel}
-            onClick={onClose}
-          >
-            <CloseIcon />
-          </ModalCloseButton>
-        </ModalHeader>
+            <button
+              className="modal-close-button"
+              type="button"
+              aria-label={closeLabel}
+              onClick={onClose}
+            >
+              <CloseIcon />
+            </button>
+          </header>
 
-        <ModalBody>{children}</ModalBody>
+          <div className="modal-body">{children}</div>
 
-        {footer && <ModalFooter>{footer}</ModalFooter>}
-      </ModalDialog>
-    </ModalOverlay>,
+          {footer && <footer className="modal-footer">{footer}</footer>}
+        </div>
+      </div>
+    </StyledModal>,
     document.body,
   );
 };

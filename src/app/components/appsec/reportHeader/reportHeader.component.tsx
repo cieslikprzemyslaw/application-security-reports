@@ -1,18 +1,6 @@
 import React from 'react';
 
-import StyledReportHeader, {
-  ReportBrandRow,
-  ReportCompany,
-  ReportCompanyName,
-  ReportLogo,
-  ReportMeta,
-  ReportMetaLabel,
-  ReportMetaRow,
-  ReportMetaValue,
-  ReportSubtitle,
-  ReportTitle,
-  ReportTitleGroup,
-} from './reportHeader.styled';
+import StyledReportHeader from './reportHeader.styled';
 
 import type { ReportHeaderProps } from './reportHeader.type';
 
@@ -28,41 +16,41 @@ const ReportHeader = ({
   ...rest
 }: ReportHeaderProps) => (
   <StyledReportHeader {...rest}>
-    <ReportBrandRow>
-      <ReportCompany>
-        {companyLogo && <ReportLogo>{companyLogo}</ReportLogo>}
+    <div className="report-header-brand-row">
+      <div className="report-header-company">
+        {companyLogo && <div className="report-header-logo">{companyLogo}</div>}
 
-        <ReportCompanyName>{companyName}</ReportCompanyName>
-      </ReportCompany>
+        <strong className="report-header-company-name">{companyName}</strong>
+      </div>
 
-      <ReportMeta>
-        <ReportMetaRow>
-          <ReportMetaLabel>Assessment ID</ReportMetaLabel>
+      <dl className="report-header-meta">
+        <div className="report-header-meta-row">
+          <dt className="report-header-meta-label">Assessment ID</dt>
 
-          <ReportMetaValue>{assessmentId}</ReportMetaValue>
-        </ReportMetaRow>
+          <dd className="report-header-meta-value">{assessmentId}</dd>
+        </div>
 
-        <ReportMetaRow>
-          <ReportMetaLabel>Date range</ReportMetaLabel>
+        <div className="report-header-meta-row">
+          <dt className="report-header-meta-label">Date range</dt>
 
-          <ReportMetaValue>{dateRange}</ReportMetaValue>
-        </ReportMetaRow>
+          <dd className="report-header-meta-value">{dateRange}</dd>
+        </div>
 
-        <ReportMetaRow>
-          <ReportMetaLabel>Tester</ReportMetaLabel>
+        <div className="report-header-meta-row">
+          <dt className="report-header-meta-label">Tester</dt>
 
-          <ReportMetaValue>{testerName}</ReportMetaValue>
-        </ReportMetaRow>
-      </ReportMeta>
-    </ReportBrandRow>
+          <dd className="report-header-meta-value">{testerName}</dd>
+        </div>
+      </dl>
+    </div>
 
-    <ReportTitleGroup>
-      <ReportTitle>{reportTitle}</ReportTitle>
+    <div className="report-header-title-group">
+      <h1 className="report-header-title">{reportTitle}</h1>
 
-      <ReportSubtitle>
+      <p className="report-header-subtitle">
         {applicationName} ({environment})
-      </ReportSubtitle>
-    </ReportTitleGroup>
+      </p>
+    </div>
   </StyledReportHeader>
 );
 

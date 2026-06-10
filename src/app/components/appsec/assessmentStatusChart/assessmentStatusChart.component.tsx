@@ -1,17 +1,7 @@
 import React from 'react';
 import { useTheme } from 'styled-components';
 
-import StyledAssessmentStatusChart, {
-  DonutChart,
-  DonutChartCentre,
-  DonutChartLabel,
-  DonutChartValue,
-  StatusLegend,
-  StatusLegendDot,
-  StatusLegendItem,
-  StatusLegendLabel,
-  StatusLegendValue,
-} from './assessmentStatusChart.styled';
+import StyledAssessmentStatusChart from './assessmentStatusChart.styled';
 
 import type {
   AssessmentStatusChartProps,
@@ -23,15 +13,15 @@ const AssessmentStatusChart = ({
   centreLabel = 'assessments',
   ...rest
 }: AssessmentStatusChartProps) => {
-  const theme = useTheme();
+  const { colors } = useTheme();
 
   const total = items.reduce((sum, item) => sum + item.count, 0);
 
   const toneColours: Record<AssessmentStatusTone, string> = {
-    completed: theme.colors.severity.low.solid,
-    inProgress: theme.colors.brand.primary,
-    inReview: theme.colors.severity.medium.solid,
-    draft: theme.colors.neutral.grey400,
+    completed: colors.severity.low.solid,
+    inProgress: colors.brand.primary,
+    inReview: colors.severity.medium.solid,
+    draft: colors.neutral.grey400,
   };
 
   let currentPercentage = 0;
@@ -48,33 +38,46 @@ const AssessmentStatusChart = ({
   const background =
     segments.length > 0
       ? segments.join(', ')
-      : `${theme.colors.neutral.grey200} 0% 100%`;
+      : `${colors.neutral.grey200} 0% 100%`;
 
   return (
-    <StyledAssessmentStatusChart {...rest}>
-      <DonutChart
-        $background={background}
+    <StyledAssessmentStatusChart {...rest} $background={background}>
+      <div
+        className="assessment-status-chart__donut"
         role="img"
         aria-label={`${total} ${centreLabel}`}
       >
-        <DonutChartCentre>
-          <DonutChartValue>{total}</DonutChartValue>
+        <div className="assessment-status-chart__donut-centre">
+          <strong className="assessment-status-chart__donut-value">
+            {total}
+          </strong>
 
-          <DonutChartLabel>{centreLabel}</DonutChartLabel>
-        </DonutChartCentre>
-      </DonutChart>
+          <span className="assessment-status-chart__donut-label">
+            {centreLabel}
+          </span>
+        </div>
+      </div>
 
-      <StatusLegend>
+      <ul className="assessment-status-chart__legend">
         {items.map(item => (
-          <StatusLegendItem key={item.label}>
-            <StatusLegendDot $tone={item.tone} />
+          <li key={item.label} className="assessment-status-chart__legend-item">
+            <span
+              className={[
+                'assessment-status-chart__legend-dot',
+                `assessment-status-chart__legend-dot--${item.tone}`,
+              ].join(' ')}
+            />
 
-            <StatusLegendLabel>{item.label}</StatusLegendLabel>
+            <span className="assessment-status-chart__legend-label">
+              {item.label}
+            </span>
 
-            <StatusLegendValue>{item.count}</StatusLegendValue>
-          </StatusLegendItem>
+            <strong className="assessment-status-chart__legend-value">
+              {item.count}
+            </strong>
+          </li>
         ))}
-      </StatusLegend>
+      </ul>
     </StyledAssessmentStatusChart>
   );
 };

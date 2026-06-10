@@ -1,37 +1,34 @@
 import React from 'react';
 
-import {
-  ActivityFeedContent,
-  ActivityFeedEmpty,
-  ActivityFeedIcon,
-  ActivityFeedItem,
-  ActivityFeedMeta,
-  ActivityFeedTitle,
-  StyledActivityFeed,
-} from './activityFeed.styled';
+import StyledActivityFeed from './activityFeed.styled';
 import type { ActivityFeedProps } from './activityFeed.type';
 
 const ActivityFeed = ({ items, emptyState, ...rest }: ActivityFeedProps) => (
   <StyledActivityFeed {...rest}>
     {items.length === 0 ? (
-      <ActivityFeedEmpty>
+      <div className="activity-feed-empty">
         {emptyState ?? 'No recent activity.'}
-      </ActivityFeedEmpty>
+      </div>
     ) : (
       items.map(item => (
-        <ActivityFeedItem key={item.id}>
+        <div key={item.id} className="activity-feed-item">
           {item.icon && (
-            <ActivityFeedIcon $tone={item.tone ?? 'brand'} aria-hidden="true">
+            <span
+              className={`activity-feed-icon activity-feed-icon--${
+                item.tone ?? 'brand'
+              }`}
+              aria-hidden="true"
+            >
               {item.icon}
-            </ActivityFeedIcon>
+            </span>
           )}
 
-          <ActivityFeedContent>
-            <ActivityFeedTitle>{item.title}</ActivityFeedTitle>
+          <div className="activity-feed-content">
+            <div className="activity-feed-title">{item.title}</div>
 
-            {item.meta && <ActivityFeedMeta>{item.meta}</ActivityFeedMeta>}
-          </ActivityFeedContent>
-        </ActivityFeedItem>
+            {item.meta && <div className="activity-feed-meta">{item.meta}</div>}
+          </div>
+        </div>
       ))
     )}
   </StyledActivityFeed>

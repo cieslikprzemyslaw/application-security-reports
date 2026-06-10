@@ -1,141 +1,111 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledAssessmentSummary = styled.section.attrs({
   className: 'assessment-summary',
 })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.m};
+  ${({ theme: { colors, mq, radii, shadows, spacing, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.m};
 
-  padding: ${({ theme }) => theme.spacing.m};
+    padding: ${spacing.m};
 
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
+    border: 1px solid ${colors.border.subtle};
+    border-radius: ${radii.lg};
+    background-color: ${colors.surface.card};
+    box-shadow: ${shadows.xs};
 
-  border-radius: ${({ theme }) => theme.radii.lg};
+    .assessment-summary-header {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.s};
 
-  background-color: ${({ theme }) => theme.colors.surface.card};
+      @media ${mq.min.tablet} {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+    }
 
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-`;
+    .assessment-summary-identity {
+      display: flex;
+      align-items: center;
+      gap: ${spacing.s};
+    }
 
-export const AssessmentSummaryHeader = styled.div.attrs({
-  className: 'assessment-summary-header',
-})`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.s};
+    .assessment-summary-company-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
 
-  @media ${({ theme }) => theme.mq.min.tablet} {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-`;
+      width: 3rem;
+      height: 3rem;
+      overflow: hidden;
 
-export const AssessmentIdentity = styled.div.attrs({
-  className: 'assessment-summary-assessment-identity',
-})`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.s};
-`;
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.md};
+      background-color: ${colors.surface.subtle};
+    }
 
-export const CompanyLogo = styled.div.attrs({
-  className: 'assessment-summary-company-logo',
-})`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+    .assessment-summary-title-group {
+      min-width: 0;
+    }
 
-  width: 3rem;
-  height: 3rem;
-  overflow: hidden;
+    .assessment-summary-company-name {
+      color: ${colors.text.muted};
+    }
 
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
+    .assessment-summary-application-name {
+      font-size: ${typography.headings.h4.size};
+      line-height: ${typography.headings.h4.lineHeight};
+    }
 
-  border-radius: ${({ theme }) => theme.radii.md};
+    .assessment-summary-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: ${spacing.xxs};
+    }
 
-  background-color: ${({ theme }) => theme.colors.surface.subtle};
-`;
+    .assessment-summary-metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+      gap: ${spacing.s};
 
-export const AssessmentTitleGroup = styled.div.attrs({
-  className: 'assessment-summary-assessment-title-group',
-})`
-  min-width: 0;
-`;
+      margin: 0;
+      padding-top: ${spacing.s};
 
-export const CompanyName = styled.p.attrs({
-  className: 'assessment-summary-company-name',
-})`
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
+      border-top: 1px solid ${colors.border.subtle};
+    }
 
-export const ApplicationName = styled.h2.attrs({
-  className: 'assessment-summary-application-name',
-})`
-  font-size: ${({ theme }) => theme.typography.headings.h4.size};
+    .assessment-summary-metadata-item {
+      min-width: 0;
+    }
 
-  line-height: ${({ theme }) => theme.typography.headings.h4.lineHeight};
-`;
+    .assessment-summary-metadata-label {
+      margin-bottom: 0.125rem;
 
-export const AssessmentBadges = styled.div.attrs({
-  className: 'assessment-summary-assessment-badges',
-})`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+      font-size: ${typography.body.small.size};
+      color: ${colors.text.muted};
+    }
 
-export const AssessmentMetadataGrid = styled.dl.attrs({
-  className: 'assessment-summary-assessment-metadata-grid',
-})`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: ${({ theme }) => theme.spacing.s};
+    .assessment-summary-metadata-value {
+      display: flex;
+      align-items: center;
+      gap: ${spacing.xxxs};
 
-  margin: 0;
-  padding-top: ${({ theme }) => theme.spacing.s};
+      margin: 0;
 
-  border-top: 1px solid ${({ theme }) => theme.colors.border.subtle};
-`;
+      font-size: ${typography.body.medium.size};
+      font-weight: ${typography.fontWeights.medium};
+      color: ${colors.text.primary};
+    }
 
-export const AssessmentMetadataItemStyled = styled.div.attrs({
-  className: 'assessment-summary-assessment-metadata-item-styled',
-})`
-  min-width: 0;
-`;
-
-export const AssessmentMetadataLabel = styled.dt.attrs({
-  className: 'assessment-summary-assessment-metadata-label',
-})`
-  margin-bottom: 0.125rem;
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const AssessmentMetadataValue = styled.dd.attrs({
-  className: 'assessment-summary-assessment-metadata-value',
-})`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxxs};
-
-  margin: 0;
-
-  font-size: ${({ theme }) => theme.typography.body.medium.size};
-
-  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
-
-  color: ${({ theme }) => theme.colors.text.primary};
-
-  svg {
-    width: 0.875rem;
-    height: 0.875rem;
-
-    color: ${({ theme }) => theme.colors.text.muted};
-  }
+    .assessment-summary-metadata-value svg {
+      width: 0.875rem;
+      height: 0.875rem;
+      color: ${colors.text.muted};
+    }
+  `}
 `;
 
 export default StyledAssessmentSummary;

@@ -4,13 +4,7 @@ import DataTable from '~/app/components/common/dataTable';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
 
-import {
-  StrideBadge,
-  ThreatDate,
-  ThreatEndpoint,
-  ThreatTitle,
-  ThreatTitleCell,
-} from './threatTable.styled';
+import StyledThreatTable from './threatTable.styled';
 
 import type { ThreatTableProps, ThreatTableRow } from './threatTable.type';
 
@@ -20,58 +14,68 @@ const ThreatTable = ({
   emptyState,
   onThreatClick,
 }: ThreatTableProps) => (
-  <DataTable<ThreatTableRow>
-    caption="Threats"
-    rows={threats}
-    isLoading={isLoading}
-    emptyState={emptyState}
-    getRowKey={threat => threat.id}
-    onRowClick={onThreatClick}
-    columns={[
-      {
-        id: 'title',
-        header: 'Threat',
-        cell: threat => (
-          <ThreatTitleCell>
-            <ThreatTitle>{threat.title}</ThreatTitle>
+  <StyledThreatTable>
+    <DataTable<ThreatTableRow>
+      caption="Threats"
+      rows={threats}
+      isLoading={isLoading}
+      emptyState={emptyState}
+      getRowKey={threat => threat.id}
+      onRowClick={onThreatClick}
+      columns={[
+        {
+          id: 'title',
+          header: 'Threat',
+          cell: threat => (
+            <div className="threat-table-threat-title-cell">
+              <strong className="threat-table-threat-title">
+                {threat.title}
+              </strong>
 
-            {threat.endpoint && (
-              <ThreatEndpoint>
-                {threat.id} · {threat.endpoint}
-              </ThreatEndpoint>
-            )}
-          </ThreatTitleCell>
-        ),
-      },
-      {
-        id: 'stride',
-        header: 'STRIDE',
-        cell: threat => <StrideBadge>{threat.strideCategory}</StrideBadge>,
-      },
-      {
-        id: 'severity',
-        header: 'Severity',
-        cell: threat => (
-          <SeverityBadge severity={threat.severity} size="small" />
-        ),
-      },
-      {
-        id: 'status',
-        header: 'Status',
-        cell: threat => <StatusBadge status={threat.status} size="small" />,
-      },
-      {
-        id: 'component',
-        header: 'Component',
-        cell: threat => threat.component,
-      },
-      {
-        id: 'updated',
-        header: 'Updated',
-        cell: threat => <ThreatDate>{threat.updatedAt}</ThreatDate>,
-      },
-    ]}
-  />
+              {threat.endpoint && (
+                <span className="threat-table-threat-endpoint">
+                  {threat.id} · {threat.endpoint}
+                </span>
+              )}
+            </div>
+          ),
+        },
+        {
+          id: 'stride',
+          header: 'STRIDE',
+          cell: threat => (
+            <span className="threat-table-stride-badge">
+              {threat.strideCategory}
+            </span>
+          ),
+        },
+        {
+          id: 'severity',
+          header: 'Severity',
+          cell: threat => (
+            <SeverityBadge severity={threat.severity} size="small" />
+          ),
+        },
+        {
+          id: 'status',
+          header: 'Status',
+          cell: threat => <StatusBadge status={threat.status} size="small" />,
+        },
+        {
+          id: 'component',
+          header: 'Component',
+          cell: threat => threat.component,
+        },
+        {
+          id: 'updated',
+          header: 'Updated',
+          cell: threat => (
+            <time className="threat-table-threat-date">{threat.updatedAt}</time>
+          ),
+        },
+      ]}
+    />
+  </StyledThreatTable>
 );
 
 export default ThreatTable;

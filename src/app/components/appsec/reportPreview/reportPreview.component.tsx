@@ -2,19 +2,7 @@ import React from 'react';
 
 import SeverityBadge from '~/app/components/ui/severityBadge';
 
-import StyledReportPreview, {
-  ReportExecutiveSummary,
-  ReportFooter,
-  ReportSection,
-  ReportSectionTitle,
-  ReportThreatHeader,
-  ReportThreatItem,
-  ReportThreatList,
-  ReportThreatSection,
-  ReportThreatSectionBody,
-  ReportThreatSectionTitle,
-  ReportThreatTitle,
-} from './reportPreview.styled';
+import StyledReportPreview from './reportPreview.styled';
 
 import type { ReportPreviewProps } from './reportPreview.type';
 
@@ -29,71 +17,77 @@ const ReportPreview = ({
   <StyledReportPreview {...rest}>
     {header}
 
-    <ReportSection>
-      <ReportSectionTitle>Executive summary</ReportSectionTitle>
+    <section className="report-preview-section">
+      <h2 className="report-preview-section-title">Executive summary</h2>
 
-      <ReportExecutiveSummary>{executiveSummary}</ReportExecutiveSummary>
-    </ReportSection>
+      <p className="report-preview-executive-summary">{executiveSummary}</p>
+    </section>
 
-    <ReportSection>
-      <ReportSectionTitle>Risk summary</ReportSectionTitle>
+    <section className="report-preview-section">
+      <h2 className="report-preview-section-title">Risk summary</h2>
 
       {riskSummary}
-    </ReportSection>
+    </section>
 
-    <ReportSection>
-      <ReportSectionTitle>Findings</ReportSectionTitle>
+    <section className="report-preview-section">
+      <h2 className="report-preview-section-title">Findings</h2>
 
-      <ReportThreatList>
+      <div className="report-preview-threat-list">
         {threats.map((threat, index) => (
-          <ReportThreatItem key={threat.id}>
-            <ReportThreatHeader>
-              <ReportThreatTitle>
+          <section key={threat.id} className="report-preview-threat-item">
+            <div className="report-preview-threat-header">
+              <h3 className="report-preview-threat-title">
                 {index + 1}. {threat.title}
-              </ReportThreatTitle>
+              </h3>
 
               <SeverityBadge severity={threat.severity} size="small" />
-            </ReportThreatHeader>
+            </div>
 
-            <ReportThreatSection>
-              <ReportThreatSectionTitle>Observation</ReportThreatSectionTitle>
+            <div className="report-preview-threat-section">
+              <h4 className="report-preview-threat-section-title">
+                Observation
+              </h4>
 
-              <ReportThreatSectionBody>
+              <div className="report-preview-threat-section-body">
                 {threat.observation}
-              </ReportThreatSectionBody>
-            </ReportThreatSection>
+              </div>
+            </div>
 
-            <ReportThreatSection>
-              <ReportThreatSectionTitle>Risk</ReportThreatSectionTitle>
+            <div className="report-preview-threat-section">
+              <h4 className="report-preview-threat-section-title">Risk</h4>
 
-              <ReportThreatSectionBody>{threat.risk}</ReportThreatSectionBody>
-            </ReportThreatSection>
+              <div className="report-preview-threat-section-body">
+                {threat.risk}
+              </div>
+            </div>
 
-            <ReportThreatSection>
-              <ReportThreatSectionTitle>
+            <div className="report-preview-threat-section">
+              <h4 className="report-preview-threat-section-title">
                 Recommendation
-              </ReportThreatSectionTitle>
+              </h4>
 
-              <ReportThreatSectionBody>
+              <div className="report-preview-threat-section-body">
                 {threat.recommendation}
-              </ReportThreatSectionBody>
-            </ReportThreatSection>
+              </div>
+            </div>
 
             {threat.evidence && (
-              <ReportThreatSection>
-                <ReportThreatSectionTitle>Evidence</ReportThreatSectionTitle>
+              <div className="report-preview-threat-section">
+                <h4 className="report-preview-threat-section-title">
+                  Evidence
+                </h4>
 
-                <ReportThreatSectionBody>
+                <div className="report-preview-threat-section-body">
                   {threat.evidence}
-                </ReportThreatSectionBody>
-              </ReportThreatSection>
+                </div>
+              </div>
             )}
-          </ReportThreatItem>
+          </section>
         ))}
-      </ReportThreatList>
-    </ReportSection>
+      </div>
+    </section>
 
-    {footer && <ReportFooter>{footer}</ReportFooter>}
+    {footer && <footer className="report-preview-footer">{footer}</footer>}
   </StyledReportPreview>
 );
 

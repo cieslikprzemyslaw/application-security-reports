@@ -1,71 +1,70 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-export const StyledAppShell = styled.div.attrs({ className: 'app-shell' })`
-  min-height: 100vh;
+const StyledAppShell = styled.div.attrs({ className: 'app-shell' })`
+  ${({ theme: { colors, layoutSizes, mq, transitions, zIndices } }) => css`
+    min-height: 100vh;
+    background-color: ${colors.surface.page};
 
-  background-color: ${({ theme }) => theme.colors.surface.page};
+    .app-shell-sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: ${zIndices.drawer};
+
+      width: ${layoutSizes.sidebarWidth};
+
+      transform: translateX(-100%);
+      transition: transform ${transitions.base};
+
+      @media ${mq.min.laptop} {
+        transform: translateX(0);
+      }
+    }
+
+    .app-shell-sidebar[data-is-open='true'] {
+      transform: translateX(0);
+    }
+
+    .app-shell-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: ${zIndices.overlay};
+
+      display: none;
+      padding: 0;
+      border: 0;
+
+      background-color: rgb(16 24 40 / 45%);
+    }
+
+    .app-shell-overlay--open {
+      display: block;
+    }
+
+    @media ${mq.min.laptop} {
+      .app-shell-overlay {
+        display: none;
+      }
+    }
+
+    .app-shell-main {
+      min-width: 0;
+      min-height: 100vh;
+
+      @media ${mq.min.laptop} {
+        margin-left: ${layoutSizes.sidebarWidth};
+      }
+    }
+
+    .app-shell-topbar {
+      position: sticky;
+      top: 0;
+      z-index: ${zIndices.sticky};
+    }
+
+    .app-shell-content {
+      min-width: 0;
+    }
+  `}
 `;
 
-export const AppShellSidebar = styled.aside.attrs({
-  className: 'app-shell-sidebar',
-})<{
-  $isOpen: boolean;
-}>`
-  position: fixed;
-  inset: 0 auto 0 0;
-  z-index: ${({ theme }) => theme.zIndices.drawer};
-
-  width: ${({ theme }) => theme.layoutSizes.sidebarWidth};
-
-  transform: translateX(${({ $isOpen }) => ($isOpen ? '0' : '-100%')});
-
-  transition: transform ${({ theme }) => theme.transitions.base};
-
-  @media ${({ theme }) => theme.mq.min.laptop} {
-    transform: translateX(0);
-  }
-`;
-
-export const AppShellOverlay = styled.button.attrs({
-  className: 'app-shell-overlay',
-})<{
-  $isOpen: boolean;
-}>`
-  position: fixed;
-  inset: 0;
-  z-index: ${({ theme }) => theme.zIndices.overlay};
-
-  display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
-
-  padding: 0;
-  border: 0;
-
-  background-color: rgb(16 24 40 / 45%);
-
-  @media ${({ theme }) => theme.mq.min.laptop} {
-    display: none;
-  }
-`;
-
-export const AppShellMain = styled.div.attrs({ className: 'app-shell-main' })`
-  min-width: 0;
-  min-height: 100vh;
-
-  @media ${({ theme }) => theme.mq.min.laptop} {
-    margin-left: ${({ theme }) => theme.layoutSizes.sidebarWidth};
-  }
-`;
-
-export const AppShellTopbar = styled.div.attrs({
-  className: 'app-shell-topbar',
-})`
-  position: sticky;
-  top: 0;
-  z-index: ${({ theme }) => theme.zIndices.sticky};
-`;
-
-export const AppShellContent = styled.main.attrs({
-  className: 'app-shell-content',
-})`
-  min-width: 0;
-`;
+export default StyledAppShell;

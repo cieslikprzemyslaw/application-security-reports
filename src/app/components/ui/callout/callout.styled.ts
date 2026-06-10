@@ -1,34 +1,34 @@
 import styled, { css } from 'styled-components';
 
-import type { CalloutStyledProps, CalloutVariant } from './callout.type';
+import type { CalloutVariant } from './callout.type';
 
 const getVariantStyles = (variant: CalloutVariant) => css`
-  ${({ theme }) => {
+  ${({ theme: { colors } }) => {
     const variants = {
       info: {
-        border: theme.colors.severity.informational.solid,
-        background: theme.colors.severity.informational.background,
-        icon: theme.colors.severity.informational.text,
+        border: colors.severity.informational.solid,
+        background: colors.severity.informational.background,
+        icon: colors.severity.informational.text,
       },
       success: {
-        border: theme.colors.severity.low.solid,
-        background: theme.colors.severity.low.background,
-        icon: theme.colors.severity.low.text,
+        border: colors.severity.low.solid,
+        background: colors.severity.low.background,
+        icon: colors.severity.low.text,
       },
       warning: {
-        border: theme.colors.severity.medium.solid,
-        background: theme.colors.severity.medium.background,
-        icon: theme.colors.severity.medium.text,
+        border: colors.severity.medium.solid,
+        background: colors.severity.medium.background,
+        icon: colors.severity.medium.text,
       },
       error: {
-        border: theme.colors.severity.critical.solid,
-        background: theme.colors.severity.critical.background,
-        icon: theme.colors.severity.critical.text,
+        border: colors.severity.critical.solid,
+        background: colors.severity.critical.background,
+        icon: colors.severity.critical.text,
       },
       neutral: {
-        border: theme.colors.border.strong,
-        background: theme.colors.neutral.grey100,
-        icon: theme.colors.text.secondary,
+        border: colors.border.strong,
+        background: colors.neutral.grey100,
+        icon: colors.text.secondary,
       },
     } as const;
 
@@ -36,7 +36,6 @@ const getVariantStyles = (variant: CalloutVariant) => css`
 
     return css`
       border-left-color: ${selectedVariant.border};
-
       background-color: ${selectedVariant.background};
 
       .callout-icon {
@@ -46,59 +45,70 @@ const getVariantStyles = (variant: CalloutVariant) => css`
   }}
 `;
 
-const StyledCallout = styled.div.attrs({
-  className: 'callout',
-})<CalloutStyledProps>`
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: ${({ theme }) => theme.spacing.s};
+const StyledCallout = styled.div`
+  ${({ theme: { colors, radii, spacing, typography } }) => css`
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: ${spacing.s};
 
-  padding: ${({ theme }) => theme.spacing.s};
+    padding: ${spacing.s};
 
-  border-left: 0.25rem solid;
-  border-radius: ${({ theme }) => theme.radii.md};
+    border-left: 0.25rem solid;
+    border-radius: ${radii.md};
 
-  ${({ $variant }) => getVariantStyles($variant)}
-`;
+    .callout-icon {
+      display: inline-flex;
+      align-items: flex-start;
+      justify-content: center;
+      width: 1.25rem;
+      height: 1.25rem;
+    }
 
-export const CalloutIcon = styled.span.attrs({ className: 'callout-icon' })`
-  display: inline-flex;
-  align-items: flex-start;
-  justify-content: center;
+    .callout-icon svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
 
-  width: 1.25rem;
-  height: 1.25rem;
+    .callout-content {
+      min-width: 0;
+    }
 
-  svg {
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-`;
+    .callout-title {
+      margin-bottom: ${spacing.xxxs};
+      font-size: ${typography.headings.h6.size};
+      line-height: ${typography.headings.h6.lineHeight};
+    }
 
-export const CalloutContent = styled.div.attrs({
-  className: 'callout-content',
-})`
-  min-width: 0;
-`;
+    .callout-body {
+      color: ${colors.text.secondary};
+    }
 
-export const CalloutTitle = styled.h4.attrs({ className: 'callout-title' })`
-  margin-bottom: ${({ theme }) => theme.spacing.xxxs};
+    .callout-actions {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: ${spacing.xxs};
+    }
 
-  font-size: ${({ theme }) => theme.typography.headings.h6.size};
+    &.callout--info {
+      ${getVariantStyles('info')}
+    }
 
-  line-height: ${({ theme }) => theme.typography.headings.h6.lineHeight};
-`;
+    &.callout--success {
+      ${getVariantStyles('success')}
+    }
 
-export const CalloutBody = styled.div.attrs({ className: 'callout-body' })`
-  color: ${({ theme }) => theme.colors.text.secondary};
-`;
+    &.callout--warning {
+      ${getVariantStyles('warning')}
+    }
 
-export const CalloutActions = styled.div.attrs({
-  className: 'callout-actions',
-})`
-  display: inline-flex;
-  align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing.xxs};
+    &.callout--error {
+      ${getVariantStyles('error')}
+    }
+
+    &.callout--neutral {
+      ${getVariantStyles('neutral')}
+    }
+  `}
 `;
 
 export default StyledCallout;

@@ -17,6 +17,17 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
+  args: {
+    sidebar: <div>Sidebar</div>,
+    topbar: (
+      <div>
+        <button type="button">Open menu</button>
+      </div>
+    ),
+    children: <div>Page content</div>,
+    isSidebarOpen: false,
+    onSidebarClose: () => undefined,
+  },
   render: () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 

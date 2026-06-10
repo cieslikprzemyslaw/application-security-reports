@@ -1,14 +1,6 @@
 import React, { useId } from 'react';
 
-import {
-  InputDescription,
-  InputError,
-  InputField,
-  InputIcon,
-  InputLabel,
-  InputWrapper,
-  StyledInput,
-} from './input.styled';
+import StyledInput from './input.styled';
 import type { InputProps } from './input.type';
 
 const Input = ({
@@ -33,47 +25,66 @@ const Input = ({
     [descriptionId, errorId].filter(Boolean).join(' ') || undefined;
 
   return (
-    <InputField>
-      <InputLabel
+    <StyledInput>
+      <label
+        className={hideLabel ? 'input-label visually-hidden' : 'input-label'}
         htmlFor={inputId}
-        className={hideLabel ? 'visually-hidden' : undefined}
       >
         {label}
         {required && ' *'}
-      </InputLabel>
+      </label>
 
       {description && (
-        <InputDescription id={descriptionId}>{description}</InputDescription>
+        <p className="input-description" id={descriptionId}>
+          {description}
+        </p>
       )}
 
-      <InputWrapper $hasError={Boolean(error)} $isDisabled={disabled}>
+      <div
+        className={[
+          'input-wrapper',
+          error ? 'input-wrapper--has-error' : '',
+          disabled ? 'input-wrapper--disabled' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
         {leadingIcon && (
-          <InputIcon $position="leading" aria-hidden="true">
+          <span className="input-icon input-icon--leading" aria-hidden="true">
             {leadingIcon}
-          </InputIcon>
+          </span>
         )}
 
-        <StyledInput
+        <input
+          className={[
+            'input',
+            `input--${inputSize}`,
+            leadingIcon ? 'input--with-leading-icon' : '',
+            trailingIcon ? 'input--with-trailing-icon' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           id={inputId}
           disabled={disabled}
           required={required}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy}
-          $inputSize={inputSize}
-          $hasLeadingIcon={Boolean(leadingIcon)}
-          $hasTrailingIcon={Boolean(trailingIcon)}
           {...rest}
         />
 
         {trailingIcon && (
-          <InputIcon $position="trailing" aria-hidden="true">
+          <span className="input-icon input-icon--trailing" aria-hidden="true">
             {trailingIcon}
-          </InputIcon>
+          </span>
         )}
-      </InputWrapper>
+      </div>
 
-      {error && <InputError id={errorId}>{error}</InputError>}
-    </InputField>
+      {error && (
+        <p className="input-error" id={errorId}>
+          {error}
+        </p>
+      )}
+    </StyledInput>
   );
 };
 

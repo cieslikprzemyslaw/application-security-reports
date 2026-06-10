@@ -7,24 +7,7 @@ import Select from '~/app/components/ui/select';
 import Textarea from '~/app/components/ui/textarea';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 
-import StyledSettings, {
-  Actions,
-  Avatar,
-  AvatarRow,
-  Form,
-  Grid,
-  Header,
-  SeverityList,
-  SeverityRow,
-  Stack,
-  Subtitle,
-  Title,
-  Toggle,
-  ToggleRow,
-  TwoColumn,
-  UploadBox,
-} from './settings.styled';
-
+import StyledSettings from './settings.styled';
 import type { SettingsProps, SettingsValue } from './settings.type';
 
 const updateField = <K extends keyof SettingsValue>(
@@ -38,36 +21,36 @@ const updateField = <K extends keyof SettingsValue>(
 
 const Settings = ({ value, onChange, onSubmit }: SettingsProps) => (
   <StyledSettings>
-    <Header>
-      <Title>Settings</Title>
+    <header className="settings-header">
+      <h1 className="settings-title">Settings</h1>
 
-      <Subtitle>
+      <p className="settings-subtitle">
         Manage your profile, workspace branding, and report defaults.
-      </Subtitle>
-    </Header>
+      </p>
+    </header>
 
-    <Form onSubmit={onSubmit}>
-      <Grid>
-        <Stack>
+    <form className="settings-form" onSubmit={onSubmit}>
+      <div className="settings-grid">
+        <div className="settings-stack">
           <SettingsPanel title="Profile">
-            <AvatarRow>
-              <Avatar>
+            <div className="settings-avatar-row">
+              <div className="settings-avatar">
                 {value.fullName
                   .split(' ')
                   .map(part => part[0])
                   .join('')
                   .slice(0, 2)
                   .toUpperCase()}
-              </Avatar>
+              </div>
 
               <div>
                 <Button title="Change photo" variant="secondary" size="small" />
 
                 <p>JPG or PNG, up to 2 MB</p>
               </div>
-            </AvatarRow>
+            </div>
 
-            <TwoColumn>
+            <div className="settings-two-column">
               <Input
                 label="Full name"
                 value={value.fullName}
@@ -80,24 +63,15 @@ const Settings = ({ value, onChange, onSubmit }: SettingsProps) => (
                 label="Role"
                 value={value.role}
                 options={[
-                  {
-                    label: 'Lead Pentester',
-                    value: 'Lead Pentester',
-                  },
-                  {
-                    label: 'AppSec Engineer',
-                    value: 'AppSec Engineer',
-                  },
-                  {
-                    label: 'Security Analyst',
-                    value: 'Security Analyst',
-                  },
+                  { label: 'Lead Pentester', value: 'Lead Pentester' },
+                  { label: 'AppSec Engineer', value: 'AppSec Engineer' },
+                  { label: 'Security Analyst', value: 'Security Analyst' },
                 ]}
                 onChange={event =>
                   onChange(updateField(value, 'role', event.target.value))
                 }
               />
-            </TwoColumn>
+            </div>
 
             <Input
               label="Email"
@@ -112,7 +86,7 @@ const Settings = ({ value, onChange, onSubmit }: SettingsProps) => (
             title="Workspace & Report Branding"
             subtitle="Applied to generated reports"
           >
-            <TwoColumn>
+            <div className="settings-two-column">
               <Input
                 label="Company name"
                 value={value.companyName}
@@ -144,9 +118,11 @@ const Settings = ({ value, onChange, onSubmit }: SettingsProps) => (
               <div>
                 <label>Company logo</label>
 
-                <UploadBox>Upload logo · SVG or PNG</UploadBox>
+                <div className="settings-upload-box">
+                  Upload logo · SVG or PNG
+                </div>
               </div>
-            </TwoColumn>
+            </div>
 
             <Textarea
               label="Report footer text"
@@ -158,22 +134,16 @@ const Settings = ({ value, onChange, onSubmit }: SettingsProps) => (
               }
             />
           </SettingsPanel>
-        </Stack>
+        </div>
 
-        <Stack>
+        <div className="settings-stack">
           <SettingsPanel title="Report Defaults">
             <Select
               label="Default methodology"
               value={value.methodology}
               options={[
-                {
-                  label: 'OWASP ASVS / WSTG',
-                  value: 'OWASP ASVS / WSTG',
-                },
-                {
-                  label: 'OWASP MASVS',
-                  value: 'OWASP MASVS',
-                },
+                { label: 'OWASP ASVS / WSTG', value: 'OWASP ASVS / WSTG' },
+                { label: 'OWASP MASVS', value: 'OWASP MASVS' },
               ]}
               onChange={event =>
                 onChange(updateField(value, 'methodology', event.target.value))
@@ -188,20 +158,18 @@ const Settings = ({ value, onChange, onSubmit }: SettingsProps) => (
                   label: 'Technical & structured',
                   value: 'Technical & structured',
                 },
-                {
-                  label: 'Executive summary',
-                  value: 'Executive summary',
-                },
+                { label: 'Executive summary', value: 'Executive summary' },
               ]}
               onChange={event =>
                 onChange(updateField(value, 'reportStyle', event.target.value))
               }
             />
 
-            <ToggleRow>
+            <div className="settings-toggle-row">
               <span>Include evidence in exports</span>
 
-              <Toggle
+              <input
+                className="settings-toggle"
                 type="checkbox"
                 checked={value.includeEvidence}
                 onChange={event =>
@@ -210,12 +178,13 @@ const Settings = ({ value, onChange, onSubmit }: SettingsProps) => (
                   )
                 }
               />
-            </ToggleRow>
+            </div>
 
-            <ToggleRow>
+            <div className="settings-toggle-row">
               <span>Mark all reports Confidential</span>
 
-              <Toggle
+              <input
+                className="settings-toggle"
                 type="checkbox"
                 checked={value.confidentialReports}
                 onChange={event =>
@@ -228,11 +197,11 @@ const Settings = ({ value, onChange, onSubmit }: SettingsProps) => (
                   )
                 }
               />
-            </ToggleRow>
+            </div>
           </SettingsPanel>
 
           <SettingsPanel title="Severity Model">
-            <SeverityList>
+            <div className="settings-severity-list">
               {[
                 ['Critical', 'CVSS 9.0 – 10.0'],
                 ['High', 'CVSS 7.0 – 8.9'],
@@ -240,7 +209,7 @@ const Settings = ({ value, onChange, onSubmit }: SettingsProps) => (
                 ['Low', 'CVSS 0.1 – 3.9'],
                 ['Informational', 'No score'],
               ].map(([severity, range]) => (
-                <SeverityRow key={severity}>
+                <div key={severity} className="settings-severity-row">
                   <SeverityBadge
                     severity={
                       severity as
@@ -254,17 +223,17 @@ const Settings = ({ value, onChange, onSubmit }: SettingsProps) => (
                   />
 
                   <span>{range}</span>
-                </SeverityRow>
+                </div>
               ))}
-            </SeverityList>
+            </div>
           </SettingsPanel>
-        </Stack>
-      </Grid>
+        </div>
+      </div>
 
-      <Actions>
+      <div className="settings-actions">
         <Button type="submit" title="Save settings" />
-      </Actions>
-    </Form>
+      </div>
+    </form>
   </StyledSettings>
 );
 

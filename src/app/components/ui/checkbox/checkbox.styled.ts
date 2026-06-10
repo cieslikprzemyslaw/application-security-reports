@@ -1,129 +1,114 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-export const CheckboxField = styled.div.attrs({ className: 'checkbox-field' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xxxs};
-`;
+const StyledCheckbox = styled.div`
+  ${({ theme: { colors, radii, spacing, transitions, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.xxxs};
 
-export const CheckboxLabel = styled.label.attrs({
-  className: 'checkbox-label',
-})`
-  display: inline-flex;
-  align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing.xxs};
+    .checkbox-label {
+      position: relative;
 
-  width: fit-content;
+      display: inline-flex;
+      align-items: flex-start;
+      gap: ${spacing.xxs};
 
-  cursor: pointer;
-`;
+      width: fit-content;
 
-export const CheckboxControl = styled.span.attrs({
-  className: 'checkbox-control',
-})`
-  position: relative;
+      cursor: pointer;
+    }
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+    .checkbox-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
 
-  width: 1rem;
-  height: 1rem;
-  margin-top: 0.125rem;
+    .checkbox-control {
+      position: relative;
 
-  border: 1px solid ${({ theme }) => theme.colors.border.default};
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
 
-  border-radius: ${({ theme }) => theme.radii.xs};
+      width: 1rem;
+      height: 1rem;
+      margin-top: 0.125rem;
 
-  background-color: ${({ theme }) => theme.colors.surface.card};
+      border: 1px solid ${colors.border.default};
+      border-radius: ${radii.xs};
+      background-color: ${colors.surface.card};
 
-  transition:
-    background-color ${({ theme }) => theme.transitions.fast},
-    border-color ${({ theme }) => theme.transitions.fast},
-    box-shadow ${({ theme }) => theme.transitions.fast};
+      transition:
+        background-color ${transitions.fast},
+        border-color ${transitions.fast},
+        box-shadow ${transitions.fast};
+    }
 
-  svg {
-    width: 0.75rem;
-    height: 0.75rem;
+    .checkbox-control svg {
+      width: 0.75rem;
+      height: 0.75rem;
 
-    color: ${({ theme }) => theme.colors.neutral.white};
+      color: ${colors.neutral.white};
 
-    opacity: 0;
-  }
-`;
+      opacity: 0;
+    }
 
-export const CheckboxInput = styled.input.attrs({
-  className: 'checkbox-input',
-})`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
+    .checkbox-input:checked + .checkbox-control,
+    .checkbox-input[data-indeterminate='true'] + .checkbox-control {
+      border-color: ${colors.brand.primary};
+      background-color: ${colors.brand.primary};
+    }
 
-  &:checked
-    + ${CheckboxControl},
-    &[data-indeterminate='true']
-    + ${CheckboxControl} {
-    border-color: ${({ theme }) => theme.colors.brand.primary};
-
-    background-color: ${({ theme }) => theme.colors.brand.primary};
-
-    svg {
+    .checkbox-input:checked + .checkbox-control svg,
+    .checkbox-input[data-indeterminate='true'] + .checkbox-control svg {
       opacity: 1;
     }
-  }
 
-  &:focus-visible + ${CheckboxControl} {
-    box-shadow:
-      0 0 0 2px ${({ theme }) => theme.colors.neutral.white},
-      0 0 0 4px ${({ theme }) => theme.colors.border.focus};
-  }
+    .checkbox-input:focus-visible + .checkbox-control {
+      box-shadow:
+        0 0 0 2px ${colors.neutral.white},
+        0 0 0 4px ${colors.border.focus};
+    }
 
-  &:disabled + ${CheckboxControl} {
-    border-color: ${({ theme }) => theme.colors.border.subtle};
+    .checkbox-input:disabled + .checkbox-control {
+      border-color: ${colors.border.subtle};
+      background-color: ${colors.neutral.grey100};
+    }
 
-    background-color: ${({ theme }) => theme.colors.neutral.grey100};
-  }
+    .checkbox-input:disabled ~ * {
+      cursor: not-allowed;
+    }
 
-  &:disabled ~ * {
-    cursor: not-allowed;
-  }
+    .checkbox-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+
+    .checkbox-text {
+      font-size: ${typography.body.medium.size};
+      line-height: ${typography.body.medium.lineHeight};
+      font-weight: ${typography.fontWeights.medium};
+      color: ${colors.text.primary};
+    }
+
+    .checkbox-description,
+    .checkbox-error {
+      font-size: ${typography.body.small.size};
+      line-height: ${typography.body.small.lineHeight};
+    }
+
+    .checkbox-description {
+      color: ${colors.text.muted};
+    }
+
+    .checkbox-error {
+      margin: 0 0 0 1.5rem;
+      color: ${colors.feedback.error};
+    }
+  `}
 `;
 
-export const CheckboxContent = styled.span.attrs({
-  className: 'checkbox-content',
-})`
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-`;
-
-export const CheckboxText = styled.span.attrs({ className: 'checkbox-text' })`
-  font-size: ${({ theme }) => theme.typography.body.medium.size};
-
-  line-height: ${({ theme }) => theme.typography.body.medium.lineHeight};
-
-  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
-
-  color: ${({ theme }) => theme.colors.text.primary};
-`;
-
-export const CheckboxDescription = styled.span.attrs({
-  className: 'checkbox-description',
-})`
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  line-height: ${({ theme }) => theme.typography.body.small.lineHeight};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const CheckboxError = styled.p.attrs({ className: 'checkbox-error' })`
-  margin: 0 0 0 1.5rem;
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  line-height: ${({ theme }) => theme.typography.body.small.lineHeight};
-
-  color: ${({ theme }) => theme.colors.feedback.error};
-`;
+export default StyledCheckbox;

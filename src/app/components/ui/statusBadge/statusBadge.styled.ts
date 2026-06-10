@@ -15,8 +15,8 @@ const statusKeyMap = {
 } as const;
 
 const getStatusStyles = (status: ThreatStatus) => css`
-  ${({ theme }) => {
-    const statusColors = theme.colors.status[statusKeyMap[status]];
+  ${({ theme: { colors } }) => {
+    const statusColors = colors.status[statusKeyMap[status]];
 
     return css`
       color: ${statusColors.text};
@@ -48,21 +48,23 @@ const getSizeStyles = (size: StatusBadgeSize) => {
 const StyledStatusBadge = styled.span.attrs({
   className: 'status-badge',
 })<StatusBadgeStyledProps>`
-  display: inline-flex;
-  align-items: center;
+  ${({ theme: { radii, typography } }) => css`
+    display: inline-flex;
+    align-items: center;
 
-  width: fit-content;
-  border-radius: ${({ theme }) => theme.radii.pill};
+    width: fit-content;
+    border-radius: ${radii.pill};
 
-  font-family: ${({ theme }) => theme.typography.fontFamilies.body};
+    font-family: ${typography.fontFamilies.body};
 
-  font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
+    font-weight: ${typography.fontWeights.medium};
 
-  white-space: nowrap;
+    white-space: nowrap;
 
-  ${({ $status }) => getStatusStyles($status)}
+    ${({ $status }) => getStatusStyles($status)}
 
-  ${({ $size }) => getSizeStyles($size)}
+    ${({ $size }) => getSizeStyles($size)}
+  `}
 `;
 
 export default StyledStatusBadge;

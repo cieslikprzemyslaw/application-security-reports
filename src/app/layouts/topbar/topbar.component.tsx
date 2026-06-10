@@ -1,13 +1,6 @@
 import React from 'react';
 
-import StyledTopbar, {
-  TopbarActions,
-  TopbarMenu,
-  TopbarSearch,
-  TopbarSpacer,
-  TopbarTitle,
-  TopbarUserMenu,
-} from './topbar.styled';
+import StyledTopbar from './topbar.styled';
 
 import type { TopbarProps } from './topbar.type';
 
@@ -20,15 +13,19 @@ const Topbar = ({
   ...rest
 }: TopbarProps) => (
   <StyledTopbar {...rest}>
-    {menuButton && <TopbarMenu>{menuButton}</TopbarMenu>}
+    {menuButton && <div className="topbar-menu">{menuButton}</div>}
 
-    {title && <TopbarTitle>{title}</TopbarTitle>}
+    {title && <strong className="topbar-title">{title}</strong>}
 
-    {search ? <TopbarSearch>{search}</TopbarSearch> : <TopbarSpacer />}
+    {search ? (
+      <div className="topbar-search">{search}</div>
+    ) : (
+      <div className="topbar-spacer" />
+    )}
 
-    {actions && <TopbarActions>{actions}</TopbarActions>}
+    {actions && <div className="topbar-actions">{actions}</div>}
 
-    {userMenu && <TopbarUserMenu>{userMenu}</TopbarUserMenu>}
+    {userMenu && <div className="topbar-user-menu">{userMenu}</div>}
   </StyledTopbar>
 );
 

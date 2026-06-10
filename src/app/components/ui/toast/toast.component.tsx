@@ -1,13 +1,6 @@
 import React from 'react';
 
-import StyledToast, {
-  ToastActions,
-  ToastContent,
-  ToastDescription,
-  ToastDismissButton,
-  ToastIcon,
-  ToastTitle,
-} from './toast.styled';
+import StyledToast from './toast.styled';
 import type { ToastProps } from './toast.type';
 
 const CloseIcon = () => (
@@ -27,36 +20,37 @@ const Toast = ({
   ...rest
 }: ToastProps) => (
   <StyledToast
+    className={`toast toast--${variant}`}
     role={variant === 'error' ? 'alert' : 'status'}
-    $variant={variant}
     {...rest}
   >
     {icon && (
-      <ToastIcon className="toast-icon" aria-hidden="true">
+      <span className="toast-icon" aria-hidden="true">
         {icon}
-      </ToastIcon>
+      </span>
     )}
 
-    <ToastContent>
-      <ToastTitle>{title}</ToastTitle>
+    <div className="toast-content">
+      <h4 className="toast-title">{title}</h4>
 
-      {description && <ToastDescription>{description}</ToastDescription>}
-    </ToastContent>
+      {description && <p className="toast-description">{description}</p>}
+    </div>
 
     {(actions || onDismiss) && (
-      <ToastActions>
+      <div className="toast-actions">
         {actions}
 
         {onDismiss && (
-          <ToastDismissButton
+          <button
+            className="toast-dismiss-button"
             type="button"
             aria-label={dismissLabel}
             onClick={onDismiss}
           >
             <CloseIcon />
-          </ToastDismissButton>
+          </button>
         )}
-      </ToastActions>
+      </div>
     )}
   </StyledToast>
 );

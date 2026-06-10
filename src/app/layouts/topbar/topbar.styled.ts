@@ -1,64 +1,60 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledTopbar = styled.header.attrs({ className: 'topbar' })`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.s};
+  ${({ theme: { colors, layoutSizes, mq, spacing } }) => css`
+    display: flex;
+    align-items: center;
+    gap: ${spacing.s};
 
-  min-height: ${({ theme }) => theme.layoutSizes.topbarHeight};
+    min-height: ${layoutSizes.topbarHeight};
+    padding: 0 ${spacing.s};
 
-  padding: 0 ${({ theme }) => theme.spacing.s};
+    border-bottom: 1px solid ${colors.border.subtle};
+    background-color: ${colors.surface.card};
 
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
+    @media ${mq.min.tablet} {
+      padding: 0 ${spacing.m};
+    }
 
-  background-color: ${({ theme }) => theme.colors.surface.card};
+    .topbar-menu {
+      display: inline-flex;
 
-  @media ${({ theme }) => theme.mq.min.tablet} {
-    padding: 0 ${({ theme }) => theme.spacing.m};
-  }
-`;
+      @media ${mq.min.laptop} {
+        display: none;
+      }
+    }
 
-export const TopbarMenu = styled.div.attrs({ className: 'topbar-menu' })`
-  display: inline-flex;
+    .topbar-title {
+      display: none;
+      color: ${colors.text.primary};
 
-  @media ${({ theme }) => theme.mq.min.laptop} {
-    display: none;
-  }
-`;
+      @media ${mq.min.tablet} {
+        display: block;
+      }
+    }
 
-export const TopbarTitle = styled.strong.attrs({ className: 'topbar-title' })`
-  display: none;
+    .topbar-search {
+      flex: 1;
+      min-width: 0;
+      max-width: 30rem;
+    }
 
-  color: ${({ theme }) => theme.colors.text.primary};
+    .topbar-spacer {
+      flex: 1;
+    }
 
-  @media ${({ theme }) => theme.mq.min.tablet} {
-    display: block;
-  }
-`;
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: ${spacing.xxs};
+    }
 
-export const TopbarSearch = styled.div.attrs({ className: 'topbar-search' })`
-  flex: 1;
-  min-width: 0;
-  max-width: 30rem;
-`;
-
-export const TopbarSpacer = styled.div.attrs({ className: 'topbar-spacer' })`
-  flex: 1;
-`;
-
-export const TopbarActions = styled.div.attrs({ className: 'topbar-actions' })`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
-
-export const TopbarUserMenu = styled.div.attrs({
-  className: 'topbar-user-menu',
-})`
-  display: flex;
-  align-items: center;
-
-  margin-left: ${({ theme }) => theme.spacing.xxxs};
+    .topbar-user-menu {
+      display: flex;
+      align-items: center;
+      margin-left: ${spacing.xxxs};
+    }
+  `}
 `;
 
 export default StyledTopbar;

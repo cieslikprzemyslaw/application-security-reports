@@ -1,100 +1,87 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-import type { StyledTextareaProps } from './textarea.type';
+const StyledTextarea = styled.div`
+  ${({ theme: { colors, radii, spacing, transitions, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.xxxs};
 
-export const TextareaField = styled.div.attrs({ className: 'textarea-field' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xxxs};
+    .textarea-label {
+      font-family: ${typography.fontFamilies.body};
+      font-size: ${typography.label.medium.size};
+      line-height: ${typography.label.medium.lineHeight};
+      font-weight: ${typography.label.medium.weight};
+      color: ${colors.text.primary};
+    }
+
+    .textarea-description,
+    .textarea-error {
+      margin: 0;
+      font-size: ${typography.body.small.size};
+      line-height: ${typography.body.small.lineHeight};
+    }
+
+    .textarea-description {
+      color: ${colors.text.muted};
+    }
+
+    .textarea-error {
+      color: ${colors.feedback.error};
+    }
+
+    .textarea-control {
+      width: 100%;
+      min-height: 7.5rem;
+      padding: 0.75rem;
+
+      border: 1px solid ${colors.border.default};
+      border-radius: ${radii.md};
+      outline: 0;
+
+      font-family: ${typography.fontFamilies.body};
+      font-size: ${typography.body.medium.size};
+      line-height: ${typography.body.medium.lineHeight};
+      color: ${colors.text.primary};
+      background-color: ${colors.surface.card};
+
+      resize: vertical;
+      transition:
+        border-color ${transitions.fast},
+        box-shadow ${transitions.fast};
+    }
+
+    .textarea-control:focus-visible {
+      border-color: ${colors.border.focus};
+      box-shadow:
+        0 0 0 2px ${colors.neutral.white},
+        0 0 0 4px ${colors.brand.wash};
+    }
+
+    .textarea-control--has-error {
+      border-color: ${colors.feedback.error};
+    }
+
+    .textarea-control--has-error:focus-visible {
+      border-color: ${colors.feedback.error};
+      box-shadow:
+        0 0 0 2px ${colors.neutral.white},
+        0 0 0 4px ${colors.severity.critical.background};
+    }
+
+    .textarea-control--resize-none {
+      resize: none;
+    }
+
+    .textarea-control--resize-both {
+      resize: both;
+    }
+
+    .textarea-control:disabled {
+      cursor: not-allowed;
+      color: ${colors.text.muted};
+      background-color: ${colors.neutral.grey100};
+    }
+  `}
 `;
 
-export const TextareaLabel = styled.label.attrs({
-  className: 'textarea-label',
-})`
-  font-family: ${({ theme }) => theme.typography.fontFamilies.body};
-
-  font-size: ${({ theme }) => theme.typography.label.medium.size};
-
-  line-height: ${({ theme }) => theme.typography.label.medium.lineHeight};
-
-  font-weight: ${({ theme }) => theme.typography.label.medium.weight};
-
-  color: ${({ theme }) => theme.colors.text.primary};
-`;
-
-export const TextareaDescription = styled.p.attrs({
-  className: 'textarea-description',
-})`
-  margin: 0;
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  line-height: ${({ theme }) => theme.typography.body.small.lineHeight};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const TextareaError = styled.p.attrs({ className: 'textarea-error' })`
-  margin: 0;
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  line-height: ${({ theme }) => theme.typography.body.small.lineHeight};
-
-  color: ${({ theme }) => theme.colors.feedback.error};
-`;
-
-export const StyledTextarea = styled.textarea.attrs({
-  className: 'textarea',
-})<StyledTextareaProps>`
-  width: 100%;
-  min-height: 7.5rem;
-  padding: 0.75rem;
-
-  border: 1px solid
-    ${({ theme, $hasError }) =>
-      $hasError ? theme.colors.feedback.error : theme.colors.border.default};
-
-  border-radius: ${({ theme }) => theme.radii.md};
-
-  font-family: ${({ theme }) => theme.typography.fontFamilies.body};
-
-  font-size: ${({ theme }) => theme.typography.body.medium.size};
-
-  line-height: ${({ theme }) => theme.typography.body.medium.lineHeight};
-
-  color: ${({ theme }) => theme.colors.text.primary};
-
-  background-color: ${({ theme }) => theme.colors.surface.card};
-
-  resize: ${({ $resize }) => $resize};
-
-  transition:
-    border-color ${({ theme }) => theme.transitions.fast},
-    box-shadow ${({ theme }) => theme.transitions.fast};
-
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.text.muted};
-  }
-
-  &:focus-visible {
-    outline: none;
-    border-color: ${({ theme, $hasError }) =>
-      $hasError ? theme.colors.feedback.error : theme.colors.border.focus};
-
-    box-shadow:
-      0 0 0 2px ${({ theme }) => theme.colors.neutral.white},
-      0 0 0 4px
-        ${({ theme, $hasError }) =>
-          $hasError
-            ? theme.colors.severity.critical.background
-            : theme.colors.brand.wash};
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    color: ${({ theme }) => theme.colors.text.muted};
-
-    background-color: ${({ theme }) => theme.colors.neutral.grey100};
-  }
-`;
+export default StyledTextarea;

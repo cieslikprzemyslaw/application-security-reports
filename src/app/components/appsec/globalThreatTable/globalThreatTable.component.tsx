@@ -3,19 +3,7 @@ import React from 'react';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
 
-import StyledGlobalThreatTable, {
-  AppName,
-  Cell,
-  Chevron,
-  CompanyName,
-  Head,
-  HeaderCell,
-  Row,
-  Stride,
-  Table,
-  ThreatId,
-  ThreatTitle,
-} from './globalThreatTable.styled';
+import StyledGlobalThreatTable from './globalThreatTable.styled';
 
 import type { GlobalThreatTableProps } from './globalThreatTable.type';
 
@@ -24,30 +12,35 @@ const GlobalThreatTable = ({
   onThreatClick,
 }: GlobalThreatTableProps) => (
   <StyledGlobalThreatTable>
-    <Table>
-      <Head>
+    <table className="global-threat-table">
+      <thead className="global-threat-table-head">
         <tr>
-          <HeaderCell>Threat</HeaderCell>
+          <th className="global-threat-table-header-cell">Threat</th>
 
-          <HeaderCell>Application</HeaderCell>
+          <th className="global-threat-table-header-cell">Application</th>
 
-          <HeaderCell>STRIDE</HeaderCell>
+          <th className="global-threat-table-header-cell">STRIDE</th>
 
-          <HeaderCell>Severity</HeaderCell>
+          <th className="global-threat-table-header-cell">Severity</th>
 
-          <HeaderCell>Status</HeaderCell>
+          <th className="global-threat-table-header-cell">Status</th>
 
-          <HeaderCell>Updated</HeaderCell>
+          <th className="global-threat-table-header-cell">Updated</th>
 
-          <HeaderCell aria-label="Open" />
+          <th className="global-threat-table-header-cell" aria-label="Open" />
         </tr>
-      </Head>
+      </thead>
 
       <tbody>
         {threats.map(threat => (
-          <Row
+          <tr
             key={threat.id}
-            $clickable={Boolean(onThreatClick)}
+            className={[
+              'global-threat-table-row',
+              onThreatClick ? 'global-threat-table-row--clickable' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             tabIndex={onThreatClick ? 0 : undefined}
             onClick={() => onThreatClick?.(threat)}
             onKeyDown={event => {
@@ -61,39 +54,49 @@ const GlobalThreatTable = ({
               }
             }}
           >
-            <Cell>
-              <ThreatTitle>{threat.title}</ThreatTitle>
+            <td className="global-threat-table-cell">
+              <strong className="global-threat-table-threat-title">
+                {threat.title}
+              </strong>
 
-              <ThreatId>{threat.id}</ThreatId>
-            </Cell>
+              <span className="global-threat-table-threat-id">{threat.id}</span>
+            </td>
 
-            <Cell>
-              <AppName>{threat.applicationName}</AppName>
+            <td className="global-threat-table-cell">
+              <strong className="global-threat-table-app-name">
+                {threat.applicationName}
+              </strong>
 
-              <CompanyName>{threat.companyName}</CompanyName>
-            </Cell>
+              <span className="global-threat-table-company-name">
+                {threat.companyName}
+              </span>
+            </td>
 
-            <Cell>
-              <Stride>{threat.strideCategory}</Stride>
-            </Cell>
+            <td className="global-threat-table-cell">
+              <span className="global-threat-table-stride">
+                {threat.strideCategory}
+              </span>
+            </td>
 
-            <Cell>
+            <td className="global-threat-table-cell">
               <SeverityBadge severity={threat.severity} size="small" />
-            </Cell>
+            </td>
 
-            <Cell>
+            <td className="global-threat-table-cell">
               <StatusBadge status={threat.status} size="small" />
-            </Cell>
+            </td>
 
-            <Cell>{threat.updatedAt}</Cell>
+            <td className="global-threat-table-cell">{threat.updatedAt}</td>
 
-            <Cell>
-              <Chevron aria-hidden="true">›</Chevron>
-            </Cell>
-          </Row>
+            <td className="global-threat-table-cell">
+              <span className="global-threat-table-chevron" aria-hidden="true">
+                ›
+              </span>
+            </td>
+          </tr>
         ))}
       </tbody>
-    </Table>
+    </table>
   </StyledGlobalThreatTable>
 );
 

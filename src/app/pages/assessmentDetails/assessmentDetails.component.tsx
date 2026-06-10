@@ -1,23 +1,14 @@
 import React from 'react';
 
 import GlobalThreatTable from '~/app/components/appsec/globalThreatTable';
-import { AssessmentStatusBadge } from '~/app/components/appsec/assessmentTable/assessmentTable.styled';
 import Button from '~/app/components/ui/button';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 
-import StyledAssessmentDetails, {
-  Header,
-  HeaderActions,
-  Section,
-  SectionBody,
-  SectionHeader,
-  Subtitle,
-  SummaryCard,
-  SummaryGrid,
-  Title,
-} from './assessmentDetails.styled';
+import StyledAssessmentDetails from './assessmentDetails.styled';
 
 import type { AssessmentDetailsProps } from './assessmentDetails.type';
+
+const toStatusClassName = (status: string) => status.replace(/\s+/g, '-');
 
 const AssessmentDetails = ({
   assessment,
@@ -29,64 +20,71 @@ const AssessmentDetails = ({
   onThreatClick,
 }: AssessmentDetailsProps) => (
   <StyledAssessmentDetails>
-    <Header>
+    <header className="assessment-details-header">
       <div>
-        <Title>{assessment.applicationName}</Title>
+        <h1 className="assessment-details-title">
+          {assessment.applicationName}
+        </h1>
 
-        <Subtitle>
+        <p className="assessment-details-subtitle">
           {assessment.companyName}
           {' · '}
           {assessment.code}
-        </Subtitle>
+        </p>
       </div>
 
-      <HeaderActions>
+      <div className="assessment-details-header-actions">
         {onBack && <Button title="Back" variant="secondary" onClick={onBack} />}
 
         {onEdit && <Button title="Edit assessment" onClick={onEdit} />}
-      </HeaderActions>
-    </Header>
+      </div>
+    </header>
 
-    <SummaryGrid>
-      <SummaryCard>
+    <div className="assessment-details-summary-grid">
+      <div className="assessment-details-summary-card">
         <strong>Environment</strong>
 
         <p>{assessment.environment}</p>
-      </SummaryCard>
+      </div>
 
-      <SummaryCard>
+      <div className="assessment-details-summary-card">
         <strong>Type</strong>
 
         <p>{assessment.assessmentType}</p>
-      </SummaryCard>
+      </div>
 
-      <SummaryCard>
+      <div className="assessment-details-summary-card">
         <strong>Overall risk</strong>
 
         <SeverityBadge severity={assessment.overallRisk} size="small" />
-      </SummaryCard>
+      </div>
 
-      <SummaryCard>
+      <div className="assessment-details-summary-card">
         <strong>Status</strong>
 
-        <AssessmentStatusBadge $status={assessment.status}>
+        <span
+          className={[
+            'assessment-details__status-badge',
+            `assessment-details__status-badge--${toStatusClassName(assessment.status)}`,
+          ].join(' ')}
+        >
           {assessment.status}
-        </AssessmentStatusBadge>
-      </SummaryCard>
-    </SummaryGrid>
+        </span>
+      </div>
+    </div>
 
-    <Section>
-      <SectionHeader>
+    <section className="assessment-details-section">
+      <header className="assessment-details-section-header">
         <h2>Executive Summary</h2>
-      </SectionHeader>
+      </header>
 
-      <SectionBody>
+      <div className="assessment-details-section-body">
         <p>{executiveSummary}</p>
-      </SectionBody>
-    </Section>
+      </div>
+    </section>
 
-    <Section>
-      <SectionHeader>
+    <section className="assessment-details-section">
+      <header className="assessment-details-section-header">
         <div>
           <h2>Findings</h2>
 
@@ -94,10 +92,10 @@ const AssessmentDetails = ({
         </div>
 
         {onAddThreat && <Button title="Add Threat" onClick={onAddThreat} />}
-      </SectionHeader>
+      </header>
 
       <GlobalThreatTable threats={threats} onThreatClick={onThreatClick} />
-    </Section>
+    </section>
   </StyledAssessmentDetails>
 );
 

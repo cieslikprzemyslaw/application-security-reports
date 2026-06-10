@@ -1,12 +1,6 @@
 import React from 'react';
 
-import {
-  FilterToolbarActions,
-  FilterToolbarMain,
-  FilterToolbarSearch,
-  FilterToolbarSummary,
-  StyledFilterToolbar,
-} from './filterToolbar.styled';
+import StyledFilterToolbar from './filterToolbar.styled';
 import type { FilterToolbarProps } from './filterToolbar.type';
 
 const FilterToolbar = ({
@@ -16,16 +10,16 @@ const FilterToolbar = ({
   summary,
   ...rest
 }: FilterToolbarProps) => (
-  <StyledFilterToolbar {...rest}>
-    <FilterToolbarMain>
-      {search && <FilterToolbarSearch>{search}</FilterToolbarSearch>}
+  <StyledFilterToolbar className="filter-toolbar" {...rest}>
+    <div className="filter-toolbar-main">
+      {search && <div className="filter-toolbar-search">{search}</div>}
 
       {filters}
-    </FilterToolbarMain>
+    </div>
 
-    {summary && <FilterToolbarSummary>{summary}</FilterToolbarSummary>}
+    {summary && <div className="filter-toolbar-summary">{summary}</div>}
 
-    {actions && <FilterToolbarActions>{actions}</FilterToolbarActions>}
+    {actions && <div className="filter-toolbar-actions">{actions}</div>}
   </StyledFilterToolbar>
 );
 

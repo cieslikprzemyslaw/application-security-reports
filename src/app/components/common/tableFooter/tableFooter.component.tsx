@@ -1,11 +1,6 @@
 import React from 'react';
 
-import {
-  StyledTableFooter,
-  TableFooterActions,
-  TableFooterSpacer,
-  TableFooterSummary,
-} from './tableFooter.styled';
+import StyledTableFooter from './tableFooter.styled';
 import type { TableFooterProps } from './tableFooter.type';
 
 const TableFooter = ({
@@ -14,12 +9,12 @@ const TableFooter = ({
   actions,
   ...rest
 }: TableFooterProps) => (
-  <StyledTableFooter {...rest}>
-    {summary && <TableFooterSummary>{summary}</TableFooterSummary>}
+  <StyledTableFooter className="table-footer" {...rest}>
+    {summary && <div className="table-footer-summary">{summary}</div>}
 
-    <TableFooterSpacer />
+    <div className="table-footer-spacer" />
 
-    {actions && <TableFooterActions>{actions}</TableFooterActions>}
+    {actions && <div className="table-footer-actions">{actions}</div>}
 
     {pagination}
   </StyledTableFooter>

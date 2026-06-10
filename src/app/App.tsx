@@ -1,18 +1,22 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 const Shell = styled.main`
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: ${({ theme }) => theme.spacing.l};
-  background: ${({ theme }) => theme.colors.surface.page};
+  ${({ theme: { colors, spacing } }) => css`
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: ${spacing.l};
+    background: ${colors.surface.page};
+  `}
 `;
 const Card = styled.section`
-  width: min(100%, 48rem);
-  padding: ${({ theme }) => theme.spacing.xl};
-  border: 1px solid ${({ theme }) => theme.colors.border.default};
-  border-radius: ${({ theme }) => theme.radii.lg};
-  background: ${({ theme }) => theme.colors.surface.card};
-  box-shadow: ${({ theme }) => theme.shadows.md};
+  ${({ theme: { colors, radii, shadows, spacing } }) => css`
+    width: min(100%, 48rem);
+    padding: ${spacing.xl};
+    border: 1px solid ${colors.border.default};
+    border-radius: ${radii.lg};
+    background: ${colors.surface.card};
+    box-shadow: ${shadows.md};
+  `}
 `;
 const App = () => (
   <Shell>

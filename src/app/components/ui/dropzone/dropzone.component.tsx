@@ -1,15 +1,6 @@
 import React, { useId, useState } from 'react';
 
-import {
-  DropzoneArea,
-  DropzoneDescription,
-  DropzoneError,
-  DropzoneField,
-  DropzoneIcon,
-  DropzoneInput,
-  DropzoneLabel,
-  DropzoneText,
-} from './dropzone.styled';
+import StyledDropzone from './dropzone.styled';
 import type { DropzoneProps } from './dropzone.type';
 
 const UploadIcon = () => (
@@ -47,14 +38,16 @@ const Dropzone = ({
   };
 
   return (
-    <DropzoneField>
-      <DropzoneLabel>{label}</DropzoneLabel>
+    <StyledDropzone
+      data-is-dragging={isDragging ? 'true' : 'false'}
+      data-has-error={error ? 'true' : 'false'}
+      data-is-disabled={disabled ? 'true' : 'false'}
+    >
+      <span className="dropzone-label">{label}</span>
 
-      <DropzoneArea
+      <label
+        className="dropzone-area"
         htmlFor={inputId}
-        $isDragging={isDragging}
-        $hasError={Boolean(error)}
-        $isDisabled={disabled}
         onDragEnter={event => {
           event.preventDefault();
           setIsDragging(true);
@@ -72,7 +65,8 @@ const Dropzone = ({
           handleFiles(event.dataTransfer.files);
         }}
       >
-        <DropzoneInput
+        <input
+          className="dropzone-input"
           id={inputId}
           type="file"
           accept={acceptedTypes}
@@ -82,21 +76,21 @@ const Dropzone = ({
           {...rest}
         />
 
-        <DropzoneIcon>
+        <span className="dropzone-icon">
           <UploadIcon />
-        </DropzoneIcon>
+        </span>
 
-        <DropzoneText>
+        <span className="dropzone-text">
           Drag and drop files here, or click to browse
-        </DropzoneText>
+        </span>
 
         {description && (
-          <DropzoneDescription>{description}</DropzoneDescription>
+          <span className="dropzone-description">{description}</span>
         )}
-      </DropzoneArea>
+      </label>
 
-      {error && <DropzoneError>{error}</DropzoneError>}
-    </DropzoneField>
+      {error && <p className="dropzone-error">{error}</p>}
+    </StyledDropzone>
   );
 };
 

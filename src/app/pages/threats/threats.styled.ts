@@ -1,98 +1,84 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledThreats = styled.div.attrs({ className: 'threats' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.l};
-`;
+  ${({ theme: { colors, mq, radii, shadows, spacing, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.l};
 
-export const Header = styled.header.attrs({ className: 'threats-header' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.s};
+    .threats-header {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.s};
 
-  @media ${({ theme }) => theme.mq.min.tablet} {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-`;
+      @media ${mq.min.tablet} {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+    }
 
-export const Title = styled.h1.attrs({ className: 'threats-title' })`
-  font-size: ${({ theme }) => theme.typography.headings.h3.size};
-`;
+    .threats-title {
+      font-size: ${typography.headings.h3.size};
+    }
 
-export const Subtitle = styled.p.attrs({ className: 'threats-subtitle' })`
-  margin-top: ${({ theme }) => theme.spacing.xxxs};
+    .threats-subtitle {
+      margin-top: ${spacing.xxxs};
+      color: ${colors.text.muted};
+    }
 
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
+    .threats-header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: ${spacing.xxs};
+    }
 
-export const HeaderActions = styled.div.attrs({
-  className: 'threats-header-actions',
-})`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+    .threats-card {
+      overflow: hidden;
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.lg};
+      background-color: ${colors.surface.card};
+      box-shadow: ${shadows.xs};
+    }
 
-export const Card = styled.section.attrs({ className: 'threats-card' })`
-  overflow: hidden;
+    .threats-toolbar {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.xxs};
+      padding: ${spacing.s};
+      border-bottom: 1px solid ${colors.border.subtle};
 
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
+      @media ${mq.min.tablet} {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
 
-  border-radius: ${({ theme }) => theme.radii.lg};
+    .threats-search-wrap {
+      width: min(100%, 18rem);
+    }
 
-  background-color: ${({ theme }) => theme.colors.surface.card};
+    .threats-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: ${spacing.xxs};
+    }
 
-  box-shadow: ${({ theme }) => theme.shadows.xs};
-`;
+    .threats-summary {
+      margin-left: auto;
+      font-size: ${typography.body.small.size};
+      color: ${colors.text.muted};
+    }
 
-export const Toolbar = styled.div.attrs({ className: 'threats-toolbar' })`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xxs};
-
-  padding: ${({ theme }) => theme.spacing.s};
-
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
-
-  @media ${({ theme }) => theme.mq.min.tablet} {
-    flex-direction: row;
-    align-items: center;
-  }
-`;
-
-export const SearchWrap = styled.div.attrs({
-  className: 'threats-search-wrap',
-})`
-  width: min(100%, 18rem);
-`;
-
-export const Filters = styled.div.attrs({ className: 'threats-filters' })`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
-
-export const Summary = styled.span.attrs({ className: 'threats-summary' })`
-  margin-left: auto;
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const Footer = styled.div.attrs({ className: 'threats-footer' })`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: ${({ theme }) => theme.spacing.s};
-
-  border-top: 1px solid ${({ theme }) => theme.colors.border.subtle};
-
-  color: ${({ theme }) => theme.colors.text.muted};
+    .threats-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: ${spacing.s};
+      border-top: 1px solid ${colors.border.subtle};
+      color: ${colors.text.muted};
+    }
+  `}
 `;
 
 export default StyledThreats;

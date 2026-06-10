@@ -6,7 +6,7 @@ import PageHeader from '~/app/components/common/pageHeader';
 import Button from '~/app/components/ui/button';
 import SearchInput from '~/app/components/ui/searchInput';
 
-import StyledPage, { PageCard } from './companies.styled';
+import StyledCompanies from './companies.styled';
 
 import type { CompaniesProps } from './companies.type';
 
@@ -22,13 +22,11 @@ const Companies = ({
   );
 
   return (
-    <StyledPage>
+    <StyledCompanies>
       <PageHeader
         eyebrow="Workspace"
         title="Companies"
-        subtitle={
-          'Manage organisations and the assessments associated with them.'
-        }
+        subtitle="Manage organisations and the assessments associated with them."
         actions={
           onCreateCompany ? (
             <Button title="New company" onClick={onCreateCompany} />
@@ -36,7 +34,7 @@ const Companies = ({
         }
       />
 
-      <PageCard>
+      <section className="companies-card">
         <FilterToolbar
           search={
             <SearchInput
@@ -52,10 +50,10 @@ const Companies = ({
         <CompanyTable
           companies={filteredCompanies}
           onCompanyClick={onCompanyClick}
-          emptyState={'No companies found.'}
+          emptyState="No companies found."
         />
-      </PageCard>
-    </StyledPage>
+      </section>
+    </StyledCompanies>
   );
 };
 

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
 import DataTable from './dataTable.component';
+import type { DataTableColumn, DataTableProps } from './dataTable.type';
 
 interface ExampleRow {
   id: string;
@@ -21,7 +22,7 @@ const rows: ExampleRow[] = [
   },
 ];
 
-const columns = [
+const columns: DataTableColumn<ExampleRow>[] = [
   {
     id: 'name',
     header: 'Application',
@@ -34,24 +35,34 @@ const columns = [
   },
 ];
 
+const ExampleDataTable = (
+  props: Omit<
+    DataTableProps<ExampleRow>,
+    'columns' | 'rows' | 'getRowKey' | 'caption'
+  >,
+) => (
+  <DataTable<ExampleRow>
+    columns={columns}
+    rows={rows}
+    getRowKey={row => row.id}
+    caption="Example assessments"
+    {...props}
+  />
+);
+
 const meta = {
   title: 'Common/DataTable',
-  component: DataTable,
+  component: ExampleDataTable,
   parameters: {
     layout: 'padded',
   },
   tags: ['autodocs'],
-} satisfies Meta<typeof DataTable>;
+} satisfies Meta<typeof ExampleDataTable>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {
-    columns,
-    rows,
-    getRowKey: (row: ExampleRow) => row.id,
-    caption: 'Example assessments',
-  },
+  args: {},
 };

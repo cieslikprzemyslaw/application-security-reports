@@ -1,116 +1,92 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const StyledRecentAssessmentTable = styled.div.attrs({
   className: 'recent-assessment-table',
 })`
-  width: 100%;
-  overflow-x: auto;
-`;
+  ${({ theme: { colors, radii, spacing, typography } }) => css`
+    width: 100%;
+    overflow-x: auto;
 
-export const RecentAssessmentTableElement = styled.table.attrs({
-  className: 'recent-assessment-table-element',
-})`
-  width: 100%;
-  border-collapse: collapse;
-`;
+    .recent-assessment-table-element {
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-export const RecentAssessmentHead = styled.thead.attrs({
-  className: 'recent-assessment-table-recent-assessment-head',
-})`
-  background-color: ${({ theme }) => theme.colors.neutral.grey50};
-`;
+    .recent-assessment-table-head {
+      background-color: ${colors.neutral.grey50};
+    }
 
-export const RecentAssessmentHeaderCell = styled.th.attrs({
-  className: 'recent-assessment-table-recent-assessment-header-cell',
-})`
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.s};
+    .recent-assessment-table-header-cell {
+      padding: ${spacing.xs} ${spacing.s};
 
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
+      border-bottom: 1px solid ${colors.border.subtle};
 
-  font-size: ${({ theme }) => theme.typography.label.small.size};
+      font-size: ${typography.label.small.size};
+      line-height: ${typography.label.small.lineHeight};
+      font-weight: ${typography.fontWeights.semibold};
+      color: ${colors.text.muted};
 
-  line-height: ${({ theme }) => theme.typography.label.small.lineHeight};
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
 
-  font-weight: ${({ theme }) => theme.typography.fontWeights.semibold};
+    .recent-assessment-table-row {
+      border-bottom: 1px solid ${colors.border.subtle};
+      cursor: default;
+    }
 
-  color: ${({ theme }) => theme.colors.text.muted};
+    .recent-assessment-table-row--clickable {
+      cursor: pointer;
+    }
 
-  text-align: left;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-`;
+    .recent-assessment-table-row--clickable:hover {
+      background-color: ${colors.neutral.grey50};
+    }
 
-export const RecentAssessmentRowStyled = styled.tr.attrs({
-  className: 'recent-assessment-table-recent-assessment-row-styled',
-})<{
-  $isClickable: boolean;
-}>`
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
+    .recent-assessment-table-row:last-child {
+      border-bottom: 0;
+    }
 
-  cursor: ${({ $isClickable }) => ($isClickable ? 'pointer' : 'default')};
+    .recent-assessment-table-cell {
+      padding: 0.5rem ${spacing.s};
 
-  &:last-child {
-    border-bottom: 0;
-  }
+      color: ${colors.text.secondary};
+      vertical-align: middle;
+    }
 
-  &:hover {
-    background-color: ${({ theme, $isClickable }) =>
-      $isClickable ? theme.colors.neutral.grey50 : 'transparent'};
-  }
-`;
+    .recent-assessment-table-name {
+      display: block;
+      color: ${colors.text.primary};
+    }
 
-export const RecentAssessmentCell = styled.td.attrs({
-  className: 'recent-assessment-table-recent-assessment-cell',
-})`
-  padding: 0.5rem ${({ theme }) => theme.spacing.s};
+    .recent-assessment-table-company {
+      display: block;
+      margin-top: 0.125rem;
 
-  color: ${({ theme }) => theme.colors.text.secondary};
+      font-size: ${typography.body.small.size};
+      color: ${colors.text.muted};
+    }
 
-  vertical-align: middle;
-`;
+    .recent-assessment-table-type-badge {
+      display: inline-flex;
+      align-items: center;
 
-export const RecentAssessmentName = styled.strong.attrs({
-  className: 'recent-assessment-table-recent-assessment-name',
-})`
-  display: block;
+      padding: 0.125rem 0.5rem;
 
-  color: ${({ theme }) => theme.colors.text.primary};
-`;
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.sm};
 
-export const RecentAssessmentCompany = styled.span.attrs({
-  className: 'recent-assessment-table-recent-assessment-company',
-})`
-  display: block;
-  margin-top: 0.125rem;
+      font-size: ${typography.body.small.size};
 
-  font-size: ${({ theme }) => theme.typography.body.small.size};
+      color: ${colors.text.secondary};
+      background-color: ${colors.neutral.grey50};
+    }
 
-  color: ${({ theme }) => theme.colors.text.muted};
-`;
-
-export const TypeBadge = styled.span.attrs({
-  className: 'recent-assessment-table-type-badge',
-})`
-  display: inline-flex;
-  align-items: center;
-
-  padding: 0.125rem 0.5rem;
-
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
-
-  border-radius: ${({ theme }) => theme.radii.sm};
-
-  font-size: ${({ theme }) => theme.typography.body.small.size};
-
-  color: ${({ theme }) => theme.colors.text.secondary};
-
-  background-color: ${({ theme }) => theme.colors.neutral.grey50};
-`;
-
-export const FindingsCount = styled.span.attrs({
-  className: 'recent-assessment-table-findings-count',
-})`
-  color: ${({ theme }) => theme.colors.text.primary};
+    .recent-assessment-table-findings-count {
+      color: ${colors.text.primary};
+    }
+  `}
 `;
 
 export default StyledRecentAssessmentTable;

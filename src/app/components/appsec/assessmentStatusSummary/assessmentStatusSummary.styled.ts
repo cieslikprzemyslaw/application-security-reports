@@ -3,65 +3,51 @@ import styled, { css } from 'styled-components';
 const StyledAssessmentStatusSummary = styled.div.attrs({
   className: 'assessment-status-summary',
 })`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
-  gap: ${({ theme }) => theme.spacing.xxs};
-`;
+  ${({ theme: { colors, radii, spacing, typography } }) => css`
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: ${spacing.xxs};
 
-export const StatusSummaryItem = styled.div.attrs({
-  className: 'assessment-status-summary-status-summary-item',
-})<{
-  $tone: 'brand' | 'success' | 'warning' | 'neutral';
-}>`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xxxs};
+    .assessment-status-summary-item {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.xxxs};
 
-  padding: ${({ theme }) => theme.spacing.s};
+      padding: ${spacing.s};
 
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.md};
+    }
 
-  border-radius: ${({ theme }) => theme.radii.md};
+    .assessment-status-summary-item--brand {
+      color: ${colors.brand.primary};
+      background-color: ${colors.brand.wash};
+    }
 
-  ${({ theme, $tone }) => {
-    const tones = {
-      brand: {
-        color: theme.colors.brand.primary,
-        background: theme.colors.brand.wash,
-      },
-      success: {
-        color: theme.colors.severity.low.text,
-        background: theme.colors.severity.low.background,
-      },
-      warning: {
-        color: theme.colors.severity.medium.text,
-        background: theme.colors.severity.medium.background,
-      },
-      neutral: {
-        color: theme.colors.text.secondary,
-        background: theme.colors.neutral.grey100,
-      },
-    } as const;
+    .assessment-status-summary-item--success {
+      color: ${colors.severity.low.text};
+      background-color: ${colors.severity.low.background};
+    }
 
-    return css`
-      color: ${tones[$tone].color};
-      background-color: ${tones[$tone].background};
-    `;
-  }}
-`;
+    .assessment-status-summary-item--warning {
+      color: ${colors.severity.medium.text};
+      background-color: ${colors.severity.medium.background};
+    }
 
-export const StatusSummaryValue = styled.strong.attrs({
-  className: 'assessment-status-summary-status-summary-value',
-})`
-  font-size: ${({ theme }) => theme.typography.headings.h4.size};
+    .assessment-status-summary-item--neutral {
+      color: ${colors.text.secondary};
+      background-color: ${colors.neutral.grey100};
+    }
 
-  line-height: ${({ theme }) => theme.typography.headings.h4.lineHeight};
-`;
+    .assessment-status-summary-value {
+      font-size: ${typography.headings.h4.size};
+      line-height: ${typography.headings.h4.lineHeight};
+    }
 
-export const StatusSummaryLabel = styled.span.attrs({
-  className: 'assessment-status-summary-status-summary-label',
-})`
-  font-size: ${({ theme }) => theme.typography.body.small.size};
+    .assessment-status-summary-label {
+      font-size: ${typography.body.small.size};
+    }
+  `}
 `;
 
 export default StyledAssessmentStatusSummary;

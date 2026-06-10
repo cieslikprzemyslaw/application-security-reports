@@ -43,6 +43,10 @@ export const Interactive: Story = {
 };
 
 export const AllStatuses: Story = {
+  args: {
+    status: 'Open',
+    size: 'medium',
+  },
   render: () => (
     <div
       style={{
