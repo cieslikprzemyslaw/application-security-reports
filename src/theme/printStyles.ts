@@ -1,0 +1,3 @@
+import { createGlobalStyle } from 'styled-components';
+const PrintStyle = createGlobalStyle`@media print{@page{size:A4;margin:18mm 16mm}html,body{background:#fff!important;color:#000!important;font-size:16px}body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}.no-print,[data-print-hidden='true']{display:none!important}.avoid-break-inside,article,table,figure{break-inside:avoid;page-break-inside:avoid}.page-break-before{break-before:page;page-break-before:always}.page-break-after{break-after:page;page-break-after:always}thead{display:table-header-group}img{max-width:100%!important;break-inside:avoid}a{color:#000!important;text-decoration:none}}`;
+export default PrintStyle;

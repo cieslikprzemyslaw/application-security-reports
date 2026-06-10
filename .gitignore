@@ -1,0 +1,11 @@
+node_modules/
+dist/
+dist-server/
+storybook-static/
+.env
+*.log
+data/*
+!data/.gitkeep
+data/*.tmp
+uploads/evidence/*
+!uploads/evidence/.gitkeep
