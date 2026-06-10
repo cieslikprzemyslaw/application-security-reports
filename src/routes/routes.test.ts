@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 
 import { routePatterns, routes } from './index.js';
 
-assert.equal(routes.dashboard, '/');
+assert.equal(routePatterns.root, '/');
+assert.equal(routes.root, '/');
+assert.equal(routes.dashboard, '/dashboard');
 assert.equal(routes.companies, '/companies');
 assert.equal(routes.assessments, '/assessments');
 assert.equal(routes.threats, '/threats');
