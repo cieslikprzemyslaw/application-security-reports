@@ -11,7 +11,8 @@ const buildRouteWithId = (basePath: string, id: string, routeName: string) => {
 };
 
 export const routePatterns = {
-  dashboard: '/',
+  root: '/',
+  dashboard: '/dashboard',
   companies: '/companies',
   assessments: '/assessments',
   assessmentDetails: '/assessments/:assessmentId',
@@ -22,6 +23,7 @@ export const routePatterns = {
 } as const;
 
 export const routes = {
+  root: routePatterns.root,
   dashboard: routePatterns.dashboard,
   companies: routePatterns.companies,
   assessments: routePatterns.assessments,
