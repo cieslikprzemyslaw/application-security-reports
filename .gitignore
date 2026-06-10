@@ -10,3 +10,4 @@ data/*.tmp
 uploads/evidence/*
 !uploads/evidence/.gitkeep
 .tmp/
+AGENTS.md
