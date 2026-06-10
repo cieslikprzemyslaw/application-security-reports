@@ -48,7 +48,7 @@ const getSizeStyles = (size: StatusBadgeSize) => {
 const StyledStatusBadge = styled.span.attrs({
   className: 'status-badge',
 })<StatusBadgeStyledProps>`
-  ${({ theme: { radii, typography } }) => css`
+  ${({ theme: { radii, typography } }) => css<StatusBadgeStyledProps>`
     display: inline-flex;
     align-items: center;
 

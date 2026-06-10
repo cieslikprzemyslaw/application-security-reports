@@ -5,7 +5,7 @@ import type { DividerStyledProps } from './divider.type';
 const StyledDivider = styled.hr.attrs({
   className: 'divider',
 })<DividerStyledProps>`
-  ${({ theme: { colors } }) => css`
+  ${({ theme: { colors } }) => css<DividerStyledProps>`
     margin: 0;
     border: 0;
 

@@ -14,7 +14,10 @@ const StyledSeverityBadge = styled.span.attrs({ className: 'severity-badge' })<{
   $severity: Severity;
   $size: SeverityBadgeSize;
 }>`
-  ${({ theme: { colors, radii, typography } }) => css`
+  ${({ theme: { colors, radii, typography } }) => css<{
+    $severity: Severity;
+    $size: SeverityBadgeSize;
+  }>`
     display: inline-flex;
     align-items: center;
     justify-content: center;

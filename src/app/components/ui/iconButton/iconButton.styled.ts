@@ -103,7 +103,7 @@ const getVariantStyles = (
 const StyledIconButton = styled.button.attrs({
   className: 'icon-button',
 })<IconButtonStyledProps>`
-  ${({ theme: { colors, radii, transitions } }) => css`
+  ${({ theme: { colors, radii, transitions } }) => css<IconButtonStyledProps>`
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -125,7 +125,7 @@ const StyledIconButton = styled.button.attrs({
     ${({ $size }) => getSizeStyles($size)}
     ${({ $variant, $isSelected }) => getVariantStyles($variant, $isSelected)}
 
-  &:focus-visible {
+    &:focus-visible {
       outline: none;
       box-shadow:
         0 0 0 2px ${colors.neutral.white},

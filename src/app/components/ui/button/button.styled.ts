@@ -128,7 +128,9 @@ const getVariantStyles = (variant: ButtonVariant, isSelected: boolean) => {
 const StyledButton = styled.button.attrs({
   className: 'button',
 })<ButtonStyledProps>`
-  ${({ theme: { colors, radii, spacing, transitions, typography } }) => css`
+  ${({
+    theme: { colors, radii, spacing, transitions, typography },
+  }) => css<ButtonStyledProps>`
     display: inline-flex;
     flex-direction: ${({ $iconPosition }) =>
       $iconPosition === 'right' ? 'row-reverse' : 'row'};
@@ -161,7 +163,7 @@ const StyledButton = styled.button.attrs({
     ${({ $size, $isIconOnly }) => getSizeStyles($size, $isIconOnly)}
     ${({ $variant, $isSelected }) => getVariantStyles($variant, $isSelected)}
 
-  &:disabled {
+    &:disabled {
       cursor: not-allowed;
     }
 

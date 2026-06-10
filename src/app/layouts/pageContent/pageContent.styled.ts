@@ -52,7 +52,10 @@ const StyledPageContent = styled.div.attrs({ className: 'page-content' })<{
   $maxWidth: NonNullable<PageContentProps['maxWidth']>;
   $spacing: NonNullable<PageContentProps['spacing']>;
 }>`
-  ${({ theme: { mq, spacing } }) => css`
+  ${({ theme: { mq, spacing } }) => css<{
+    $maxWidth: NonNullable<PageContentProps['maxWidth']>;
+    $spacing: NonNullable<PageContentProps['spacing']>;
+  }>`
     width: 100%;
     max-width: ${({ $maxWidth }) => getMaxWidth($maxWidth)};
 

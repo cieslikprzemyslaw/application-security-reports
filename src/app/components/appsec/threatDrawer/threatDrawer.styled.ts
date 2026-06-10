@@ -13,7 +13,7 @@ const StyledThreatDrawer = styled.aside.attrs({ className: 'threat-drawer' })<{
       typography,
       zIndices,
     },
-  }) => css`
+  }) => css<{ $isOpen: boolean }>`
     position: fixed;
     inset: 0 0 0 auto;
     z-index: ${zIndices.drawer};
