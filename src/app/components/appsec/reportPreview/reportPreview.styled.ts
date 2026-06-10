@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledReportPreview = styled.article.attrs({
   className: 'report-preview',

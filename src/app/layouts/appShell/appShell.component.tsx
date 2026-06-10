@@ -10,10 +10,12 @@ const AppShell = ({
   children,
   isSidebarOpen = false,
   onSidebarClose,
+  sidebarId,
   ...rest
 }: AppShellProps) => (
   <StyledAppShell {...rest}>
     <aside
+      id={sidebarId}
       className="app-shell-sidebar"
       data-is-open={isSidebarOpen ? 'true' : 'false'}
     >
@@ -34,7 +36,9 @@ const AppShell = ({
     />
 
     <div className="app-shell-main">
-      <div className="app-shell-topbar">{topbar}</div>
+      <div className="app-shell-topbar" data-print-hidden="true">
+        {topbar}
+      </div>
 
       <main className="app-shell-content">{children}</main>
     </div>

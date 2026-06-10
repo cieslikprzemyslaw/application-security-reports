@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledThreatDrawer = styled.aside.attrs({ className: 'threat-drawer' })<{
   $isOpen: boolean;

@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 import type { StatIconTone, StatTrendTone } from './statCard.type';
 

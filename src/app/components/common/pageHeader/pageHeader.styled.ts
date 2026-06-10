@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledPageHeader = styled.header`
   ${({ theme: { colors, mq, spacing, typography } }) => css`

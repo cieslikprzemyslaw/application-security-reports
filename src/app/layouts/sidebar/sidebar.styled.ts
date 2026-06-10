@@ -1,8 +1,8 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledSidebar = styled.nav.attrs({ className: 'sidebar' })`
   ${({
-    theme: { colors, layoutSizes, radii, spacing, transitions, typography },
+    theme: { colors, layoutSizes, mq, radii, spacing, transitions, typography },
   }) => css`
     display: flex;
     flex-direction: column;
@@ -17,11 +17,50 @@ const StyledSidebar = styled.nav.attrs({ className: 'sidebar' })`
     .sidebar-brand {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: ${spacing.s};
 
       min-height: ${layoutSizes.topbarHeight};
       padding: 0 ${spacing.s};
 
       border-bottom: 1px solid rgb(255 255 255 / 10%);
+    }
+
+    .sidebar-brand-content {
+      min-width: 0;
+    }
+
+    .sidebar-brand-actions {
+      display: inline-flex;
+
+      @media ${mq.min.laptop} {
+        display: none;
+      }
+    }
+
+    .sidebar-close-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: ${radii.md};
+
+      color: ${colors.neutral.white};
+      background-color: rgb(255 255 255 / 6%);
+    }
+
+    .sidebar-close-button svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+
+    .sidebar-close-button:hover {
+      background-color: rgb(255 255 255 / 10%);
     }
 
     .sidebar-body {
@@ -109,7 +148,8 @@ const StyledSidebar = styled.nav.attrs({ className: 'sidebar' })`
     }
 
     .sidebar-link:focus-visible,
-    .sidebar-button:focus-visible {
+    .sidebar-button:focus-visible,
+    .sidebar-close-button:focus-visible {
       outline: 2px solid ${colors.border.focus};
       outline-offset: 2px;
     }

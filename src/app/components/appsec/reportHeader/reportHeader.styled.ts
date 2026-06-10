@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledReportHeader = styled.header.attrs({ className: 'report-header' })`
   ${({ theme: { colors, spacing, typography } }) => css`

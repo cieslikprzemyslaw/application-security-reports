@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledFilterToolbar = styled.div`
   ${({ theme: { colors, mq, spacing, typography } }) => css`

@@ -17,7 +17,7 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "tsx src/routes/routes.test.ts && tsx src/app/appRouter.test.tsx",
+    "test": "tsx src/routes/routes.test.ts && tsx src/app/appRouter.test.tsx && tsx src/app/layouts/appLayout/appLayout.test.tsx",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.server.json",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

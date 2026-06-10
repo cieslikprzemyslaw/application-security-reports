@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledDataTable = styled.div.attrs({
   className: 'data-table-wrapper',

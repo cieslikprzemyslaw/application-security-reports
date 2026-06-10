@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledRecentAssessmentTable = styled.div.attrs({
   className: 'recent-assessment-table',

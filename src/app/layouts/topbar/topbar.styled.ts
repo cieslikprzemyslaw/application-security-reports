@@ -1,7 +1,7 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledTopbar = styled.header.attrs({ className: 'topbar' })`
-  ${({ theme: { colors, layoutSizes, mq, spacing } }) => css`
+  ${({ theme: { colors, layoutSizes, mq, radii, spacing } }) => css`
     display: flex;
     align-items: center;
     gap: ${spacing.s};
@@ -22,6 +22,32 @@ const StyledTopbar = styled.header.attrs({ className: 'topbar' })`
       @media ${mq.min.laptop} {
         display: none;
       }
+    }
+
+    .topbar-menu button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.md};
+
+      color: ${colors.text.secondary};
+      background-color: ${colors.surface.card};
+    }
+
+    .topbar-menu button svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    .topbar-menu button:hover {
+      color: ${colors.text.primary};
+      background-color: ${colors.surface.subtle};
     }
 
     .topbar-title {

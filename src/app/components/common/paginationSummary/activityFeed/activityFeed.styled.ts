@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledActivityFeed = styled.div.attrs({ className: 'activity-feed' })`
   ${({ theme: { colors, radii, spacing, typography } }) => css`

@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { styled, css } from 'styled-components';
 
 const StyledDashboard = styled.div.attrs({ className: 'dashboard' })`
   ${({ theme: { colors, mq, radii, shadows, spacing, typography } }) => css`
