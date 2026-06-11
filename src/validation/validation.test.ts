@@ -98,7 +98,9 @@ for (const validDate of ['2026-06-11', '2024-02-29']) {
   assert.ok(isoDateStringSchema.safeParse(validDate).success);
 }
 
-assert.ok(isoDateTimeStringSchema.safeParse('2026-06-11T12:30:00.000Z').success);
+assert.ok(
+  isoDateTimeStringSchema.safeParse('2026-06-11T12:30:00.000Z').success,
+);
 assert.ok(timestampSchema.safeParse('2026-06-11T12:30:00.000Z').success);
 
 for (const invalidDate of [

@@ -1,5 +1,6 @@
 import js from '@eslint/js';
 import globals from 'globals';
+import prettierPlugin from 'eslint-plugin-prettier';
 import reactHooks from 'eslint-plugin-react-hooks';
 import prettier from 'eslint-config-prettier';
 import tseslint from 'typescript-eslint';
@@ -51,10 +52,12 @@ export default tseslint.config(
       'vite.config.ts',
     ],
     plugins: {
+      prettier: prettierPlugin,
       'react-hooks': reactHooks,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      'prettier/prettier': 'error',
     },
   },
   {

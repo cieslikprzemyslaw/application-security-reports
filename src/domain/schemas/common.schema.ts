@@ -62,7 +62,10 @@ export const isoDateStringSchema = z
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid ISO date string')
   .refine(isRealCalendarDate, { message: 'Invalid ISO date string' });
 
-export const isoDateTimeStringSchema = z.string().trim().datetime({ offset: true });
+export const isoDateTimeStringSchema = z
+  .string()
+  .trim()
+  .datetime({ offset: true });
 
 export const timestampSchema = isoDateTimeStringSchema;
 
