@@ -1,4 +1,4 @@
-import type { Severity, SettingsId, TimestampedEntity } from './common';
+import type { Severity, SettingsId, TimestampedEntity } from './common.js';
 
 export const THEME_PREFERENCES = ['light', 'dark', 'system'] as const;
 

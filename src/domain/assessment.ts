@@ -5,7 +5,7 @@ import type {
   ISODateString,
   Severity,
   TimestampedEntity,
-} from './common';
+} from './common.js';
 
 export interface Assessment extends TimestampedEntity {
   id: AssessmentId;

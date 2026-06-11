@@ -5,7 +5,7 @@ import type {
   ISODateString,
   ThreatId,
   TimestampedEntity,
-} from './common';
+} from './common.js';
 
 export interface Evidence extends TimestampedEntity {
   id: EvidenceId;

@@ -1,4 +1,4 @@
-import type { CompanyId, TimestampedEntity } from './common';
+import type { CompanyId, TimestampedEntity } from './common.js';
 
 export interface Company extends TimestampedEntity {
   id: CompanyId;

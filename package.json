@@ -17,7 +17,8 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "tsx src/routes/routes.test.ts && tsx src/app/appRouter.test.tsx && tsx src/app/layouts/sidebar/sidebar.test.tsx && tsx src/app/layouts/topbar/topbar.test.tsx && tsx src/app/layouts/appLayout/appLayout.test.tsx",
+    "test": "tsx src/routes/routes.test.ts && tsx src/app/appRouter.test.tsx && tsx src/app/layouts/sidebar/sidebar.test.tsx && tsx src/app/layouts/topbar/topbar.test.tsx && tsx src/app/layouts/appLayout/appLayout.test.tsx && npm run test:validation",
+    "test:validation": "tsx src/domain/schemas/domain.schemas.test.ts && tsx src/validation/validation.test.ts && tsx server/services/jsonFileStore.test.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.server.json",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

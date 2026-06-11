@@ -4,7 +4,7 @@ import type {
   ActivityId,
   DomainEntityId,
   ISODateString,
-} from './common';
+} from './common.js';
 
 export interface Activity {
   id: ActivityId;

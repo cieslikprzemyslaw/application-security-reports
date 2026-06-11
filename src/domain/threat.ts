@@ -6,7 +6,7 @@ import type {
   ThreatId,
   ThreatStatus,
   TimestampedEntity,
-} from './common';
+} from './common.js';
 
 export interface Threat extends TimestampedEntity {
   id: ThreatId;

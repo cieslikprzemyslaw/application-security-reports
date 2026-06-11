@@ -1,10 +1,16 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-const dataDirectory = path.resolve(process.cwd(), 'data');
+import type { ZodTypeAny } from 'zod';
+
+import { parseJsonData } from '../../src/validation/index.js';
+
 const resolveDataPath = (filename: string) =>
-  path.join(dataDirectory, path.basename(filename));
-export const readJsonFile = async <T>(filename: string): Promise<T> =>
-  JSON.parse(await fs.readFile(resolveDataPath(filename), 'utf8')) as T;
+  path.join(path.resolve(process.cwd(), 'data'), path.basename(filename));
+export const readJsonFile = async <T extends ZodTypeAny>(
+  filename: string,
+  schema: T,
+): Promise<import('zod').output<T>> =>
+  parseJsonData(await fs.readFile(resolveDataPath(filename), 'utf8'), schema);
 export const writeJsonFile = async <T>(
   filename: string,
   value: T,
