@@ -30,12 +30,6 @@ const navigationGroups: SidebarNavigationGroup[] = [
   },
 ];
 
-const MenuIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-    <path d="M4 7h16M4 12h16M4 17h16" strokeWidth="2" strokeLinecap="round" />
-  </svg>
-);
-
 const AppLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -64,18 +58,9 @@ const AppLayout = () => {
       topbar={
         <Topbar
           title="AppSec Report Builder"
-          menuButton={
-            <button
-              type="button"
-              className="app-layout-menu-button"
-              aria-label="Open navigation"
-              aria-controls={sidebarId}
-              aria-expanded={isSidebarOpen}
-              onClick={openSidebar}
-            >
-              <MenuIcon />
-            </button>
-          }
+          onMenuClick={openSidebar}
+          menuButtonControls={sidebarId}
+          menuButtonExpanded={isSidebarOpen}
         />
       }
     >

@@ -116,10 +116,16 @@ await (async () => {
   {
     const { container, root } = await renderApp('/dashboard');
     const openButton = container.querySelector(
-      'button[aria-label="Open navigation"]',
+      'button[aria-label="Open navigation menu"]',
     ) as HTMLButtonElement | null;
 
     assert.ok(openButton, 'Expected mobile menu button');
+    assert.equal(
+      openButton?.getAttribute('aria-controls'),
+      'app-layout-sidebar',
+    );
+    assert.equal(openButton?.getAttribute('aria-expanded'), 'false');
+    assert.equal(openButton?.tagName, 'BUTTON');
 
     await act(async () => {
       openButton?.dispatchEvent(
@@ -138,6 +144,7 @@ await (async () => {
         ?.getAttribute('data-is-open'),
       'true',
     );
+    assert.equal(openButton?.getAttribute('aria-expanded'), 'true');
 
     const closeButton = container.querySelector(
       'button[aria-label="Close navigation"]',
@@ -171,7 +178,7 @@ await (async () => {
   {
     const { container, root } = await renderApp('/dashboard');
     const openButton = container.querySelector(
-      'button[aria-label="Open navigation"]',
+      'button[aria-label="Open navigation menu"]',
     ) as HTMLButtonElement | null;
 
     await act(async () => {
@@ -219,6 +226,10 @@ await (async () => {
       new URL('../appShell/appShell.styled.ts', import.meta.url),
       'utf8',
     );
+    const topbarStyles = readFileSync(
+      new URL('../topbar/topbar.styled.ts', import.meta.url),
+      'utf8',
+    );
     const reportPreviewStyles = readFileSync(
       new URL(
         '../../components/appsec/reportPreviewShell/reportPreviewShell.styled.ts',
@@ -230,6 +241,9 @@ await (async () => {
     assert.ok(appShellStyles.includes('@media print'));
     assert.ok(appShellStyles.includes('.app-shell-sidebar'));
     assert.ok(appShellStyles.includes('.app-shell-topbar'));
+    assert.ok(topbarStyles.includes('position: sticky;'));
+    assert.ok(topbarStyles.includes('top: 0;'));
+    assert.ok(topbarStyles.includes('.topbar-menu-button:focus-visible'));
     assert.ok(reportPreviewStyles.includes('@media print'));
     assert.ok(reportPreviewStyles.includes('.report-preview-shell-header'));
   }
