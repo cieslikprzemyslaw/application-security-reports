@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  STRIDE_CATEGORIES,
-  STRIDE_LABELS,
-  SEVERITIES,
-  THREAT_STATUSES,
-} from '~/domain';
+import { STRIDE_CATEGORIES, STRIDE_LABELS, THREAT_STATUSES } from '~/domain';
 
 import Button from '~/app/components/ui/button';
 import Input from '~/app/components/ui/input';
@@ -51,12 +46,10 @@ const ThreatForm = ({
         value={value.strideCategory}
         error={errors.strideCategory}
         required
-        options={[
-          ...STRIDE_CATEGORIES.map(value => ({
-            label: STRIDE_LABELS[value],
-            value,
-          })),
-        ]}
+        options={STRIDE_CATEGORIES.map(value => ({
+          label: STRIDE_LABELS[value],
+          value,
+        }))}
         onChange={event =>
           onChange(
             updateField(
@@ -73,16 +66,15 @@ const ThreatForm = ({
         value={value.severity}
         error={errors.severity}
         required
-        options={[
-          ...(['critical', 'high', 'medium', 'low', 'informational'] as const).map(
-            value => ({
-              label: value === 'informational'
-                ? 'Informational'
-                : value.charAt(0).toUpperCase() + value.slice(1),
-              value,
-            }),
-          ),
-        ]}
+        options={(
+          ['critical', 'high', 'medium', 'low', 'informational'] as const
+        ).map(value => ({
+          label:
+            value === 'informational'
+              ? 'Informational'
+              : value.charAt(0).toUpperCase() + value.slice(1),
+          value,
+        }))}
         onChange={event =>
           onChange(
             updateField(
@@ -99,19 +91,16 @@ const ThreatForm = ({
         value={value.status}
         error={errors.status}
         required
-        options={[
-          ...THREAT_STATUSES.map(value => ({
-            label:
-              {
-                open: 'Open',
-                'in-review': 'In Review',
-                mitigated: 'Mitigated',
-                'accepted-risk': 'Accepted Risk',
-                'false-positive': 'False Positive',
-              }[value],
-            value,
-          })),
-        ]}
+        options={THREAT_STATUSES.map(value => ({
+          label: {
+            open: 'Open',
+            'in-review': 'In Review',
+            mitigated: 'Mitigated',
+            'accepted-risk': 'Accepted Risk',
+            'false-positive': 'False Positive',
+          }[value],
+          value,
+        }))}
         onChange={event =>
           onChange(
             updateField(

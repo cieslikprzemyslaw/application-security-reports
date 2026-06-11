@@ -21,6 +21,9 @@ export interface Evidence extends TimestampedEntity {
   capturedAt?: ISODateString;
 }
 
-export type CreateEvidenceInput = Omit<Evidence, 'id' | 'createdAt' | 'updatedAt'>;
+export type CreateEvidenceInput = Omit<
+  Evidence,
+  'id' | 'createdAt' | 'updatedAt'
+>;
 
 export type UpdateEvidenceInput = Partial<CreateEvidenceInput>;

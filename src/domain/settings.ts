@@ -1,8 +1,4 @@
-import type {
-  Severity,
-  SettingsId,
-  TimestampedEntity,
-} from './common';
+import type { Severity, SettingsId, TimestampedEntity } from './common';
 
 export const THEME_PREFERENCES = ['light', 'dark', 'system'] as const;
 
@@ -28,6 +24,9 @@ export interface Settings extends TimestampedEntity {
   confidentialReports?: boolean;
 }
 
-export type CreateSettingsInput = Omit<Settings, 'id' | 'createdAt' | 'updatedAt'>;
+export type CreateSettingsInput = Omit<
+  Settings,
+  'id' | 'createdAt' | 'updatedAt'
+>;
 
 export type UpdateSettingsInput = Partial<CreateSettingsInput>;

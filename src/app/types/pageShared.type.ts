@@ -1,10 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type {
-  AssessmentStatus,
-  Severity,
-  ThreatStatus,
-} from '~/domain';
+export type { AssessmentStatus, Severity, ThreatStatus } from '~/domain';
 
 export interface SelectOption {
   label: string;

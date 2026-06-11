@@ -14,7 +14,13 @@ const meta = {
       control: {
         type: 'select',
       },
-      options: ['open', 'in-review', 'mitigated', 'accepted-risk', 'false-positive'],
+      options: [
+        'open',
+        'in-review',
+        'mitigated',
+        'accepted-risk',
+        'false-positive',
+      ],
     },
     size: {
       control: {

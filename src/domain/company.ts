@@ -1,4 +1,4 @@
-import type { TimestampedEntity, CompanyId, ISODateString } from './common';
+import type { CompanyId, TimestampedEntity } from './common';
 
 export interface Company extends TimestampedEntity {
   id: CompanyId;
@@ -15,6 +15,9 @@ export type CompanyListItem = Company & {
   assessmentCount: number;
 };
 
-export type CreateCompanyInput = Omit<Company, 'id' | 'createdAt' | 'updatedAt'>;
+export type CreateCompanyInput = Omit<
+  Company,
+  'id' | 'createdAt' | 'updatedAt'
+>;
 
 export type UpdateCompanyInput = Partial<CreateCompanyInput>;
