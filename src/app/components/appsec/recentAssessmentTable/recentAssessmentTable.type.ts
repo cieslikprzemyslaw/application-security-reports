@@ -1,5 +1,4 @@
-import type { Severity } from '~/app/components/ui/severityBadge';
-import type { ThreatStatus } from '~/app/components/ui/statusBadge';
+import type { AssessmentStatus, Severity } from '~/domain';
 
 export interface RecentAssessmentRow {
   id: string;
@@ -8,7 +7,7 @@ export interface RecentAssessmentRow {
   assessmentType: string;
   severity: Severity;
   findingsCount: number;
-  status: ThreatStatus;
+  status: AssessmentStatus;
 }
 
 export interface RecentAssessmentTableProps {

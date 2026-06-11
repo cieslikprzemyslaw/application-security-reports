@@ -17,29 +17,29 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    overallRisk: 'High',
+    overallRisk: 'high',
     totalFindings: 14,
     openThreats: 10,
     retestRequired: 2,
     severityCounts: [
       {
-        severity: 'Critical',
+        severity: 'critical',
         count: 1,
       },
       {
-        severity: 'High',
+        severity: 'high',
         count: 3,
       },
       {
-        severity: 'Medium',
+        severity: 'medium',
         count: 5,
       },
       {
-        severity: 'Low',
+        severity: 'low',
         count: 4,
       },
       {
-        severity: 'Informational',
+        severity: 'informational',
         count: 1,
       },
     ],

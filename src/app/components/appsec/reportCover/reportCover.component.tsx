@@ -139,14 +139,7 @@ const ReportCover = ({
                   <SeverityBadge severity={finding.severity} size="small" />
 
                   <StatusBadge
-                    status={
-                      finding.status as
-                        | 'Open'
-                        | 'In Progress'
-                        | 'Resolved'
-                        | 'Retest Required'
-                        | 'Accepted Risk'
-                    }
+                    status={finding.status}
                     size="small"
                   />
                 </div>

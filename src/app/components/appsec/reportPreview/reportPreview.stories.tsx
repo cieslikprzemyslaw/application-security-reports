@@ -35,29 +35,29 @@ export const Default: Story = {
       'The assessment identified one critical and three high-severity findings requiring immediate attention.',
     riskSummary: (
       <RiskSummary
-        overallRisk="High"
+        overallRisk="high"
         totalFindings={14}
         openThreats={10}
         retestRequired={2}
         severityCounts={[
           {
-            severity: 'Critical',
+            severity: 'critical',
             count: 1,
           },
           {
-            severity: 'High',
+            severity: 'high',
             count: 3,
           },
           {
-            severity: 'Medium',
+            severity: 'medium',
             count: 5,
           },
           {
-            severity: 'Low',
+            severity: 'low',
             count: 4,
           },
           {
-            severity: 'Informational',
+            severity: 'informational',
             count: 1,
           },
         ]}
@@ -67,7 +67,7 @@ export const Default: Story = {
       {
         id: 'thr_1',
         title: 'Missing Server-Side Authorization',
-        severity: 'Critical',
+        severity: 'critical',
         observation:
           'The endpoint returns objects without verifying resource ownership.',
         risk: 'An authenticated attacker can access another customer’s order details.',

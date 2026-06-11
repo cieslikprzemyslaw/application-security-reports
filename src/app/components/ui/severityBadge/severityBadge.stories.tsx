@@ -14,7 +14,7 @@ const meta = {
       control: {
         type: 'select',
       },
-      options: ['Critical', 'High', 'Medium', 'Low', 'Informational'],
+      options: ['critical', 'high', 'medium', 'low', 'informational'],
     },
     size: {
       control: {
@@ -36,7 +36,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Interactive: Story = {
   args: {
-    severity: 'Critical',
+    severity: 'critical',
     size: 'medium',
     showDot: true,
   },
@@ -44,7 +44,7 @@ export const Interactive: Story = {
 
 export const AllSeverities: Story = {
   args: {
-    severity: 'Critical',
+    severity: 'critical',
     size: 'medium',
     showDot: true,
   },
@@ -56,11 +56,11 @@ export const AllSeverities: Story = {
         flexWrap: 'wrap',
       }}
     >
-      <SeverityBadge severity="Critical" />
-      <SeverityBadge severity="High" />
-      <SeverityBadge severity="Medium" />
-      <SeverityBadge severity="Low" />
-      <SeverityBadge severity="Informational" />
+      <SeverityBadge severity="critical" />
+      <SeverityBadge severity="high" />
+      <SeverityBadge severity="medium" />
+      <SeverityBadge severity="low" />
+      <SeverityBadge severity="informational" />
     </div>
   ),
 };

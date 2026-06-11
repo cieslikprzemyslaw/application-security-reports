@@ -1,12 +1,12 @@
-import { RiskLevel, ThreatStatus } from '~/app/types/pageShared.type';
+import type { Severity, StrideCategory, ThreatStatus } from '~/domain';
 
 export interface GlobalThreatRow {
   id: string;
   title: string;
   applicationName: string;
   companyName: string;
-  strideCategory: string;
-  severity: RiskLevel;
+  strideCategory: StrideCategory;
+  severity: Severity;
   status: ThreatStatus;
   updatedAt: string;
 }

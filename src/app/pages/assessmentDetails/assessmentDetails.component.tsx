@@ -2,13 +2,20 @@ import React from 'react';
 
 import GlobalThreatTable from '~/app/components/appsec/globalThreatTable';
 import Button from '~/app/components/ui/button';
+import Badge from '~/app/components/ui/badge';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 
 import StyledAssessmentDetails from './assessmentDetails.styled';
 
 import type { AssessmentDetailsProps } from './assessmentDetails.type';
 
-const toStatusClassName = (status: string) => status.replace(/\s+/g, '-');
+const assessmentStatusLabelMap: Record<string, string> = {
+  draft: 'Draft',
+  'in-progress': 'In Progress',
+  'in-review': 'In Review',
+  completed: 'Completed',
+  archived: 'Archived',
+};
 
 const AssessmentDetails = ({
   assessment,
@@ -62,14 +69,11 @@ const AssessmentDetails = ({
       <div className="assessment-details-summary-card">
         <strong>Status</strong>
 
-        <span
-          className={[
-            'assessment-details__status-badge',
-            `assessment-details__status-badge--${toStatusClassName(assessment.status)}`,
-          ].join(' ')}
-        >
-          {assessment.status}
-        </span>
+        <Badge
+          label={assessmentStatusLabelMap[assessment.status]}
+          variant="neutral"
+          size="small"
+        />
       </div>
     </div>
 

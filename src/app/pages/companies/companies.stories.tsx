@@ -50,7 +50,7 @@ export const Default: Story = {
         primaryContact: 'security@northstar.example',
         assessmentCount: 6,
         openThreats: 2,
-        riskPosture: 'High',
+        riskPosture: 'high',
       },
       {
         id: 'cmp_2',
@@ -61,7 +61,7 @@ export const Default: Story = {
         primaryContact: 'appsec@meridian.example',
         assessmentCount: 4,
         openThreats: 1,
-        riskPosture: 'Medium',
+        riskPosture: 'medium',
       },
     ],
   },

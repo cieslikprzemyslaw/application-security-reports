@@ -2,6 +2,7 @@ import React from 'react';
 
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
+import { STRIDE_LABELS } from '~/domain';
 
 import StyledGlobalThreatTable from './globalThreatTable.styled';
 
@@ -74,7 +75,7 @@ const GlobalThreatTable = ({
 
             <td className="global-threat-table-cell">
               <span className="global-threat-table-stride">
-                {threat.strideCategory}
+                {STRIDE_LABELS[threat.strideCategory]}
               </span>
             </td>
 

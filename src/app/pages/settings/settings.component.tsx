@@ -213,11 +213,11 @@ const Settings = ({ value, onChange, onSubmit }: SettingsProps) => (
                   <SeverityBadge
                     severity={
                       severity as
-                        | 'Critical'
-                        | 'High'
-                        | 'Medium'
-                        | 'Low'
-                        | 'Informational'
+                        | 'critical'
+                        | 'high'
+                        | 'medium'
+                        | 'low'
+                        | 'informational'
                     }
                     size="small"
                   />

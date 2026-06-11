@@ -1,12 +1,19 @@
 import React from 'react';
 
 import SeverityBadge from '~/app/components/ui/severityBadge';
+import Badge from '~/app/components/ui/badge';
 
 import StyledAssessmentTable from './assessmentTable.styled';
 
 import type { AssessmentTableProps } from './assessmentTable.type';
 
-const toStatusClassName = (status: string) => status.replace(/\s+/g, '-');
+const assessmentStatusLabelMap: Record<string, string> = {
+  draft: 'Draft',
+  'in-progress': 'In Progress',
+  'in-review': 'In Review',
+  completed: 'Completed',
+  archived: 'Archived',
+};
 
 const AssessmentTable = ({
   assessments,
@@ -112,14 +119,11 @@ const AssessmentTable = ({
             <td className="assessment-table__cell">{assessment.testerName}</td>
 
             <td className="assessment-table__cell">
-              <span
-                className={[
-                  'assessment-table__status-badge',
-                  `assessment-table__status-badge--${toStatusClassName(assessment.status)}`,
-                ].join(' ')}
-              >
-                {assessment.status}
-              </span>
+              <Badge
+                label={assessmentStatusLabelMap[assessment.status]}
+                variant="neutral"
+                size="small"
+              />
             </td>
 
             <td className="assessment-table__cell">

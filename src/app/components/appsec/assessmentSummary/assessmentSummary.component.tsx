@@ -1,7 +1,7 @@
 import React from 'react';
 
 import SeverityBadge from '~/app/components/ui/severityBadge';
-import StatusBadge from '~/app/components/ui/statusBadge';
+import Badge from '~/app/components/ui/badge';
 
 import StyledAssessmentSummary from './assessmentSummary.styled';
 
@@ -9,6 +9,14 @@ import type {
   AssessmentMetadataItem as AssessmentMetadataItemType,
   AssessmentSummaryProps,
 } from './assessmentSummary.type';
+
+const assessmentStatusLabelMap: Record<string, string> = {
+  draft: 'Draft',
+  'in-progress': 'In Progress',
+  'in-review': 'In Review',
+  completed: 'Completed',
+  archived: 'Archived',
+};
 
 const AssessmentSummary = ({
   companyName,
@@ -67,7 +75,11 @@ const AssessmentSummary = ({
         <div className="assessment-summary-badges">
           <SeverityBadge severity={overallRisk} />
 
-          <StatusBadge status={status} />
+          <Badge
+            label={assessmentStatusLabelMap[status]}
+            variant="neutral"
+            size="small"
+          />
         </div>
       </div>
 

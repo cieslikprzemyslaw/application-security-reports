@@ -19,23 +19,23 @@ export const Default: Story = {
   args: {
     items: [
       {
-        severity: 'Critical',
+        severity: 'critical',
         count: 1,
       },
       {
-        severity: 'High',
+        severity: 'high',
         count: 3,
       },
       {
-        severity: 'Medium',
+        severity: 'medium',
         count: 5,
       },
       {
-        severity: 'Low',
+        severity: 'low',
         count: 4,
       },
       {
-        severity: 'Informational',
+        severity: 'informational',
         count: 1,
       },
     ],

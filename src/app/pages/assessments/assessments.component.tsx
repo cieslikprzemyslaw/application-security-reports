@@ -78,11 +78,11 @@ const Assessments = ({
               value={statusFilter}
               options={[
                 { label: 'All Status', value: 'all' },
-                { label: 'Draft', value: 'Draft' },
-                { label: 'In Progress', value: 'In Progress' },
-                { label: 'In Review', value: 'In Review' },
-                { label: 'Completed', value: 'Completed' },
-                { label: 'Retest Required', value: 'Retest Required' },
+                { label: 'Draft', value: 'draft' },
+                { label: 'In Progress', value: 'in-progress' },
+                { label: 'In Review', value: 'in-review' },
+                { label: 'Completed', value: 'completed' },
+                { label: 'Archived', value: 'archived' },
               ]}
               onChange={event => onStatusFilterChange(event.target.value)}
             />
@@ -93,10 +93,10 @@ const Assessments = ({
               value={riskFilter}
               options={[
                 { label: 'All Risk', value: 'all' },
-                { label: 'Critical', value: 'Critical' },
-                { label: 'High', value: 'High' },
-                { label: 'Medium', value: 'Medium' },
-                { label: 'Low', value: 'Low' },
+                { label: 'Critical', value: 'critical' },
+                { label: 'High', value: 'high' },
+                { label: 'Medium', value: 'medium' },
+                { label: 'Low', value: 'low' },
               ]}
               onChange={event => onRiskFilterChange(event.target.value)}
             />

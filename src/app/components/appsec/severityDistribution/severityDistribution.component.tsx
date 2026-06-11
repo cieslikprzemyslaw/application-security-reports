@@ -7,11 +7,11 @@ import StyledSeverityDistribution from './severityDistribution.styled';
 import type { SeverityDistributionProps } from './severityDistribution.type';
 
 const severityKeyMap = {
-  Critical: 'critical',
-  High: 'high',
-  Medium: 'medium',
-  Low: 'low',
-  Informational: 'informational',
+  critical: 'critical',
+  high: 'high',
+  medium: 'medium',
+  low: 'low',
+  informational: 'informational',
 } as const;
 
 const SeverityDistribution = ({

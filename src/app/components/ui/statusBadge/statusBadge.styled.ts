@@ -7,11 +7,11 @@ import type {
 } from './statusBadge.type';
 
 const statusKeyMap = {
-  Open: 'open',
-  'In Progress': 'inProgress',
-  Resolved: 'resolved',
-  'Retest Required': 'retestRequired',
-  'Accepted Risk': 'acceptedRisk',
+  open: 'open',
+  'in-review': 'inProgress',
+  mitigated: 'resolved',
+  'accepted-risk': 'acceptedRisk',
+  'false-positive': 'retestRequired',
 } as const;
 
 const getStatusStyles = (status: ThreatStatus) => css`

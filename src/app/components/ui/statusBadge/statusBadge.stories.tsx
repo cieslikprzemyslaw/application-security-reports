@@ -14,13 +14,7 @@ const meta = {
       control: {
         type: 'select',
       },
-      options: [
-        'Open',
-        'In Progress',
-        'Resolved',
-        'Retest Required',
-        'Accepted Risk',
-      ],
+      options: ['open', 'in-review', 'mitigated', 'accepted-risk', 'false-positive'],
     },
     size: {
       control: {
@@ -37,14 +31,14 @@ type Story = StoryObj<typeof meta>;
 
 export const Interactive: Story = {
   args: {
-    status: 'Open',
+    status: 'open',
     size: 'medium',
   },
 };
 
 export const AllStatuses: Story = {
   args: {
-    status: 'Open',
+    status: 'open',
     size: 'medium',
   },
   render: () => (
@@ -55,11 +49,11 @@ export const AllStatuses: Story = {
         flexWrap: 'wrap',
       }}
     >
-      <StatusBadge status="Open" />
-      <StatusBadge status="In Progress" />
-      <StatusBadge status="Resolved" />
-      <StatusBadge status="Retest Required" />
-      <StatusBadge status="Accepted Risk" />
+      <StatusBadge status="open" />
+      <StatusBadge status="in-review" />
+      <StatusBadge status="mitigated" />
+      <StatusBadge status="accepted-risk" />
+      <StatusBadge status="false-positive" />
     </div>
   ),
 };

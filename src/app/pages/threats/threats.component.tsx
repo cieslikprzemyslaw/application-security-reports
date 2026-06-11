@@ -91,10 +91,10 @@ const Threats = ({
               value={severityFilter}
               options={[
                 { label: 'All Severity', value: 'all' },
-                { label: 'Critical', value: 'Critical' },
-                { label: 'High', value: 'High' },
-                { label: 'Medium', value: 'Medium' },
-                { label: 'Low', value: 'Low' },
+                { label: 'Critical', value: 'critical' },
+                { label: 'High', value: 'high' },
+                { label: 'Medium', value: 'medium' },
+                { label: 'Low', value: 'low' },
               ]}
               onChange={event => onSeverityFilterChange(event.target.value)}
             />
@@ -105,11 +105,11 @@ const Threats = ({
               value={statusFilter}
               options={[
                 { label: 'All Status', value: 'all' },
-                { label: 'Open', value: 'Open' },
-                { label: 'In Progress', value: 'In Progress' },
-                { label: 'Resolved', value: 'Resolved' },
-                { label: 'Retest Required', value: 'Retest Required' },
-                { label: 'Accepted Risk', value: 'Accepted Risk' },
+                { label: 'Open', value: 'open' },
+                { label: 'In Review', value: 'in-review' },
+                { label: 'Mitigated', value: 'mitigated' },
+                { label: 'Accepted Risk', value: 'accepted-risk' },
+                { label: 'False Positive', value: 'false-positive' },
               ]}
               onChange={event => onStatusFilterChange(event.target.value)}
             />

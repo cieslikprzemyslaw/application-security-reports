@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
 
-import type { RiskLevel } from '~/app/types/pageShared.type';
+import type { Severity, ThreatStatus } from '~/domain';
 
 export interface ReportFinding {
   id: string;
   title: string;
-  severity: RiskLevel;
-  status: string;
+  severity: Severity;
+  status: ThreatStatus;
   affectedAsset: string;
   observation: string;
   risk: string;
@@ -27,7 +27,7 @@ export interface ReportCoverProps {
   testerName: string;
   methodology: string;
   findingsCount: number;
-  overallRisk: RiskLevel;
+  overallRisk: Severity;
   executiveSummary: string;
   scope?: string[];
   findings?: ReportFinding[];

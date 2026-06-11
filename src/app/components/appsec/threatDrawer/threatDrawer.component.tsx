@@ -3,6 +3,7 @@ import React from 'react';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
 import Button from '~/app/components/ui/button';
+import { STRIDE_LABELS } from '~/domain';
 
 import StyledThreatDrawer from './threatDrawer.styled';
 
@@ -54,7 +55,7 @@ const ThreatDrawer = ({
           <section className="threat-drawer-section">
             <h3 className="threat-drawer-section-title">STRIDE</h3>
 
-            <p>{threat.strideCategory}</p>
+            <p>{STRIDE_LABELS[threat.strideCategory]}</p>
           </section>
 
           {description && (

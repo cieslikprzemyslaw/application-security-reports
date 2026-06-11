@@ -1,19 +1,20 @@
 import React from 'react';
+import { SEVERITIES, type Severity } from '~/domain';
 
 import StyledSeverityBadge from './severityBadge.styled';
 
-import type { Severity, SeverityBadgeProps } from './severityBadge.type';
+import type { SeverityBadgeProps } from './severityBadge.type';
 
-const validSeverities: Severity[] = [
-  'Critical',
-  'High',
-  'Medium',
-  'Low',
-  'Informational',
-];
+const severityLabelMap: Record<Severity, string> = {
+  informational: 'Informational',
+  low: 'Low',
+  medium: 'Medium',
+  high: 'High',
+  critical: 'Critical',
+};
 
 const isValidSeverity = (severity: unknown): severity is Severity =>
-  validSeverities.includes(severity as Severity);
+  SEVERITIES.includes(severity as Severity);
 
 const SeverityBadge = ({
   severity,
@@ -23,13 +24,13 @@ const SeverityBadge = ({
 }: SeverityBadgeProps) => {
   const safeSeverity: Severity = isValidSeverity(severity)
     ? severity
-    : 'Informational';
+    : 'informational';
 
   return (
     <StyledSeverityBadge $severity={safeSeverity} $size={size} {...rest}>
       {showDot && <span className="severity-badge-severity-dot" />}
 
-      {safeSeverity}
+      {severityLabelMap[safeSeverity]}
     </StyledSeverityBadge>
   );
 };
