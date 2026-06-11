@@ -18,11 +18,9 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     title: 'AppSec Report Builder',
-    menuButton: (
-      <button type="button" aria-label="Open navigation">
-        Menu
-      </button>
-    ),
+    onMenuClick: () => undefined,
+    menuButtonControls: 'app-layout-sidebar',
+    menuButtonExpanded: false,
     search: <input aria-label="Search" placeholder="Search..." />,
     actions: <button type="button">New assessment</button>,
     userMenu: <button type="button">PC</button>,

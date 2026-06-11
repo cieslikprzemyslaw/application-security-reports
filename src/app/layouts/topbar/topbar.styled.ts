@@ -1,7 +1,9 @@
 import { styled, css } from 'styled-components';
 
 const StyledTopbar = styled.header.attrs({ className: 'topbar' })`
-  ${({ theme: { colors, layoutSizes, mq, radii, spacing } }) => css`
+  ${({
+    theme: { colors, layoutSizes, mq, radii, spacing, transitions },
+  }) => css`
     display: flex;
     align-items: center;
     gap: ${spacing.s};
@@ -24,7 +26,7 @@ const StyledTopbar = styled.header.attrs({ className: 'topbar' })`
       }
     }
 
-    .topbar-menu button {
+    .topbar-menu-button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -38,16 +40,28 @@ const StyledTopbar = styled.header.attrs({ className: 'topbar' })`
 
       color: ${colors.text.secondary};
       background-color: ${colors.surface.card};
+      transition:
+        color ${transitions.fast},
+        background-color ${transitions.fast},
+        border-color ${transitions.fast},
+        box-shadow ${transitions.fast};
     }
 
-    .topbar-menu button svg {
+    .topbar-menu-button svg {
       width: 1.25rem;
       height: 1.25rem;
     }
 
-    .topbar-menu button:hover {
+    .topbar-menu-button:hover {
       color: ${colors.text.primary};
       background-color: ${colors.surface.subtle};
+    }
+
+    .topbar-menu-button:focus-visible {
+      outline: none;
+      box-shadow:
+        0 0 0 2px ${colors.neutral.white},
+        0 0 0 4px ${colors.border.focus};
     }
 
     .topbar-title {
