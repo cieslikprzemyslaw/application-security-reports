@@ -34,7 +34,7 @@ export const assessmentObjectSchema = z
 export const assessmentSchema = assessmentObjectSchema;
 
 type AssessmentSchemaOutput = Required<z.output<typeof assessmentSchema>>;
-const assessmentSchemaCompatibilityCheck: AssessmentSchemaOutput extends Assessment
+const _assessmentSchemaCompatibilityCheck: AssessmentSchemaOutput extends Assessment
   ? true
   : never = true;
 

@@ -1,6 +1,5 @@
 import type {
   AssessmentId,
-  ISODateString,
   Severity,
   StrideCategory,
   ThreatId,

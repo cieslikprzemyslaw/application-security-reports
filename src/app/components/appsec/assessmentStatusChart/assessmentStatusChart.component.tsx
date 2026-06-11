@@ -24,16 +24,22 @@ const AssessmentStatusChart = ({
     draft: colors.neutral.grey400,
   };
 
-  let currentPercentage = 0;
+  const segments = items.reduce(
+    (state, item) => {
+      const percentage = total === 0 ? 0 : (item.count / total) * 100;
+      const start = state.currentPercentage;
+      const currentPercentage = start + percentage;
 
-  const segments = items.map(item => {
-    const start = currentPercentage;
-    const percentage = total === 0 ? 0 : (item.count / total) * 100;
-
-    currentPercentage += percentage;
-
-    return `${toneColours[item.tone]} ${start}% ${currentPercentage}%`;
-  });
+      return {
+        currentPercentage,
+        segments: [
+          ...state.segments,
+          `${toneColours[item.tone]} ${start}% ${currentPercentage}%`,
+        ],
+      };
+    },
+    { currentPercentage: 0, segments: [] as string[] },
+  ).segments;
 
   const background =
     segments.length > 0

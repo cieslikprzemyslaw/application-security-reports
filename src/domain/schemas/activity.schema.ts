@@ -22,7 +22,7 @@ export const activitySchema = z
   .strict();
 
 type ActivitySchemaOutput = Required<z.output<typeof activitySchema>>;
-const activitySchemaCompatibilityCheck: ActivitySchemaOutput extends Activity
+const _activitySchemaCompatibilityCheck: ActivitySchemaOutput extends Activity
   ? true
   : never = true;
 

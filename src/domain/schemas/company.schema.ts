@@ -29,7 +29,7 @@ export const companyObjectSchema = z
 export const companySchema = companyObjectSchema;
 
 type CompanySchemaOutput = Required<z.output<typeof companySchema>>;
-const companySchemaCompatibilityCheck: CompanySchemaOutput extends Company
+const _companySchemaCompatibilityCheck: CompanySchemaOutput extends Company
   ? true
   : never = true;
 

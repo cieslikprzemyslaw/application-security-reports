@@ -28,7 +28,6 @@ import {
   reportSchema,
   reportSnapshotSchema,
   reportStatusSchema,
-  reportThreatSnapshotSchema,
   reportVersionSchema,
   reportsFileSchema,
   settingsSchema,

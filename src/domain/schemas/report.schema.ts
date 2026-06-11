@@ -1,11 +1,6 @@
 import { z } from 'zod';
 
-import type {
-  Report,
-  ReportSnapshot,
-  ReportThreatSnapshot,
-  ReportVersion,
-} from '../report.js';
+import type { Report } from '../report.js';
 
 import {
   isoDateStringSchema,
@@ -79,7 +74,7 @@ export const reportObjectSchema = z
 export const reportSchema = reportObjectSchema;
 
 type ReportSchemaOutput = Required<z.output<typeof reportSchema>>;
-const reportSchemaCompatibilityCheck: ReportSchemaOutput extends Report
+const _reportSchemaCompatibilityCheck: ReportSchemaOutput extends Report
   ? true
   : never = true;
 

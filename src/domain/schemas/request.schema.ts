@@ -1,35 +1,14 @@
 import { z } from 'zod';
 
 import type {
-  Assessment,
   CreateAssessmentInput,
   UpdateAssessmentInput,
 } from '../assessment.js';
-import type {
-  Company,
-  CreateCompanyInput,
-  UpdateCompanyInput,
-} from '../company.js';
-import type {
-  Evidence,
-  CreateEvidenceInput,
-  UpdateEvidenceInput,
-} from '../evidence.js';
-import type {
-  Report,
-  CreateReportInput,
-  UpdateReportInput,
-} from '../report.js';
-import type {
-  Settings,
-  CreateSettingsInput,
-  UpdateSettingsInput,
-} from '../settings.js';
-import type {
-  Threat,
-  CreateThreatInput,
-  UpdateThreatInput,
-} from '../threat.js';
+import type { CreateCompanyInput, UpdateCompanyInput } from '../company.js';
+import type { CreateEvidenceInput, UpdateEvidenceInput } from '../evidence.js';
+import type { CreateReportInput, UpdateReportInput } from '../report.js';
+import type { CreateSettingsInput, UpdateSettingsInput } from '../settings.js';
+import type { CreateThreatInput, UpdateThreatInput } from '../threat.js';
 
 import { assessmentObjectSchema } from './assessment.schema.js';
 import { companyObjectSchema } from './company.schema.js';
@@ -62,7 +41,7 @@ export const createCompanyRequestSchema = createCompanyBaseSchema;
 type CreateCompanyRequestSchemaOutput = Required<
   z.output<typeof createCompanyRequestSchema>
 >;
-const createCompanyRequestSchemaCompatibilityCheck: CreateCompanyRequestSchemaOutput extends CreateCompanyInput
+const _createCompanyRequestSchemaCompatibilityCheck: CreateCompanyRequestSchemaOutput extends CreateCompanyInput
   ? true
   : never = true;
 
@@ -73,7 +52,7 @@ export const updateCompanyRequestSchema = requireAtLeastOneField(
 type UpdateCompanyRequestSchemaOutput = Required<
   z.output<typeof updateCompanyRequestSchema>
 >;
-const updateCompanyRequestSchemaCompatibilityCheck: UpdateCompanyRequestSchemaOutput extends UpdateCompanyInput
+const _updateCompanyRequestSchemaCompatibilityCheck: UpdateCompanyRequestSchemaOutput extends UpdateCompanyInput
   ? true
   : never = true;
 
@@ -87,7 +66,7 @@ export const createAssessmentRequestSchema = createAssessmentBaseSchema;
 type CreateAssessmentRequestSchemaOutput = Required<
   z.output<typeof createAssessmentRequestSchema>
 >;
-const createAssessmentRequestSchemaCompatibilityCheck: CreateAssessmentRequestSchemaOutput extends CreateAssessmentInput
+const _createAssessmentRequestSchemaCompatibilityCheck: CreateAssessmentRequestSchemaOutput extends CreateAssessmentInput
   ? true
   : never = true;
 
@@ -98,7 +77,7 @@ export const updateAssessmentRequestSchema = requireAtLeastOneField(
 type UpdateAssessmentRequestSchemaOutput = Required<
   z.output<typeof updateAssessmentRequestSchema>
 >;
-const updateAssessmentRequestSchemaCompatibilityCheck: UpdateAssessmentRequestSchemaOutput extends UpdateAssessmentInput
+const _updateAssessmentRequestSchemaCompatibilityCheck: UpdateAssessmentRequestSchemaOutput extends UpdateAssessmentInput
   ? true
   : never = true;
 
@@ -112,7 +91,7 @@ export const createThreatRequestSchema = createThreatBaseSchema;
 type CreateThreatRequestSchemaOutput = Required<
   z.output<typeof createThreatRequestSchema>
 >;
-const createThreatRequestSchemaCompatibilityCheck: CreateThreatRequestSchemaOutput extends CreateThreatInput
+const _createThreatRequestSchemaCompatibilityCheck: CreateThreatRequestSchemaOutput extends CreateThreatInput
   ? true
   : never = true;
 
@@ -123,7 +102,7 @@ export const updateThreatRequestSchema = requireAtLeastOneField(
 type UpdateThreatRequestSchemaOutput = Required<
   z.output<typeof updateThreatRequestSchema>
 >;
-const updateThreatRequestSchemaCompatibilityCheck: UpdateThreatRequestSchemaOutput extends UpdateThreatInput
+const _updateThreatRequestSchemaCompatibilityCheck: UpdateThreatRequestSchemaOutput extends UpdateThreatInput
   ? true
   : never = true;
 
@@ -137,7 +116,7 @@ export const createEvidenceRequestSchema = createEvidenceBaseSchema;
 type CreateEvidenceRequestSchemaOutput = Required<
   z.output<typeof createEvidenceRequestSchema>
 >;
-const createEvidenceRequestSchemaCompatibilityCheck: CreateEvidenceRequestSchemaOutput extends CreateEvidenceInput
+const _createEvidenceRequestSchemaCompatibilityCheck: CreateEvidenceRequestSchemaOutput extends CreateEvidenceInput
   ? true
   : never = true;
 
@@ -148,7 +127,7 @@ export const updateEvidenceRequestSchema = requireAtLeastOneField(
 type UpdateEvidenceRequestSchemaOutput = Required<
   z.output<typeof updateEvidenceRequestSchema>
 >;
-const updateEvidenceRequestSchemaCompatibilityCheck: UpdateEvidenceRequestSchemaOutput extends UpdateEvidenceInput
+const _updateEvidenceRequestSchemaCompatibilityCheck: UpdateEvidenceRequestSchemaOutput extends UpdateEvidenceInput
   ? true
   : never = true;
 
@@ -160,15 +139,21 @@ const createReportBaseSchema = reportObjectSchema.omit({
   status: true,
 });
 
-type CreateReportRequestInput = Omit<CreateReportInput, 'latestVersion' | 'status'>;
+type CreateReportRequestInput = Omit<
+  CreateReportInput,
+  'latestVersion' | 'status'
+>;
 
-type UpdateReportRequestInput = Omit<UpdateReportInput, 'latestVersion' | 'status'>;
+type UpdateReportRequestInput = Omit<
+  UpdateReportInput,
+  'latestVersion' | 'status'
+>;
 
 export const createReportRequestSchema = createReportBaseSchema;
 type CreateReportRequestSchemaOutput = Required<
   z.output<typeof createReportRequestSchema>
 >;
-const createReportRequestSchemaCompatibilityCheck: CreateReportRequestSchemaOutput extends CreateReportRequestInput
+const _createReportRequestSchemaCompatibilityCheck: CreateReportRequestSchemaOutput extends CreateReportRequestInput
   ? true
   : never = true;
 
@@ -179,7 +164,7 @@ export const updateReportRequestSchema = requireAtLeastOneField(
 type UpdateReportRequestSchemaOutput = Required<
   z.output<typeof updateReportRequestSchema>
 >;
-const updateReportRequestSchemaCompatibilityCheck: UpdateReportRequestSchemaOutput extends UpdateReportRequestInput
+const _updateReportRequestSchemaCompatibilityCheck: UpdateReportRequestSchemaOutput extends UpdateReportRequestInput
   ? true
   : never = true;
 
@@ -196,7 +181,7 @@ export const updateSettingsRequestSchema = requireAtLeastOneField(
 type UpdateSettingsRequestSchemaOutput = Required<
   z.output<typeof updateSettingsRequestSchema>
 >;
-const updateSettingsRequestSchemaCompatibilityCheck: UpdateSettingsRequestSchemaOutput extends UpdateSettingsInput
+const _updateSettingsRequestSchemaCompatibilityCheck: UpdateSettingsRequestSchemaOutput extends UpdateSettingsInput
   ? true
   : never = true;
 
@@ -204,6 +189,6 @@ export const createSettingsRequestSchema = createSettingsBaseSchema;
 type CreateSettingsRequestSchemaOutput = Required<
   z.output<typeof createSettingsRequestSchema>
 >;
-const createSettingsRequestSchemaCompatibilityCheck: CreateSettingsRequestSchemaOutput extends CreateSettingsInput
+const _createSettingsRequestSchemaCompatibilityCheck: CreateSettingsRequestSchemaOutput extends CreateSettingsInput
   ? true
   : never = true;
