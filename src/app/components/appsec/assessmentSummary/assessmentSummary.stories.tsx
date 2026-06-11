@@ -24,7 +24,7 @@ export const Default: Story = {
     environment: 'Production',
     dateRange: '12 May 2026 – 28 May 2026',
     testerName: 'Alex Mercer',
-    overallRisk: 'High',
-    status: 'In Progress',
+    overallRisk: 'high',
+    status: 'in-progress',
   },
 };

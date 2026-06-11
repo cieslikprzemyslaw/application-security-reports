@@ -1,4 +1,4 @@
-import { AssessmentStatus, RiskLevel } from '~/app/types/pageShared.type';
+import type { AssessmentStatus, Severity } from '~/domain';
 
 export type AssessmentLogoTone =
   | 'blue'
@@ -17,7 +17,7 @@ export interface AssessmentTableRow {
   companyName: string;
   assessmentType: string;
   environment: string;
-  overallRisk: RiskLevel;
+  overallRisk: Severity;
   findingsCount: number;
   criticalCount?: number;
   highCount?: number;

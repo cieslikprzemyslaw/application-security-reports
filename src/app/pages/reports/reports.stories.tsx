@@ -52,7 +52,7 @@ export const Default: Story = {
       testerName: 'Alex Mercer',
       methodology: 'OWASP ASVS / WSTG',
       findingsCount: 14,
-      overallRisk: 'High',
+      overallRisk: 'high',
       executiveSummary:
         'This assessment identified 14 findings across the Customer Services Portal. The overall risk is rated High, driven by one critical authorization weakness and three high-severity data-exposure issues requiring prompt remediation.',
       scope: [
@@ -65,8 +65,8 @@ export const Default: Story = {
         {
           id: 'thr_1',
           title: 'Missing Server-Side Authorization',
-          severity: 'Critical',
-          status: 'Open',
+          severity: 'critical',
+          status: 'open',
           affectedAsset: '/api/v1/orders/{id}',
           observation:
             'The endpoint returns order data without verifying that the authenticated user owns the requested object.',
@@ -77,8 +77,8 @@ export const Default: Story = {
         {
           id: 'thr_2',
           title: 'Verbose Error Messages',
-          severity: 'Medium',
-          status: 'Resolved',
+          severity: 'medium',
+          status: 'mitigated',
           affectedAsset: '/api/v1/orders',
           observation:
             'Unhandled errors exposed internal implementation details.',

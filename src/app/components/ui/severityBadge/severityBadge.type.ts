@@ -1,6 +1,8 @@
 import type { HTMLAttributes } from 'react';
 
-export type Severity = 'Critical' | 'High' | 'Medium' | 'Low' | 'Informational';
+import type { Severity } from '~/domain';
+
+export type { Severity } from '~/domain';
 
 export type SeverityBadgeSize = 'small' | 'medium';
 

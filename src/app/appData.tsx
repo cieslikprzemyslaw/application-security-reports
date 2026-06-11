@@ -45,11 +45,11 @@ export const dashboardStats: DashboardStats = {
 };
 
 export const severityDistribution: SeverityDistributionItem[] = [
-  { severity: 'Critical', count: 9 },
-  { severity: 'High', count: 22 },
-  { severity: 'Medium', count: 31 },
-  { severity: 'Low', count: 17 },
-  { severity: 'Informational', count: 7 },
+  { severity: 'critical', count: 9 },
+  { severity: 'high', count: 22 },
+  { severity: 'medium', count: 31 },
+  { severity: 'low', count: 17 },
+  { severity: 'informational', count: 7 },
 ];
 
 export const assessmentStatuses: AssessmentStatusChartItem[] = [
@@ -65,45 +65,45 @@ export const recentAssessments: RecentAssessmentRow[] = [
     applicationName: 'Customer Services Portal',
     companyName: 'Northstar Digital',
     assessmentType: 'Web App',
-    severity: 'High',
+    severity: 'high',
     findingsCount: 14,
-    status: 'In Progress',
+    status: 'in-progress',
   },
   {
     id: 'asm_2',
     applicationName: 'Payments Gateway API',
     companyName: 'Northstar Digital',
     assessmentType: 'API',
-    severity: 'Critical',
+    severity: 'critical',
     findingsCount: 9,
-    status: 'Retest Required',
+    status: 'in-progress',
   },
   {
     id: 'asm_3',
     applicationName: 'Partner Mobile App',
     companyName: 'Northstar Digital',
     assessmentType: 'Mobile',
-    severity: 'Medium',
+    severity: 'medium',
     findingsCount: 11,
-    status: 'Resolved',
+    status: 'completed',
   },
   {
     id: 'asm_4',
     applicationName: 'Internal Admin Console',
     companyName: 'Northstar Digital',
     assessmentType: 'Web App',
-    severity: 'Medium',
+    severity: 'medium',
     findingsCount: 6,
-    status: 'Resolved',
+    status: 'completed',
   },
   {
     id: 'asm_5',
     applicationName: 'Data Export Service',
     companyName: 'Northstar Digital',
     assessmentType: 'API',
-    severity: 'Low',
+    severity: 'low',
     findingsCount: 3,
-    status: 'Accepted Risk',
+    status: 'archived',
   },
 ];
 
@@ -150,7 +150,7 @@ export const companies: CompanyTableRow[] = [
     primaryContact: 'security@northstar.example',
     assessmentCount: 6,
     openThreats: 2,
-    riskPosture: 'High',
+    riskPosture: 'high',
   },
   {
     id: 'cmp_2',
@@ -161,7 +161,7 @@ export const companies: CompanyTableRow[] = [
     primaryContact: 'appsec@meridian.example',
     assessmentCount: 4,
     openThreats: 1,
-    riskPosture: 'Medium',
+    riskPosture: 'medium',
   },
 ];
 
@@ -175,12 +175,12 @@ export const assessments: AssessmentTableRow[] = [
     companyName: 'Northstar Digital',
     assessmentType: 'Web App',
     environment: 'Production',
-    overallRisk: 'High',
+    overallRisk: 'high',
     findingsCount: 14,
     criticalCount: 1,
     highCount: 3,
     testerName: 'Alex Mercer',
-    status: 'In Progress',
+    status: 'in-progress',
   },
   {
     id: 'asm_2',
@@ -191,12 +191,12 @@ export const assessments: AssessmentTableRow[] = [
     companyName: 'Continental Bank',
     assessmentType: 'Web App',
     environment: 'Production',
-    overallRisk: 'Critical',
+    overallRisk: 'critical',
     findingsCount: 17,
     criticalCount: 3,
     highCount: 4,
     testerName: 'Priya Shah',
-    status: 'In Progress',
+    status: 'in-progress',
   },
 ];
 
@@ -206,9 +206,9 @@ export const threats: GlobalThreatRow[] = [
     title: 'Missing Server-Side Authorization',
     applicationName: 'Customer Services Portal',
     companyName: 'Northstar Digital',
-    strideCategory: 'Elevation of Privilege',
-    severity: 'Critical',
-    status: 'Open',
+    strideCategory: 'elevation-of-privilege',
+    severity: 'critical',
+    status: 'open',
     updatedAt: '28 May 2026',
   },
   {
@@ -216,9 +216,9 @@ export const threats: GlobalThreatRow[] = [
     title: 'Verbose Error Messages',
     applicationName: 'Customer Services Portal',
     companyName: 'Northstar Digital',
-    strideCategory: 'Information Disclosure',
-    severity: 'Medium',
-    status: 'Resolved',
+    strideCategory: 'information-disclosure',
+    severity: 'medium',
+    status: 'mitigated',
     updatedAt: '24 May 2026',
   },
 ];
@@ -249,7 +249,7 @@ export const assessmentDetailsById: Record<
   [assessments[0].id]: {
     assessment: assessments[0],
     executiveSummary:
-      'The assessment identified 14 confirmed findings across the Customer Services Portal. The overall risk is rated High due to one critical authorization weakness and three high-severity findings.',
+      'The assessment identified 14 confirmed findings across the Customer Services Portal. The overall risk is rated high due to one critical authorization weakness and three high-severity findings.',
     threats,
   },
 };
@@ -267,9 +267,9 @@ export const reportCover: ReportCoverProps = {
   testerName: 'Alex Mercer',
   methodology: 'OWASP ASVS / WSTG',
   findingsCount: 14,
-  overallRisk: 'High',
+  overallRisk: 'high',
   executiveSummary:
-    'This assessment identified 14 findings across the Customer Services Portal. The overall risk is rated High, driven by one critical authorization weakness and three high-severity data-exposure issues requiring prompt remediation.',
+    'This assessment identified 14 findings across the Customer Services Portal. The overall risk is rated high, driven by one critical authorization weakness and three high-severity data-exposure issues requiring prompt remediation.',
   scope: [
     'Customer Services Portal web application',
     'Authenticated and unauthenticated workflows',
@@ -280,8 +280,8 @@ export const reportCover: ReportCoverProps = {
     {
       id: 'thr_1',
       title: 'Missing Server-Side Authorization',
-      severity: 'Critical',
-      status: 'Open',
+      severity: 'critical',
+      status: 'open',
       affectedAsset: '/api/v1/orders/{id}',
       observation:
         'The endpoint returns order data without verifying that the authenticated user owns the requested object.',
@@ -292,8 +292,8 @@ export const reportCover: ReportCoverProps = {
     {
       id: 'thr_2',
       title: 'Verbose Error Messages',
-      severity: 'Medium',
-      status: 'Resolved',
+      severity: 'medium',
+      status: 'mitigated',
       affectedAsset: '/api/v1/orders',
       observation: 'Unhandled errors exposed internal implementation details.',
       risk: 'Attackers could use leaked details to improve further attacks.',

@@ -1,11 +1,19 @@
 import React from 'react';
 
 import SeverityBadge from '~/app/components/ui/severityBadge';
-import StatusBadge from '~/app/components/ui/statusBadge';
+import Badge from '~/app/components/ui/badge';
 
 import StyledRecentAssessmentTable from './recentAssessmentTable.styled';
 
 import type { RecentAssessmentTableProps } from './recentAssessmentTable.type';
+
+const assessmentStatusLabelMap: Record<string, string> = {
+  draft: 'Draft',
+  'in-progress': 'In Progress',
+  'in-review': 'In Review',
+  completed: 'Completed',
+  archived: 'Archived',
+};
 
 const RecentAssessmentTable = ({
   assessments,
@@ -77,7 +85,11 @@ const RecentAssessmentTable = ({
             </td>
 
             <td className="recent-assessment-table-cell">
-              <StatusBadge status={assessment.status} size="small" />
+              <Badge
+                label={assessmentStatusLabelMap[assessment.status]}
+                variant="neutral"
+                size="small"
+              />
             </td>
           </tr>
         ))}

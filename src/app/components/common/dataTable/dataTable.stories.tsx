@@ -13,12 +13,12 @@ const rows: ExampleRow[] = [
   {
     id: '1',
     name: 'Customer Services Portal',
-    status: 'In Progress',
+    status: 'in-progress',
   },
   {
     id: '2',
     name: 'Payments API',
-    status: 'Completed',
+    status: 'completed',
   },
 ];
 

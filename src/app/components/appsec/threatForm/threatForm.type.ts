@@ -1,15 +1,8 @@
 import type { FormEvent } from 'react';
 
-import type { Severity } from '~/app/components/ui/severityBadge';
-import type { ThreatStatus } from '~/app/components/ui/statusBadge';
+import type { Severity, ThreatStatus, StrideCategory } from '~/domain';
 
-export type StrideCategory =
-  | 'Spoofing'
-  | 'Tampering'
-  | 'Repudiation'
-  | 'Information Disclosure'
-  | 'Denial of Service'
-  | 'Elevation of Privilege';
+export type { StrideCategory } from '~/domain';
 
 export interface ThreatFormValue {
   title: string;

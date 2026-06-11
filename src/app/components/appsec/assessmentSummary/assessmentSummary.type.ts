@@ -1,7 +1,6 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 
-import type { Severity } from '~/app/components/ui/severityBadge';
-import type { ThreatStatus } from '~/app/components/ui/statusBadge';
+import type { AssessmentStatus, Severity } from '~/domain';
 
 export interface AssessmentMetadataItem {
   label: string;
@@ -18,6 +17,6 @@ export interface AssessmentSummaryProps extends HTMLAttributes<HTMLElement> {
   dateRange: string;
   testerName: string;
   overallRisk: Severity;
-  status: ThreatStatus;
+  status: AssessmentStatus;
   metadata?: AssessmentMetadataItem[];
 }

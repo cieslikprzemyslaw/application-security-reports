@@ -17,7 +17,7 @@ const fallbackCover: ReportCoverProps = {
   testerName: 'Not assigned',
   methodology: 'OWASP ASVS / WSTG',
   findingsCount: 0,
-  overallRisk: 'Informational',
+  overallRisk: 'informational',
   executiveSummary: 'Add assessment data to generate the report preview.',
   scope: [],
   findings: [],

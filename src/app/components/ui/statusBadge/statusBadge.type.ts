@@ -1,11 +1,8 @@
 import type { HTMLAttributes } from 'react';
 
-export type ThreatStatus =
-  | 'Open'
-  | 'In Progress'
-  | 'Resolved'
-  | 'Retest Required'
-  | 'Accepted Risk';
+import type { ThreatStatus } from '~/domain';
+
+export type { ThreatStatus } from '~/domain';
 
 export type StatusBadgeSize = 'small' | 'medium';
 

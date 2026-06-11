@@ -19,9 +19,9 @@ export const Default: Story = {
   args: {
     title: 'Missing Server-Side Authorization',
     threatId: 'thr_123',
-    severity: 'Critical',
-    status: 'Open',
-    strideCategory: 'Elevation of Privilege',
+    severity: 'critical',
+    status: 'open',
+    strideCategory: 'elevation-of-privilege',
     affectedComponent: 'Orders API',
     affectedEndpoint: '/api/v1/orders/{id}',
     observation:

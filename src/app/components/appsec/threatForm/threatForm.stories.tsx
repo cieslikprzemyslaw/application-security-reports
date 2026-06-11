@@ -7,9 +7,9 @@ import type { ThreatFormValue } from './threatForm.type';
 
 const initialValue: ThreatFormValue = {
   title: 'Missing Server-Side Authorization',
-  strideCategory: 'Elevation of Privilege',
-  severity: 'Critical',
-  status: 'Open',
+  strideCategory: 'elevation-of-privilege',
+  severity: 'critical',
+  status: 'open',
   affectedComponent: 'Orders API',
   affectedEndpoint: '/api/v1/orders/{id}',
   observation:

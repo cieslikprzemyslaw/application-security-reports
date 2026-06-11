@@ -32,7 +32,7 @@ export const Default: Story = {
         primaryContact: 'security@northstar.example',
         assessmentCount: 6,
         openThreats: 2,
-        riskPosture: 'High',
+        riskPosture: 'high',
       },
     ],
   },

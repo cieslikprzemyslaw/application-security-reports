@@ -3,6 +3,7 @@ import React from 'react';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
 import Badge from '~/app/components/ui/badge';
+import { STRIDE_LABELS } from '~/domain';
 
 import StyledThreatDetails from './threatDetails.styled';
 
@@ -37,7 +38,11 @@ const ThreatDetails = ({
 
         <StatusBadge status={status} />
 
-        <Badge label={strideCategory} variant="neutral" size="small" />
+        <Badge
+          label={STRIDE_LABELS[strideCategory]}
+          variant="neutral"
+          size="small"
+        />
       </div>
     </header>
 

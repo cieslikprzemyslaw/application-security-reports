@@ -160,31 +160,31 @@ const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
       border-radius: ${radii.md};
     }
 
-    .report-cover-risk-box[data-risk='Critical'] {
+    .report-cover-risk-box[data-risk='critical'] {
       color: ${colors.severity.critical.text};
       background-color: ${colors.severity.critical.background};
       border: 1px solid ${colors.severity.critical.solid};
     }
 
-    .report-cover-risk-box[data-risk='High'] {
+    .report-cover-risk-box[data-risk='high'] {
       color: ${colors.severity.high.text};
       background-color: ${colors.severity.high.background};
       border: 1px solid ${colors.severity.high.solid};
     }
 
-    .report-cover-risk-box[data-risk='Medium'] {
+    .report-cover-risk-box[data-risk='medium'] {
       color: ${colors.severity.medium.text};
       background-color: ${colors.severity.medium.background};
       border: 1px solid ${colors.severity.medium.solid};
     }
 
-    .report-cover-risk-box[data-risk='Low'] {
+    .report-cover-risk-box[data-risk='low'] {
       color: ${colors.severity.low.text};
       background-color: ${colors.severity.low.background};
       border: 1px solid ${colors.severity.low.solid};
     }
 
-    .report-cover-risk-box[data-risk='Informational'] {
+    .report-cover-risk-box[data-risk='informational'] {
       color: ${colors.severity.informational.text};
       background-color: ${colors.severity.informational.background};
       border: 1px solid ${colors.severity.informational.solid};

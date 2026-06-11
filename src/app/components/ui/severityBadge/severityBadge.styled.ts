@@ -3,11 +3,11 @@ import { styled, css } from 'styled-components';
 import type { Severity, SeverityBadgeSize } from './severityBadge.type';
 
 const severityKeyMap = {
-  Critical: 'critical',
-  High: 'high',
-  Medium: 'medium',
-  Low: 'low',
-  Informational: 'informational',
+  critical: 'critical',
+  high: 'high',
+  medium: 'medium',
+  low: 'low',
+  informational: 'informational',
 } as const;
 
 const StyledSeverityBadge = styled.span.attrs({ className: 'severity-badge' })<{

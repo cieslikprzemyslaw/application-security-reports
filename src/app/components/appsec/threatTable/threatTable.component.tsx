@@ -3,6 +3,7 @@ import React from 'react';
 import DataTable from '~/app/components/common/dataTable';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
+import { STRIDE_LABELS } from '~/domain';
 
 import StyledThreatTable from './threatTable.styled';
 
@@ -45,7 +46,7 @@ const ThreatTable = ({
           header: 'STRIDE',
           cell: threat => (
             <span className="threat-table-stride-badge">
-              {threat.strideCategory}
+              {STRIDE_LABELS[threat.strideCategory]}
             </span>
           ),
         },

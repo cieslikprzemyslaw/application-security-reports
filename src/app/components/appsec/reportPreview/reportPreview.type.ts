@@ -1,6 +1,6 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 
-import type { Severity } from '~/app/components/ui/severityBadge';
+import type { Severity } from '~/domain';
 
 export interface ReportThreat {
   id: string;

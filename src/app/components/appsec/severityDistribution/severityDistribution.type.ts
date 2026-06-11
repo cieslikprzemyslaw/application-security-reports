@@ -1,6 +1,6 @@
 import type { HTMLAttributes } from 'react';
 
-import type { Severity } from '~/app/components/ui/severityBadge';
+import type { Severity } from '~/domain';
 
 export interface SeverityDistributionItem {
   severity: Severity;

@@ -1,9 +1,6 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 
-import type { Severity } from '~/app/components/ui/severityBadge';
-import type { ThreatStatus } from '~/app/components/ui/statusBadge';
-
-import type { StrideCategory } from '../threatForm';
+import type { Severity, StrideCategory, ThreatStatus } from '~/domain';
 
 export interface ThreatDetailsProps extends HTMLAttributes<HTMLElement> {
   title: string;
