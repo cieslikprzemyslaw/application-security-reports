@@ -1,11 +1,7 @@
 import React from 'react';
 
 import StyledEvidenceList from './evidenceList.styled';
-import type {
-  EvidenceItem,
-  EvidenceKind,
-  EvidenceListProps,
-} from './evidenceList.type';
+import type { EvidenceKind, EvidenceListProps } from './evidenceList.type';
 
 const FileIcon = ({ kind }: { kind: EvidenceKind }) => {
   if (kind === 'image') {

@@ -9,7 +9,7 @@ import type {
   StrideCategory,
   Threat,
   ThreatStatus,
-} from './index';
+} from './index.js';
 
 const assessment: Assessment = {
   id: 'asm_1',
@@ -127,12 +127,12 @@ void acceptedRiskThreatStatus;
 void criticalSeverity;
 void strideCategories;
 
-// @ts-expect-error Assessment statuses must not accept threat statuses.
+// @ts-expect-error AssessmentStatus must not accept ThreatStatus values.
 const invalidAssessmentStatus: AssessmentStatus = 'accepted-risk';
 
 const invalidAssessment: Assessment = {
   ...assessment,
-  // @ts-expect-error Assessment must not accept accepted-risk.
+  // @ts-expect-error Assessment.status must not accept ThreatStatus values.
   status: 'accepted-risk',
 };
 

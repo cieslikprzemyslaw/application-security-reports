@@ -7,8 +7,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "outDir": "dist-server",
-    "rootDir": "server",
+    "rootDir": ".",
     "types": ["node"]
   },
-  "include": ["server/**/*.ts"]
+  "include": ["server/**/*.ts", "src/domain/**/*.ts", "src/validation/**/*.ts"]
 }

@@ -1,4 +1,4 @@
-import type { ChangeEvent, DragEvent, InputHTMLAttributes } from 'react';
+import type { InputHTMLAttributes } from 'react';
 
 export interface DropzoneProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
