@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { lazy, useState } from 'react';
 import {
   BrowserRouter,
   Navigate,
@@ -8,15 +8,9 @@ import {
   useParams,
 } from 'react-router-dom';
 
+import { EntityNotFoundView } from '~/app/components/routeStateViews';
 import { AppLayout } from '~/app/layouts';
-import AssessmentDetails from '~/app/pages/assessmentDetails';
-import Assessments from '~/app/pages/assessments';
-import Companies from '~/app/pages/companies';
-import Dashboard from '~/app/pages/dashboard';
 import NotFound from '~/app/pages/notFound';
-import Reports from '~/app/pages/reports';
-import Settings from '~/app/pages/settings';
-import Threats from '~/app/pages/threats';
 import { routes, routePatterns } from '~/routes';
 
 import {
@@ -28,6 +22,7 @@ import {
   recentActivity,
   recentAssessments,
   reportCover,
+  reportDetailsById,
   settingsValue,
   severityDistribution,
   threats,
@@ -35,6 +30,15 @@ import {
 
 import type { DashboardPeriod } from './pages/dashboard';
 import type { SettingsValue } from './pages/settings';
+
+const Dashboard = lazy(() => import('./pages/dashboard'));
+const Companies = lazy(() => import('./pages/companies'));
+const Assessments = lazy(() => import('./pages/assessments'));
+const AssessmentDetails = lazy(() => import('./pages/assessmentDetails'));
+const ReportDetails = lazy(() => import('./pages/reportDetails'));
+const Reports = lazy(() => import('./pages/reports'));
+const Settings = lazy(() => import('./pages/settings'));
+const Threats = lazy(() => import('./pages/threats'));
 
 const DashboardRoute = () => {
   const navigate = useNavigate();
@@ -101,7 +105,13 @@ const AssessmentDetailsRoute = () => {
   }>();
 
   if (!assessmentId || !assessmentDetailsById[assessmentId]) {
-    return <NotFound />;
+    return (
+      <EntityNotFoundView
+        entityName="Assessment"
+        listHref={routes.assessments}
+        listLabel="Return to assessments"
+      />
+    );
   }
 
   const {
@@ -118,6 +128,26 @@ const AssessmentDetailsRoute = () => {
       onBack={() => navigate(routes.assessments)}
     />
   );
+};
+
+const ReportDetailsRoute = () => {
+  const { reportId } = useParams<{
+    reportId?: string;
+  }>();
+
+  if (!reportId || !reportDetailsById[reportId]) {
+    return (
+      <EntityNotFoundView
+        entityName="Report"
+        listHref={routes.reports}
+        listLabel="Return to reports"
+      />
+    );
+  }
+
+  const { cover } = reportDetailsById[reportId];
+
+  return <ReportDetails cover={cover} autoSaved={false} />;
 };
 
 const ThreatsRoute = () => {
@@ -181,6 +211,10 @@ const AppRouter = () => (
         <Route
           path={routePatterns.assessmentDetails}
           element={<AssessmentDetailsRoute />}
+        />
+        <Route
+          path={routePatterns.reportDetails}
+          element={<ReportDetailsRoute />}
         />
         <Route path={routePatterns.threats} element={<ThreatsRoute />} />
         <Route path={routePatterns.reports} element={<ReportsRoute />} />
