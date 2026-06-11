@@ -3,11 +3,15 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 
+import { AppLayout } from '~/app/layouts';
+import { routes } from '~/routes';
 import { defaultTheme } from '~/theme';
 
 import AppRouter from './appRouter';
+import { reportCover } from './appData';
 
 const renderTick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
 
@@ -49,7 +53,7 @@ const setupDom = (pathname: string) => {
   };
 };
 
-const renderApp = async (pathname: string) => {
+const renderApp = async (pathname: string, settle = true) => {
   const { container } = setupDom(pathname);
 
   assert.ok(container, 'Expected root container to exist');
@@ -62,13 +66,91 @@ const renderApp = async (pathname: string) => {
         <AppRouter />
       </ThemeProvider>,
     );
-    await renderTick();
+    if (settle) {
+      await renderTick();
+      await renderTick();
+    }
   });
 
   return { container, root };
 };
 
 const textContent = (container: HTMLElement) => container.textContent ?? '';
+
+const renderRouteErrorFixture = async (pathname: string) => {
+  const { container } = setupDom(pathname);
+
+  assert.ok(container, 'Expected root container to exist');
+
+  const root = createRoot(container);
+  const originalConsoleError = console.error;
+  console.error = () => undefined;
+
+  const ThrowingRoute = () => {
+    throw new Error('Simulated route failure');
+  };
+
+  try {
+    await act(async () => {
+      root.render(
+        <ThemeProvider theme={defaultTheme}>
+          <BrowserRouter>
+            <Routes>
+              <Route element={<AppLayout />}>
+                <Route
+                  path="/dashboard"
+                  element={<h1>Security Dashboard</h1>}
+                />
+                <Route path="/broken" element={<ThrowingRoute />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </ThemeProvider>,
+      );
+      await renderTick();
+      await renderTick();
+    });
+  } finally {
+    console.error = originalConsoleError;
+  }
+
+  return { container, root };
+};
+
+const renderRouteLoadingFixture = async (pathname: string) => {
+  const { container } = setupDom(pathname);
+
+  assert.ok(container, 'Expected root container to exist');
+
+  const root = createRoot(container);
+  const DelayedRoute = React.lazy(
+    () =>
+      new Promise<{ default: React.ComponentType }>(resolve => {
+        window.setTimeout(() => {
+          resolve({
+            default: () => <h1 className="test-page-title">Loaded page</h1>,
+          });
+        }, 50);
+      }),
+  );
+
+  await act(async () => {
+    root.render(
+      <ThemeProvider theme={defaultTheme}>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<AppLayout />}>
+              <Route path="/dashboard" element={<DelayedRoute />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>,
+    );
+    await renderTick();
+  });
+
+  return { container, root };
+};
 
 const assertRouteRenders = async (pathname: string, expectedText: string) => {
   const { container, root } = await renderApp(pathname);
@@ -84,6 +166,30 @@ const assertRouteRenders = async (pathname: string, expectedText: string) => {
 };
 
 await (async () => {
+  {
+    const { container, root } = await renderRouteLoadingFixture('/dashboard');
+
+    assert.ok(
+      container.querySelector('[role="status"]'),
+      'Expected route loading view to expose a status role',
+    );
+    assert.ok(
+      textContent(container).includes('Loading route content'),
+      'Expected the shared loading view to render',
+    );
+
+    await act(async () => {
+      await new Promise(resolve => window.setTimeout(resolve, 60));
+      await renderTick();
+    });
+
+    assert.ok(textContent(container).includes('Loaded page'));
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
   {
     const { container, root } = await renderApp('/');
 
@@ -127,10 +233,40 @@ await (async () => {
   }
 
   {
-    const { container, root } = await renderApp('/reports/rpt_1');
+    const { container, root } = await renderApp('/assessments/asm_missing');
 
-    assert.ok(textContent(container).includes('Requested page not found'));
-    assert.equal(window.location.pathname, '/reports/rpt_1');
+    assert.ok(textContent(container).includes('Assessment not found'));
+    assert.ok(textContent(container).includes('Return to assessments'));
+    assert.equal(window.location.pathname, '/assessments/asm_missing');
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
+  {
+    const { container, root } = await renderApp(
+      routes.reportDetails(reportCover.reportId),
+    );
+
+    assert.ok(textContent(container).includes('Report Preview'));
+    assert.ok(textContent(container).includes(reportCover.reportId));
+    assert.equal(
+      window.location.pathname,
+      routes.reportDetails(reportCover.reportId),
+    );
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
+  {
+    const { container, root } = await renderApp('/reports/rpt_missing');
+
+    assert.ok(textContent(container).includes('Report not found'));
+    assert.ok(textContent(container).includes('Return to reports'));
+    assert.equal(window.location.pathname, '/reports/rpt_missing');
 
     await act(async () => {
       root.unmount();
@@ -167,6 +303,37 @@ await (async () => {
 
     assert.equal(window.location.pathname, '/companies');
     assert.ok(textContent(container).includes('Companies'));
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
+  {
+    const { container, root } = await renderRouteErrorFixture('/broken');
+    assert.ok(textContent(container).includes('Something went wrong'));
+    assert.ok(textContent(container).includes('Back to Dashboard'));
+    assert.ok(!textContent(container).includes('Error:'));
+    assert.ok(!textContent(container).includes('stack'));
+
+    const dashboardLink = container.querySelector('a[href="/dashboard"]');
+
+    assert.ok(dashboardLink, 'Expected a dashboard recovery link');
+
+    await act(async () => {
+      dashboardLink.dispatchEvent(
+        new window.MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+        }),
+      );
+      await renderTick();
+      await renderTick();
+    });
+
+    assert.equal(window.location.pathname, '/dashboard');
+    assert.ok(textContent(container).includes('Security Dashboard'));
 
     await act(async () => {
       root.unmount();

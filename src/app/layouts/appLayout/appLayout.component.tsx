@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { Suspense, useState } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 
 import { routes } from '~/routes';
+import {
+  RouteLoadingView,
+  RouteStateErrorBoundary,
+} from '~/app/components/routeStateViews';
 
 import AppShell from '../appShell';
 import PageContent from '../pageContent';
@@ -32,6 +36,7 @@ const navigationGroups: SidebarNavigationGroup[] = [
 
 const AppLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const location = useLocation();
 
   const openSidebar = () => {
     setIsSidebarOpen(true);
@@ -65,7 +70,11 @@ const AppLayout = () => {
       }
     >
       <PageContent maxWidth="wide" spacing="default">
-        <Outlet />
+        <RouteStateErrorBoundary key={location.pathname}>
+          <Suspense fallback={<RouteLoadingView />}>
+            <Outlet />
+          </Suspense>
+        </RouteStateErrorBoundary>
       </PageContent>
     </AppShell>
   );
