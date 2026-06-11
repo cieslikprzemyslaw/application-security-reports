@@ -157,11 +157,12 @@ const createReportBaseSchema = reportObjectSchema.omit({
   createdAt: true,
   updatedAt: true,
   latestVersion: true,
+  status: true,
 });
 
-type CreateReportRequestInput = Omit<CreateReportInput, 'latestVersion'>;
+type CreateReportRequestInput = Omit<CreateReportInput, 'latestVersion' | 'status'>;
 
-type UpdateReportRequestInput = Omit<UpdateReportInput, 'latestVersion'>;
+type UpdateReportRequestInput = Omit<UpdateReportInput, 'latestVersion' | 'status'>;
 
 export const createReportRequestSchema = createReportBaseSchema;
 type CreateReportRequestSchemaOutput = Required<

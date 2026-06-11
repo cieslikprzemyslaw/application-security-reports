@@ -12,12 +12,33 @@ import {
 } from '../common.js';
 import { DATE_FORMATS, THEME_PREFERENCES } from '../settings.js';
 
-const isoDateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/;
-const isoTimestampPattern =
-  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})$/;
+const isRealCalendarDate = (value: string) => {
+  const [yearPart, monthPart, dayPart] = value.split('-');
 
-const isIsoDateString = (value: string) =>
-  isoDateOnlyPattern.test(value) || isoTimestampPattern.test(value);
+  if (!yearPart || !monthPart || !dayPart) {
+    return false;
+  }
+
+  const year = Number(yearPart);
+  const month = Number(monthPart);
+  const day = Number(dayPart);
+
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(day)
+  ) {
+    return false;
+  }
+
+  const utcDate = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    utcDate.getUTCFullYear() === year &&
+    utcDate.getUTCMonth() === month - 1 &&
+    utcDate.getUTCDate() === day
+  );
+};
 
 export const nonEmptyIdSchema = z.string().trim().min(1, 'ID is required');
 
@@ -38,10 +59,12 @@ export const optionalUrlSchema = urlSchema.optional();
 export const isoDateStringSchema = z
   .string()
   .trim()
-  .min(1, 'ISO date string is required')
-  .refine(isIsoDateString, { message: 'Invalid ISO date string' });
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid ISO date string')
+  .refine(isRealCalendarDate, { message: 'Invalid ISO date string' });
 
-export const timestampSchema = isoDateStringSchema;
+export const isoDateTimeStringSchema = z.string().trim().datetime({ offset: true });
+
+export const timestampSchema = isoDateTimeStringSchema;
 
 export const severitySchema = z.enum(SEVERITIES);
 

@@ -44,8 +44,14 @@ import {
   updateThreatRequestSchema,
   activityFileSchema,
   settingsFileSchema,
+  isoDateTimeStringSchema,
 } from './index.js';
-import { dateFormatSchema, themePreferenceSchema } from './common.schema.js';
+import {
+  dateFormatSchema,
+  isoDateStringSchema,
+  themePreferenceSchema,
+  timestampSchema,
+} from './common.schema.js';
 import { formatValidationErrors } from '../../validation/index.js';
 
 const assertValid = (success: boolean, message: string) => {
@@ -90,8 +96,8 @@ const validCompany = {
   contactEmail: 'security@northstar.example',
   logoPath: '/logos/northstar.svg',
   footerText: 'Confidential',
-  createdAt: '2026-06-01',
-  updatedAt: '2026-06-10',
+  createdAt: '2026-06-01T00:00:00.000Z',
+  updatedAt: '2026-06-10T00:00:00.000Z',
 };
 
 const validAssessment = {
@@ -107,8 +113,8 @@ const validAssessment = {
   environment: 'Production',
   assessmentType: 'Web App',
   overallRisk: 'high',
-  createdAt: '2026-06-01',
-  updatedAt: '2026-06-10',
+  createdAt: '2026-06-01T00:00:00.000Z',
+  updatedAt: '2026-06-10T00:00:00.000Z',
 };
 
 const validThreat = {
@@ -126,8 +132,8 @@ const validThreat = {
   affectedComponent: 'Orders API',
   affectedEndpoint: '/api/v1/orders/{id}',
   risk: 'Sensitive order data is exposed.',
-  createdAt: '2026-06-01',
-  updatedAt: '2026-06-10',
+  createdAt: '2026-06-01T00:00:00.000Z',
+  updatedAt: '2026-06-10T00:00:00.000Z',
 };
 
 const validEvidence = {
@@ -142,8 +148,8 @@ const validEvidence = {
   filePath: '/tmp/evidence.png',
   mimeType: 'image/png',
   capturedAt: '2026-06-05',
-  createdAt: '2026-06-05',
-  updatedAt: '2026-06-05',
+  createdAt: '2026-06-05T00:00:00.000Z',
+  updatedAt: '2026-06-05T00:00:00.000Z',
 };
 
 const validReport = {
@@ -154,8 +160,8 @@ const validReport = {
   selectedThreatIds: ['thr_1'],
   latestVersion: 0,
   executiveSummary: 'Executive summary',
-  createdAt: '2026-06-10',
-  updatedAt: '2026-06-10',
+  createdAt: '2026-06-10T00:00:00.000Z',
+  updatedAt: '2026-06-10T00:00:00.000Z',
 };
 
 const validReportSnapshot = {
@@ -210,9 +216,50 @@ const validSettings = {
   reportStyle: 'Technical & structured',
   includeEvidence: true,
   confidentialReports: true,
-  createdAt: '2026-06-01',
-  updatedAt: '2026-06-10',
+  createdAt: '2026-06-01T00:00:00.000Z',
+  updatedAt: '2026-06-10T00:00:00.000Z',
 };
+
+for (const validDate of ['2026-06-11', '2024-02-29']) {
+  assertValid(
+    isoDateStringSchema.safeParse(validDate).success,
+    `Calendar date ${validDate} should pass`,
+  );
+}
+
+for (const validDatetime of ['2026-06-11T12:30:00.000Z']) {
+  assertValid(
+    isoDateTimeStringSchema.safeParse(validDatetime).success,
+    `Datetime ${validDatetime} should pass`,
+  );
+  assertValid(
+    timestampSchema.safeParse(validDatetime).success,
+    `Timestamp ${validDatetime} should pass`,
+  );
+}
+
+for (const invalidDate of [
+  '2026-99-99',
+  '2026-13-01',
+  '2026-00-10',
+  '2026-02-30',
+  '2025-02-29',
+  'not-a-date',
+]) {
+  assertInvalid(
+    isoDateStringSchema.safeParse(invalidDate).success,
+    `Calendar date ${invalidDate} should fail`,
+  );
+}
+
+assertInvalid(
+  isoDateStringSchema.safeParse('2026-06-11T12:30:00.000Z').success,
+  'Datetime must not pass the date-only schema',
+);
+assertInvalid(
+  timestampSchema.safeParse('2026-06-11').success,
+  'Date-only values must not pass the timestamp schema',
+);
 
 for (const severity of SEVERITIES) {
   assertValid(
@@ -348,6 +395,14 @@ expectField(
   'startedAt',
   'Invalid ISO date string',
 );
+expectField(
+  getFieldErrors(assessmentSchema, {
+    ...validAssessment,
+    completedAt: '2026-02-30',
+  }),
+  'completedAt',
+  'Invalid ISO date string',
+);
 
 assertValid(
   threatSchema.safeParse(validThreat).success,
@@ -391,10 +446,26 @@ expectField(
   'type',
   'Invalid enum value',
 );
+expectField(
+  getFieldErrors(evidenceSchema, {
+    ...validEvidence,
+    capturedAt: '2026-02-30',
+  }),
+  'capturedAt',
+  'Invalid ISO date string',
+);
 
 assertValid(
   reportSchema.safeParse(validReport).success,
   'Valid report should pass',
+);
+assertValid(
+  reportSchema.safeParse({ ...validReport, status: 'generated' }).success,
+  'Persisted generated report should pass',
+);
+assertValid(
+  reportSchema.safeParse({ ...validReport, status: 'archived' }).success,
+  'Persisted archived report should pass',
 );
 expectField(
   getFieldErrors(reportSchema, { ...validReport, latestVersion: -1 }),
@@ -482,6 +553,14 @@ expectField(
   'snapshot.threats.0.severity',
   'Invalid enum value',
 );
+expectField(
+  getFieldErrors(reportVersionSchema, {
+    ...validReportVersion,
+    generatedAt: '2026-02-30T12:30:00.000Z',
+  }),
+  'generatedAt',
+  'Invalid datetime',
+);
 
 assertValid(
   activitySchema.safeParse(validActivity).success,
@@ -503,6 +582,14 @@ expectField(
   }),
   'dateFormat',
   'Invalid enum value',
+);
+expectField(
+  getFieldErrors(activitySchema, {
+    ...validActivity,
+    createdAt: '2026-06-11',
+  }),
+  'createdAt',
+  'Invalid datetime',
 );
 expectField(
   getFieldErrors(settingsSchema, {
@@ -575,11 +662,21 @@ assertValid(
   createReportRequestSchema.safeParse({
     assessmentId: validAssessment.id,
     title: 'Report',
-    status: 'draft',
     selectedThreatIds: [],
     executiveSummary: 'Summary',
   }).success,
   'Create report request should pass',
+);
+expectField(
+  getFieldErrors(createReportRequestSchema, {
+    assessmentId: validAssessment.id,
+    title: 'Report',
+    selectedThreatIds: [],
+    executiveSummary: 'Summary',
+    status: 'generated',
+  }),
+  'status',
+  'Unknown property',
 );
 
 assertValid(
@@ -610,6 +707,98 @@ expectField(
   getFieldErrors(updateReportRequestSchema, {}),
   '',
   'At least one report field is required',
+);
+assertValid(
+  updateReportRequestSchema.safeParse({
+    title: 'Updated report title',
+  }).success,
+  'Partial report update should pass',
+);
+expectField(
+  getFieldErrors(updateReportRequestSchema, {
+    title: 'Updated report title',
+    status: 'generated',
+  }),
+  'status',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(updateReportRequestSchema, {
+    title: 'Updated report title',
+    latestVersion: 3,
+  }),
+  'latestVersion',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(updateReportRequestSchema, {
+    title: 'Updated report title',
+    id: 'rep_2',
+  }),
+  'id',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(updateReportRequestSchema, {
+    title: 'Updated report title',
+    createdAt: '2026-06-10T12:00:00.000Z',
+  }),
+  'createdAt',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(updateReportRequestSchema, {
+    title: 'Updated report title',
+    updatedAt: '2026-06-10T12:00:00.000Z',
+  }),
+  'updatedAt',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(updateReportRequestSchema, {
+    title: 'Updated report title',
+    snapshot: validReportSnapshot,
+  }),
+  'snapshot',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(updateReportRequestSchema, {
+    title: 'Updated report title',
+    generatedAt: '2026-06-10T12:00:00.000Z',
+  }),
+  'generatedAt',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(createReportRequestSchema, {
+    assessmentId: validAssessment.id,
+    title: 'Report',
+    selectedThreatIds: [],
+    id: 'rep_2',
+  }),
+  'id',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(createReportRequestSchema, {
+    assessmentId: validAssessment.id,
+    title: 'Report',
+    selectedThreatIds: [],
+    createdAt: '2026-06-10T12:00:00.000Z',
+  }),
+  'createdAt',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(createReportRequestSchema, {
+    assessmentId: validAssessment.id,
+    title: 'Report',
+    selectedThreatIds: [],
+    updatedAt: '2026-06-10T12:00:00.000Z',
+  }),
+  'updatedAt',
+  'Unknown property',
 );
 expectField(
   getFieldErrors(updateSettingsRequestSchema, {}),
@@ -663,11 +852,64 @@ expectField(
   getFieldErrors(createReportRequestSchema, {
     assessmentId: validAssessment.id,
     title: 'Report',
-    status: 'draft',
     selectedThreatIds: [],
     latestVersion: 3,
   }),
   'latestVersion',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(createReportRequestSchema, {
+    assessmentId: validAssessment.id,
+    title: 'Report',
+    selectedThreatIds: [],
+    status: 'generated',
+  }),
+  'status',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(createReportRequestSchema, {
+    assessmentId: validAssessment.id,
+    title: 'Report',
+    selectedThreatIds: [],
+    snapshot: validReportSnapshot,
+  }),
+  'snapshot',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(createReportRequestSchema, {
+    assessmentId: validAssessment.id,
+    title: 'Report',
+    selectedThreatIds: [],
+    generatedAt: '2026-06-10T12:00:00.000Z',
+  }),
+  'generatedAt',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(updateReportRequestSchema, {
+    title: 'Updated report title',
+    latestVersion: 2,
+  }),
+  'latestVersion',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(updateReportRequestSchema, {
+    title: 'Updated report title',
+    snapshot: validReportSnapshot,
+  }),
+  'snapshot',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(updateReportRequestSchema, {
+    title: 'Updated report title',
+    status: 'generated',
+  }),
+  'status',
   'Unknown property',
 );
 

@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 
 import {
   createCompanyRequestSchema,
+  isoDateStringSchema,
+  isoDateTimeStringSchema,
   reportVersionSchema,
+  timestampSchema,
   updateCompanyRequestSchema,
   companySchema,
 } from '../domain/schemas/index.js';
@@ -19,8 +22,8 @@ const validCompany = {
   name: 'Northstar Digital',
   website: 'https://northstar.example',
   contactEmail: 'security@northstar.example',
-  createdAt: '2026-06-01',
-  updatedAt: '2026-06-10',
+  createdAt: '2026-06-01T00:00:00.000Z',
+  updatedAt: '2026-06-10T00:00:00.000Z',
 };
 
 const validReportVersion = {
@@ -90,6 +93,27 @@ try {
 } catch (error) {
   expectValidationError(error, 'contactEmail', 'Invalid email');
 }
+
+for (const validDate of ['2026-06-11', '2024-02-29']) {
+  assert.ok(isoDateStringSchema.safeParse(validDate).success);
+}
+
+assert.ok(isoDateTimeStringSchema.safeParse('2026-06-11T12:30:00.000Z').success);
+assert.ok(timestampSchema.safeParse('2026-06-11T12:30:00.000Z').success);
+
+for (const invalidDate of [
+  '2026-99-99',
+  '2026-13-01',
+  '2026-00-10',
+  '2026-02-30',
+  '2025-02-29',
+  'not-a-date',
+]) {
+  assert.ok(!isoDateStringSchema.safeParse(invalidDate).success);
+}
+
+assert.ok(!isoDateStringSchema.safeParse('2026-06-11T12:30:00.000Z').success);
+assert.ok(!timestampSchema.safeParse('2026-06-11').success);
 
 try {
   validateRequestBody(updateCompanyRequestSchema, {});

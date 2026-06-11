@@ -127,12 +127,12 @@ void acceptedRiskThreatStatus;
 void criticalSeverity;
 void strideCategories;
 
-// @ts-ignore Assessment statuses must not accept threat statuses.
+// @ts-expect-error AssessmentStatus must not accept ThreatStatus values.
 const invalidAssessmentStatus: AssessmentStatus = 'accepted-risk';
 
 const invalidAssessment: Assessment = {
   ...assessment,
-  // @ts-ignore Assessment must not accept accepted-risk.
+  // @ts-expect-error Assessment.status must not accept ThreatStatus values.
   status: 'accepted-risk',
 };
 
@@ -145,7 +145,7 @@ const invalidReport: Report = {
   latestVersion: 0,
   createdAt: '2026-06-10',
   updatedAt: '2026-06-10',
-  // @ts-ignore Report must not include companyId.
+  // @ts-expect-error Report must not include companyId.
   companyId: 'cmp_1',
 };
 
@@ -157,7 +157,7 @@ const invalidEvidence: Evidence = {
   title: 'Invalid evidence',
   createdAt: '2026-06-10',
   updatedAt: '2026-06-10',
-  // @ts-ignore Evidence must not include companyId.
+  // @ts-expect-error Evidence must not include companyId.
   companyId: 'cmp_1',
 };
 
@@ -172,7 +172,7 @@ const invalidSettings: Settings = {
   dateFormat: 'YYYY-MM-DD',
   createdAt: '2026-06-01',
   updatedAt: '2026-06-10',
-  // @ts-ignore Settings must not include companyId.
+  // @ts-expect-error Settings must not include companyId.
   companyId: 'cmp_1',
 };
 
