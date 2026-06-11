@@ -30,7 +30,7 @@ const validReportVersion = {
   id: 'repv_1',
   reportId: 'rep_1',
   version: 1,
-  generatedAt: '2026-06-10T12:00:00.000Z',
+  generatedAt: '2026-06-10',
   snapshot: {
     reportTitle: 'Security Report',
     companyName: 'Northstar Digital',
