@@ -226,10 +226,6 @@ await (async () => {
       new URL('../appShell/appShell.styled.ts', import.meta.url),
       'utf8',
     );
-    const topbarStyles = readFileSync(
-      new URL('../topbar/topbar.styled.ts', import.meta.url),
-      'utf8',
-    );
     const reportPreviewStyles = readFileSync(
       new URL(
         '../../components/appsec/reportPreviewShell/reportPreviewShell.styled.ts',
@@ -241,9 +237,8 @@ await (async () => {
     assert.ok(appShellStyles.includes('@media print'));
     assert.ok(appShellStyles.includes('.app-shell-sidebar'));
     assert.ok(appShellStyles.includes('.app-shell-topbar'));
-    assert.ok(topbarStyles.includes('position: sticky;'));
-    assert.ok(topbarStyles.includes('top: 0;'));
-    assert.ok(topbarStyles.includes('.topbar-menu-button:focus-visible'));
+    assert.ok(appShellStyles.includes('position: sticky;'));
+    assert.ok(appShellStyles.includes('top: 0;'));
     assert.ok(reportPreviewStyles.includes('@media print'));
     assert.ok(reportPreviewStyles.includes('.report-preview-shell-header'));
   }

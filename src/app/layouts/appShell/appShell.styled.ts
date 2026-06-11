@@ -55,6 +55,12 @@ const StyledAppShell = styled.div.attrs({ className: 'app-shell' })`
       }
     }
 
+    .app-shell-topbar {
+      position: sticky;
+      top: 0;
+      z-index: ${zIndices.sticky};
+    }
+
     .app-shell-content {
       min-width: 0;
     }

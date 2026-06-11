@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 
 import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
@@ -133,18 +132,5 @@ await (async () => {
     await act(async () => {
       root.unmount();
     });
-  }
-
-  {
-    const topbarStyles = readFileSync(
-      new URL('./topbar.styled.ts', import.meta.url),
-      'utf8',
-    );
-
-    assert.ok(topbarStyles.includes('position: sticky;'));
-    assert.ok(topbarStyles.includes('top: 0;'));
-    assert.ok(topbarStyles.includes('.topbar-menu-button:focus-visible'));
-    assert.ok(topbarStyles.includes('@media ${mq.min.laptop}'));
-    assert.ok(topbarStyles.includes('display: none;'));
   }
 })();

@@ -2,15 +2,11 @@ import { styled, css } from 'styled-components';
 
 const StyledTopbar = styled.header.attrs({ className: 'topbar' })`
   ${({
-    theme: { colors, layoutSizes, mq, radii, spacing, transitions, zIndices },
+    theme: { colors, layoutSizes, mq, radii, spacing, transitions },
   }) => css`
     display: flex;
     align-items: center;
     gap: ${spacing.s};
-
-    position: sticky;
-    top: 0;
-    z-index: ${zIndices.sticky};
 
     min-height: ${layoutSizes.topbarHeight};
     padding: 0 ${spacing.s};
