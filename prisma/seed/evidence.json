@@ -1,0 +1,44 @@
+[
+  {
+    "id": "evd_00000000-0000-0000-0000-000000000001",
+    "assessmentId": "asm_00000000-0000-0000-0000-000000000001",
+    "threatIds": [
+      "thr_00000000-0000-0000-0000-000000000001",
+      "thr_00000000-0000-0000-0000-000000000002"
+    ],
+    "type": "screenshot",
+    "title": "Authorization bypass proof",
+    "description": "Captured the customer record returned for a tampered identifier.",
+    "content": "Response body showing another customer's order details.",
+    "fileName": "authorization-bypass.png",
+    "filePath": "/evidence/authorization-bypass.png",
+    "mimeType": "image/png",
+    "capturedAt": "2026-05-20",
+    "createdAt": "2026-05-20T10:00:00.000Z",
+    "updatedAt": "2026-06-11T10:00:00.000Z"
+  },
+  {
+    "id": "evd_00000000-0000-0000-0000-000000000002",
+    "assessmentId": "asm_00000000-0000-0000-0000-000000000001",
+    "threatIds": ["thr_00000000-0000-0000-0000-000000000001"],
+    "type": "note",
+    "title": "Reproduction notes",
+    "description": "Step-by-step notes from the manual test session.",
+    "content": "GET /api/v1/orders/123 returned data for a different customer account.",
+    "capturedAt": "2026-05-20",
+    "createdAt": "2026-05-20T11:00:00.000Z",
+    "updatedAt": "2026-06-10T10:00:00.000Z"
+  },
+  {
+    "id": "evd_00000000-0000-0000-0000-000000000003",
+    "assessmentId": "asm_00000000-0000-0000-0000-000000000004",
+    "threatIds": ["thr_00000000-0000-0000-0000-000000000003"],
+    "type": "log",
+    "title": "Missing audit trail sample",
+    "description": "No audit entry was produced after the privileged change.",
+    "content": "The admin action completed successfully and no audit event was written.",
+    "capturedAt": "2026-05-22",
+    "createdAt": "2026-05-22T10:00:00.000Z",
+    "updatedAt": "2026-06-09T10:00:00.000Z"
+  }
+]

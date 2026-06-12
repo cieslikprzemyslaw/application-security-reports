@@ -14,6 +14,8 @@
     "db:validate": "node scripts/prisma-command.mjs validate",
     "db:generate": "node scripts/prisma-command.mjs generate",
     "db:migrate": "node scripts/prisma-command.mjs migrate dev",
+    "db:seed": "node scripts/prisma-command.mjs db seed",
+    "db:reset": "node scripts/prisma-command.mjs migrate reset --force && node scripts/prisma-command.mjs db seed",
     "db:studio": "node scripts/prisma-command.mjs studio",
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",

@@ -11,14 +11,32 @@ The project is still actively being developed, so the feature set and structure 
 
 ## Local Database Setup
 
-The project now includes a minimal Prisma + SQLite foundation for local development.
+The project uses Prisma with SQLite for local persistence. The JSON files in
+`prisma/seed/` are seed inputs only; runtime application data still lives in
+SQLite through Prisma.
 
 1. Install dependencies with `npm install`.
 2. Create a local `.env` file from `.env.example` and keep `DATABASE_URL="file:./dev.db"` there.
 3. Generate Prisma Client with `npm run db:generate`.
-4. Apply the development migration with `npm run db:migrate`.
-5. Validate the schema with `npm run db:validate`.
-6. Open Prisma Studio with `npm run db:studio`.
+4. Apply the development migrations with `npm run db:migrate`.
+5. Seed the database with `npm run db:seed`.
+6. Reset, reapply migrations, and reseed with `npm run db:reset`.
+7. Validate the schema with `npm run db:validate`.
+8. Open Prisma Studio with `npm run db:studio`.
+
+If you want to recreate a fresh local database from scratch, run:
+
+```bash
+npm run db:generate
+npm run db:migrate
+npm run db:seed
+```
+
+To rebuild the database and restore the seed data in one step, use:
+
+```bash
+npm run db:reset
+```
 
 ## Database Model
 
