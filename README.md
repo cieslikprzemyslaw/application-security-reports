@@ -20,6 +20,22 @@ The project now includes a minimal Prisma + SQLite foundation for local developm
 5. Validate the schema with `npm run db:validate`.
 6. Open Prisma Studio with `npm run db:studio`.
 
+## Identifier Conventions
+
+Backend-created records use prefixed UUIDs in the form `<prefix><UUID>`. The
+backend assigns these identifiers before persistence, so route handlers do not
+generate IDs directly.
+
+| Entity     | Prefix |
+| ---------- | ------ |
+| Company    | `cmp_` |
+| Assessment | `asm_` |
+| Threat     | `thr_` |
+| Evidence   | `evd_` |
+| Report     | `rpt_` |
+| Activity   | `act_` |
+| Settings   | `set_` |
+
 ## Contributing
 
 Contributions are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for the
