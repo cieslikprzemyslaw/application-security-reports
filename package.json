@@ -4,7 +4,7 @@
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "engines": {
-    "node": ">=20"
+    "node": ">=24 <25"
   },
   "type": "module",
   "scripts": {

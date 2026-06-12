@@ -558,7 +558,7 @@ expectField(
     generatedAt: '2026-02-30T12:30:00.000Z',
   }),
   'generatedAt',
-  'Invalid datetime',
+  'Invalid ISO date string',
 );
 
 assertValid(
