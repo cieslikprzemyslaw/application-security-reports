@@ -3,6 +3,10 @@ dist/
 dist-server/
 storybook-static/
 .env
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
 *.log
 data/*
 !data/.gitkeep

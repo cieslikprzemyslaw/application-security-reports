@@ -10,5 +10,11 @@
     "rootDir": ".",
     "types": ["node"]
   },
-  "include": ["server/**/*.ts", "src/domain/**/*.ts", "src/validation/**/*.ts"]
+  "include": [
+    "server/**/*.ts",
+    "generated/**/*.ts",
+    "generated/**/*.d.ts",
+    "src/domain/**/*.ts",
+    "src/validation/**/*.ts"
+  ]
 }
