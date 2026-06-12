@@ -68,6 +68,10 @@ const adapter = new PrismaBetterSqlite3({ url: adapterUrl });
 const prisma = new PrismaClient({ adapter });
 
 try {
+  // Test-only SQLite configuration.
+  // These static PRAGMA statements are required on the Prisma connection
+  // to prevent journal-file failures in the temporary test environment.
+  // No user-controlled input is included.
   await prisma.$executeRawUnsafe('PRAGMA journal_mode = MEMORY');
   await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
 
