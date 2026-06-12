@@ -1,0 +1,13 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model HealthCheck {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+}
