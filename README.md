@@ -4,6 +4,11 @@ AppSec Report Builder is a private application for creating and reviewing applic
 
 The project is still actively being developed, so the feature set and structure will continue to evolve.
 
+## Requirements
+
+- Node.js `24.15.0`
+- npm bundled with that Node release
+
 ## Local Database Setup
 
 The project now includes a minimal Prisma + SQLite foundation for local development.

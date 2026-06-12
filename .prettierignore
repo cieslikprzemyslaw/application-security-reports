@@ -4,3 +4,4 @@ dist-server
 storybook-static
 uploads/evidence
 .tmp
+generated/prisma
