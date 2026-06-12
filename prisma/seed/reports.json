@@ -1,0 +1,16 @@
+[
+  {
+    "id": "rpt_00000000-0000-0000-0000-000000000001",
+    "assessmentId": "asm_00000000-0000-0000-0000-000000000001",
+    "title": "Customer Services Portal Security Report",
+    "status": "generated",
+    "selectedThreatIds": [
+      "thr_00000000-0000-0000-0000-000000000001",
+      "thr_00000000-0000-0000-0000-000000000002"
+    ],
+    "latestVersion": 1,
+    "executiveSummary": "The assessment identified 14 confirmed findings across the Customer Services Portal. The overall risk is rated high due to one critical authorization weakness and one medium-severity information disclosure issue.",
+    "createdAt": "2026-05-30T15:30:00.000Z",
+    "updatedAt": "2026-06-11T15:30:00.000Z"
+  }
+]

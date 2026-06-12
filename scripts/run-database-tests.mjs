@@ -66,6 +66,7 @@ const testFiles = [
   'server/database/errors.test.js',
   'server/database/repositories/repositories.test.js',
   'server/database/repositories/repositories.integration.test.js',
+  'server/database/seed.test.js',
 ];
 
 for (const testFile of testFiles) {

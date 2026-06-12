@@ -1,0 +1,34 @@
+[
+  {
+    "id": "cmp_00000000-0000-0000-0000-000000000001",
+    "name": "Northstar Digital",
+    "description": "Security consulting and managed assessment services",
+    "website": "https://northstar.example",
+    "contactName": "Alex Mercer",
+    "contactEmail": "security@northstar.example",
+    "logoPath": "/logos/northstar.svg",
+    "footerText": "Confidential - do not distribute.",
+    "createdAt": "2026-06-01T09:00:00.000Z",
+    "updatedAt": "2026-06-11T09:00:00.000Z"
+  },
+  {
+    "id": "cmp_00000000-0000-0000-0000-000000000002",
+    "name": "Meridian Finance",
+    "description": "Retail banking and lending platform",
+    "website": "https://meridian.example",
+    "contactName": "Priya Shah",
+    "contactEmail": "appsec@meridian.example",
+    "createdAt": "2026-06-02T09:00:00.000Z",
+    "updatedAt": "2026-06-10T09:00:00.000Z"
+  },
+  {
+    "id": "cmp_00000000-0000-0000-0000-000000000003",
+    "name": "Continental Bank",
+    "description": "Regional banking portal and mobile services",
+    "website": "https://continental.example",
+    "contactName": "Jamie Wong",
+    "contactEmail": "security@continental.example",
+    "createdAt": "2026-06-03T09:00:00.000Z",
+    "updatedAt": "2026-06-09T09:00:00.000Z"
+  }
+]

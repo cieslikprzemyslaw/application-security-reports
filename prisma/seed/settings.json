@@ -1,0 +1,17 @@
+{
+  "id": "set_00000000-0000-0000-0000-000000000001",
+  "organisationName": "Northstar Digital",
+  "consultantName": "Alex Mercer",
+  "consultantEmail": "alex.mercer@appsec.io",
+  "defaultReportTitle": "Application Security Assessment",
+  "defaultSeverity": "medium",
+  "theme": "system",
+  "dateFormat": "YYYY-MM-DD",
+  "reportFooterText": "© 2026 Northstar Digital. Confidential - do not distribute.",
+  "methodology": "OWASP ASVS / WSTG",
+  "reportStyle": "Technical & structured",
+  "includeEvidence": true,
+  "confidentialReports": true,
+  "createdAt": "2026-06-01T09:00:00.000Z",
+  "updatedAt": "2026-06-11T09:00:00.000Z"
+}

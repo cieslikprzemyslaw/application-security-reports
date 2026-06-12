@@ -15,6 +15,7 @@
     "generated/**/*.ts",
     "generated/**/*.d.ts",
     "src/domain/**/*.ts",
-    "src/validation/**/*.ts"
+    "src/validation/**/*.ts",
+    "prisma/**/*.ts"
   ]
 }
