@@ -7,7 +7,203 @@ datasource db {
   provider = "sqlite"
 }
 
-model HealthCheck {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+enum Severity {
+  informational
+  low
+  medium
+  high
+  critical
+}
+
+enum EvidenceType {
+  note
+  screenshot
+  request
+  response
+  log
+  file
+}
+
+enum ReportStatus {
+  draft
+  generated
+  archived
+}
+
+enum ThemePreference {
+  light
+  dark
+  system
+}
+
+enum ActivityEntityType {
+  company
+  assessment
+  threat
+  evidence
+  report
+  settings
+}
+
+model Company {
+  id           String   @id
+  name         String
+  description  String?
+  website      String?
+  contactName  String?
+  contactEmail String?
+  logoPath     String?
+  footerText   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assessments Assessment[]
+
+  @@index([name])
+}
+
+model Assessment {
+  id              String    @id
+  companyId       String
+  title           String
+  description     String?
+  scope           String?
+  status          String
+  startedAt       String?
+  completedAt     String?
+  applicationName String?
+  environment     String?
+  assessmentType  String?
+  overallRisk     Severity?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  company  Company    @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  threats  Threat[]
+  evidence Evidence[]
+  reports  Report[]
+
+  @@index([companyId])
+  @@index([companyId, updatedAt])
+  @@index([status])
+}
+
+model Threat {
+  id                String   @id
+  assessmentId      String
+  title             String
+  description       String
+  severity          Severity
+  strideCategories  Json
+  status            String
+  affectedAsset     String?
+  impact            String?
+  recommendation    String?
+  observation       String?
+  affectedComponent String?
+  affectedEndpoint  String?
+  risk              String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  assessment    Assessment       @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  evidenceLinks EvidenceThreat[]
+  reportLinks   ReportThreat[]
+
+  @@index([assessmentId])
+  @@index([assessmentId, updatedAt])
+  @@index([status])
+  @@index([severity])
+}
+
+model Evidence {
+  id           String       @id
+  assessmentId String
+  type         EvidenceType
+  title        String
+  description  String?
+  content      String?
+  fileName     String?
+  filePath     String?
+  mimeType     String?
+  capturedAt   String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  assessment  Assessment       @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  threatLinks EvidenceThreat[]
+
+  @@index([assessmentId])
+  @@index([assessmentId, createdAt])
+  @@index([capturedAt])
+}
+
+model Report {
+  id               String       @id
+  assessmentId     String
+  title            String
+  status           ReportStatus @default(draft)
+  latestVersion    Int          @default(0)
+  executiveSummary String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  assessment      Assessment     @relation(fields: [assessmentId], references: [id], onDelete: Restrict)
+  selectedThreats ReportThreat[]
+
+  @@index([assessmentId])
+  @@index([assessmentId, createdAt])
+  @@index([status])
+}
+
+model EvidenceThreat {
+  evidenceId String
+  threatId   String
+
+  evidence Evidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+  threat   Threat   @relation(fields: [threatId], references: [id], onDelete: Restrict)
+
+  @@id([evidenceId, threatId])
+  @@index([threatId])
+}
+
+model ReportThreat {
+  reportId String
+  threatId String
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  threat Threat @relation(fields: [threatId], references: [id], onDelete: Restrict)
+
+  @@id([reportId, threatId])
+  @@index([threatId])
+}
+
+model Activity {
+  id         String             @id
+  entityType ActivityEntityType
+  entityId   String?
+  action     String
+  message    String
+  createdAt  DateTime           @default(now())
+
+  @@index([entityType, createdAt])
+  @@index([entityId])
+}
+
+model Settings {
+  id                  String          @id
+  organisationName    String?
+  consultantName      String?
+  consultantEmail     String?
+  defaultReportTitle  String?
+  defaultSeverity     Severity
+  theme               ThemePreference
+  dateFormat          String
+  reportFooterText    String?
+  methodology         String?
+  reportStyle         String?
+  includeEvidence     Boolean?
+  confidentialReports Boolean?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
 }
