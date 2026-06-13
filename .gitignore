@@ -15,3 +15,4 @@ uploads/evidence/*
 !uploads/evidence/.gitkeep
 .tmp/
 AGENTS.md
+docs
