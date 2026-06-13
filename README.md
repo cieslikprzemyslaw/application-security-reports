@@ -559,12 +559,15 @@ The Evidence router is mounted under `/api/evidence`.
 All successful JSON responses use a `{ "data": ... }` envelope. Evidence
 records use ISO-8601 timestamps and the `evd_` prefixed UUID format.
 
-The API only accepts evidence file paths under `uploads/evidence`. Client input
-that tries to traverse directories, use absolute paths, mix separators, or
-escape that directory is rejected during validation. Evidence file names must
-be simple names without path separators, and file metadata only accepts
+The API only accepts backend-managed evidence file paths under
+`uploads/evidence`. Client input cannot set `filePath`; the server derives it
+from `fileName` when file metadata is supplied. Evidence file names must be
+simple names without path separators, and file metadata only accepts
 `application/json`, `application/pdf`, `image/gif`, `image/jpeg`,
-`image/png`, `image/webp`, or `text/plain`.
+`image/png`, `image/webp`, or `text/plain`. File-name extensions must match
+the supplied MIME type, and any future real disk reads or writes should also
+check canonical paths with `realpath` so symlink escapes cannot bypass the
+boundary.
 
 #### List evidence
 
@@ -593,15 +596,14 @@ exist, the API returns `404 ASSESSMENT_NOT_FOUND`.
   "description": "Portal screenshot",
   "content": "Base64 payload",
   "fileName": "evidence.png",
-  "filePath": "uploads/evidence/evidence.png",
   "mimeType": "image/png",
   "capturedAt": "2026-06-05"
 }
 ```
 
-`id`, `createdAt`, and `updatedAt` are rejected on input. The API verifies that
-the assessment exists and that every supplied threat belongs to that same
-assessment before creating the record.
+`id`, `createdAt`, `updatedAt`, and `filePath` are rejected on input. The API
+verifies that the assessment exists and that every supplied threat belongs to
+that same assessment before creating the record.
 
 #### Update evidence
 
@@ -610,12 +612,12 @@ assessment before creating the record.
 ```json
 {
   "title": "Updated evidence title",
-  "filePath": "uploads/evidence/updated-evidence.png"
+  "fileName": "updated-evidence.png"
 }
 ```
 
-PATCH validation rejects `id`, `assessmentId`, `createdAt`, and `updatedAt`,
-and requires at least one mutable field.
+PATCH validation rejects `id`, `assessmentId`, `createdAt`, `updatedAt`, and
+`filePath`, and requires at least one mutable field.
 
 #### Delete evidence
 

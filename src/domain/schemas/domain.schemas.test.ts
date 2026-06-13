@@ -671,7 +671,6 @@ assertValid(
     type: 'note',
     title: 'Evidence',
     fileName: 'evidence.png',
-    filePath: 'uploads/evidence/evidence.png',
     mimeType: 'image/png',
   }).success,
   'Create evidence request with file metadata should pass',
@@ -693,10 +692,11 @@ expectField(
     threatIds: [],
     type: 'note',
     title: 'Evidence',
-    filePath: '../uploads/evidence/evidence.png',
+    fileName: 'evidence.txt',
+    mimeType: 'image/png',
   }),
-  'filePath',
-  'Evidence file path must stay within uploads/evidence',
+  'fileName',
+  'Evidence file name extension must match the supplied mime type',
 );
 expectField(
   getFieldErrors(createEvidenceRequestSchema, {
@@ -770,10 +770,11 @@ expectField(
 );
 expectField(
   getFieldErrors(updateEvidenceRequestSchema, {
-    filePath: '/tmp/evidence.png',
+    fileName: 'evidence.txt',
+    mimeType: 'image/png',
   }),
-  'filePath',
-  'Evidence file path must stay within uploads/evidence',
+  'fileName',
+  'Evidence file name extension must match the supplied mime type',
 );
 expectField(
   getFieldErrors(updateEvidenceRequestSchema, {

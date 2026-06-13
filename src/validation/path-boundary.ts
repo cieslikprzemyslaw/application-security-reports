@@ -10,6 +10,9 @@ export const resolvePathWithinRoot = (
   rootDir: string,
   candidatePath: string,
 ): string | null => {
+  // This only checks path boundaries. Future real file reads and writes should
+  // also resolve canonical paths with `realpath` before touching disk so symlink
+  // escapes cannot bypass the boundary check.
   const trimmedCandidatePath = candidatePath.trim();
 
   if (trimmedCandidatePath.length === 0) {

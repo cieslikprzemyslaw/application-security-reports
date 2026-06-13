@@ -457,7 +457,6 @@ const createApp = (
         description: 'Portal screenshot',
         content: 'Base64 payload',
         fileName: 'evidence.png',
-        filePath: 'uploads/evidence/evidence.png',
         mimeType: 'image/png',
         capturedAt: '2026-06-05',
       }),
@@ -476,6 +475,10 @@ const createApp = (
     assert.equal(
       evidenceCalls.createArgs?.input.assessmentId,
       defaultAssessment.id,
+    );
+    assert.equal(
+      evidenceCalls.createArgs?.input.filePath,
+      'uploads/evidence/evidence.png',
     );
   } finally {
     await server.close();
@@ -503,7 +506,8 @@ const createApp = (
         threatIds: [defaultThreat.id],
         type: 'note',
         title: 'Evidence note',
-        filePath: '../uploads/evidence/evidence.txt',
+        fileName: 'evidence.txt',
+        mimeType: 'image/png',
       }),
     });
 
@@ -516,9 +520,9 @@ const createApp = (
     assert.ok(
       body.error.details.some(
         detail =>
-          detail.path === 'filePath' &&
+          detail.path === 'fileName' &&
           detail.message.includes(
-            'Evidence file path must stay within uploads/evidence',
+            'Evidence file name extension must match the supplied mime type',
           ),
       ),
     );
@@ -637,7 +641,7 @@ const createApp = (
         },
         body: JSON.stringify({
           title: 'Updated evidence title',
-          filePath: 'uploads/evidence/updated-evidence.png',
+          fileName: 'updated-evidence.png',
         }),
       },
     );
@@ -651,6 +655,10 @@ const createApp = (
     assert.equal(evidenceCalls.update, 1);
     assert.equal(evidenceCalls.updateArgs?.id, defaultEvidence.id);
     assert.equal(evidenceCalls.updateArgs?.input.assessmentId, undefined);
+    assert.equal(
+      evidenceCalls.updateArgs?.input.filePath,
+      'uploads/evidence/updated-evidence.png',
+    );
   } finally {
     await server.close();
   }

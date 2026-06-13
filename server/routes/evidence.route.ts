@@ -26,6 +26,12 @@ import {
   RepositoryNotFoundError,
 } from '../database/errors.js';
 import type { ValidationFieldError } from '../../src/validation/index.js';
+import { resolvePathWithinRoot } from '../../src/validation/index.js';
+
+type CreateEvidenceRequestBody = Omit<CreateEvidenceInput, 'filePath'>;
+type UpdateEvidenceRequestBody = Omit<UpdateEvidenceInput, 'filePath'>;
+
+const evidenceFileRoot = 'uploads/evidence';
 
 const evidenceResponse = (evidence: Evidence): Evidence => ({ ...evidence });
 
@@ -76,6 +82,20 @@ const asyncRoute =
   (req: Request, res: Response, next: NextFunction): void => {
     void handler(req, res, next).catch(next);
   };
+
+const buildEvidenceFilePath = (
+  fileName?: string,
+): string | null | undefined => {
+  if (!fileName) {
+    return undefined;
+  }
+
+  const candidateFilePath = `${evidenceFileRoot}/${fileName}`;
+
+  return resolvePathWithinRoot(evidenceFileRoot, candidateFilePath)
+    ? candidateFilePath
+    : null;
+};
 
 const validateAssessmentExists = async (
   assessmentRepository: AssessmentRepository,
@@ -223,7 +243,8 @@ export const createEvidenceRouter = (
       body: createEvidenceRequestSchema,
     }),
     asyncRoute(async (_req, res) => {
-      const body = res.locals.validatedRequest?.body as CreateEvidenceInput;
+      const body = res.locals.validatedRequest
+        ?.body as CreateEvidenceRequestBody;
 
       try {
         if (
@@ -247,7 +268,24 @@ export const createEvidenceRouter = (
           return;
         }
 
-        const evidence = await evidenceRepository.create(body);
+        const filePath = buildEvidenceFilePath(body.fileName);
+
+        if (filePath === null) {
+          sendValidationError(res, [
+            {
+              path: 'fileName',
+              message:
+                'Evidence file name must resolve within uploads/evidence',
+              code: 'custom',
+            },
+          ]);
+          return;
+        }
+
+        const evidence = await evidenceRepository.create({
+          ...body,
+          ...(filePath ? { filePath } : {}),
+        });
         const response = res.location(`/api/evidence/${evidence.id}`);
 
         sendEvidenceResponse(response, 201, evidence);
@@ -269,7 +307,8 @@ export const createEvidenceRouter = (
       const { id } = res.locals.validatedRequest?.params as {
         id: string;
       };
-      const body = res.locals.validatedRequest?.body as UpdateEvidenceInput;
+      const body = res.locals.validatedRequest
+        ?.body as UpdateEvidenceRequestBody;
 
       try {
         const existingEvidence = await evidenceRepository.findById(id);
@@ -301,7 +340,24 @@ export const createEvidenceRouter = (
           return;
         }
 
-        const updatedEvidence = await evidenceRepository.update(id, body);
+        const filePath = buildEvidenceFilePath(body.fileName);
+
+        if (filePath === null) {
+          sendValidationError(res, [
+            {
+              path: 'fileName',
+              message:
+                'Evidence file name must resolve within uploads/evidence',
+              code: 'custom',
+            },
+          ]);
+          return;
+        }
+
+        const updatedEvidence = await evidenceRepository.update(id, {
+          ...body,
+          ...(filePath ? { filePath } : {}),
+        });
 
         sendEvidenceResponse(res, 200, updatedEvidence);
       } catch (error) {

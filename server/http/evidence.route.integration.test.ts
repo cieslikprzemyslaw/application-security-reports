@@ -176,7 +176,6 @@ try {
         description: 'Portal screenshot',
         content: 'Base64 payload',
         fileName: 'evidence.png',
-        filePath: 'uploads/evidence/evidence.png',
         mimeType: 'image/png',
         capturedAt: '2026-06-05',
       }),
@@ -225,7 +224,7 @@ try {
         body: JSON.stringify({
           title: 'Updated evidence title',
           threatIds: [secondaryThreat.id],
-          filePath: 'uploads/evidence/updated-evidence.png',
+          fileName: 'updated-evidence.png',
         }),
       },
     );
