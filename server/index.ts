@@ -19,7 +19,9 @@ const main = async (): Promise<void> => {
     prismaClient: prisma,
     assessmentRepository: repositories.assessment,
     companyRepository: repositories.company,
+    evidenceRepository: repositories.evidence,
     settingsRepository: repositories.settings,
+    threatRepository: repositories.threat,
   });
 
   console.log(`AppSec API running at http://localhost:${config.apiPort}`);

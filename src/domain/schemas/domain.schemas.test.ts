@@ -23,6 +23,8 @@ import {
   createAssessmentRequestSchema,
   createCompanyRequestSchema,
   createEvidenceRequestSchema,
+  evidenceListQuerySchema,
+  evidenceRouteParamsSchema,
   createReportRequestSchema,
   createThreatRequestSchema,
   evidenceSchema,
@@ -663,6 +665,51 @@ assertValid(
   'Create evidence request should pass',
 );
 assertValid(
+  createEvidenceRequestSchema.safeParse({
+    assessmentId: validAssessment.id,
+    threatIds: [],
+    type: 'note',
+    title: 'Evidence',
+    fileName: 'evidence.png',
+    mimeType: 'image/png',
+  }).success,
+  'Create evidence request with file metadata should pass',
+);
+expectField(
+  getFieldErrors(createEvidenceRequestSchema, {
+    assessmentId: validAssessment.id,
+    threatIds: [],
+    type: 'note',
+    title: 'Evidence',
+    fileName: '../evidence.png',
+  }),
+  'fileName',
+  'Evidence file name must not contain path separators',
+);
+expectField(
+  getFieldErrors(createEvidenceRequestSchema, {
+    assessmentId: validAssessment.id,
+    threatIds: [],
+    type: 'note',
+    title: 'Evidence',
+    fileName: 'evidence.txt',
+    mimeType: 'image/png',
+  }),
+  'fileName',
+  'Evidence file name extension must match the supplied mime type',
+);
+expectField(
+  getFieldErrors(createEvidenceRequestSchema, {
+    assessmentId: validAssessment.id,
+    threatIds: [],
+    type: 'note',
+    title: 'Evidence',
+    mimeType: 'text/html',
+  }),
+  'mimeType',
+  'Invalid enum value',
+);
+assertValid(
   createReportRequestSchema.safeParse({
     assessmentId: validAssessment.id,
     title: 'Report',
@@ -713,6 +760,35 @@ expectField(
   getFieldErrors(updateEvidenceRequestSchema, {}),
   '',
   'At least one evidence field is required',
+);
+expectField(
+  getFieldErrors(updateEvidenceRequestSchema, {
+    assessmentId: validAssessment.id,
+  }),
+  'assessmentId',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(updateEvidenceRequestSchema, {
+    fileName: 'evidence.txt',
+    mimeType: 'image/png',
+  }),
+  'fileName',
+  'Evidence file name extension must match the supplied mime type',
+);
+expectField(
+  getFieldErrors(updateEvidenceRequestSchema, {
+    createdAt: '2026-06-10T12:00:00.000Z',
+  }),
+  'createdAt',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(updateEvidenceRequestSchema, {
+    updatedAt: '2026-06-10T12:00:00.000Z',
+  }),
+  'updatedAt',
+  'Unknown property',
 );
 expectField(
   getFieldErrors(updateReportRequestSchema, {}),
@@ -843,6 +919,18 @@ assertValid(
   }).success,
   'Threat route params should pass',
 );
+assertValid(
+  evidenceRouteParamsSchema.safeParse({
+    id: 'evd_00000000-0000-0000-0000-000000000001',
+  }).success,
+  'Evidence route params should pass',
+);
+assertValid(
+  evidenceListQuerySchema.safeParse({
+    assessmentId: validAssessment.id,
+  }).success,
+  'Evidence list query should pass',
+);
 expectField(
   getFieldErrors(companyRouteParamsSchema, { id: 'company_1' }),
   'id',
@@ -890,6 +978,16 @@ expectField(
   'Unknown property',
 );
 expectField(
+  getFieldErrors(evidenceRouteParamsSchema, { id: 'evidence_1' }),
+  'id',
+  'Evidence ID must be a prefixed UUID',
+);
+expectField(
+  getFieldErrors(evidenceListQuerySchema, { assessmentId: 'asm_1' }),
+  'assessmentId',
+  'Assessment ID must be a prefixed UUID',
+);
+expectField(
   getFieldErrors(createAssessmentRequestSchema, {
     companyId: validCompany.id,
     title: 'Example',
@@ -921,6 +1019,28 @@ expectField(
     id: 'ev_1',
   }),
   'id',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(createEvidenceRequestSchema, {
+    assessmentId: validAssessment.id,
+    threatIds: [],
+    type: 'note',
+    title: 'Evidence',
+    createdAt: '2026-06-10T12:00:00.000Z',
+  }),
+  'createdAt',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(createEvidenceRequestSchema, {
+    assessmentId: validAssessment.id,
+    threatIds: [],
+    type: 'note',
+    title: 'Evidence',
+    updatedAt: '2026-06-10T12:00:00.000Z',
+  }),
+  'updatedAt',
   'Unknown property',
 );
 expectField(

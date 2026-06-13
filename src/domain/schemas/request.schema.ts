@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { z } from 'zod';
 
 import type {
@@ -16,7 +17,10 @@ import { evidenceObjectSchema } from './evidence.schema.js';
 import { reportObjectSchema } from './report.schema.js';
 import { settingsObjectSchema } from './settings.schema.js';
 import { threatObjectSchema } from './threat.schema.js';
-import { prefixedUuidSchema } from './common.schema.js';
+import {
+  optionalTrimmedTextSchema,
+  prefixedUuidSchema,
+} from './common.schema.js';
 
 const requireAtLeastOneField = <T extends z.ZodRawShape>(
   schema: z.ZodObject<T>,
@@ -93,6 +97,18 @@ export const threatListQuerySchema = z
   })
   .strict();
 
+export const evidenceRouteParamsSchema = z
+  .object({
+    id: prefixedUuidSchema('evd_', 'Evidence'),
+  })
+  .strict();
+
+export const evidenceListQuerySchema = z
+  .object({
+    assessmentId: prefixedUuidSchema('asm_', 'Assessment'),
+  })
+  .strict();
+
 export const createAssessmentRequestSchema = createAssessmentBaseSchema;
 type CreateAssessmentRequestSchemaOutput = Required<
   z.output<typeof createAssessmentRequestSchema>
@@ -137,28 +153,100 @@ const _updateThreatRequestSchemaCompatibilityCheck: UpdateThreatRequestSchemaOut
   ? true
   : never = true;
 
-const createEvidenceBaseSchema = evidenceObjectSchema.omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+const supportedEvidenceMimeTypes = [
+  'application/json',
+  'application/pdf',
+  'image/gif',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'text/plain',
+] as const;
 
-export const createEvidenceRequestSchema = createEvidenceBaseSchema;
+const supportedEvidenceFileExtensionsByMimeType: Record<
+  (typeof supportedEvidenceMimeTypes)[number],
+  readonly string[]
+> = {
+  'application/json': ['.json'],
+  'application/pdf': ['.pdf'],
+  'image/gif': ['.gif'],
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+  'image/webp': ['.webp'],
+  'text/plain': ['.txt'],
+};
+
+const isSafeEvidenceFileName = (value: string): boolean =>
+  !/[\\/:<>"|?*\0]/.test(value) && value !== '.' && value !== '..';
+
+const isEvidenceFileNameCompatibleWithMimeType = (
+  fileName: string,
+  mimeType: (typeof supportedEvidenceMimeTypes)[number],
+): boolean => {
+  const extension = path.extname(fileName).toLowerCase();
+  const allowedExtensions = supportedEvidenceFileExtensionsByMimeType[mimeType];
+
+  return allowedExtensions.includes(extension);
+};
+
+const evidenceFileNameSchema = optionalTrimmedTextSchema.refine(
+  value => value === undefined || isSafeEvidenceFileName(value),
+  'Evidence file name must not contain path separators',
+);
+
+const evidenceMimeTypeSchema = z.enum(supportedEvidenceMimeTypes).optional();
+
+const evidenceRequestBaseSchema = evidenceObjectSchema
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    filePath: true,
+  })
+  .extend({
+    fileName: evidenceFileNameSchema,
+    mimeType: evidenceMimeTypeSchema,
+  });
+
+const validateEvidenceFileMetadata = (
+  value: {
+    fileName?: string;
+    mimeType?: (typeof supportedEvidenceMimeTypes)[number];
+  },
+  ctx: z.RefinementCtx,
+) => {
+  if (
+    value.fileName &&
+    value.mimeType &&
+    !isEvidenceFileNameCompatibleWithMimeType(value.fileName, value.mimeType)
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['fileName'],
+      message: 'Evidence file name extension must match the supplied mime type',
+    });
+  }
+};
+
+export const createEvidenceRequestSchema =
+  evidenceRequestBaseSchema.superRefine(validateEvidenceFileMetadata);
 type CreateEvidenceRequestSchemaOutput = Required<
   z.output<typeof createEvidenceRequestSchema>
 >;
-const _createEvidenceRequestSchemaCompatibilityCheck: CreateEvidenceRequestSchemaOutput extends CreateEvidenceInput
+type CreateEvidenceRequestInput = Omit<CreateEvidenceInput, 'filePath'>;
+const _createEvidenceRequestSchemaCompatibilityCheck: CreateEvidenceRequestSchemaOutput extends CreateEvidenceRequestInput
   ? true
   : never = true;
 
 export const updateEvidenceRequestSchema = requireAtLeastOneField(
-  createEvidenceBaseSchema.partial(),
+  evidenceRequestBaseSchema.omit({ assessmentId: true }).partial(),
   'At least one evidence field is required',
-);
+).superRefine(validateEvidenceFileMetadata);
 type UpdateEvidenceRequestSchemaOutput = Required<
   z.output<typeof updateEvidenceRequestSchema>
 >;
-const _updateEvidenceRequestSchemaCompatibilityCheck: UpdateEvidenceRequestSchemaOutput extends UpdateEvidenceInput
+type UpdateEvidenceRequestInput = Omit<UpdateEvidenceInput, 'filePath'>;
+const _updateEvidenceRequestSchemaCompatibilityCheck: UpdateEvidenceRequestSchemaOutput extends UpdateEvidenceRequestInput
   ? true
   : never = true;
 
