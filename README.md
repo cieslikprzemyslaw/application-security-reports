@@ -129,6 +129,44 @@ queries out of route handlers and client code.
   for the current routes and tests until a later migration issue moves those
   handlers to Prisma.
 
+## API Server
+
+The Node.js API foundation now lives under `server/` and exposes the health
+endpoint that future domain routers will build on.
+
+### Environment
+
+- `API_PORT` controls the API listen port. It defaults to `3001`.
+- `FRONTEND_ORIGIN` controls the allowed CORS origin. It defaults to
+  `http://localhost:5173`.
+- `NODE_ENV` is validated and defaults to `development`.
+- `DATABASE_URL` still points Prisma at the local SQLite database.
+
+### Local Commands
+
+Verified commands:
+
+- `npm run api:dev` starts the API with watch mode.
+- `npm run build` builds the client and the server.
+- `npm run api:start` starts the compiled API from `dist-server/server/index.js`.
+- `npm run test:api` runs the focused API foundation checks.
+- `npm run db:validate` validates the Prisma schema.
+- `npm run lint` runs ESLint across the repository.
+- `npm run format:check` verifies Prettier formatting.
+
+### Routes
+
+- `GET /api/health` returns `200` with `{ "status": "ok" }`.
+- The API router is mounted under `/api`.
+- Domain routes such as `/api/companies`, `/api/assessments`, and
+  `/api/threats` will be added in later issues.
+
+### Shutdown
+
+Pressing `Ctrl+C` sends `SIGINT` or `SIGTERM`, the server stops accepting new
+connections, Prisma disconnects, and the process exits cleanly after cleanup
+finishes.
+
 ## Identifier Conventions
 
 Backend-created records use prefixed UUIDs in the form `<prefix><UUID>`. The
