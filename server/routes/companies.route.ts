@@ -19,7 +19,6 @@ import {
   RepositoryError,
   RepositoryNotFoundError,
 } from '../database/errors.js';
-import { generateId } from '../utils/id.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
 
 const companyResponse = (company: Company): Company => ({ ...company });
@@ -151,10 +150,9 @@ export const createCompaniesRouter = (
         logoPath?: string;
         footerText?: string;
       };
-      const id = generateId('company');
 
       try {
-        const company = await companyRepository.create(body, id);
+        const company = await companyRepository.create(body);
         const response = res.location(`/api/companies/${company.id}`);
 
         sendCompanyResponse(response, 201, company);

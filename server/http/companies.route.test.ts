@@ -330,7 +330,6 @@ const createApp = (repository: CompanyRepository) =>
     assert.equal(body.data.name, 'Example Security');
     assert.equal(body.data.id.startsWith('cmp_'), true);
     assert.equal(calls.create, 1);
-    assert.equal(calls.createArgs?.id?.startsWith('cmp_'), true);
     assert.equal(calls.createArgs?.input.name, 'Example Security');
   } finally {
     await server.close();
