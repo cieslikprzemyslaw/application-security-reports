@@ -37,6 +37,8 @@ import {
   severitySchema,
   strideCategorySchema,
   threatSchema,
+  threatListQuerySchema,
+  threatRouteParamsSchema,
   threatStatusSchema,
   updateAssessmentRequestSchema,
   updateCompanyRequestSchema,
@@ -835,6 +837,12 @@ assertValid(
   }).success,
   'Assessment route params should pass',
 );
+assertValid(
+  threatRouteParamsSchema.safeParse({
+    id: 'thr_00000000-0000-0000-0000-000000000001',
+  }).success,
+  'Threat route params should pass',
+);
 expectField(
   getFieldErrors(companyRouteParamsSchema, { id: 'company_1' }),
   'id',
@@ -857,6 +865,27 @@ expectField(
 );
 expectField(
   getFieldErrors(assessmentListQuerySchema, { unexpected: 'value' }),
+  'unexpected',
+  'Unknown property',
+);
+assertValid(
+  threatListQuerySchema.safeParse({
+    assessmentId: validAssessment.id,
+  }).success,
+  'Threat list query should pass',
+);
+expectField(
+  getFieldErrors(threatListQuerySchema, {}),
+  'assessmentId',
+  'Required',
+);
+expectField(
+  getFieldErrors(threatListQuerySchema, { assessmentId: 'asm_1' }),
+  'assessmentId',
+  'Assessment ID must be a prefixed UUID',
+);
+expectField(
+  getFieldErrors(threatListQuerySchema, { unexpected: 'value' }),
   'unexpected',
   'Unknown property',
 );

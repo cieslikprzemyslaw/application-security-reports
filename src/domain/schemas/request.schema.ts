@@ -81,6 +81,18 @@ export const assessmentListQuerySchema = z
   })
   .strict();
 
+export const threatRouteParamsSchema = z
+  .object({
+    id: prefixedUuidSchema('thr_', 'Threat'),
+  })
+  .strict();
+
+export const threatListQuerySchema = z
+  .object({
+    assessmentId: prefixedUuidSchema('asm_', 'Assessment'),
+  })
+  .strict();
+
 export const createAssessmentRequestSchema = createAssessmentBaseSchema;
 type CreateAssessmentRequestSchemaOutput = Required<
   z.output<typeof createAssessmentRequestSchema>
