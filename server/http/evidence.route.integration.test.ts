@@ -255,7 +255,9 @@ try {
       },
     });
     assert.deepEqual(
-      storedEvidence?.threatLinks.map(link => link.threatId),
+      storedEvidence?.threatLinks.map(
+        (link: { threatId: string }) => link.threatId,
+      ),
       [secondaryThreat.id],
     );
 

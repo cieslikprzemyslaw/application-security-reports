@@ -287,6 +287,14 @@ const createEvidenceRepository = (
       calls.delete += 1;
       return overrides.delete?.(id);
     },
+
+    async attachToThreat() {
+      return undefined;
+    },
+
+    async detachFromThreat() {
+      return undefined;
+    },
   };
 
   return { calls, repository };
