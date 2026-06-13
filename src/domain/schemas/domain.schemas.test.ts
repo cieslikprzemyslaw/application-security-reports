@@ -25,6 +25,7 @@ import {
   createThreatRequestSchema,
   evidenceSchema,
   evidenceTypeSchema,
+  companyRouteParamsSchema,
   reportSchema,
   reportSnapshotSchema,
   reportStatusSchema,
@@ -812,6 +813,17 @@ expectField(
   }),
   'isAdmin',
   'Unknown property',
+);
+assertValid(
+  companyRouteParamsSchema.safeParse({
+    id: 'cmp_00000000-0000-0000-0000-000000000001',
+  }).success,
+  'Company route params should pass',
+);
+expectField(
+  getFieldErrors(companyRouteParamsSchema, { id: 'company_1' }),
+  'id',
+  'Company ID must be a prefixed UUID',
 );
 expectField(
   getFieldErrors(createAssessmentRequestSchema, {

@@ -158,8 +158,111 @@ Verified commands:
 
 - `GET /api/health` returns `200` with `{ "status": "ok" }`.
 - The API router is mounted under `/api`.
-- Domain routes such as `/api/companies`, `/api/assessments`, and
-  `/api/threats` will be added in later issues.
+
+### Companies API
+
+The Companies router is mounted under `/api/companies`.
+
+- `GET /api/companies`
+- `GET /api/companies/:id`
+- `POST /api/companies`
+- `PATCH /api/companies/:id`
+- `DELETE /api/companies/:id`
+
+All successful JSON responses use a `{ "data": ... }` envelope. Company records
+use ISO-8601 timestamps and the `cmp_` prefixed UUID format.
+
+#### Create company
+
+`POST /api/companies`
+
+```json
+{
+  "name": "Northstar Digital",
+  "description": "Security consulting and managed assessment services",
+  "website": "https://northstar.example",
+  "contactName": "Alex Mercer",
+  "contactEmail": "security@northstar.example",
+  "logoPath": "/logos/northstar.svg",
+  "footerText": "Confidential - do not distribute."
+}
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "cmp_00000000-0000-0000-0000-000000000001",
+    "name": "Northstar Digital",
+    "description": "Security consulting and managed assessment services",
+    "website": "https://northstar.example",
+    "contactName": "Alex Mercer",
+    "contactEmail": "security@northstar.example",
+    "logoPath": "/logos/northstar.svg",
+    "footerText": "Confidential - do not distribute.",
+    "createdAt": "2026-06-01T09:00:00.000Z",
+    "updatedAt": "2026-06-11T09:00:00.000Z"
+  }
+}
+```
+
+#### Update company
+
+`PATCH /api/companies/:id`
+
+```json
+{
+  "name": "Northstar Security",
+  "footerText": "Confidential - updated."
+}
+```
+
+Validation error:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "details": [
+      {
+        "path": "id",
+        "message": "Unknown property: id",
+        "code": "unrecognized_keys"
+      }
+    ]
+  }
+}
+```
+
+Not found error:
+
+```json
+{
+  "error": {
+    "code": "COMPANY_NOT_FOUND",
+    "message": "Company not found",
+    "details": []
+  }
+}
+```
+
+#### Delete company
+
+`DELETE /api/companies/:id` returns `204 No Content` on success.
+
+If assessments still reference the company, the API returns:
+
+```json
+{
+  "error": {
+    "code": "COMPANY_DELETE_CONFLICT",
+    "message": "Company cannot be deleted while related assessments exist",
+    "details": []
+  }
+}
+```
 
 ### Shutdown
 

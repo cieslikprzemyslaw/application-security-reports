@@ -1,4 +1,5 @@
 import { isServerConfigError } from './config.js';
+import { repositories } from './database/repositories/index.js';
 import { prisma } from './lib/prisma.js';
 import { registerProcessShutdownHandlers, startApiServer } from './start.js';
 
@@ -16,6 +17,7 @@ const logStartupError = (error: unknown): void => {
 const main = async (): Promise<void> => {
   const { config, shutdown } = await startApiServer({
     prismaClient: prisma,
+    companyRepository: repositories.company,
   });
 
   console.log(`AppSec API running at http://localhost:${config.apiPort}`);

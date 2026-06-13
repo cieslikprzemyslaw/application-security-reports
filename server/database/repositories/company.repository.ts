@@ -11,7 +11,7 @@ import { toIsoString, toOptionalText } from './repository.helpers.js';
 export interface CompanyRepository {
   findAll(): Promise<Company[]>;
   findById(id: string): Promise<Company | null>;
-  create(input: CreateCompanyInput): Promise<Company>;
+  create(input: CreateCompanyInput, id?: string): Promise<Company>;
   update(id: string, input: UpdateCompanyInput): Promise<Company>;
   delete(id: string): Promise<void>;
 }
@@ -79,11 +79,11 @@ export function createCompanyRepository(
       return company ? toCompany(company) : null;
     },
 
-    async create(input) {
+    async create(input, id = generateId('company')) {
       try {
         const company = await db.company.create({
           data: {
-            id: generateId('company'),
+            id,
             name: input.name,
             description: input.description,
             website: input.website,
