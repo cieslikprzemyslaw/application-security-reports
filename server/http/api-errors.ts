@@ -15,6 +15,7 @@ export type ApiErrorCode =
   | 'THREAT_NOT_FOUND'
   | 'THREAT_CONFLICT'
   | 'THREAT_DELETE_CONFLICT'
+  | 'SETTINGS_NOT_FOUND'
   | 'INTERNAL_SERVER_ERROR';
 
 export interface ApiErrorResponse {
