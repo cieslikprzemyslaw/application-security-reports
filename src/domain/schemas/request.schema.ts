@@ -127,7 +127,7 @@ const _createThreatRequestSchemaCompatibilityCheck: CreateThreatRequestSchemaOut
   : never = true;
 
 export const updateThreatRequestSchema = requireAtLeastOneField(
-  createThreatBaseSchema.partial(),
+  createThreatBaseSchema.omit({ assessmentId: true }).partial(),
   'At least one threat field is required',
 );
 type UpdateThreatRequestSchemaOutput = Required<

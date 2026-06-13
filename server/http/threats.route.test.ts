@@ -613,7 +613,7 @@ for (const [body, path, messageIncludes] of [
       ...validCreateThreatBody,
       strideCategories: ['privilege-escalation'],
     },
-    'strideCategories',
+    'strideCategories.0',
     'Invalid enum value',
   ],
   [
