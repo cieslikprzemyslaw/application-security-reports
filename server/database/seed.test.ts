@@ -32,7 +32,7 @@ const runPrismaCommand = (args: string[]) => {
     cwd: repoRoot,
     env: {
       ...process.env,
-      DATABASE_URL: tempDatabaseUrl,
+      DATABASE_URL: prismaDatabaseUrl,
     },
     encoding: 'utf8',
   });
@@ -57,7 +57,7 @@ const runNpmScript = (args: string[]) => {
     cwd: repoRoot,
     env: {
       ...process.env,
-      DATABASE_URL: tempDatabaseUrl,
+      DATABASE_URL: prismaDatabaseUrl,
     },
     encoding: 'utf8',
   });
@@ -190,7 +190,9 @@ const getSnapshot = async (prisma: {
 
 const tempDir = await mkdtemp(path.join(os.tmpdir(), 'appsec-seed-'));
 const tempSeedDir = path.join(tempDir, 'seed');
-const tempDatabaseUrl = pathToFileURL(path.join(tempDir, 'seed.sqlite')).href;
+const databasePath = path.join(tempDir, 'seed.sqlite');
+const prismaDatabaseUrl = `file:${databasePath.replaceAll('\\', '/')}`;
+const adapterDatabaseUrl = pathToFileURL(databasePath).href;
 const seedBuildClientPath = pathToFileURL(
   path.join(buildDir, 'generated', 'prisma', 'client.js'),
 ).href;
@@ -202,7 +204,7 @@ try {
   runPrismaCommand(['migrate', 'deploy']);
 
   const prisma = new PrismaClient({
-    adapter: new PrismaBetterSqlite3({ url: tempDatabaseUrl }),
+    adapter: new PrismaBetterSqlite3({ url: adapterDatabaseUrl }),
   });
 
   try {

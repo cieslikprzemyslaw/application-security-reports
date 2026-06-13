@@ -1,6 +1,5 @@
 import cors from 'cors';
 import express, { type Express } from 'express';
-import path from 'node:path';
 import type { Router } from 'express';
 
 import type { ServerConfig } from '../config.js';
@@ -33,7 +32,6 @@ export const createApiApp = (
     }),
   );
   app.use(express.json({ limit: jsonBodyLimit }));
-  app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
   app.use('/api', createApiRouter(options));
   app.use(apiNotFoundHandler);
   app.use(apiErrorHandler);
