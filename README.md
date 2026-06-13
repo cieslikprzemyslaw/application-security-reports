@@ -158,6 +158,8 @@ Verified commands:
 
 - `GET /api/health` returns `200` with `{ "status": "ok" }`.
 - The API router is mounted under `/api`.
+- Assessment routes are mounted under `/api/assessments`.
+- Company routes are mounted under `/api/companies`.
 
 ### Companies API
 
@@ -259,6 +261,157 @@ If assessments still reference the company, the API returns:
   "error": {
     "code": "COMPANY_DELETE_CONFLICT",
     "message": "Company cannot be deleted while related assessments exist",
+    "details": []
+  }
+}
+```
+
+### Assessments API
+
+The Assessments router is mounted under `/api/assessments`.
+
+- `GET /api/assessments`
+- `GET /api/assessments?companyId=cmp_...`
+- `GET /api/assessments/:id`
+- `POST /api/assessments`
+- `PATCH /api/assessments/:id`
+- `DELETE /api/assessments/:id`
+
+All successful JSON responses use a `{ "data": ... }` envelope. Assessment
+records use ISO-8601 timestamps, the `asm_` prefixed UUID format, and keep the
+`cmp_` company foreign key on the record itself.
+
+#### List assessments
+
+`GET /api/assessments`
+
+```json
+{
+  "data": []
+}
+```
+
+`GET /api/assessments?companyId=cmp_00000000-0000-0000-0000-000000000001`
+
+```json
+{
+  "data": [
+    {
+      "id": "asm_00000000-0000-0000-0000-000000000001",
+      "companyId": "cmp_00000000-0000-0000-0000-000000000001",
+      "title": "Customer Services Portal",
+      "description": "Assessment of the customer portal",
+      "scope": "Web application",
+      "status": "in-progress",
+      "startedAt": "2026-06-01",
+      "completedAt": "2026-06-10",
+      "applicationName": "Customer Services Portal",
+      "environment": "Production",
+      "assessmentType": "Web App",
+      "overallRisk": "high",
+      "createdAt": "2026-06-01T09:00:00.000Z",
+      "updatedAt": "2026-06-11T09:00:00.000Z"
+    }
+  ]
+}
+```
+
+#### Create assessment
+
+`POST /api/assessments`
+
+```json
+{
+  "companyId": "cmp_00000000-0000-0000-0000-000000000001",
+  "title": "Customer Services Portal",
+  "description": "Assessment of the customer portal",
+  "scope": "Web application",
+  "status": "in-progress",
+  "startedAt": "2026-06-01",
+  "completedAt": "2026-06-10",
+  "applicationName": "Customer Services Portal",
+  "environment": "Production",
+  "assessmentType": "Web App",
+  "overallRisk": "high"
+}
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "asm_00000000-0000-0000-0000-000000000001",
+    "companyId": "cmp_00000000-0000-0000-0000-000000000001",
+    "title": "Customer Services Portal",
+    "description": "Assessment of the customer portal",
+    "scope": "Web application",
+    "status": "in-progress",
+    "startedAt": "2026-06-01",
+    "completedAt": "2026-06-10",
+    "applicationName": "Customer Services Portal",
+    "environment": "Production",
+    "assessmentType": "Web App",
+    "overallRisk": "high",
+    "createdAt": "2026-06-01T09:00:00.000Z",
+    "updatedAt": "2026-06-11T09:00:00.000Z"
+  }
+}
+```
+
+If the company does not exist, the API returns:
+
+```json
+{
+  "error": {
+    "code": "COMPANY_NOT_FOUND",
+    "message": "Company not found",
+    "details": []
+  }
+}
+```
+
+#### Retrieve assessment
+
+`GET /api/assessments/:id`
+
+If the assessment does not exist, the API returns:
+
+```json
+{
+  "error": {
+    "code": "ASSESSMENT_NOT_FOUND",
+    "message": "Assessment not found",
+    "details": []
+  }
+}
+```
+
+#### Update assessment
+
+`PATCH /api/assessments/:id`
+
+```json
+{
+  "title": "Customer Services Portal - Updated",
+  "overallRisk": "medium"
+}
+```
+
+PATCH validation rejects `id`, `companyId`, `createdAt`, and `updatedAt`,
+and requires at least one mutable field.
+
+#### Delete assessment
+
+`DELETE /api/assessments/:id` returns `204 No Content` on success.
+
+If related reports still reference the assessment, the API returns:
+
+```json
+{
+  "error": {
+    "code": "ASSESSMENT_DELETE_CONFLICT",
+    "message": "Assessment cannot be deleted while related reports exist",
     "details": []
   }
 }

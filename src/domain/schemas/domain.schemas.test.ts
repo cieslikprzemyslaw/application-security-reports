@@ -15,6 +15,8 @@ import {
   assessmentSchema,
   assessmentsFileSchema,
   assessmentStatusSchema,
+  assessmentListQuerySchema,
+  assessmentRouteParamsSchema,
   activitySchema,
   companySchema,
   companiesFileSchema,
@@ -88,7 +90,7 @@ const expectField = (
 };
 
 const validCompany = {
-  id: 'cmp_1',
+  id: 'cmp_00000000-0000-0000-0000-000000000001',
   name: 'Northstar Digital',
   description: 'Security and engineering partner',
   website: 'https://northstar.example',
@@ -101,7 +103,7 @@ const validCompany = {
 };
 
 const validAssessment = {
-  id: 'asm_1',
+  id: 'asm_00000000-0000-0000-0000-000000000001',
   companyId: validCompany.id,
   title: 'Customer Services Portal',
   description: 'Assessment of the customer portal',
@@ -118,7 +120,7 @@ const validAssessment = {
 };
 
 const validThreat = {
-  id: 'thr_1',
+  id: 'thr_00000000-0000-0000-0000-000000000001',
   assessmentId: validAssessment.id,
   title: 'Missing Server-Side Authorization',
   description: 'The endpoint returns another customer order.',
@@ -694,6 +696,13 @@ expectField(
   'At least one assessment field is required',
 );
 expectField(
+  getFieldErrors(updateAssessmentRequestSchema, {
+    companyId: validCompany.id,
+  }),
+  'companyId',
+  'Unknown property',
+);
+expectField(
   getFieldErrors(updateThreatRequestSchema, {}),
   '',
   'At least one threat field is required',
@@ -820,10 +829,36 @@ assertValid(
   }).success,
   'Company route params should pass',
 );
+assertValid(
+  assessmentRouteParamsSchema.safeParse({
+    id: 'asm_00000000-0000-0000-0000-000000000001',
+  }).success,
+  'Assessment route params should pass',
+);
 expectField(
   getFieldErrors(companyRouteParamsSchema, { id: 'company_1' }),
   'id',
   'Company ID must be a prefixed UUID',
+);
+assertValid(
+  assessmentListQuerySchema.safeParse({
+    companyId: validCompany.id,
+  }).success,
+  'Assessment list query should pass',
+);
+assertValid(
+  assessmentListQuerySchema.safeParse({}).success,
+  'Assessment list query without filters should pass',
+);
+expectField(
+  getFieldErrors(assessmentListQuerySchema, { companyId: 'company_1' }),
+  'companyId',
+  'Company ID must be a prefixed UUID',
+);
+expectField(
+  getFieldErrors(assessmentListQuerySchema, { unexpected: 'value' }),
+  'unexpected',
+  'Unknown property',
 );
 expectField(
   getFieldErrors(createAssessmentRequestSchema, {

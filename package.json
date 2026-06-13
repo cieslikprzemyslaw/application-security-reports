@@ -29,7 +29,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test": "tsx src/routes/routes.test.ts && tsx src/app/appRouter.test.tsx && tsx src/app/layouts/sidebar/sidebar.test.tsx && tsx src/app/layouts/topbar/topbar.test.tsx && tsx src/app/layouts/appLayout/appLayout.test.tsx && tsx server/utils/id.test.ts && npm run test:validation && npm run test:api && npm run test:database",
-    "test:api": "tsx server/config.test.ts && tsx server/http/api-app.test.ts && tsx server/http/companies.route.test.ts && tsx server/http/companies.route.integration.test.ts && tsx server/http/shutdown.test.ts",
+    "test:api": "tsx server/config.test.ts && tsx server/http/api-app.test.ts && tsx server/http/companies.route.test.ts && tsx server/http/companies.route.integration.test.ts && tsx server/http/assessments.route.test.ts && tsx server/http/assessments.route.integration.test.ts && tsx server/http/shutdown.test.ts",
     "test:validation": "tsx src/domain/schemas/domain.schemas.test.ts && tsx src/validation/validation.test.ts && tsx server/services/jsonFileStore.test.ts",
     "test:database": "npx tsc -p tsconfig.server.json --outDir .tmp/appsec-db-build && node scripts/run-database-tests.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.server.json",

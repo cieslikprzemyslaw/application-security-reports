@@ -69,6 +69,18 @@ const createAssessmentBaseSchema = assessmentObjectSchema.omit({
   updatedAt: true,
 });
 
+export const assessmentRouteParamsSchema = z
+  .object({
+    id: prefixedUuidSchema('asm_', 'Assessment'),
+  })
+  .strict();
+
+export const assessmentListQuerySchema = z
+  .object({
+    companyId: prefixedUuidSchema('cmp_', 'Company').optional(),
+  })
+  .strict();
+
 export const createAssessmentRequestSchema = createAssessmentBaseSchema;
 type CreateAssessmentRequestSchemaOutput = Required<
   z.output<typeof createAssessmentRequestSchema>
@@ -78,7 +90,7 @@ const _createAssessmentRequestSchemaCompatibilityCheck: CreateAssessmentRequestS
   : never = true;
 
 export const updateAssessmentRequestSchema = requireAtLeastOneField(
-  createAssessmentBaseSchema.partial(),
+  createAssessmentBaseSchema.omit({ companyId: true }).partial(),
   'At least one assessment field is required',
 );
 type UpdateAssessmentRequestSchemaOutput = Required<
