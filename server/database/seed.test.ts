@@ -190,7 +190,7 @@ const getSnapshot = async (prisma: {
 
 const tempDir = await mkdtemp(path.join(os.tmpdir(), 'appsec-seed-'));
 const tempSeedDir = path.join(tempDir, 'seed');
-const tempDatabaseUrl = `file:${path.join(tempDir, 'seed.sqlite')}`;
+const tempDatabaseUrl = pathToFileURL(path.join(tempDir, 'seed.sqlite')).href;
 const seedBuildClientPath = pathToFileURL(
   path.join(buildDir, 'generated', 'prisma', 'client.js'),
 ).href;

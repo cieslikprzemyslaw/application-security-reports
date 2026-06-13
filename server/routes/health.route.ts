@@ -1,10 +1,9 @@
-import { Router } from 'express';
-const router = Router();
-router.get('/', (_req, res) =>
-  res.json({
-    status: 'ok',
-    service: 'appsec-report-builder-api',
-    storage: 'local-json',
-  }),
-);
-export default router;
+import type { Router } from 'express';
+
+export const registerHealthRoute = (router: Router): void => {
+  router.get('/health', (_req, res) => {
+    res.status(200).json({
+      status: 'ok',
+    });
+  });
+};
