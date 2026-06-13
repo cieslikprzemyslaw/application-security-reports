@@ -12,6 +12,9 @@ export type ApiErrorCode =
   | 'ASSESSMENT_NOT_FOUND'
   | 'ASSESSMENT_CONFLICT'
   | 'ASSESSMENT_DELETE_CONFLICT'
+  | 'THREAT_NOT_FOUND'
+  | 'THREAT_CONFLICT'
+  | 'THREAT_DELETE_CONFLICT'
   | 'INTERNAL_SERVER_ERROR';
 
 export interface ApiErrorResponse {

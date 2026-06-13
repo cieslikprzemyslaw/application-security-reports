@@ -160,6 +160,7 @@ Verified commands:
 - The API router is mounted under `/api`.
 - Assessment routes are mounted under `/api/assessments`.
 - Company routes are mounted under `/api/companies`.
+- Threat routes are mounted under `/api/threats`.
 
 ### Companies API
 
@@ -412,6 +413,133 @@ If related reports still reference the assessment, the API returns:
   "error": {
     "code": "ASSESSMENT_DELETE_CONFLICT",
     "message": "Assessment cannot be deleted while related reports exist",
+    "details": []
+  }
+}
+```
+
+### Threats API
+
+The Threats router is mounted under `/api/threats`.
+
+- `GET /api/threats?assessmentId=asm_...`
+- `GET /api/threats/:id`
+- `POST /api/threats`
+- `PATCH /api/threats/:id`
+- `DELETE /api/threats/:id`
+
+All successful JSON responses use a `{ "data": ... }` envelope. Threat records
+use ISO-8601 timestamps, the `thr_` prefixed UUID format, and must always be
+filtered by `assessmentId` when listing.
+
+#### List threats
+
+`GET /api/threats?assessmentId=asm_00000000-0000-0000-0000-000000000001`
+
+```json
+{
+  "data": []
+}
+```
+
+The `assessmentId` query parameter is required. Missing, malformed, or unknown
+query properties return `400 VALIDATION_ERROR`. If the assessment does not
+exist, the API returns `404 ASSESSMENT_NOT_FOUND`.
+
+#### Create threat
+
+`POST /api/threats`
+
+```json
+{
+  "assessmentId": "asm_00000000-0000-0000-0000-000000000001",
+  "title": "Missing Server-Side Authorization",
+  "description": "The endpoint returns another customer order.",
+  "severity": "critical",
+  "strideCategories": ["spoofing", "tampering"],
+  "status": "accepted-risk",
+  "affectedAsset": "/api/v1/orders/{id}",
+  "impact": "Unauthorised access to customer order data",
+  "recommendation": "Apply object-level authorization on every request.",
+  "observation": "An authenticated user can access another customer order.",
+  "affectedComponent": "Orders API",
+  "affectedEndpoint": "/api/v1/orders/{id}",
+  "risk": "Sensitive order data is exposed."
+}
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "id": "thr_00000000-0000-0000-0000-000000000001",
+    "assessmentId": "asm_00000000-0000-0000-0000-000000000001",
+    "title": "Missing Server-Side Authorization",
+    "description": "The endpoint returns another customer order.",
+    "severity": "critical",
+    "strideCategories": ["spoofing", "tampering"],
+    "status": "accepted-risk",
+    "affectedAsset": "/api/v1/orders/{id}",
+    "impact": "Unauthorised access to customer order data",
+    "recommendation": "Apply object-level authorization on every request.",
+    "observation": "An authenticated user can access another customer order.",
+    "affectedComponent": "Orders API",
+    "affectedEndpoint": "/api/v1/orders/{id}",
+    "risk": "Sensitive order data is exposed.",
+    "createdAt": "2026-06-01T09:00:00.000Z",
+    "updatedAt": "2026-06-11T09:00:00.000Z"
+  }
+}
+```
+
+Severity, status, and STRIDE categories are validated against the shared
+domain enums. Unknown properties are rejected, and client-controlled `id`,
+`createdAt`, and `updatedAt` fields are also rejected. If the assessment does
+not exist, the API returns `404 ASSESSMENT_NOT_FOUND`.
+
+#### Retrieve threat
+
+`GET /api/threats/:id`
+
+If the threat does not exist, the API returns:
+
+```json
+{
+  "error": {
+    "code": "THREAT_NOT_FOUND",
+    "message": "Threat not found",
+    "details": []
+  }
+}
+```
+
+#### Update threat
+
+`PATCH /api/threats/:id`
+
+```json
+{
+  "title": "Missing server-side authorization",
+  "status": "mitigated",
+  "risk": "Risk reduced after remediation"
+}
+```
+
+PATCH validation rejects `id`, `assessmentId`, `createdAt`, and `updatedAt`,
+and requires at least one mutable field.
+
+#### Delete threat
+
+`DELETE /api/threats/:id` returns `204 No Content` on success.
+
+If related evidence or reports still reference the threat, the API returns:
+
+```json
+{
+  "error": {
+    "code": "THREAT_DELETE_CONFLICT",
+    "message": "Threat cannot be deleted while related evidence or reports exist",
     "details": []
   }
 }
