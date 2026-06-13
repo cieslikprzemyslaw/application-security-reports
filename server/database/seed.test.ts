@@ -24,15 +24,23 @@ const repoRoot = path.resolve(buildDir, '..', '..');
 const npmCliPath =
   process.env.npm_execpath ??
   path.resolve(repoRoot, 'node_modules', 'npm', 'bin', 'npm-cli.js');
-const prismaCommand = path.resolve(repoRoot, 'scripts', 'prisma-command.mjs');
+const npxCliPath = path.join(path.dirname(npmCliPath), 'npx-cli.js');
 const sourceSeedDir = path.resolve(repoRoot, 'prisma', 'seed');
+const prismaTestEnv =
+  process.platform === 'win32'
+    ? {
+        RUST_BACKTRACE: '1',
+        RUST_LOG: 'debug',
+      }
+    : {};
 
 const runPrismaCommand = (args: string[]) => {
-  const result = spawnSync(process.execPath, [prismaCommand, ...args], {
+  const result = spawnSync(process.execPath, [npxCliPath, 'prisma', ...args], {
     cwd: repoRoot,
     env: {
       ...process.env,
       DATABASE_URL: prismaDatabaseUrl,
+      ...prismaTestEnv,
     },
     encoding: 'utf8',
   });
@@ -58,6 +66,7 @@ const runNpmScript = (args: string[]) => {
     env: {
       ...process.env,
       DATABASE_URL: prismaDatabaseUrl,
+      ...prismaTestEnv,
     },
     encoding: 'utf8',
   });
@@ -192,7 +201,7 @@ const tempDir = await mkdtemp(path.join(os.tmpdir(), 'appsec-seed-'));
 const tempSeedDir = path.join(tempDir, 'seed');
 const databasePath = path.join(tempDir, 'seed.sqlite');
 const prismaDatabaseUrl = `file:${databasePath.replaceAll('\\', '/')}`;
-const adapterDatabaseUrl = pathToFileURL(databasePath).href;
+const adapterDatabaseUrl = prismaDatabaseUrl;
 const seedBuildClientPath = pathToFileURL(
   path.join(buildDir, 'generated', 'prisma', 'client.js'),
 ).href;
