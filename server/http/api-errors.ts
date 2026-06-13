@@ -6,6 +6,9 @@ export type ApiErrorCode =
   | 'VALIDATION_ERROR'
   | 'INVALID_JSON'
   | 'NOT_FOUND'
+  | 'COMPANY_NOT_FOUND'
+  | 'COMPANY_CONFLICT'
+  | 'COMPANY_DELETE_CONFLICT'
   | 'INTERNAL_SERVER_ERROR';
 
 export interface ApiErrorResponse {

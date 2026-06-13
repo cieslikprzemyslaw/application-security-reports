@@ -42,6 +42,22 @@ const isRealCalendarDate = (value: string) => {
 
 export const nonEmptyIdSchema = z.string().trim().min(1, 'ID is required');
 
+const escapeRegExp = (value: string): string =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+export const prefixedUuidSchema = (prefix: string, entityName: string) =>
+  z
+    .string()
+    .trim()
+    .regex(
+      new RegExp(
+        `^${escapeRegExp(prefix)}[0-9a-fA-F]{8}-` +
+          `[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-` +
+          `[0-9a-fA-F]{12}$`,
+      ),
+      `${entityName} ID must be a prefixed UUID`,
+    );
+
 export const nonEmptyTextSchema = z.string().trim().min(1, 'Text is required');
 
 export const trimmedTextSchema = z.string().trim();

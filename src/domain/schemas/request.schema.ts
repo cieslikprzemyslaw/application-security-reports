@@ -16,6 +16,7 @@ import { evidenceObjectSchema } from './evidence.schema.js';
 import { reportObjectSchema } from './report.schema.js';
 import { settingsObjectSchema } from './settings.schema.js';
 import { threatObjectSchema } from './threat.schema.js';
+import { prefixedUuidSchema } from './common.schema.js';
 
 const requireAtLeastOneField = <T extends z.ZodRawShape>(
   schema: z.ZodObject<T>,
@@ -36,6 +37,12 @@ const createCompanyBaseSchema = companyObjectSchema.omit({
   createdAt: true,
   updatedAt: true,
 });
+
+export const companyRouteParamsSchema = z
+  .object({
+    id: prefixedUuidSchema('cmp_', 'Company'),
+  })
+  .strict();
 
 export const createCompanyRequestSchema = createCompanyBaseSchema;
 type CreateCompanyRequestSchemaOutput = Required<
