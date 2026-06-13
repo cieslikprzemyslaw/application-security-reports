@@ -26,13 +26,6 @@ const npmCliPath =
   path.resolve(repoRoot, 'node_modules', 'npm', 'bin', 'npm-cli.js');
 const npxCliPath = path.join(path.dirname(npmCliPath), 'npx-cli.js');
 const sourceSeedDir = path.resolve(repoRoot, 'prisma', 'seed');
-const prismaTestEnv =
-  process.platform === 'win32'
-    ? {
-        RUST_BACKTRACE: '1',
-        RUST_LOG: 'debug',
-      }
-    : {};
 
 const runPrismaCommand = (args: string[]) => {
   const result = spawnSync(process.execPath, [npxCliPath, 'prisma', ...args], {
@@ -40,7 +33,6 @@ const runPrismaCommand = (args: string[]) => {
     env: {
       ...process.env,
       DATABASE_URL: prismaDatabaseUrl,
-      ...prismaTestEnv,
     },
     encoding: 'utf8',
   });
@@ -66,7 +58,6 @@ const runNpmScript = (args: string[]) => {
     env: {
       ...process.env,
       DATABASE_URL: prismaDatabaseUrl,
-      ...prismaTestEnv,
     },
     encoding: 'utf8',
   });
