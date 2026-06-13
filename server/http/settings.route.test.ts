@@ -52,7 +52,7 @@ type ApiErrorBody = {
 const readJson = async <T>(response: Response): Promise<T> =>
   response.json() as Promise<T>;
 
-const defaultSettings = {
+const defaultSettings: Settings = {
   id: 'set_00000000-0000-0000-0000-000000000001',
   organisationName: 'Northstar Digital',
   consultantName: 'Alex Mercer',
@@ -69,7 +69,7 @@ const defaultSettings = {
   confidentialReports: true,
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-11T09:00:00.000Z',
-} satisfies Settings;
+};
 
 type SettingsRepositoryOverrides = Partial<{
   get: () => Promise<typeof defaultSettings | null>;
