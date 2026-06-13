@@ -9,6 +9,9 @@ export type ApiErrorCode =
   | 'COMPANY_NOT_FOUND'
   | 'COMPANY_CONFLICT'
   | 'COMPANY_DELETE_CONFLICT'
+  | 'ASSESSMENT_NOT_FOUND'
+  | 'ASSESSMENT_CONFLICT'
+  | 'ASSESSMENT_DELETE_CONFLICT'
   | 'INTERNAL_SERVER_ERROR';
 
 export interface ApiErrorResponse {

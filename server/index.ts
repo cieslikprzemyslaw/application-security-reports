@@ -17,6 +17,7 @@ const logStartupError = (error: unknown): void => {
 const main = async (): Promise<void> => {
   const { config, shutdown } = await startApiServer({
     prismaClient: prisma,
+    assessmentRepository: repositories.assessment,
     companyRepository: repositories.company,
   });
 
