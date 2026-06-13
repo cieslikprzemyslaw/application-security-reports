@@ -4,6 +4,7 @@ import type { Router } from 'express';
 
 import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
+import type { EvidenceRepository } from '../database/repositories/evidence.repository.js';
 import type { SettingsRepository } from '../database/repositories/settings.repository.js';
 import type { ThreatRepository } from '../database/repositories/threat.repository.js';
 import type { ServerConfig } from '../config.js';
@@ -13,6 +14,7 @@ import { apiErrorHandler, apiNotFoundHandler } from './error-handler.js';
 export interface ApiAppOptions {
   assessmentRepository?: AssessmentRepository;
   companyRepository?: CompanyRepository;
+  evidenceRepository?: EvidenceRepository;
   settingsRepository?: SettingsRepository;
   threatRepository?: ThreatRepository;
   registerRoutes?: (router: Router) => void;

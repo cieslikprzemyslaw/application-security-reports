@@ -2,9 +2,11 @@ import { Router } from 'express';
 
 import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
+import type { EvidenceRepository } from '../database/repositories/evidence.repository.js';
 import type { SettingsRepository } from '../database/repositories/settings.repository.js';
 import type { ThreatRepository } from '../database/repositories/threat.repository.js';
 import { createAssessmentsRouter } from '../routes/assessments.route.js';
+import { createEvidenceRouter } from '../routes/evidence.route.js';
 import { registerHealthRoute } from '../routes/health.route.js';
 import { createCompaniesRouter } from '../routes/companies.route.js';
 import { createSettingsRouter } from '../routes/settings.route.js';
@@ -13,6 +15,7 @@ import { createThreatsRouter } from '../routes/threats.route.js';
 export interface RegisterApiRoutesOptions {
   assessmentRepository?: AssessmentRepository;
   companyRepository?: CompanyRepository;
+  evidenceRepository?: EvidenceRepository;
   settingsRepository?: SettingsRepository;
   threatRepository?: ThreatRepository;
   registerRoutes?: (router: Router) => void;
@@ -44,6 +47,20 @@ export const createApiRouter = (
   }
   if (options.companyRepository) {
     router.use('/companies', createCompaniesRouter(options.companyRepository));
+  }
+  if (
+    options.assessmentRepository &&
+    options.threatRepository &&
+    options.evidenceRepository
+  ) {
+    router.use(
+      '/evidence',
+      createEvidenceRouter(
+        options.assessmentRepository,
+        options.threatRepository,
+        options.evidenceRepository,
+      ),
+    );
   }
   if (options.settingsRepository) {
     router.use('/settings', createSettingsRouter(options.settingsRepository));
