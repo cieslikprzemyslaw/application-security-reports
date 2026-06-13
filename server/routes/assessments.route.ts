@@ -5,7 +5,11 @@ import {
   type Response,
 } from 'express';
 
-import type { Assessment } from '../../src/domain/assessment.js';
+import type {
+  Assessment,
+  CreateAssessmentInput,
+  UpdateAssessmentInput,
+} from '../../src/domain/assessment.js';
 import {
   assessmentListQuerySchema,
   assessmentRouteParamsSchema,
@@ -160,19 +164,7 @@ export const createAssessmentsRouter = (
       body: createAssessmentRequestSchema,
     }),
     asyncRoute(async (_req, res) => {
-      const body = res.locals.validatedRequest?.body as {
-        companyId: string;
-        title: string;
-        description?: string;
-        scope?: string;
-        status: string;
-        startedAt?: string;
-        completedAt?: string;
-        applicationName?: string;
-        environment?: string;
-        assessmentType?: string;
-        overallRisk?: Assessment['overallRisk'];
-      };
+      const body = res.locals.validatedRequest?.body as CreateAssessmentInput;
 
       try {
         const company = await companyRepository.findById(body.companyId);
@@ -215,46 +207,10 @@ export const createAssessmentsRouter = (
       const { id } = res.locals.validatedRequest?.params as {
         id: string;
       };
-      const body = res.locals.validatedRequest?.body as {
-        title?: string;
-        description?: string;
-        scope?: string;
-        status?: string;
-        startedAt?: string;
-        completedAt?: string;
-        applicationName?: string;
-        environment?: string;
-        assessmentType?: string;
-        overallRisk?: Assessment['overallRisk'];
-      };
+      const body = res.locals.validatedRequest?.body as UpdateAssessmentInput;
 
       try {
-        const updatedAssessment = await assessmentRepository.update(id, {
-          ...(body.title !== undefined ? { title: body.title } : {}),
-          ...(body.description !== undefined
-            ? { description: body.description }
-            : {}),
-          ...(body.scope !== undefined ? { scope: body.scope } : {}),
-          ...(body.status !== undefined ? { status: body.status } : {}),
-          ...(body.startedAt !== undefined
-            ? { startedAt: body.startedAt }
-            : {}),
-          ...(body.completedAt !== undefined
-            ? { completedAt: body.completedAt }
-            : {}),
-          ...(body.applicationName !== undefined
-            ? { applicationName: body.applicationName }
-            : {}),
-          ...(body.environment !== undefined
-            ? { environment: body.environment }
-            : {}),
-          ...(body.assessmentType !== undefined
-            ? { assessmentType: body.assessmentType }
-            : {}),
-          ...(body.overallRisk !== undefined
-            ? { overallRisk: body.overallRisk }
-            : {}),
-        });
+        const updatedAssessment = await assessmentRepository.update(id, body);
 
         sendAssessmentResponse(res, 200, updatedAssessment);
       } catch (error) {

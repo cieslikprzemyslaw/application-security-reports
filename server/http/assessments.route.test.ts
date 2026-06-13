@@ -7,6 +7,7 @@ import {
 } from '../database/errors.js';
 import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
+import type { Assessment } from '../../src/domain/assessment.js';
 import { loadServerConfig } from '../config.js';
 import { createApiApp } from './api-app.js';
 
@@ -68,7 +69,7 @@ const defaultCompany = {
   updatedAt: '2026-06-11T09:00:00.000Z',
 };
 
-const defaultAssessment = {
+const defaultAssessment: Assessment = {
   id: 'asm_00000000-0000-0000-0000-000000000001',
   companyId: defaultCompany.id,
   title: 'Customer Services Portal',
