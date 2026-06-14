@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
 import IconSVG from '~/app/components/ui/iconSVG';
+import packageJson from '../../../../package.json';
 import Sidebar from './sidebar.component';
 import { routes } from '~/routes';
 
@@ -31,7 +32,30 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    brand: <strong>AppSec Reports</strong>,
+    brand: (
+      <div className="sidebar-brand-stack">
+        <a
+          className="sidebar-company-switcher"
+          href={routes.companies}
+          aria-label="Open company switcher"
+        >
+          <span className="sidebar-company-switcher-icon" aria-hidden="true">
+            <IconSVG name="company" />
+          </span>
+
+          <span className="sidebar-company-switcher-text">
+            <span className="sidebar-company-switcher-label">Company</span>
+            <span className="sidebar-company-switcher-name">
+              Select company
+            </span>
+          </span>
+
+          <IconSVG name="chevronDown" aria-hidden="true" />
+        </a>
+
+        <strong className="sidebar-brand-title">AppSec Reports</strong>
+      </div>
+    ),
     navigationGroups: [
       {
         id: 'workspace',
@@ -42,30 +66,6 @@ export const Default: Story = {
             icon: <IconSVG name="dashboard" />,
             href: routes.dashboard,
             isActive: true,
-          },
-          {
-            id: 'companies',
-            label: 'Companies',
-            icon: <IconSVG name="company" />,
-            href: routes.companies,
-          },
-          {
-            id: 'assessments',
-            label: 'Assessments',
-            icon: <IconSVG name="assessment" />,
-            href: routes.assessments,
-          },
-          {
-            id: 'threats',
-            label: 'Threats',
-            icon: <IconSVG name="finding" />,
-            href: routes.threats,
-          },
-          {
-            id: 'reports',
-            label: 'Reports',
-            icon: <IconSVG name="report" />,
-            href: routes.reports,
           },
         ],
       },
@@ -82,6 +82,6 @@ export const Default: Story = {
         ],
       },
     ],
-    footer: <small>Local workspace</small>,
+    footer: <small>Version {packageJson.version}</small>,
   },
 };

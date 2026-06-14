@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import React, { act, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 
 import { routes } from '~/routes';
 import { defaultTheme } from '~/theme';
+import packageJson from '../../../../package.json';
 
 import Sidebar from './sidebar.component';
 
@@ -26,13 +27,7 @@ const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
 const navigationGroups: SidebarNavigationGroup[] = [
   {
     id: 'workspace',
-    items: [
-      { id: 'dashboard', label: 'Dashboard', href: routes.dashboard },
-      { id: 'companies', label: 'Companies', href: routes.companies },
-      { id: 'assessments', label: 'Assessments', href: routes.assessments },
-      { id: 'threats', label: 'Threats', href: routes.threats },
-      { id: 'reports', label: 'Reports', href: routes.reports },
-    ],
+    items: [{ id: 'dashboard', label: 'Dashboard', href: routes.dashboard }],
   },
   {
     id: 'system',
@@ -88,9 +83,39 @@ const SidebarFixture = ({
   return (
     <BrowserRouter>
       <Sidebar
-        brand={<strong>AppSec Reports</strong>}
+        brand={
+          <div className="sidebar-brand-stack">
+            <NavLink
+              className={({ isActive }) =>
+                [
+                  'sidebar-company-switcher',
+                  isActive ? 'sidebar-company-switcher--active' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')
+              }
+              to={routes.companies}
+            >
+              <span
+                className="sidebar-company-switcher-icon"
+                aria-hidden="true"
+              >
+                <span aria-hidden="true">C</span>
+              </span>
+
+              <span className="sidebar-company-switcher-text">
+                <span className="sidebar-company-switcher-label">Company</span>
+                <span className="sidebar-company-switcher-name">
+                  Select company
+                </span>
+              </span>
+            </NavLink>
+
+            <strong className="sidebar-brand-title">AppSec Reports</strong>
+          </div>
+        }
         navigationGroups={navigationGroups}
-        footer={<small>Local workspace</small>}
+        footer={<small>Version {packageJson.version}</small>}
         isOpen={isOpen}
         onClose={handleClose}
       />
@@ -105,28 +130,8 @@ const SidebarFixture = ({
           element={<h1 className="test-page-title">Companies page</h1>}
         />
         <Route
-          path="/assessments"
-          element={<h1 className="test-page-title">Assessments page</h1>}
-        />
-        <Route
-          path="/assessments/:assessmentId"
-          element={<h1 className="test-page-title">Assessment details page</h1>}
-        />
-        <Route
-          path="/reports"
-          element={<h1 className="test-page-title">Reports page</h1>}
-        />
-        <Route
-          path="/reports/:reportId"
-          element={<h1 className="test-page-title">Report details page</h1>}
-        />
-        <Route
           path="/settings"
           element={<h1 className="test-page-title">Settings page</h1>}
-        />
-        <Route
-          path="/threats"
-          element={<h1 className="test-page-title">Threats page</h1>}
         />
         <Route
           path="*"
@@ -188,21 +193,16 @@ await (async () => {
       routes.companies,
     );
     assert.equal(
-      container.querySelector('a[href="/assessments"]')?.getAttribute('href'),
-      routes.assessments,
-    );
-    assert.equal(
-      container.querySelector('a[href="/threats"]')?.getAttribute('href'),
-      routes.threats,
-    );
-    assert.equal(
-      container.querySelector('a[href="/reports"]')?.getAttribute('href'),
-      routes.reports,
-    );
-    assert.equal(
       container.querySelector('a[href="/settings"]')?.getAttribute('href'),
       routes.settings,
     );
+    assert.equal(
+      container.textContent?.includes(`Version ${packageJson.version}`),
+      true,
+    );
+    assert.equal(container.querySelector('a[href="/assessments"]'), null);
+    assert.equal(container.querySelector('a[href="/threats"]'), null);
+    assert.equal(container.querySelector('a[href="/reports"]'), null);
 
     const dashboardLink = container.querySelector('a[href="/dashboard"]');
 
@@ -218,14 +218,26 @@ await (async () => {
   }
 
   {
+    const { container, root } = await renderApp('/companies');
+
+    const companySwitcher = container.querySelector('a[href="/companies"]');
+
+    assert.equal(companySwitcher?.getAttribute('aria-current'), 'page');
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
+  {
     const { container, root } = await renderApp('/assessments/asm_123');
 
-    const assessmentsLink = container.querySelector('a[href="/assessments"]');
+    const dashboardLink = container.querySelector('a[href="/dashboard"]');
 
-    assert.equal(assessmentsLink?.getAttribute('aria-current'), 'page');
+    assert.equal(dashboardLink?.getAttribute('aria-current'), null);
     assert.ok(
-      assessmentsLink?.className.includes('sidebar-link--active'),
-      'Expected Assessments to remain active for detail routes',
+      !dashboardLink?.className.includes('sidebar-link--active'),
+      'Expected Dashboard to stay inactive on a company-specific route',
     );
 
     await act(async () => {
@@ -234,28 +246,8 @@ await (async () => {
   }
 
   {
-    const { container, root } = await renderApp('/reports/rpt_123');
-
-    const reportsLink = container.querySelector('a[href="/reports"]');
-
-    assert.equal(reportsLink?.getAttribute('aria-current'), 'page');
-    assert.ok(
-      reportsLink?.className.includes('sidebar-link--active'),
-      'Expected Reports to remain active for detail routes',
-    );
-
-    await act(async () => {
-      root.unmount();
-    });
-  }
-
-  {
-    let closeCount = 0;
-
-    const { container, root } = await renderApp('/dashboard', true, () => {
-      closeCount += 1;
-    });
-    const companiesLink = container.querySelector('a[href="/companies"]');
+    const { container, root } = await renderApp('/dashboard', true);
+    const companiesLink = container.querySelector('.sidebar-company-switcher');
 
     await click(companiesLink);
 
@@ -266,9 +258,8 @@ await (async () => {
     );
     assert.equal(
       container.querySelector('.sidebar')?.getAttribute('data-is-open'),
-      'false',
+      'true',
     );
-    assert.equal(closeCount, 1);
 
     await act(async () => {
       root.unmount();
@@ -281,11 +272,11 @@ await (async () => {
     const { container, root } = await renderApp('/dashboard', false, () => {
       closeCount += 1;
     });
-    const threatsLink = container.querySelector('a[href="/threats"]');
+    const dashboardLink = container.querySelector('a[href="/dashboard"]');
 
-    await click(threatsLink);
+    await click(dashboardLink);
 
-    assert.equal(window.location.pathname, '/threats');
+    assert.equal(window.location.pathname, '/dashboard');
     assert.equal(closeCount, 0);
     assert.equal(
       container.querySelector('.sidebar')?.getAttribute('data-is-open'),
