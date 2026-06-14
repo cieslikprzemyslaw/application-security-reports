@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useInRouterContext } from 'react-router-dom';
 
+import IconSVG from '~/app/components/ui/iconSVG';
 import StyledSidebar from './sidebar.styled';
 
 import type { SidebarProps } from './sidebar.type';
@@ -41,18 +42,7 @@ const Sidebar = ({
               aria-label="Close navigation"
               onClick={onClose}
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  d="M6 6 18 18M18 6 6 18"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <IconSVG name="close" />
             </button>
           </div>
         )}

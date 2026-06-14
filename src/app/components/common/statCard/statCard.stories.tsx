@@ -1,16 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import IconSVG from '~/app/components/ui/iconSVG';
 import StatCard from './statCard.component';
-
-const ClipboardIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-    <path
-      d="M9 4h6v2H9zM7 5H5v16h14V5h-2"
-      strokeWidth="2"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
 
 const meta = {
   title: 'Common/StatCard',
@@ -65,7 +56,7 @@ export const Interactive: Story = {
   args: {
     label: 'Open threats',
     value: 86,
-    icon: <ClipboardIcon />,
+    icon: <IconSVG name="report" />,
     iconTone: 'medium',
     trendDirection: 'down',
     trendTone: 'positive',
@@ -78,7 +69,7 @@ export const UpPositive: Story = {
   args: {
     label: 'Completed assessments',
     value: 24,
-    icon: <ClipboardIcon />,
+    icon: <IconSVG name="assessment" />,
     iconTone: 'brand',
     trendDirection: 'up',
     trendTone: 'positive',
@@ -91,7 +82,7 @@ export const UpNegative: Story = {
   args: {
     label: 'Critical findings',
     value: 12,
-    icon: <ClipboardIcon />,
+    icon: <IconSVG name="finding" />,
     iconTone: 'critical',
     trendDirection: 'up',
     trendTone: 'negative',
@@ -104,7 +95,7 @@ export const DownPositive: Story = {
   args: {
     label: 'Open threats',
     value: 86,
-    icon: <ClipboardIcon />,
+    icon: <IconSVG name="report" />,
     iconTone: 'high',
     trendDirection: 'down',
     trendTone: 'positive',
@@ -117,7 +108,7 @@ export const Equal: Story = {
   args: {
     label: 'Retest required',
     value: 4,
-    icon: <ClipboardIcon />,
+    icon: <IconSVG name="settings" />,
     iconTone: 'purple',
     trendDirection: 'equal',
     trendTone: 'neutral',

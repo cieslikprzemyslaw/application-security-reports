@@ -14,6 +14,7 @@ export default tseslint.config(
       'node_modules/**',
       '.tmp/**',
       'uploads/**',
+      'prototype/**',
     ],
   },
   js.configs.recommended,

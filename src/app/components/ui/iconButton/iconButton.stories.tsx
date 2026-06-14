@@ -1,12 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import IconSVG from '../iconSVG';
 import IconButton from './iconButton.component';
-
-const SampleIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-    <path d="M12 5v14M5 12h14" strokeWidth="2" strokeLinecap="round" />
-  </svg>
-);
 
 const meta = {
   title: 'Components/IconButton',
@@ -45,7 +40,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Interactive: Story = {
   args: {
-    icon: <SampleIcon />,
+    icon: <IconSVG name="add" />,
     ariaLabel: 'Add item',
     variant: 'tertiary',
     size: 'medium',

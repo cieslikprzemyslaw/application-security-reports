@@ -1,40 +1,8 @@
 import React from 'react';
 
+import IconSVG from '~/app/components/ui/iconSVG';
 import StyledEvidenceList from './evidenceList.styled';
-import type { EvidenceKind, EvidenceListProps } from './evidenceList.type';
-
-const FileIcon = ({ kind }: { kind: EvidenceKind }) => {
-  if (kind === 'image') {
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        aria-hidden="true"
-      >
-        <rect x="3" y="4" width="18" height="16" rx="2" strokeWidth="2" />
-        <circle cx="8.5" cy="9" r="1.5" strokeWidth="2" />
-        <path
-          d="m4 17 5-5 4 4 2-2 5 5"
-          strokeWidth="2"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M6 3h8l4 4v14H6z" strokeWidth="2" strokeLinejoin="round" />
-      <path d="M14 3v5h5" strokeWidth="2" />
-    </svg>
-  );
-};
+import { EvidenceListProps } from './evidenceList.type';
 
 const EvidenceList = ({
   items,
@@ -64,7 +32,9 @@ const EvidenceList = ({
               {item.previewUrl ? (
                 <img src={item.previewUrl} alt="" />
               ) : (
-                (item.icon ?? <FileIcon kind={kind} />)
+                (item.icon ?? (
+                  <IconSVG name={kind === 'image' ? 'image' : 'file'} />
+                ))
               )}
             </button>
 

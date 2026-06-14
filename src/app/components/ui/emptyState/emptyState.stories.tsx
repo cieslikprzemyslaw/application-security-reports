@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import IconSVG from '../iconSVG';
 import EmptyState from './emptyState.component';
 
 const meta = {
@@ -19,6 +20,7 @@ export const Interactive: Story = {
   args: {
     title: 'No threats found',
     description: 'Create the first threat for this assessment.',
+    icon: <IconSVG name="search" />,
     primaryAction: <button type="button">Add threat</button>,
   },
 };

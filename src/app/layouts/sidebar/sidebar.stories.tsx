@@ -1,19 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import IconSVG from '~/app/components/ui/iconSVG';
 import Sidebar from './sidebar.component';
 import { routes } from '~/routes';
-
-const DashboardIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-    <rect x="3" y="3" width="7" height="7" rx="1" strokeWidth="2" />
-
-    <rect x="14" y="3" width="7" height="7" rx="1" strokeWidth="2" />
-
-    <rect x="3" y="14" width="7" height="7" rx="1" strokeWidth="2" />
-
-    <rect x="14" y="14" width="7" height="7" rx="1" strokeWidth="2" />
-  </svg>
-);
 
 const meta = {
   title: 'Layouts/Sidebar',
@@ -50,28 +39,32 @@ export const Default: Story = {
           {
             id: 'dashboard',
             label: 'Dashboard',
-            icon: <DashboardIcon />,
+            icon: <IconSVG name="dashboard" />,
             href: routes.dashboard,
             isActive: true,
           },
           {
             id: 'companies',
             label: 'Companies',
+            icon: <IconSVG name="company" />,
             href: routes.companies,
           },
           {
             id: 'assessments',
             label: 'Assessments',
+            icon: <IconSVG name="assessment" />,
             href: routes.assessments,
           },
           {
             id: 'threats',
             label: 'Threats',
+            icon: <IconSVG name="finding" />,
             href: routes.threats,
           },
           {
             id: 'reports',
             label: 'Reports',
+            icon: <IconSVG name="report" />,
             href: routes.reports,
           },
         ],
@@ -83,6 +76,7 @@ export const Default: Story = {
           {
             id: 'settings',
             label: 'Settings',
+            icon: <IconSVG name="settings" />,
             href: routes.settings,
           },
         ],

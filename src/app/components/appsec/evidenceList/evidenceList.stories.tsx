@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import IconSVG from '~/app/components/ui/iconSVG';
 import EvidenceList from './evidenceList.component';
 
 const meta = {
@@ -33,6 +34,7 @@ export const Default: Story = {
         mimeType: 'image/png',
         sizeLabel: '248 KB',
         description: 'Response showing another user’s order data.',
+        icon: <IconSVG name="image" />,
       },
       {
         id: 'evd_2',
@@ -41,6 +43,7 @@ export const Default: Story = {
         mimeType: 'application/json',
         sizeLabel: '12 KB',
         description: 'Captured request and response trace.',
+        icon: <IconSVG name="file" />,
       },
     ],
   },

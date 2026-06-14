@@ -1,18 +1,8 @@
 import React, { useId, useState } from 'react';
 
+import IconSVG from '../iconSVG';
 import StyledDropzone from './dropzone.styled';
 import type { DropzoneProps } from './dropzone.type';
-
-const UploadIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-    <path
-      d="M12 16V4M7 9l5-5 5 5M5 20h14"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
 
 const Dropzone = ({
   id,
@@ -77,7 +67,7 @@ const Dropzone = ({
         />
 
         <span className="dropzone-icon">
-          <UploadIcon />
+          <IconSVG name="upload" />
         </span>
 
         <span className="dropzone-text">
