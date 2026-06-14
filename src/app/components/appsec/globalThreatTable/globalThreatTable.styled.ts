@@ -94,6 +94,12 @@ const StyledGlobalThreatTable = styled.div`
       color: ${colors.neutral.grey400};
       font-size: 1.25rem;
     }
+
+    .global-threat-table-empty-cell {
+      padding: 1rem ${spacing.s};
+      color: ${colors.text.muted};
+      text-align: center;
+    }
   `}
 `;
 

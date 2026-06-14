@@ -2,6 +2,7 @@ import React from 'react';
 
 import AssessmentTable from '../../components/appsec/assessmentTable';
 import Button from '~/app/components/ui/button';
+import EmptyState from '~/app/components/ui/emptyState';
 import SearchInput from '~/app/components/ui/searchInput';
 import Select from '~/app/components/ui/select';
 
@@ -41,6 +42,49 @@ const Assessments = ({
 
     return matchesSearch && matchesStatus && matchesRisk && matchesType;
   });
+  const hasSearch = searchValue.trim().length > 0;
+  const hasFilters =
+    hasSearch ||
+    statusFilter !== 'all' ||
+    riskFilter !== 'all' ||
+    typeFilter !== 'all';
+  const showEmptyWorkspace = assessments.length === 0;
+  const showNoResults = !showEmptyWorkspace && filteredAssessments.length === 0;
+
+  const clearFilters = () => {
+    onSearchChange('');
+    onStatusFilterChange('all');
+    onRiskFilterChange('all');
+    onTypeFilterChange('all');
+  };
+
+  const emptyState = showEmptyWorkspace ? (
+    <EmptyState
+      title="No assessments yet"
+      description="Create the first assessment to track an application security review."
+      primaryAction={
+        onCreateAssessment ? (
+          <Button title="New Assessment" onClick={onCreateAssessment} />
+        ) : undefined
+      }
+    />
+  ) : showNoResults ? (
+    <EmptyState
+      title={
+        hasFilters
+          ? 'No assessments match your current search and filters'
+          : 'No assessments found'
+      }
+      description="Clear the filters to show all assessments again."
+      primaryAction={
+        <Button
+          title="Clear filters"
+          variant="secondary"
+          onClick={clearFilters}
+        />
+      }
+    />
+  ) : undefined;
 
   return (
     <StyledAssessments>
@@ -120,14 +164,11 @@ const Assessments = ({
           </span>
         </div>
 
-        {filteredAssessments.length > 0 ? (
-          <AssessmentTable
-            assessments={filteredAssessments}
-            onAssessmentClick={onAssessmentClick}
-          />
-        ) : (
-          <div className="assessments-empty">No assessments found.</div>
-        )}
+        <AssessmentTable
+          assessments={filteredAssessments}
+          onAssessmentClick={onAssessmentClick}
+          emptyState={emptyState}
+        />
       </section>
     </StyledAssessments>
   );

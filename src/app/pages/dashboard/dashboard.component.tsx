@@ -6,6 +6,7 @@ import SeverityDistribution from '~/app/components/appsec/severityDistribution';
 import ActivityFeed from '~/app/components/common/activityFeed';
 import StatCard from '~/app/components/common/statCard';
 import Button from '~/app/components/ui/button';
+import EmptyState from '~/app/components/ui/emptyState';
 import SearchInput from '~/app/components/ui/searchInput';
 
 import StyledDashboard from './dashboard.styled';
@@ -223,7 +224,24 @@ const Dashboard = ({
             onAssessmentClick={onAssessmentClick}
           />
         ) : (
-          <div className="dashboard-empty-state">No assessments yet.</div>
+          <EmptyState
+            title="No assessments yet"
+            description="Create your first assessment to start tracking findings and activity."
+            primaryAction={
+              onCreateAssessment ? (
+                <Button title="New Assessment" onClick={onCreateAssessment} />
+              ) : undefined
+            }
+            secondaryAction={
+              onViewAllAssessments ? (
+                <Button
+                  title="View all assessments"
+                  variant="secondary"
+                  onClick={onViewAllAssessments}
+                />
+              ) : undefined
+            }
+          />
         )}
       </section>
 

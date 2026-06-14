@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { AssessmentStatus, Severity } from '~/domain';
 
 export type AssessmentLogoTone =
@@ -28,4 +30,5 @@ export interface AssessmentTableRow {
 export interface AssessmentTableProps {
   assessments: AssessmentTableRow[];
   onAssessmentClick?: (assessment: AssessmentTableRow) => void;
+  emptyState?: ReactNode;
 }
