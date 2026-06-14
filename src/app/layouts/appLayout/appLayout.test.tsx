@@ -220,8 +220,9 @@ await (async () => {
       container
         .querySelector('.app-shell-sidebar')
         ?.getAttribute('data-is-open'),
-      'true',
+      'false',
     );
+    assert.equal(openButton?.getAttribute('aria-expanded'), 'false');
 
     await act(async () => {
       root.unmount();
