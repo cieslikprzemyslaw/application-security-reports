@@ -1,7 +1,9 @@
 import React, { Suspense, useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 
+import IconSVG from '~/app/components/ui/iconSVG';
 import { routes } from '~/routes';
+import packageJson from '../../../../package.json';
 import {
   RouteLoadingView,
   RouteStateErrorBoundary,
@@ -19,13 +21,7 @@ const sidebarId = 'app-layout-sidebar';
 const navigationGroups: SidebarNavigationGroup[] = [
   {
     id: 'workspace',
-    items: [
-      { id: 'dashboard', label: 'Dashboard', href: routes.dashboard },
-      { id: 'companies', label: 'Companies', href: routes.companies },
-      { id: 'assessments', label: 'Assessments', href: routes.assessments },
-      { id: 'threats', label: 'Threats', href: routes.threats },
-      { id: 'reports', label: 'Reports', href: routes.reports },
-    ],
+    items: [{ id: 'dashboard', label: 'Dashboard', href: routes.dashboard }],
   },
   {
     id: 'system',
@@ -46,6 +42,35 @@ const AppLayout = () => {
     setIsSidebarOpen(false);
   };
 
+  const sidebarBrand = (
+    <div className="sidebar-brand-stack">
+      <NavLink
+        className={({ isActive }) =>
+          [
+            'sidebar-company-switcher',
+            isActive ? 'sidebar-company-switcher--active' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')
+        }
+        to={routes.companies}
+      >
+        <span className="sidebar-company-switcher-icon" aria-hidden="true">
+          <IconSVG name="company" />
+        </span>
+
+        <span className="sidebar-company-switcher-text">
+          <span className="sidebar-company-switcher-label">Company</span>
+          <span className="sidebar-company-switcher-name">Select company</span>
+        </span>
+
+        <IconSVG name="chevronDown" aria-hidden="true" />
+      </NavLink>
+
+      <strong className="sidebar-brand-title">AppSec Reports</strong>
+    </div>
+  );
+
   return (
     <AppShell
       sidebarId={sidebarId}
@@ -55,9 +80,9 @@ const AppLayout = () => {
         <Sidebar
           isOpen={isSidebarOpen}
           onClose={closeSidebar}
-          brand={<strong>AppSec Reports</strong>}
+          brand={sidebarBrand}
           navigationGroups={navigationGroups}
-          footer={<small>Local workspace</small>}
+          footer={<small>Version {packageJson.version}</small>}
         />
       }
       topbar={

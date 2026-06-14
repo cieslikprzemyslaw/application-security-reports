@@ -16,18 +16,112 @@ const StyledSidebar = styled.nav.attrs({ className: 'sidebar' })`
 
     .sidebar-brand {
       display: flex;
-      align-items: center;
+      align-items: stretch;
       justify-content: space-between;
       gap: ${spacing.s};
 
       min-height: ${layoutSizes.topbarHeight};
-      padding: 0 ${spacing.s};
+      padding: ${spacing.s};
 
       border-bottom: 1px solid rgb(255 255 255 / 10%);
     }
 
     .sidebar-brand-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: ${spacing.xxs};
+
+      flex: 1 1 auto;
       min-width: 0;
+    }
+
+    .sidebar-brand-stack {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.xxs};
+      min-width: 0;
+      width: 100%;
+    }
+
+    .sidebar-company-switcher {
+      display: inline-flex;
+      align-items: center;
+      gap: ${spacing.xxs};
+
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+
+      border: 1px solid rgb(255 255 255 / 10%);
+      border-radius: ${radii.md};
+
+      color: ${colors.neutral.white};
+      background-color: rgb(255 255 255 / 6%);
+      text-decoration: none;
+      text-align: left;
+      transition:
+        color ${transitions.fast},
+        background-color ${transitions.fast},
+        border-color ${transitions.fast};
+    }
+
+    .sidebar-company-switcher:hover {
+      border-color: rgb(255 255 255 / 18%);
+      background-color: rgb(255 255 255 / 10%);
+    }
+
+    .sidebar-company-switcher--active {
+      border-color: rgb(255 255 255 / 20%);
+      background-color: rgb(255 255 255 / 12%);
+    }
+
+    .sidebar-company-switcher:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: 2px;
+    }
+
+    .sidebar-company-switcher-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 1.25rem;
+      height: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .sidebar-company-switcher-icon svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    .sidebar-company-switcher-text {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .sidebar-company-switcher-label {
+      font-size: ${typography.label.small.size};
+      line-height: ${typography.label.small.lineHeight};
+      font-weight: ${typography.label.small.weight};
+      color: ${colors.neutral.grey400};
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .sidebar-company-switcher-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sidebar-brand-title {
+      font-size: ${typography.body.large.size};
+      line-height: ${typography.body.large.lineHeight};
+      font-weight: ${typography.body.large.weight};
     }
 
     .sidebar-brand-actions {
@@ -203,8 +297,16 @@ const StyledSidebar = styled.nav.attrs({ className: 'sidebar' })`
     }
 
     .sidebar-footer {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.xxs};
+
       padding: ${spacing.s};
       border-top: 1px solid rgb(255 255 255 / 10%);
+
+      color: ${colors.neutral.grey400};
+      font-size: ${typography.body.small.size};
+      line-height: ${typography.body.small.lineHeight};
     }
   `}
 `;

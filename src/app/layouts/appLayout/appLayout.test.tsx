@@ -8,6 +8,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 
 import { defaultTheme } from '~/theme';
+import packageJson from '../../../../package.json';
 
 import AppLayout from './appLayout.component';
 
@@ -100,6 +101,9 @@ await (async () => {
     assert.ok(container.querySelector('.sidebar'));
     assert.ok(container.querySelector('.topbar'));
     assert.ok(container.querySelector('.page-content'));
+    assert.ok(
+      textContent(container).includes(`Version ${packageJson.version}`),
+    );
     assert.ok(textContent(container).includes('Dashboard page'));
     assert.equal(
       container
@@ -170,6 +174,9 @@ await (async () => {
       'false',
     );
 
+    assert.equal(container.querySelector('a[href="/assessments"]'), null);
+    assert.equal(container.querySelector('a[href="/reports"]'), null);
+
     await act(async () => {
       root.unmount();
     });
@@ -213,7 +220,7 @@ await (async () => {
       container
         .querySelector('.app-shell-sidebar')
         ?.getAttribute('data-is-open'),
-      'false',
+      'true',
     );
 
     await act(async () => {

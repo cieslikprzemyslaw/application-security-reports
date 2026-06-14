@@ -73,6 +73,7 @@ const Sidebar = ({
                   </>
                 );
                 const isInternalHref = Boolean(item.href?.startsWith('/'));
+                const isItemActive = Boolean(item.isActive);
 
                 return (
                   <li key={item.id} className="sidebar-item">
@@ -81,7 +82,7 @@ const Sidebar = ({
                         className={({ isActive }) =>
                           [
                             'sidebar-link',
-                            item.isActive || isActive
+                            isActive || isItemActive
                               ? 'sidebar-link--active'
                               : '',
                           ]
@@ -89,6 +90,7 @@ const Sidebar = ({
                             .join(' ')
                         }
                         to={item.href}
+                        aria-current={isItemActive ? 'page' : undefined}
                         onClick={() => handleItemClick(item.onClick)}
                       >
                         {content}
@@ -97,12 +99,12 @@ const Sidebar = ({
                       <a
                         className={[
                           'sidebar-link',
-                          item.isActive ? 'sidebar-link--active' : '',
+                          isItemActive ? 'sidebar-link--active' : '',
                         ]
                           .filter(Boolean)
                           .join(' ')}
                         href={item.href}
-                        aria-current={item.isActive ? 'page' : undefined}
+                        aria-current={isItemActive ? 'page' : undefined}
                         onClick={() => handleItemClick(item.onClick)}
                       >
                         {content}
@@ -111,11 +113,12 @@ const Sidebar = ({
                       <button
                         className={[
                           'sidebar-button',
-                          item.isActive ? 'sidebar-button--active' : '',
+                          isItemActive ? 'sidebar-button--active' : '',
                         ]
                           .filter(Boolean)
                           .join(' ')}
                         type="button"
+                        aria-current={isItemActive ? 'page' : undefined}
                         onClick={() => handleItemClick(item.onClick)}
                       >
                         {content}
