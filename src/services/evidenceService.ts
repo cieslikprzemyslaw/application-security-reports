@@ -37,11 +37,13 @@ export const createEvidenceService = (
       signal,
     });
 
-    if (!filters.threatId) {
+    const threatId = filters.threatId;
+
+    if (threatId === undefined) {
       return evidence;
     }
 
-    return evidence.filter(item => item.threatIds.includes(filters.threatId));
+    return evidence.filter(item => item.threatIds.includes(threatId));
   },
 
   async getById(evidenceId, signal) {

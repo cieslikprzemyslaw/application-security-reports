@@ -29,14 +29,17 @@ const createRequestSpy = <TResponse>(
 } => {
   const calls: RequestCall[] = [];
 
-  const request: ApiRequestFn = async <T>(input, init) => {
+  const request: ApiRequestFn = async <T>(
+    input: RequestInfo | URL,
+    init?: import('./apiClient.js').ApiRequestOptions,
+  ) => {
     calls.push({ input, init });
 
     if (response instanceof Error) {
       throw response;
     }
 
-    return response as T;
+    return response as unknown as T;
   };
 
   return { calls, request };
