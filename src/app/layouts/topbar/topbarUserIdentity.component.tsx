@@ -16,23 +16,36 @@ const getInitials = (fullName: string) =>
     .join('')
     .toUpperCase();
 
-const TopbarUserIdentity = ({
-  fullName,
-  role,
-  'aria-label': ariaLabel,
-  onClick,
-  ...rest
-}: TopbarUserIdentityProps) => {
+const TopbarUserIdentity = (props: TopbarUserIdentityProps) => {
+  const {
+    fullName,
+    role,
+    'aria-label': ariaLabel,
+    className,
+    id,
+    style,
+  } = props;
   const initials = getInitials(fullName);
-  const isInteractive = typeof onClick === 'function';
+  const isInteractive = typeof props.onClick === 'function';
 
   if (isInteractive) {
+    const {
+      fullName: _fullName,
+      role: _role,
+      'aria-label': _ariaLabel,
+      onClick,
+      ...buttonProps
+    } = props;
+
     return (
       <StyledTopbarUserIdentityButton
+        className={className}
+        id={id}
+        style={style}
         data-interactive="true"
         aria-label={ariaLabel ?? `Local user: ${fullName}, ${role}`}
         onClick={onClick}
-        {...rest}
+        {...buttonProps}
       >
         <span className="topbar-user-identity-avatar" aria-hidden="true">
           {initials}
@@ -49,9 +62,11 @@ const TopbarUserIdentity = ({
 
   return (
     <StyledTopbarUserIdentity
+      className={className}
+      id={id}
+      style={style}
       data-interactive="false"
       aria-label={ariaLabel ?? `Local user: ${fullName}, ${role}`}
-      {...rest}
     >
       <span className="topbar-user-identity-avatar" aria-hidden="true">
         {initials}
