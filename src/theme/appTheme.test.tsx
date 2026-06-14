@@ -11,9 +11,12 @@ import {
   useThemePreference,
 } from './index';
 
-const renderTick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
+const renderTick = () =>
+  new Promise(resolve => {
+    setTimeout(resolve, 0);
+  });
 
-const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
+const setGlobal = (key: keyof typeof globalThis | string, value: unknown) => {
   Object.defineProperty(globalThis, key, {
     value,
     configurable: true,
@@ -24,7 +27,9 @@ const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
 const setupDom = () => {
   const dom = new JSDOM(
     '<!doctype html><html><body><div id="root"></div></body></html>',
-    { url: 'http://localhost/' },
+    {
+      url: 'http://localhost/',
+    },
   );
 
   const { window } = dom;
@@ -34,16 +39,20 @@ const setupDom = () => {
   setGlobal('navigator', window.navigator);
   setGlobal('HTMLElement', window.HTMLElement);
   setGlobal('Node', window.Node);
+  setGlobal('MouseEvent', window.MouseEvent);
+
   setGlobal(
     'requestAnimationFrame',
     window.requestAnimationFrame?.bind(window) ??
       ((callback: FrameRequestCallback) => window.setTimeout(callback, 16)),
   );
+
   setGlobal(
     'cancelAnimationFrame',
     window.cancelAnimationFrame?.bind(window) ??
       window.clearTimeout.bind(window),
   );
+
   setGlobal('IS_REACT_ACT_ENVIRONMENT', true);
 
   return {
@@ -52,33 +61,72 @@ const setupDom = () => {
   };
 };
 
-const createMatchMediaStub = (matches: boolean) => {
+type MatchMediaStub = MediaQueryList & {
+  dispatch: (nextMatches: boolean) => void;
+};
+
+const createMatchMediaStub = (initialMatches: boolean): MatchMediaStub => {
+  let matches = initialMatches;
+
   const listeners = new Set<(event: MediaQueryListEvent) => void>();
 
-  const mediaQueryList = {
+  const addEventListener: MediaQueryList['addEventListener'] = (
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+  ) => {
+    if (type !== 'change' || listener === null) {
+      return;
+    }
+
+    if (typeof listener === 'function') {
+      listeners.add(listener as (event: MediaQueryListEvent) => void);
+    } else {
+      listeners.add(event => {
+        listener.handleEvent(event);
+      });
+    }
+  };
+
+  const removeEventListener: MediaQueryList['removeEventListener'] = (
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+  ) => {
+    if (
+      type !== 'change' ||
+      listener === null ||
+      typeof listener !== 'function'
+    ) {
+      return;
+    }
+
+    listeners.delete(listener as (event: MediaQueryListEvent) => void);
+  };
+
+  const mediaQueryList: MatchMediaStub = {
     media: '(prefers-color-scheme: dark)',
     onchange: null,
+
     get matches() {
       return matches;
     },
-    addEventListener: (
-      _type: 'change',
-      listener: (event: MediaQueryListEvent) => void,
-    ) => {
-      listeners.add(listener);
+
+    addEventListener,
+    removeEventListener,
+
+    addListener: listener => {
+      if (listener) {
+        listeners.add(listener as (event: MediaQueryListEvent) => void);
+      }
     },
-    removeEventListener: (
-      _type: 'change',
-      listener: (event: MediaQueryListEvent) => void,
-    ) => {
-      listeners.delete(listener);
+
+    removeListener: listener => {
+      if (listener) {
+        listeners.delete(listener as (event: MediaQueryListEvent) => void);
+      }
     },
-    addListener: (listener: (event: MediaQueryListEvent) => void) => {
-      listeners.add(listener);
-    },
-    removeListener: (listener: (event: MediaQueryListEvent) => void) => {
-      listeners.delete(listener);
-    },
+
+    dispatchEvent: () => true,
+
     dispatch(nextMatches: boolean) {
       matches = nextMatches;
 
@@ -87,10 +135,10 @@ const createMatchMediaStub = (matches: boolean) => {
         media: '(prefers-color-scheme: dark)',
       } as MediaQueryListEvent;
 
-      listeners.forEach(listener => listener(event));
+      listeners.forEach(listener => {
+        listener(event);
+      });
     },
-  } as const satisfies MediaQueryList & {
-    dispatch: (nextMatches: boolean) => void;
   };
 
   return mediaQueryList;
@@ -99,22 +147,21 @@ const createMatchMediaStub = (matches: boolean) => {
 const PreferenceProbe = () => {
   const { themePreference, resolvedTheme, setThemePreference } =
     useThemePreference();
+
   const theme = useTheme();
 
   return (
     <div>
-      <output data-testid="theme-preference">{themePreference}</output>
-      <output data-testid="resolved-theme">{resolvedTheme}</output>
-      <output data-testid="surface-page">{theme.colors.surface.page}</output>
-
+      {' '}
+      <span data-testid="theme-preference">{themePreference} </span>
+      <span data-testid="resolved-theme">{resolvedTheme}</span>
+      <span data-testid="surface-page">{theme.colors.surface.page}</span>
       <button type="button" onClick={() => setThemePreference('light')}>
         Light
       </button>
-
       <button type="button" onClick={() => setThemePreference('dark')}>
         Dark
       </button>
-
       <button type="button" onClick={() => setThemePreference('system')}>
         System
       </button>
@@ -139,20 +186,23 @@ const renderApp = async (matches: boolean) => {
   await act(async () => {
     root.render(
       <AppThemeProvider>
-        <PreferenceProbe />
+        {' '}
+        <PreferenceProbe />{' '}
       </AppThemeProvider>,
     );
+
     await renderTick();
   });
 
-  return { container, root, mediaQueryList, window };
+  return {
+    container,
+    root,
+    mediaQueryList,
+    window,
+  };
 };
 
-const clickButton = async (
-  container: HTMLElement,
-  domWindow: Window,
-  label: string,
-) => {
+const clickButton = async (container: HTMLElement, label: string) => {
   const button = Array.from(container.querySelectorAll('button')).find(
     element => element.textContent === label,
   ) as HTMLButtonElement | undefined;
@@ -160,13 +210,14 @@ const clickButton = async (
   assert.ok(button, `Expected a "${label}" button`);
 
   await act(async () => {
-    button?.dispatchEvent(
-      new domWindow.MouseEvent('click', {
+    button.dispatchEvent(
+      new MouseEvent('click', {
         bubbles: true,
         cancelable: true,
         button: 0,
       }),
     );
+
     await renderTick();
   });
 };
@@ -178,64 +229,78 @@ await (async () => {
     container.querySelector('[data-testid="theme-preference"]')?.textContent,
     'system',
   );
+
   assert.equal(
     container.querySelector('[data-testid="resolved-theme"]')?.textContent,
     'light',
   );
+
   assert.equal(
     container.querySelector('[data-testid="surface-page"]')?.textContent,
     '#F4F6FA',
   );
+
   assert.equal(window.document.documentElement.dataset.theme, 'light');
+
   assert.equal(
     window.localStorage.getItem(themePreferenceStorageKey),
     'system',
   );
 
-  await clickButton(container, window, 'Dark');
+  await clickButton(container, 'Dark');
 
   assert.equal(
     container.querySelector('[data-testid="theme-preference"]')?.textContent,
     'dark',
   );
+
   assert.equal(
     container.querySelector('[data-testid="resolved-theme"]')?.textContent,
     'dark',
   );
+
   assert.equal(
     container.querySelector('[data-testid="surface-page"]')?.textContent,
     '#0E1421',
   );
+
   assert.equal(window.document.documentElement.dataset.theme, 'dark');
+
   assert.equal(window.localStorage.getItem(themePreferenceStorageKey), 'dark');
 
-  await clickButton(container, window, 'Light');
+  await clickButton(container, 'Light');
 
   assert.equal(
     container.querySelector('[data-testid="theme-preference"]')?.textContent,
     'light',
   );
+
   assert.equal(
     container.querySelector('[data-testid="resolved-theme"]')?.textContent,
     'light',
   );
+
   assert.equal(
     container.querySelector('[data-testid="surface-page"]')?.textContent,
     '#F4F6FA',
   );
+
   assert.equal(window.document.documentElement.dataset.theme, 'light');
+
   assert.equal(window.localStorage.getItem(themePreferenceStorageKey), 'light');
 
-  await clickButton(container, window, 'System');
+  await clickButton(container, 'System');
 
   assert.equal(
     container.querySelector('[data-testid="theme-preference"]')?.textContent,
     'system',
   );
+
   assert.equal(
     container.querySelector('[data-testid="resolved-theme"]')?.textContent,
     'light',
   );
+
   assert.equal(
     window.localStorage.getItem(themePreferenceStorageKey),
     'system',
@@ -250,10 +315,12 @@ await (async () => {
     container.querySelector('[data-testid="resolved-theme"]')?.textContent,
     'dark',
   );
+
   assert.equal(
     container.querySelector('[data-testid="surface-page"]')?.textContent,
     '#0E1421',
   );
+
   assert.equal(window.document.documentElement.dataset.theme, 'dark');
 
   await act(async () => {

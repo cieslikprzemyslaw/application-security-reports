@@ -9,9 +9,12 @@ import { darkTheme } from '~/theme';
 
 import ReportPreviewShell from './reportPreviewShell.component';
 
-const renderTick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
+const renderTick = () =>
+  new Promise(resolve => {
+    setTimeout(resolve, 0);
+  });
 
-const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
+const setGlobal = (key: keyof typeof globalThis | string, value: unknown) => {
   Object.defineProperty(globalThis, key, {
     value,
     configurable: true,
@@ -22,7 +25,9 @@ const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
 const setupDom = () => {
   const dom = new JSDOM(
     '<!doctype html><html><body><div id="root"></div></body></html>',
-    { url: 'http://localhost/' },
+    {
+      url: 'http://localhost/',
+    },
   );
 
   const { window } = dom;
@@ -32,16 +37,20 @@ const setupDom = () => {
   setGlobal('navigator', window.navigator);
   setGlobal('HTMLElement', window.HTMLElement);
   setGlobal('Node', window.Node);
+  setGlobal('MouseEvent', window.MouseEvent);
+
   setGlobal(
     'requestAnimationFrame',
     window.requestAnimationFrame?.bind(window) ??
       ((callback: FrameRequestCallback) => window.setTimeout(callback, 16)),
   );
+
   setGlobal(
     'cancelAnimationFrame',
     window.cancelAnimationFrame?.bind(window) ??
       window.clearTimeout.bind(window),
   );
+
   setGlobal('IS_REACT_ACT_ENVIRONMENT', true);
 
   return {
@@ -54,17 +63,16 @@ const ThemeProbe = ({ label }: { label: string }) => {
   const theme = useTheme();
 
   return (
-    <output data-testid={label} data-surface={theme.colors.surface.page}>
-      {theme.colors.surface.card}
-    </output>
+    <span
+      data-testid={`${label.toLowerCase()}-theme`}
+      data-surface={theme.colors.surface.card}
+    >
+      {label}{' '}
+    </span>
   );
 };
 
-const clickButton = async (
-  container: HTMLElement,
-  domWindow: Window,
-  label: string,
-) => {
+const clickButton = async (container: HTMLElement, label: string) => {
   const button = Array.from(container.querySelectorAll('button')).find(
     element => element.textContent === label,
   ) as HTMLButtonElement | undefined;
@@ -72,19 +80,20 @@ const clickButton = async (
   assert.ok(button, `Expected a "${label}" button`);
 
   await act(async () => {
-    button?.dispatchEvent(
-      new domWindow.MouseEvent('click', {
+    button.dispatchEvent(
+      new MouseEvent('click', {
         bubbles: true,
         cancelable: true,
         button: 0,
       }),
     );
+
     await renderTick();
   });
 };
 
 await (async () => {
-  const { container, window } = setupDom();
+  const { container } = setupDom();
 
   assert.ok(container, 'Expected root container to exist');
 
@@ -94,14 +103,14 @@ await (async () => {
     root.render(
       <ThemeProvider theme={darkTheme}>
         <ReportPreviewShell
-          applicationName="Customer Services Portal"
-          assessmentCode="NSD-CSP-2026-014"
-          autoSaved={false}
-          preview={<ThemeProbe label="preview-theme" />}
-          dataView={<ThemeProbe label="data-theme" />}
+          applicationName="AppSec Report Builder"
+          assessmentCode="ASM-001"
+          preview={<ThemeProbe label="Preview" />}
+          dataView={<ThemeProbe label="Data" />}
         />
       </ThemeProvider>,
     );
+
     await renderTick();
   });
 
@@ -109,17 +118,18 @@ await (async () => {
     container
       .querySelector('[data-testid="preview-theme"]')
       ?.getAttribute('data-surface'),
-    '#F4F6FA',
+    '#FFFFFF',
   );
+
   assert.ok(container.textContent?.includes('Report Preview'));
 
-  await clickButton(container, window, 'Data');
+  await clickButton(container, 'Data');
 
   assert.equal(
     container
       .querySelector('[data-testid="data-theme"]')
       ?.getAttribute('data-surface'),
-    '#F4F6FA',
+    '#FFFFFF',
   );
 
   await act(async () => {

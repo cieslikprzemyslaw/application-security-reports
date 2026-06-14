@@ -12,8 +12,8 @@ import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 
 import type { ThemePreference } from '~/domain/settings';
 
-import { breakpoints, grid, layoutSizes, mq, spacing } from './layout';
 import { darkColors, lightColors } from './colors';
+import { breakpoints, grid, layoutSizes, mq, spacing } from './layout';
 import { radii } from './radii';
 import { shadows } from './shadows';
 import { tags } from './tags';
@@ -63,6 +63,11 @@ export interface ThemePreferenceContextValue {
   setThemePreference: (preference: ThemePreference) => void;
 }
 
+type LegacyMediaQueryList = MediaQueryList & {
+  addListener?: (listener: (event: MediaQueryListEvent) => void) => void;
+  removeListener?: (listener: (event: MediaQueryListEvent) => void) => void;
+};
+
 const ThemePreferenceContext =
   createContext<ThemePreferenceContextValue | null>(null);
 
@@ -99,8 +104,8 @@ const getSystemThemePreference = (): ResolvedThemePreference => {
 const addMediaQueryListener = (
   mediaQueryList: MediaQueryList,
   listener: (event: MediaQueryListEvent) => void,
-) => {
-  if ('addEventListener' in mediaQueryList) {
+): (() => void) => {
+  if (typeof mediaQueryList.addEventListener === 'function') {
     mediaQueryList.addEventListener('change', listener);
 
     return () => {
@@ -108,10 +113,12 @@ const addMediaQueryListener = (
     };
   }
 
-  mediaQueryList.addListener(listener);
+  const legacyMediaQueryList = mediaQueryList as LegacyMediaQueryList;
+
+  legacyMediaQueryList.addListener?.(listener);
 
   return () => {
-    mediaQueryList.removeListener(listener);
+    legacyMediaQueryList.removeListener?.(listener);
   };
 };
 
@@ -133,9 +140,11 @@ export const AppThemeProvider = ({
   const [themePreference, setThemePreference] = useState<ThemePreference>(
     getStoredThemePreference,
   );
+
   const [systemTheme, setSystemTheme] = useState<ResolvedThemePreference>(
     getSystemThemePreference,
   );
+
   const updateThemePreference = useCallback((preference: ThemePreference) => {
     setThemePreference(preference);
   }, []);
@@ -144,7 +153,7 @@ export const AppThemeProvider = ({
     try {
       window.localStorage.setItem(themePreferenceStorageKey, themePreference);
     } catch {
-      // Ignore storage failures and continue with the in-memory preference.
+      // Continue with the in-memory preference.
     }
   }, [themePreference]);
 
@@ -157,18 +166,14 @@ export const AppThemeProvider = ({
     }
 
     const mediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
+
     const updateSystemTheme = () => {
       setSystemTheme(mediaQueryList.matches ? 'dark' : 'light');
     };
 
     updateSystemTheme();
 
-    const removeListener = addMediaQueryListener(
-      mediaQueryList,
-      updateSystemTheme,
-    );
-
-    return removeListener;
+    return addMediaQueryListener(mediaQueryList, updateSystemTheme);
   }, [themePreference]);
 
   const resolvedTheme =
@@ -181,7 +186,7 @@ export const AppThemeProvider = ({
 
     const root = document.documentElement;
 
-    root.dataset.theme = resolvedTheme === 'dark' ? 'dark' : 'light';
+    root.dataset.theme = resolvedTheme;
     root.style.colorScheme = resolvedTheme;
   }, [resolvedTheme]);
 
@@ -201,7 +206,8 @@ export const AppThemeProvider = ({
 
   return (
     <ThemePreferenceContext.Provider value={contextValue}>
-      <StyledThemeProvider theme={theme}>{children}</StyledThemeProvider>
+      {' '}
+      <StyledThemeProvider theme={theme}>{children} </StyledThemeProvider>
     </ThemePreferenceContext.Provider>
   );
 };
@@ -210,4 +216,4 @@ export const LightThemeProvider = ({
   children,
 }: {
   children: React.ReactNode;
-}) => <StyledThemeProvider theme={lightTheme}>{children}</StyledThemeProvider>;
+}) => <StyledThemeProvider theme={lightTheme}>{children} </StyledThemeProvider>;
