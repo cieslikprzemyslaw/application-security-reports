@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { Severity, StrideCategory, ThreatStatus } from '~/domain';
 
 export interface GlobalThreatRow {
@@ -14,4 +16,5 @@ export interface GlobalThreatRow {
 export interface GlobalThreatTableProps {
   threats: GlobalThreatRow[];
   onThreatClick?: (threat: GlobalThreatRow) => void;
+  emptyState?: ReactNode;
 }

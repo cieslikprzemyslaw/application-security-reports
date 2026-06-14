@@ -11,7 +11,12 @@ const EmptyState = ({
   secondaryAction,
   ...rest
 }: EmptyStateProps) => (
-  <StyledEmptyState className="empty-state" {...rest}>
+  <StyledEmptyState
+    className="empty-state"
+    role="status"
+    aria-live="polite"
+    {...rest}
+  >
     {icon && (
       <span className="empty-state-icon" aria-hidden="true">
         {icon}

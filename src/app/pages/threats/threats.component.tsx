@@ -3,6 +3,7 @@ import React from 'react';
 import GlobalThreatTable from '../../components/appsec/globalThreatTable';
 import ThreatDrawer from '../../components/appsec/threatDrawer';
 import Button from '~/app/components/ui/button';
+import EmptyState from '~/app/components/ui/emptyState';
 import SearchInput from '~/app/components/ui/searchInput';
 import Select from '~/app/components/ui/select';
 
@@ -52,6 +53,49 @@ const Threats = ({
       matchesSearch && matchesSeverity && matchesStatus && matchesApplication
     );
   });
+  const hasSearch = searchValue.trim().length > 0;
+  const hasFilters =
+    hasSearch ||
+    severityFilter !== 'all' ||
+    statusFilter !== 'all' ||
+    applicationFilter !== 'all';
+  const showEmptyWorkspace = threats.length === 0;
+  const showNoResults = !showEmptyWorkspace && filteredThreats.length === 0;
+
+  const clearFilters = () => {
+    onSearchChange('');
+    onSeverityFilterChange('all');
+    onStatusFilterChange('all');
+    onApplicationFilterChange('all');
+  };
+
+  const emptyState = showEmptyWorkspace ? (
+    <EmptyState
+      title="No findings yet"
+      description="Add the first finding to start tracking security issues across assessments."
+      primaryAction={
+        onAddThreat ? (
+          <Button title="Add Threat" onClick={onAddThreat} />
+        ) : undefined
+      }
+    />
+  ) : showNoResults ? (
+    <EmptyState
+      title={
+        hasFilters
+          ? 'No findings match your current search and filters'
+          : 'No findings found'
+      }
+      description="Clear the search and filters to show all findings again."
+      primaryAction={
+        <Button
+          title="Clear filters"
+          variant="secondary"
+          onClick={clearFilters}
+        />
+      }
+    />
+  ) : undefined;
 
   return (
     <StyledThreats>
@@ -137,6 +181,7 @@ const Threats = ({
         <GlobalThreatTable
           threats={filteredThreats}
           onThreatClick={onThreatClick}
+          emptyState={emptyState}
         />
 
         <div className="threats-footer">

@@ -4,6 +4,7 @@ import CompanyTable from '~/app/components/appsec/companyTable';
 import FilterToolbar from '~/app/components/common/filterToolbar';
 import PageHeader from '~/app/components/common/pageHeader';
 import Button from '~/app/components/ui/button';
+import EmptyState from '~/app/components/ui/emptyState';
 import SearchInput from '~/app/components/ui/searchInput';
 
 import StyledCompanies from './companies.styled';
@@ -20,6 +21,37 @@ const Companies = ({
   const filteredCompanies = companies.filter(company =>
     company.name.toLowerCase().includes(searchValue.toLowerCase()),
   );
+  const hasSearchQuery = searchValue.trim().length > 0;
+  const showEmptyWorkspace = companies.length === 0;
+  const showNoResults = !showEmptyWorkspace && filteredCompanies.length === 0;
+
+  const emptyState = showEmptyWorkspace ? (
+    <EmptyState
+      title="No companies yet"
+      description="Add a company to group assessments and findings in one place."
+      primaryAction={
+        onCreateCompany ? (
+          <Button title="New company" onClick={onCreateCompany} />
+        ) : undefined
+      }
+    />
+  ) : showNoResults ? (
+    <EmptyState
+      title={
+        hasSearchQuery
+          ? `No companies match "${searchValue.trim()}"`
+          : 'No companies match your filters'
+      }
+      description="Clear the search to show all companies again."
+      primaryAction={
+        <Button
+          title="Clear search"
+          variant="secondary"
+          onClick={() => onSearchChange('')}
+        />
+      }
+    />
+  ) : undefined;
 
   return (
     <StyledCompanies>
@@ -50,7 +82,7 @@ const Companies = ({
         <CompanyTable
           companies={filteredCompanies}
           onCompanyClick={onCompanyClick}
-          emptyState="No companies found."
+          emptyState={emptyState}
         />
       </section>
     </StyledCompanies>

@@ -18,6 +18,7 @@ const assessmentStatusLabelMap: Record<string, string> = {
 const AssessmentTable = ({
   assessments,
   onAssessmentClick,
+  emptyState,
 }: AssessmentTableProps) => (
   <StyledAssessmentTable>
     <table className="assessment-table__table">
@@ -38,7 +39,7 @@ const AssessmentTable = ({
         {assessments.length === 0 && (
           <tr>
             <td className="assessment-table__empty-cell" colSpan={8}>
-              No assessments found.
+              {emptyState ?? 'No assessments found.'}
             </td>
           </tr>
         )}
