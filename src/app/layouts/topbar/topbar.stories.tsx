@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
 import Topbar from './topbar.component';
+import TopbarUserIdentity from './topbarUserIdentity.component';
 
 const meta = {
   title: 'Layouts/Topbar',
@@ -23,6 +24,8 @@ export const Default: Story = {
     menuButtonExpanded: false,
     search: <input aria-label="Search" placeholder="Search..." />,
     actions: <button type="button">New assessment</button>,
-    userMenu: <button type="button">PC</button>,
+    userMenu: (
+      <TopbarUserIdentity fullName="Alex Mercer" role="Lead Pentester" />
+    ),
   },
 };
