@@ -5,6 +5,8 @@ import type { ValidationFieldError } from '../../src/validation/index.js';
 export type ApiErrorCode =
   | 'VALIDATION_ERROR'
   | 'INVALID_JSON'
+  | 'PAYLOAD_TOO_LARGE'
+  | 'UNSUPPORTED_MEDIA_TYPE'
   | 'NOT_FOUND'
   | 'COMPANY_NOT_FOUND'
   | 'COMPANY_CONFLICT'

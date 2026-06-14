@@ -15,6 +15,20 @@ const isBodyParserSyntaxError = (error: unknown): error is SyntaxError => {
   );
 };
 
+const isPayloadTooLargeError = (
+  error: unknown,
+): error is Error & { type: string } => {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return (
+    'type' in error &&
+    typeof error.type === 'string' &&
+    error.type === 'entity.too.large'
+  );
+};
+
 export const apiNotFoundHandler: RequestHandler = (_req, res) => {
   sendApiError(res, 404, 'NOT_FOUND', 'API route not found');
 };
@@ -43,6 +57,16 @@ export const apiErrorHandler: ErrorRequestHandler = (
 
   if (error instanceof JsonParseError || isBodyParserSyntaxError(error)) {
     sendApiError(res, 400, 'INVALID_JSON', 'Malformed JSON request body');
+    return;
+  }
+
+  if (isPayloadTooLargeError(error)) {
+    sendApiError(
+      res,
+      413,
+      'PAYLOAD_TOO_LARGE',
+      'JSON request body exceeds 1mb limit',
+    );
     return;
   }
 
