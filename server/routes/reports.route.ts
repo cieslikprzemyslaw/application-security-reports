@@ -5,7 +5,10 @@ import {
   type Response,
 } from 'express';
 
-import type { ReportView } from '../../src/domain/report-view.js';
+import type {
+  ReportView,
+  ReportViewEvidence,
+} from '../../src/domain/report-view.js';
 import {
   reportRouteParamsSchema,
   reportViewSchema,
@@ -19,6 +22,7 @@ import type { EvidenceRepository } from '../database/repositories/evidence.repos
 import type { ReportRepository } from '../database/repositories/report.repository.js';
 import type { SettingsRepository } from '../database/repositories/settings.repository.js';
 import type { ThreatRepository } from '../database/repositories/threat.repository.js';
+import type { Evidence } from '../../src/domain/evidence.js';
 
 type ReportRepositoryOperation = 'retrieve';
 
@@ -56,20 +60,7 @@ const handleReportRepositoryError = (
   return false;
 };
 
-const toEvidenceView = (evidence: {
-  id: string;
-  assessmentId: string;
-  threatIds: string[];
-  type: string;
-  title: string;
-  description?: string;
-  content?: string;
-  fileName?: string;
-  mimeType?: string;
-  capturedAt?: string;
-  createdAt: string;
-  updatedAt: string;
-}) => ({
+const toEvidenceView = (evidence: Evidence): ReportViewEvidence => ({
   id: evidence.id,
   assessmentId: evidence.assessmentId,
   threatIds: [...evidence.threatIds],
