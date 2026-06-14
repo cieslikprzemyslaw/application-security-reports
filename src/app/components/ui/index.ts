@@ -7,6 +7,8 @@ export { default as Divider } from './divider';
 export { default as Tabs } from './tabs';
 export { default as Modal } from './modal';
 export { default as Drawer } from './drawer';
+export { default as IconSVG } from './iconSVG';
+export type { IconName, IconSVGProps, IconSize } from './iconSVG';
 export { default as Dropzone } from './dropzone';
 export { default as EmptyState } from './emptyState';
 export { default as Toast } from './toast';
