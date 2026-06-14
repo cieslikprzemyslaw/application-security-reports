@@ -1,6 +1,8 @@
 import React from 'react';
 
-import StyledTopbarUserIdentity from './topbarUserIdentity.styled';
+import StyledTopbarUserIdentity, {
+  StyledTopbarUserIdentityButton,
+} from './topbarUserIdentity.styled';
 
 import type { TopbarUserIdentityProps } from './topbarUserIdentity.type';
 
@@ -14,20 +16,57 @@ const getInitials = (fullName: string) =>
     .join('')
     .toUpperCase();
 
-const TopbarUserIdentity = ({
-  fullName,
-  role,
-  type = 'button',
-  'aria-label': ariaLabel,
-  ...rest
-}: TopbarUserIdentityProps) => {
+const TopbarUserIdentity = (props: TopbarUserIdentityProps) => {
+  const {
+    fullName,
+    role,
+    'aria-label': ariaLabel,
+    className,
+    id,
+    style,
+  } = props;
   const initials = getInitials(fullName);
+  const isInteractive = typeof props.onClick === 'function';
+
+  if (isInteractive) {
+    const {
+      fullName: _fullName,
+      role: _role,
+      'aria-label': _ariaLabel,
+      onClick,
+      ...buttonProps
+    } = props;
+
+    return (
+      <StyledTopbarUserIdentityButton
+        className={className}
+        id={id}
+        style={style}
+        data-interactive="true"
+        aria-label={ariaLabel ?? `Local user: ${fullName}, ${role}`}
+        onClick={onClick}
+        {...buttonProps}
+      >
+        <span className="topbar-user-identity-avatar" aria-hidden="true">
+          {initials}
+        </span>
+
+        <span className="topbar-user-identity-copy">
+          <strong className="topbar-user-identity-name">{fullName}</strong>
+
+          <span className="topbar-user-identity-role">{role}</span>
+        </span>
+      </StyledTopbarUserIdentityButton>
+    );
+  }
 
   return (
     <StyledTopbarUserIdentity
-      type={type}
+      className={className}
+      id={id}
+      style={style}
+      data-interactive="false"
       aria-label={ariaLabel ?? `Local user: ${fullName}, ${role}`}
-      {...rest}
     >
       <span className="topbar-user-identity-avatar" aria-hidden="true">
         {initials}

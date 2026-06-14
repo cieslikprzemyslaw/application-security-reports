@@ -5,6 +5,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from 'styled-components';
 
+import Button from '~/app/components/ui/button';
 import { defaultTheme } from '~/theme';
 
 import Topbar from './topbar.component';
@@ -58,6 +59,7 @@ const renderTopbar = async (isSidebarOpen = false) => {
 
   const root = createRoot(container);
   let menuClickCount = 0;
+  let assessmentClickCount = 0;
 
   await act(async () => {
     root.render(
@@ -70,7 +72,15 @@ const renderTopbar = async (isSidebarOpen = false) => {
           menuButtonControls="application-sidebar"
           menuButtonExpanded={isSidebarOpen}
           search={<input aria-label="Search" placeholder="Search" />}
-          actions={<button type="button">New assessment</button>}
+          actions={
+            <Button
+              title="New assessment"
+              variant="secondary"
+              onClick={() => {
+                assessmentClickCount += 1;
+              }}
+            />
+          }
           userMenu={
             <TopbarUserIdentity fullName="Alex Mercer" role="Lead Pentester" />
           }
@@ -85,12 +95,19 @@ const renderTopbar = async (isSidebarOpen = false) => {
     root,
     window,
     getMenuClickCount: () => menuClickCount,
+    getAssessmentClickCount: () => assessmentClickCount,
   };
 };
 
 await (async () => {
   {
-    const { container, root, window, getMenuClickCount } = await renderTopbar();
+    const {
+      container,
+      root,
+      window,
+      getMenuClickCount,
+      getAssessmentClickCount,
+    } = await renderTopbar();
     const menuButton = container.querySelector(
       'button[aria-label="Open navigation menu"]',
     ) as HTMLButtonElement | null;
@@ -103,31 +120,48 @@ await (async () => {
     assert.equal(menuButton?.getAttribute('aria-expanded'), 'false');
     assert.equal(menuButton?.tagName, 'BUTTON');
 
-    const userIdentityButton = container.querySelector(
-      '.topbar-user-menu button',
-    ) as HTMLButtonElement | null;
-    const topbarUserMenu = container.querySelector('.topbar-user-menu');
+    const topbarUserMenu = container.querySelector(
+      '.topbar-user-menu',
+    ) as HTMLElement | null;
+    const userIdentityRoot =
+      topbarUserMenu?.firstElementChild as HTMLElement | null;
 
-    assert.ok(userIdentityButton, 'Expected user identity button to render');
     assert.ok(topbarUserMenu, 'Expected user identity slot to render');
+    assert.ok(userIdentityRoot, 'Expected user identity root to render');
     assert.ok(
-      topbarUserMenu.contains(userIdentityButton!),
+      topbarUserMenu.contains(userIdentityRoot),
       'Expected user identity to render on the right side of the topbar',
     );
     assert.equal(
-      userIdentityButton?.getAttribute('aria-label'),
+      userIdentityRoot?.getAttribute('aria-label'),
       'Local user: Alex Mercer, Lead Pentester',
     );
     assert.match(
-      userIdentityButton?.textContent ?? '',
+      userIdentityRoot?.textContent ?? '',
       /Alex Mercer.*Lead Pentester/u,
     );
 
     menuButton?.focus();
     assert.equal(window.document.activeElement, menuButton);
 
-    userIdentityButton?.focus();
-    assert.equal(window.document.activeElement, userIdentityButton);
+    assert.equal(userIdentityRoot?.tagName, 'DIV');
+    assert.equal(userIdentityRoot?.getAttribute('role'), null);
+    assert.equal(userIdentityRoot?.getAttribute('tabindex'), null);
+
+    userIdentityRoot?.focus();
+    assert.notEqual(window.document.activeElement, userIdentityRoot);
+    assert.equal(window.document.activeElement, menuButton);
+
+    const newAssessmentButton = container.querySelector(
+      '.topbar-actions button',
+    ) as HTMLButtonElement | null;
+
+    assert.ok(newAssessmentButton, 'Expected shared button to render');
+    assert.ok(
+      newAssessmentButton?.classList.contains('button'),
+      'Expected the shared application button styling to be applied',
+    );
+    assert.equal(newAssessmentButton?.textContent, 'New assessment');
 
     await act(async () => {
       menuButton?.dispatchEvent(
@@ -143,6 +177,18 @@ await (async () => {
     assert.equal(getMenuClickCount(), 1);
 
     await act(async () => {
+      newAssessmentButton?.dispatchEvent(
+        new window.MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+        }),
+      );
+      await renderTick();
+    });
+
+    assert.equal(getAssessmentClickCount(), 1);
+    await act(async () => {
       root.unmount();
     });
   }
@@ -154,6 +200,19 @@ await (async () => {
     ) as HTMLButtonElement | null;
 
     assert.equal(menuButton?.getAttribute('aria-expanded'), 'true');
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
+  {
+    const { container, root } = await renderTopbar();
+    const userIdentityButton = container.querySelector(
+      '.topbar-user-menu button',
+    ) as HTMLButtonElement | null;
+
+    assert.equal(userIdentityButton, null);
 
     await act(async () => {
       root.unmount();
