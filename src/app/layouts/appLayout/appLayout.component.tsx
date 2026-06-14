@@ -54,6 +54,11 @@ const AppLayout = () => {
             .join(' ')
         }
         to={routes.companies}
+        onClick={() => {
+          if (isSidebarOpen) {
+            closeSidebar();
+          }
+        }}
       >
         <span className="sidebar-company-switcher-icon" aria-hidden="true">
           <IconSVG name="company" />

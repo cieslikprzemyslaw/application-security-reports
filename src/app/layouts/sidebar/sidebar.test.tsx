@@ -95,6 +95,11 @@ const SidebarFixture = ({
                   .join(' ')
               }
               to={routes.companies}
+              onClick={() => {
+                if (isOpen) {
+                  handleClose();
+                }
+              }}
             >
               <span
                 className="sidebar-company-switcher-icon"
@@ -258,7 +263,7 @@ await (async () => {
     );
     assert.equal(
       container.querySelector('.sidebar')?.getAttribute('data-is-open'),
-      'true',
+      'false',
     );
 
     await act(async () => {
