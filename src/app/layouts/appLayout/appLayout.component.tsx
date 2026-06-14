@@ -13,6 +13,7 @@ import AppShell from '../appShell';
 import PageContent from '../pageContent';
 import Sidebar from '../sidebar';
 import Topbar from '../topbar';
+import TopbarUserIdentity from '../topbar/topbarUserIdentity.component';
 
 import type { SidebarNavigationGroup } from '../sidebar';
 
@@ -96,6 +97,9 @@ const AppLayout = () => {
           onMenuClick={openSidebar}
           menuButtonControls={sidebarId}
           menuButtonExpanded={isSidebarOpen}
+          userMenu={
+            <TopbarUserIdentity fullName="Alex Mercer" role="Lead Pentester" />
+          }
         />
       }
     >

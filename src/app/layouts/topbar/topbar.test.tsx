@@ -8,6 +8,7 @@ import { ThemeProvider } from 'styled-components';
 import { defaultTheme } from '~/theme';
 
 import Topbar from './topbar.component';
+import TopbarUserIdentity from './topbarUserIdentity.component';
 
 const renderTick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
 
@@ -70,7 +71,9 @@ const renderTopbar = async (isSidebarOpen = false) => {
           menuButtonExpanded={isSidebarOpen}
           search={<input aria-label="Search" placeholder="Search" />}
           actions={<button type="button">New assessment</button>}
-          userMenu={<button type="button">PC</button>}
+          userMenu={
+            <TopbarUserIdentity fullName="Alex Mercer" role="Lead Pentester" />
+          }
         />
       </ThemeProvider>,
     );
@@ -100,8 +103,31 @@ await (async () => {
     assert.equal(menuButton?.getAttribute('aria-expanded'), 'false');
     assert.equal(menuButton?.tagName, 'BUTTON');
 
+    const userIdentityButton = container.querySelector(
+      '.topbar-user-menu button',
+    ) as HTMLButtonElement | null;
+    const topbarUserMenu = container.querySelector('.topbar-user-menu');
+
+    assert.ok(userIdentityButton, 'Expected user identity button to render');
+    assert.ok(topbarUserMenu, 'Expected user identity slot to render');
+    assert.ok(
+      topbarUserMenu.contains(userIdentityButton!),
+      'Expected user identity to render on the right side of the topbar',
+    );
+    assert.equal(
+      userIdentityButton?.getAttribute('aria-label'),
+      'Local user: Alex Mercer, Lead Pentester',
+    );
+    assert.match(
+      userIdentityButton?.textContent ?? '',
+      /Alex Mercer.*Lead Pentester/u,
+    );
+
     menuButton?.focus();
     assert.equal(window.document.activeElement, menuButton);
+
+    userIdentityButton?.focus();
+    assert.equal(window.document.activeElement, userIdentityButton);
 
     await act(async () => {
       menuButton?.dispatchEvent(
