@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import Button from '~/app/components/ui/button';
+
 import Topbar from './topbar.component';
 import TopbarUserIdentity from './topbarUserIdentity.component';
 
@@ -23,7 +25,7 @@ export const Default: Story = {
     menuButtonControls: 'app-layout-sidebar',
     menuButtonExpanded: false,
     search: <input aria-label="Search" placeholder="Search..." />,
-    actions: <button type="button">New assessment</button>,
+    actions: <Button title="New assessment" variant="secondary" />,
     userMenu: (
       <TopbarUserIdentity fullName="Alex Mercer" role="Lead Pentester" />
     ),

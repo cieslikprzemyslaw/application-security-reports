@@ -1,9 +1,7 @@
-import { styled, css } from 'styled-components';
+import { css, styled } from 'styled-components';
 
-const StyledTopbarUserIdentity = styled.button.attrs({
-  className: 'topbar-user-identity',
-})`
-  ${({ theme: { colors, radii, spacing, transitions, typography, mq } }) => css`
+const topbarUserIdentityBaseStyles = css`
+  ${({ theme: { colors, radii, spacing, typography, mq } }) => css`
     display: inline-flex;
     align-items: center;
     gap: ${spacing.xxs};
@@ -17,28 +15,6 @@ const StyledTopbarUserIdentity = styled.button.attrs({
 
     color: ${colors.text.primary};
     background-color: transparent;
-    cursor: pointer;
-
-    transition:
-      color ${transitions.fast},
-      background-color ${transitions.fast},
-      border-color ${transitions.fast},
-      box-shadow ${transitions.fast};
-
-    &:hover:not(:disabled) {
-      background-color: ${colors.surface.subtle};
-    }
-
-    &:focus-visible {
-      outline: none;
-      box-shadow:
-        0 0 0 2px ${colors.neutral.white},
-        0 0 0 4px ${colors.border.focus};
-    }
-
-    &:disabled {
-      cursor: not-allowed;
-    }
 
     .topbar-user-identity-avatar {
       display: inline-flex;
@@ -90,4 +66,50 @@ const StyledTopbarUserIdentity = styled.button.attrs({
   `}
 `;
 
+const topbarUserIdentityInteractiveStyles = css`
+  ${({ theme: { colors, transitions } }) => css`
+    cursor: pointer;
+
+    transition:
+      color ${transitions.fast},
+      background-color ${transitions.fast},
+      border-color ${transitions.fast},
+      box-shadow ${transitions.fast};
+
+    &:hover {
+      background-color: ${colors.surface.subtle};
+    }
+
+    &:active:not(:disabled) {
+      background-color: ${colors.neutral.grey200};
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow:
+        0 0 0 2px ${colors.neutral.white},
+        0 0 0 4px ${colors.border.focus};
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  `}
+`;
+
+const StyledTopbarUserIdentity = styled.div.attrs({
+  className: 'topbar-user-identity',
+})`
+  ${topbarUserIdentityBaseStyles}
+`;
+
+const StyledTopbarUserIdentityButton = styled.button.attrs({
+  className: 'topbar-user-identity',
+  type: 'button',
+})`
+  ${topbarUserIdentityBaseStyles}
+  ${topbarUserIdentityInteractiveStyles}
+`;
+
 export default StyledTopbarUserIdentity;
+export { StyledTopbarUserIdentityButton };

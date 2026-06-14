@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import Button from '~/app/components/ui/button';
+
 import PageHeader from './pageHeader.component';
 
 const meta = {
@@ -28,6 +30,6 @@ export const Default: Story = {
         label: 'Assessments',
       },
     ],
-    actions: <button type="button">New assessment</button>,
+    actions: <Button title="New assessment" variant="secondary" />,
   },
 };
