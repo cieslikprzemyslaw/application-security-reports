@@ -63,6 +63,7 @@ export const startApiServer = async (
       assessmentRepository: options.assessmentRepository,
       companyRepository: options.companyRepository,
       evidenceRepository: options.evidenceRepository,
+      reportRepository: options.reportRepository,
       settingsRepository: options.settingsRepository,
       threatRepository: options.threatRepository,
       registerRoutes: options.registerRoutes,

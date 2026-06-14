@@ -20,6 +20,7 @@ const main = async (): Promise<void> => {
     assessmentRepository: repositories.assessment,
     companyRepository: repositories.company,
     evidenceRepository: repositories.evidence,
+    reportRepository: repositories.report,
     settingsRepository: repositories.settings,
     threatRepository: repositories.threat,
   });

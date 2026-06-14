@@ -1,0 +1,41 @@
+import type { Assessment } from './assessment.js';
+import type { Company } from './company.js';
+import type { Evidence } from './evidence.js';
+import type { Report } from './report.js';
+import type { Threat } from './threat.js';
+
+export type ReportViewEvidence = Omit<Evidence, 'filePath'>;
+
+export interface ReportViewFinding {
+  threat: Threat;
+  evidence: ReportViewEvidence[];
+}
+
+export interface ReportViewAssessment {
+  assessment: Assessment;
+  findings: ReportViewFinding[];
+}
+
+export interface ReportViewBranding {
+  companyName: string;
+  companyWebsite?: string;
+  companyContactEmail?: string;
+  companyLogoPath?: string;
+  companyFooterText?: string;
+  reportFooterText?: string;
+  confidentialReports?: boolean;
+}
+
+export interface ReportViewConfiguration {
+  methodology?: string;
+  reportStyle?: string;
+  includeEvidence?: boolean;
+}
+
+export interface ReportView {
+  report: Report;
+  company: Company;
+  assessments: ReportViewAssessment[];
+  branding: ReportViewBranding;
+  configuration: ReportViewConfiguration;
+}
