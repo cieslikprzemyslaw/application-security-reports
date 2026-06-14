@@ -137,10 +137,24 @@ endpoint that future domain routers will build on.
 ### Environment
 
 - `API_PORT` controls the API listen port. It defaults to `3001`.
-- `FRONTEND_ORIGIN` controls the allowed CORS origin. It defaults to
-  `http://localhost:5173`.
+- `FRONTEND_ORIGIN` controls the allowed local frontend origin for CORS. It
+  defaults to `http://localhost:5173`.
 - `NODE_ENV` is validated and defaults to `development`.
 - `DATABASE_URL` still points Prisma at the local SQLite database.
+
+### Security baseline
+
+- The API explicitly limits JSON request bodies to `1mb`.
+- JSON mutation routes require `Content-Type: application/json`.
+- The API disables `X-Powered-By` and returns `X-Content-Type-Options:
+nosniff`, `Referrer-Policy: no-referrer`, and
+  `Cross-Origin-Resource-Policy: same-origin`.
+- CORS stays restricted to the configured local frontend origin and does not
+  enable credentialed cross-origin requests.
+- Evidence files are served only from `/uploads/evidence/*`, with directory
+  listing disabled and unsupported evidence extensions blocked.
+- The application is designed for local single-user use and is not hardened for
+  untrusted public internet exposure.
 
 ### Local Commands
 
@@ -158,6 +172,7 @@ Verified commands:
 
 - `GET /api/health` returns `200` with `{ "status": "ok" }`.
 - The API router is mounted under `/api`.
+- Static evidence files are mounted under `/uploads/evidence/*`.
 - Assessment routes are mounted under `/api/assessments`.
 - Evidence routes are mounted under `/api/evidence`.
 - Company routes are mounted under `/api/companies`.

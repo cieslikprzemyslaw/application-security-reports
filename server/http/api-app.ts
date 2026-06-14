@@ -1,5 +1,5 @@
 import cors from 'cors';
-import express, { type Express } from 'express';
+import express, { type Express, type RequestHandler } from 'express';
 import type { Router } from 'express';
 
 import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
@@ -9,7 +9,9 @@ import type { ReportRepository } from '../database/repositories/report.repositor
 import type { SettingsRepository } from '../database/repositories/settings.repository.js';
 import type { ThreatRepository } from '../database/repositories/threat.repository.js';
 import type { ServerConfig } from '../config.js';
+import { sendApiError } from './api-errors.js';
 import { createApiRouter } from './api-router.js';
+import { createEvidenceStaticRouter } from './evidence-static.js';
 import { apiErrorHandler, apiNotFoundHandler } from './error-handler.js';
 
 export interface ApiAppOptions {
@@ -23,6 +25,39 @@ export interface ApiAppOptions {
 }
 
 const jsonBodyLimit = '1mb';
+const allowedCorsMethods = ['GET', 'POST', 'PATCH', 'DELETE'];
+const allowedCorsHeaders = ['Content-Type'];
+
+const applySecurityHeaders: RequestHandler = (_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  next();
+};
+
+const requireJsonMutationContentType: RequestHandler = (req, res, next) => {
+  if (!['POST', 'PUT', 'PATCH'].includes(req.method)) {
+    next();
+    return;
+  }
+
+  if (!req.path.startsWith('/api/')) {
+    next();
+    return;
+  }
+
+  if (req.is('application/json')) {
+    next();
+    return;
+  }
+
+  sendApiError(
+    res,
+    415,
+    'UNSUPPORTED_MEDIA_TYPE',
+    'Content-Type must be application/json',
+  );
+};
 
 export const createApiApp = (
   config: ServerConfig,
@@ -31,6 +66,7 @@ export const createApiApp = (
   const app = express();
 
   app.disable('x-powered-by');
+  app.use(applySecurityHeaders);
   app.use(
     cors({
       origin(requestOrigin, callback) {
@@ -41,9 +77,14 @@ export const createApiApp = (
 
         callback(null, false);
       },
+      methods: allowedCorsMethods,
+      allowedHeaders: allowedCorsHeaders,
+      credentials: false,
     }),
   );
+  app.use(requireJsonMutationContentType);
   app.use(express.json({ limit: jsonBodyLimit }));
+  app.use('/uploads/evidence', createEvidenceStaticRouter());
   app.use('/api', createApiRouter(options));
   app.use(apiNotFoundHandler);
   app.use(apiErrorHandler);
