@@ -109,6 +109,12 @@ export const evidenceListQuerySchema = z
   })
   .strict();
 
+export const reportRouteParamsSchema = z
+  .object({
+    id: prefixedUuidSchema('rpt_', 'Report'),
+  })
+  .strict();
+
 export const createAssessmentRequestSchema = createAssessmentBaseSchema;
 type CreateAssessmentRequestSchemaOutput = Required<
   z.output<typeof createAssessmentRequestSchema>

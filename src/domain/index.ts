@@ -4,5 +4,6 @@ export * from './assessment.js';
 export * from './threat.js';
 export * from './evidence.js';
 export * from './report.js';
+export * from './report-view.js';
 export * from './activity.js';
 export * from './settings.js';
