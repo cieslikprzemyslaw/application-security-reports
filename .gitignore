@@ -16,9 +16,6 @@ uploads/evidence/*
 .tmp/
 AGENTS.md
 docs
-issues-manifest.json
-run-appsec-issue.ps1
-update-appsec-report-builder-issues.ps1
 .github/pull_request_template.md
 .github/ISSUE_TEMPLATE/*
 prototype/
