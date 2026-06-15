@@ -6,10 +6,44 @@ assert.equal(routePatterns.root, '/');
 assert.equal(routes.root, '/');
 assert.equal(routes.dashboard, '/dashboard');
 assert.equal(routes.companies, '/companies');
+assert.equal(routePatterns.companyWorkspace, '/companies/:companyId');
+assert.equal(
+  routePatterns.companyWorkspaceOverview,
+  '/companies/:companyId/overview',
+);
+assert.equal(
+  routePatterns.companyWorkspaceAssessments,
+  '/companies/:companyId/assessments',
+);
+assert.equal(
+  routePatterns.companyWorkspaceReports,
+  '/companies/:companyId/reports',
+);
+assert.equal(
+  routePatterns.companyWorkspaceActivity,
+  '/companies/:companyId/activity',
+);
 assert.equal(routes.assessments, '/assessments');
 assert.equal(routes.threats, '/threats');
 assert.equal(routes.reports, '/reports');
 assert.equal(routes.settings, '/settings');
+assert.equal(routes.companyWorkspace('cmp_123'), '/companies/cmp_123');
+assert.equal(
+  routes.companyWorkspaceOverview('cmp_123'),
+  '/companies/cmp_123/overview',
+);
+assert.equal(
+  routes.companyWorkspaceAssessments('cmp_123'),
+  '/companies/cmp_123/assessments',
+);
+assert.equal(
+  routes.companyWorkspaceReports('cmp_123'),
+  '/companies/cmp_123/reports',
+);
+assert.equal(
+  routes.companyWorkspaceActivity('cmp_123'),
+  '/companies/cmp_123/activity',
+);
 
 assert.equal(routePatterns.assessmentDetails, '/assessments/:assessmentId');
 assert.equal(routePatterns.reportDetails, '/reports/:reportId');

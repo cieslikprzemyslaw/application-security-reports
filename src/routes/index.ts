@@ -10,10 +10,18 @@ const buildRouteWithId = (basePath: string, id: string, routeName: string) => {
   return `${basePath}/${encodeURIComponent(id)}`;
 };
 
+const buildCompanyWorkspaceRoute = (companyId: string, routeName: string) =>
+  buildRouteWithId(routePatterns.companies, companyId, routeName);
+
 export const routePatterns = {
   root: '/',
   dashboard: '/dashboard',
   companies: '/companies',
+  companyWorkspace: '/companies/:companyId',
+  companyWorkspaceOverview: '/companies/:companyId/overview',
+  companyWorkspaceAssessments: '/companies/:companyId/assessments',
+  companyWorkspaceReports: '/companies/:companyId/reports',
+  companyWorkspaceActivity: '/companies/:companyId/activity',
   assessments: '/assessments',
   assessmentDetails: '/assessments/:assessmentId',
   threats: '/threats',
@@ -26,6 +34,16 @@ export const routes = {
   root: routePatterns.root,
   dashboard: routePatterns.dashboard,
   companies: routePatterns.companies,
+  companyWorkspace: (companyId: string) =>
+    buildCompanyWorkspaceRoute(companyId, 'companyWorkspace'),
+  companyWorkspaceOverview: (companyId: string) =>
+    `${buildCompanyWorkspaceRoute(companyId, 'companyWorkspace')}/overview`,
+  companyWorkspaceAssessments: (companyId: string) =>
+    `${buildCompanyWorkspaceRoute(companyId, 'companyWorkspace')}/assessments`,
+  companyWorkspaceReports: (companyId: string) =>
+    `${buildCompanyWorkspaceRoute(companyId, 'companyWorkspace')}/reports`,
+  companyWorkspaceActivity: (companyId: string) =>
+    `${buildCompanyWorkspaceRoute(companyId, 'companyWorkspace')}/activity`,
   assessments: routePatterns.assessments,
   assessmentDetails: (assessmentId: string) =>
     buildRouteWithId(

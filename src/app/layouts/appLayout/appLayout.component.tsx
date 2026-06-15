@@ -23,10 +23,11 @@ interface AppLayoutProps {
   activeCompany?: CompanyIdentity;
   companies?: CompanyListItem[];
   isCompaniesLoading?: boolean;
+  navigationGroups?: SidebarNavigationGroup[];
   onActiveCompanyChange?: (company?: CompanyIdentity) => void;
 }
 
-const navigationGroups: SidebarNavigationGroup[] = [
+const defaultNavigationGroups: SidebarNavigationGroup[] = [
   {
     id: 'workspace',
     items: [{ id: 'dashboard', label: 'Dashboard', href: routes.dashboard }],
@@ -42,6 +43,7 @@ const AppLayout = ({
   activeCompany,
   companies = [],
   isCompaniesLoading = false,
+  navigationGroups = defaultNavigationGroups,
   onActiveCompanyChange,
 }: AppLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

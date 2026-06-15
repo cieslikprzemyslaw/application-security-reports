@@ -1,10 +1,12 @@
-import React, { lazy, useEffect, useState } from 'react';
+import React, { lazy, useEffect } from 'react';
 import {
   BrowserRouter,
   Navigate,
   Route,
   Routes,
+  matchPath,
   useNavigate,
+  useLocation,
   useParams,
 } from 'react-router-dom';
 
@@ -14,54 +16,29 @@ import NotFound from '~/app/pages/notFound';
 import { routes, routePatterns } from '~/routes';
 import type { CompanyListItem } from '~/domain';
 import { companyService } from '~/services';
-
+import CompanyWorkspaceRouteShell, {
+  CompanyActivityRoute,
+  CompanyAssessmentsRoute,
+  CompanyOverviewRoute,
+  CompanyReportsRoute,
+  CompanyWorkspaceIndexRoute,
+  CompanyWorkspaceNotFoundRoute,
+  createCompanyWorkspaceNavigationGroups,
+} from './companyWorkspaceRoutes';
 import {
-  assessmentDetailsById,
-  assessmentStatuses,
-  assessments,
-  dashboardStats,
-  recentActivity,
-  recentAssessments,
-  reportCover,
-  reportDetailsById,
-  settingsValue,
-  severityDistribution,
-  threats,
-} from './appData';
+  AssessmentsRoute,
+  DashboardRoute,
+  ReportsRoute,
+  SettingsRoute,
+  ThreatsRoute,
+} from './routerPages';
 
-import type { DashboardPeriod } from './pages/dashboard';
+import { assessmentDetailsById, reportDetailsById } from './appData';
 import type { CompanyIdentity } from './pages/companies';
-import type { SettingsValue } from './pages/settings';
 
-const Dashboard = lazy(() => import('./pages/dashboard'));
 const Companies = lazy(() => import('./pages/companies'));
-const Assessments = lazy(() => import('./pages/assessments'));
 const AssessmentDetails = lazy(() => import('./pages/assessmentDetails'));
 const ReportDetails = lazy(() => import('./pages/reportDetails'));
-const Reports = lazy(() => import('./pages/reports'));
-const Settings = lazy(() => import('./pages/settings'));
-const Threats = lazy(() => import('./pages/threats'));
-
-const DashboardRoute = () => {
-  const navigate = useNavigate();
-  const [selectedPeriod, setSelectedPeriod] = useState<DashboardPeriod>('90');
-
-  return (
-    <Dashboard
-      stats={dashboardStats}
-      severityDistribution={severityDistribution}
-      assessmentStatuses={assessmentStatuses}
-      recentAssessments={recentAssessments}
-      recentActivity={recentActivity}
-      selectedPeriod={selectedPeriod}
-      onPeriodChange={setSelectedPeriod}
-      onViewAllAssessments={() => navigate(routes.assessments)}
-      onAssessmentClick={assessment =>
-        navigate(routes.assessmentDetails(assessment.id))
-      }
-    />
-  );
-};
 
 interface CompaniesRouteProps {
   activeCompany?: CompanyIdentity;
@@ -77,31 +54,6 @@ const CompaniesRoute = ({
     onActiveCompanyChange={onActiveCompanyChange}
   />
 );
-
-const AssessmentsRoute = () => {
-  const navigate = useNavigate();
-  const [searchValue, setSearchValue] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [riskFilter, setRiskFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
-
-  return (
-    <Assessments
-      assessments={assessments}
-      searchValue={searchValue}
-      statusFilter={statusFilter}
-      riskFilter={riskFilter}
-      typeFilter={typeFilter}
-      onSearchChange={setSearchValue}
-      onStatusFilterChange={setStatusFilter}
-      onRiskFilterChange={setRiskFilter}
-      onTypeFilterChange={setTypeFilter}
-      onAssessmentClick={assessment =>
-        navigate(routes.assessmentDetails(assessment.id))
-      }
-    />
-  );
-};
 
 const AssessmentDetailsRoute = () => {
   const navigate = useNavigate();
@@ -155,57 +107,11 @@ const ReportDetailsRoute = () => {
   return <ReportDetails cover={cover} autoSaved={false} />;
 };
 
-const ThreatsRoute = () => {
-  const [searchValue, setSearchValue] = useState('');
-  const [severityFilter, setSeverityFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [applicationFilter, setApplicationFilter] = useState('all');
-  const [selectedThreat, setSelectedThreat] = useState<
-    (typeof threats)[number] | undefined
-  >();
-
-  return (
-    <Threats
-      threats={threats}
-      searchValue={searchValue}
-      severityFilter={severityFilter}
-      statusFilter={statusFilter}
-      applicationFilter={applicationFilter}
-      selectedThreat={selectedThreat}
-      isDrawerOpen={Boolean(selectedThreat)}
-      onSearchChange={setSearchValue}
-      onSeverityFilterChange={setSeverityFilter}
-      onStatusFilterChange={setStatusFilter}
-      onApplicationFilterChange={setApplicationFilter}
-      onThreatClick={setSelectedThreat}
-      onDrawerClose={() => setSelectedThreat(undefined)}
-    />
-  );
-};
-
-const ReportsRoute = () => <Reports cover={reportCover} />;
-
-const SettingsRoute = () => {
-  const [value, setValue] = useState<SettingsValue>(settingsValue);
-
-  return (
-    <Settings
-      value={value}
-      onChange={setValue}
-      onSubmit={event => {
-        event.preventDefault();
-      }}
-    />
-  );
-};
-
 const RedirectToDashboard = () => <Navigate replace to={routes.dashboard} />;
 
 const RouterShell = () => {
   const navigate = useNavigate();
-  const [activeCompany, setActiveCompany] = useState<
-    CompanyIdentity | undefined
-  >();
+  const location = useLocation();
   const [companies, setCompanies] = useState<CompanyListItem[]>([]);
   const [isCompaniesLoading, setIsCompaniesLoading] = useState(true);
 
@@ -247,12 +153,23 @@ const RouterShell = () => {
   }, []);
 
   const handleActiveCompanyChange = (company?: CompanyIdentity) => {
-    setActiveCompany(company);
-
     if (company) {
-      navigate(routes.dashboard);
+      navigate(routes.companyWorkspaceOverview(company.id));
     }
   };
+
+  const companyWorkspaceMatch = matchPath(
+    { path: routePatterns.companyWorkspace, end: false },
+    location.pathname,
+  );
+  const currentCompanyId = companyWorkspaceMatch?.params.companyId;
+  const activeCompany = currentCompanyId
+    ? companies.find(company => company.id === currentCompanyId)
+    : undefined;
+  const navigationGroups =
+    currentCompanyId && (isCompaniesLoading || activeCompany)
+      ? createCompanyWorkspaceNavigationGroups(currentCompanyId)
+      : undefined;
 
   return (
     <Routes>
@@ -265,6 +182,7 @@ const RouterShell = () => {
             activeCompany={activeCompany}
             companies={companies}
             isCompaniesLoading={isCompaniesLoading}
+            navigationGroups={navigationGroups}
             onActiveCompanyChange={handleActiveCompanyChange}
           />
         }
@@ -279,6 +197,22 @@ const RouterShell = () => {
             />
           }
         />
+        <Route
+          path={routePatterns.companyWorkspace}
+          element={
+            <CompanyWorkspaceRouteShell
+              companies={companies}
+              isCompaniesLoading={isCompaniesLoading}
+            />
+          }
+        >
+          <Route index element={<CompanyWorkspaceIndexRoute />} />
+          <Route path="overview" element={<CompanyOverviewRoute />} />
+          <Route path="assessments" element={<CompanyAssessmentsRoute />} />
+          <Route path="reports" element={<CompanyReportsRoute />} />
+          <Route path="activity" element={<CompanyActivityRoute />} />
+          <Route path="*" element={<CompanyWorkspaceNotFoundRoute />} />
+        </Route>
         <Route
           path={routePatterns.assessments}
           element={<AssessmentsRoute />}

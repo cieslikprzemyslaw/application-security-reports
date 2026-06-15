@@ -235,6 +235,15 @@ await (async () => {
             createdAt: '2026-06-01T00:00:00.000Z',
             updatedAt: '2026-06-10T00:00:00.000Z',
           },
+          {
+            id: 'cmp_2',
+            name: 'Meridian Finance',
+            website: 'https://meridian.example',
+            contactEmail: 'security@meridian.example',
+            assessmentCount: 1,
+            createdAt: '2026-06-02T00:00:00.000Z',
+            updatedAt: '2026-06-11T00:00:00.000Z',
+          },
         ],
       }),
     );
@@ -349,6 +358,10 @@ await (async () => {
       });
 
       assert.ok(textContent(container).includes('Northwind Labs'));
+      assert.equal(
+        window.location.pathname,
+        routes.companyWorkspaceOverview('cmp_2'),
+      );
 
       const activeCompanyName = container.querySelector(
         '.sidebar-company-switcher-name',
@@ -356,6 +369,233 @@ await (async () => {
 
       assert.ok(activeCompanyName, 'Expected the active company label');
       assert.equal(activeCompanyName?.textContent, 'Northwind Labs');
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    setFetch(async input => {
+      assert.equal(String(input), '/api/companies');
+      return createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      });
+    });
+
+    try {
+      const { container, root } = await renderApp(
+        routes.companyWorkspaceOverview('cmp_1'),
+      );
+
+      assert.ok(textContent(container).includes('Security Dashboard'));
+      assert.equal(
+        window.location.pathname,
+        routes.companyWorkspaceOverview('cmp_1'),
+      );
+      assert.equal(
+        container
+          .querySelector('a[href="/companies/cmp_1/overview"]')
+          ?.getAttribute('aria-current'),
+        'page',
+      );
+      assert.ok(container.querySelector('a[href="/companies/cmp_1/overview"]'));
+      assert.ok(
+        container.querySelector('a[href="/companies/cmp_1/assessments"]'),
+      );
+      assert.ok(container.querySelector('a[href="/companies/cmp_1/reports"]'));
+      assert.ok(container.querySelector('a[href="/companies/cmp_1/activity"]'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    setFetch(async input => {
+      assert.equal(String(input), '/api/companies');
+      return createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      });
+    });
+
+    try {
+      const { container, root } = await renderApp(
+        routes.companyWorkspaceAssessments('cmp_1'),
+      );
+
+      assert.ok(
+        textContent(container).includes(
+          'All application security assessments across your workspace.',
+        ),
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    setFetch(async input => {
+      assert.equal(String(input), '/api/companies');
+      return createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      });
+    });
+
+    try {
+      const { container, root } = await renderApp(
+        routes.companyWorkspaceReports('cmp_1'),
+      );
+
+      assert.ok(textContent(container).includes('Report Preview'));
+      assert.equal(
+        window.location.pathname,
+        routes.companyWorkspaceReports('cmp_1'),
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    setFetch(async input => {
+      assert.equal(String(input), '/api/companies');
+      return createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      });
+    });
+
+    try {
+      const { container, root } = await renderApp(
+        routes.companyWorkspaceActivity('cmp_1'),
+      );
+
+      assert.ok(textContent(container).includes('Activity'));
+      assert.ok(textContent(container).includes('Recent actions'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    setFetch(async input => {
+      assert.equal(String(input), '/api/companies');
+      return createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      });
+    });
+
+    try {
+      const { container, root } = await renderApp('/companies/cmp_1');
+
+      assert.equal(
+        window.location.pathname,
+        routes.companyWorkspaceOverview('cmp_1'),
+      );
+      assert.ok(textContent(container).includes('Security Dashboard'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    setFetch(async input => {
+      assert.equal(String(input), '/api/companies');
+      return createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      });
+    });
+
+    try {
+      const { container, root } = await renderApp(
+        '/companies/cmp_missing/overview',
+      );
+
+      assert.ok(textContent(container).includes('Company not found'));
+      assert.ok(textContent(container).includes('Return to companies'));
+      assert.equal(window.location.pathname, '/companies/cmp_missing/overview');
 
       await act(async () => {
         root.unmount();
