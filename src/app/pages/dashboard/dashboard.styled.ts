@@ -38,6 +38,14 @@ const StyledDashboard = styled.div.attrs({ className: 'dashboard' })`
       gap: ${spacing.xxs};
     }
 
+    .dashboard-welcome-card {
+      overflow: hidden;
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.lg};
+      background-color: ${colors.surface.card};
+      box-shadow: ${shadows.xs};
+    }
+
     .dashboard-stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));

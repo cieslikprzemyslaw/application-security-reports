@@ -24,6 +24,8 @@ export interface DashboardProps {
   recentActivity: ActivityItem[];
   selectedPeriod: DashboardPeriod;
   onPeriodChange: (period: DashboardPeriod) => void;
+  isWorkspaceEmpty?: boolean;
+  onCreateCompany?: () => void;
   onCreateAssessment?: () => void;
   onViewAllAssessments?: () => void;
   onAssessmentClick?: (assessment: RecentAssessmentRow) => void;

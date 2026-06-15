@@ -242,6 +242,11 @@ await (async () => {
       recentCompanyIds: [],
     });
 
+    assert.equal(
+      container.querySelector('.sidebar-company-switcher-name')?.textContent,
+      'Create company',
+    );
+
     await click(container.querySelector('.sidebar-company-switcher'));
 
     assert.ok(

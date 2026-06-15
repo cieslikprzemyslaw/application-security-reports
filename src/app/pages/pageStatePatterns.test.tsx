@@ -336,9 +336,9 @@ await (async () => {
         await renderTick();
       });
 
-      const createButton = Array.from(
-        container.querySelectorAll('button'),
-      ).find(button => button.textContent?.includes('Create company'));
+      const createButton = container.querySelector(
+        'button[type="submit"]',
+      ) as HTMLButtonElement | null;
 
       assert.ok(createButton, 'Expected a create company submit action');
 
@@ -593,6 +593,27 @@ await (async () => {
 
     assert.ok(textContent(container).includes('No assessments yet'));
     assert.ok(textContent(container).includes('New Assessment'));
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
+  {
+    const { container, root } = await renderComponent(
+      <Dashboard
+        {...baseDashboardProps}
+        isWorkspaceEmpty
+        onCreateCompany={() => undefined}
+      />,
+    );
+
+    assert.ok(textContent(container).includes('Welcome to AppSec Reports'));
+    assert.ok(textContent(container).includes('Create company'));
+    assert.ok(
+      !textContent(container).includes('Total Assessments'),
+      'Expected the welcome state to replace the dashboard cards',
+    );
 
     await act(async () => {
       root.unmount();

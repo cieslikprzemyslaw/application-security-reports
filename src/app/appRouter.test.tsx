@@ -211,17 +211,97 @@ await (async () => {
   }
 
   {
-    const { container, root } = await renderApp('/');
+    setFetch(async () =>
+      createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      }),
+    );
 
-    assert.equal(window.location.pathname, '/dashboard');
-    assert.ok(textContent(container).includes('Security Dashboard'));
+    try {
+      const { container, root } = await renderApp('/');
 
-    await act(async () => {
-      root.unmount();
-    });
+      assert.equal(window.location.pathname, '/dashboard');
+      assert.ok(textContent(container).includes('Security Dashboard'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
   }
 
-  await assertRouteRenders('/dashboard', 'Security Dashboard');
+  {
+    setFetch(async () =>
+      createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      }),
+    );
+
+    try {
+      await assertRouteRenders('/dashboard', 'Security Dashboard');
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    setFetch(async () => createJsonResponse({ data: [] }));
+
+    try {
+      const { container, root } = await renderApp('/dashboard');
+
+      assert.ok(textContent(container).includes('Welcome to AppSec Reports'));
+      assert.ok(textContent(container).includes('Create company'));
+
+      const createCompanyButton = container.querySelector(
+        '.dashboard-welcome-card button',
+      ) as HTMLButtonElement | null;
+
+      assert.ok(createCompanyButton, 'Expected a create company action');
+
+      await act(async () => {
+        createCompanyButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(window.location.pathname, '/companies');
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
   {
     setFetch(async () =>
       createJsonResponse({
@@ -338,9 +418,9 @@ await (async () => {
         await renderTick();
       });
 
-      const createButton = Array.from(
-        container.querySelectorAll('button'),
-      ).find(button => button.textContent?.includes('Create company'));
+      const createButton = container.querySelector(
+        'button[type="submit"]',
+      ) as HTMLButtonElement | null;
 
       assert.ok(createButton, 'Expected a create company action');
 
