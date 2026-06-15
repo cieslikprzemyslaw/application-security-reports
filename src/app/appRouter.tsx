@@ -189,7 +189,14 @@ const RouterShell = () => {
           />
         }
       >
-        <Route path={routePatterns.dashboard} element={<DashboardRoute />} />
+        <Route
+          path={routePatterns.dashboard}
+          element={
+            <DashboardRoute
+              isWorkspaceEmpty={!isCompaniesLoading && companies.length === 0}
+            />
+          }
+        />
         <Route
           path={routePatterns.companies}
           element={

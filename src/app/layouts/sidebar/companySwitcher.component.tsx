@@ -93,7 +93,9 @@ const CompanySwitcher = ({
 
   const showEmptyWorkspace = !isLoading && companies.length === 0;
   const hasSearch = searchValue.trim().length > 0;
-  const triggerLabel = activeCompany?.name ?? 'Select company';
+  const triggerLabel = showEmptyWorkspace
+    ? 'Create company'
+    : (activeCompany?.name ?? 'Select company');
   const hasCompanies = companies.length > 0;
 
   return (

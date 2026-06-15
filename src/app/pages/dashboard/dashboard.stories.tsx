@@ -32,6 +32,9 @@ const meta = {
   ],
   tags: ['autodocs'],
   argTypes: {
+    onCreateCompany: {
+      action: 'create company',
+    },
     onCreateAssessment: {
       action: 'create assessment',
     },
@@ -197,5 +200,13 @@ export const Default: Story = {
         tone: 'brand',
       },
     ],
+  },
+};
+
+export const EmptyWorkspace: Story = {
+  args: {
+    ...Default.args,
+    isWorkspaceEmpty: true,
+    onCreateCompany: undefined,
   },
 };

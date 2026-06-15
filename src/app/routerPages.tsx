@@ -20,7 +20,13 @@ import Threats from './pages/threats';
 import type { DashboardPeriod } from './pages/dashboard';
 import { routes } from '~/routes';
 
-export const DashboardRoute = () => {
+interface DashboardRouteProps {
+  isWorkspaceEmpty?: boolean;
+}
+
+export const DashboardRoute = ({
+  isWorkspaceEmpty = false,
+}: DashboardRouteProps) => {
   const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState<DashboardPeriod>('90');
 
@@ -33,6 +39,8 @@ export const DashboardRoute = () => {
       recentActivity={recentActivity}
       selectedPeriod={selectedPeriod}
       onPeriodChange={setSelectedPeriod}
+      isWorkspaceEmpty={isWorkspaceEmpty}
+      onCreateCompany={() => navigate(routes.companies)}
       onViewAllAssessments={() => navigate(routes.assessments)}
       onAssessmentClick={assessment =>
         navigate(routes.assessmentDetails(assessment.id))
