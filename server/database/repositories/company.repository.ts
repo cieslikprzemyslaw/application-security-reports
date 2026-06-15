@@ -118,8 +118,14 @@ export function createCompanyRepository(
         _count: { _all: true },
       });
 
+      const groupedByStatus: Array<{
+        status: string;
+        _count: { _all: number };
+      }> = grouped;
+
       const countByStatus = (status: string) =>
-        grouped.find(g => g.status === status)?._count._all ?? 0;
+        groupedByStatus.find((g: { status: string }) => g.status === status)
+          ?._count._all ?? 0;
 
       const recent = await db.assessment.findMany({
         where: { companyId },
@@ -135,15 +141,28 @@ export function createCompanyRepository(
         },
       });
 
+      type RecentAssessmentRow = {
+        id: string;
+        applicationName: string | null;
+        assessmentType: string | null;
+        overallRisk: string | null;
+        status: string;
+        _count: { threats: number };
+      };
+
       return {
         company: toCompany(company),
         assessmentCounts: {
-          total: grouped.reduce((sum, g) => sum + g._count._all, 0),
+          total: groupedByStatus.reduce(
+            (sum: number, g: { _count: { _all: number } }) =>
+              sum + g._count._all,
+            0,
+          ),
           draft: countByStatus('draft'),
           inProgress: countByStatus('in-progress'),
           completed: countByStatus('completed'),
         },
-        recentAssessments: recent.map(a => ({
+        recentAssessments: recent.map((a: RecentAssessmentRow) => ({
           id: a.id,
           applicationName: a.applicationName ?? '',
           companyName: company.name,
