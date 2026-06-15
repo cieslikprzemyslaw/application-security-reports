@@ -199,12 +199,14 @@ await (async () => {
       await renderTick();
     });
 
-    const companiesLink = container.querySelector('a[href="/companies"]');
+    const companySwitcher = container.querySelector(
+      '.sidebar-company-switcher',
+    ) as HTMLButtonElement | null;
 
-    assert.ok(companiesLink, 'Expected companies link');
+    assert.ok(companySwitcher, 'Expected the company switcher trigger');
 
     await act(async () => {
-      companiesLink?.dispatchEvent(
+      companySwitcher?.dispatchEvent(
         new window.MouseEvent('click', {
           bubbles: true,
           cancelable: true,
@@ -214,15 +216,21 @@ await (async () => {
       await renderTick();
     });
 
-    assert.equal(window.location.pathname, '/companies');
-    assert.ok(textContent(container).includes('Companies page'));
     assert.equal(
       container
         .querySelector('.app-shell-sidebar')
         ?.getAttribute('data-is-open'),
       'false',
     );
-    assert.equal(openButton?.getAttribute('aria-expanded'), 'false');
+    assert.equal(companySwitcher?.getAttribute('aria-expanded'), 'true');
+    assert.ok(
+      document.body.textContent?.includes('No companies yet'),
+      'Expected the empty company switcher state',
+    );
+    assert.ok(
+      document.body.textContent?.includes('Create company'),
+      'Expected the primary create company action',
+    );
 
     await act(async () => {
       root.unmount();

@@ -1,7 +1,6 @@
 import React, { Suspense, useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
-
-import IconSVG from '~/app/components/ui/iconSVG';
+import { Outlet, useLocation } from 'react-router-dom';
+import type { CompanyListItem } from '~/domain';
 import { routes } from '~/routes';
 import packageJson from '../../../../package.json';
 import {
@@ -11,16 +10,20 @@ import {
 
 import AppShell from '../appShell';
 import PageContent from '../pageContent';
+import CompanySwitcher from '../sidebar/companySwitcher.component';
 import Sidebar from '../sidebar';
 import Topbar from '../topbar';
 import TopbarUserIdentity from '../topbar/topbarUserIdentity.component';
-
+import type { CompanyIdentity } from '~/app/pages/companies';
 import type { SidebarNavigationGroup } from '../sidebar';
 
 const sidebarId = 'app-layout-sidebar';
 
 interface AppLayoutProps {
-  activeCompanyName?: string;
+  activeCompany?: CompanyIdentity;
+  companies?: CompanyListItem[];
+  isCompaniesLoading?: boolean;
+  onActiveCompanyChange?: (company?: CompanyIdentity) => void;
 }
 
 const navigationGroups: SidebarNavigationGroup[] = [
@@ -35,7 +38,12 @@ const navigationGroups: SidebarNavigationGroup[] = [
   },
 ];
 
-const AppLayout = ({ activeCompanyName }: AppLayoutProps) => {
+const AppLayout = ({
+  activeCompany,
+  companies = [],
+  isCompaniesLoading = false,
+  onActiveCompanyChange,
+}: AppLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
 
@@ -49,35 +57,18 @@ const AppLayout = ({ activeCompanyName }: AppLayoutProps) => {
 
   const sidebarBrand = (
     <div className="sidebar-brand-stack">
-      <NavLink
-        className={({ isActive }) =>
-          [
-            'sidebar-company-switcher',
-            isActive ? 'sidebar-company-switcher--active' : '',
-          ]
-            .filter(Boolean)
-            .join(' ')
-        }
-        to={routes.companies}
-        onClick={() => {
+      <CompanySwitcher
+        activeCompany={activeCompany}
+        companies={companies}
+        isLoading={isCompaniesLoading}
+        onActiveCompanyChange={company => {
+          onActiveCompanyChange?.(company);
+
           if (isSidebarOpen) {
             closeSidebar();
           }
         }}
-      >
-        <span className="sidebar-company-switcher-icon" aria-hidden="true">
-          <IconSVG name="company" />
-        </span>
-
-        <span className="sidebar-company-switcher-text">
-          <span className="sidebar-company-switcher-label">Company</span>
-          <span className="sidebar-company-switcher-name">
-            {activeCompanyName ?? 'Select company'}
-          </span>
-        </span>
-
-        <IconSVG name="chevronDown" aria-hidden="true" />
-      </NavLink>
+      />
 
       <strong className="sidebar-brand-title">AppSec Reports</strong>
     </div>
