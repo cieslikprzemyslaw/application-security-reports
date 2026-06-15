@@ -1,9 +1,9 @@
-import type { CompanyTableRow } from '~/app/components/appsec/companyTable';
+export interface CompanyIdentity {
+  id: string;
+  name: string;
+}
 
 export interface CompaniesProps {
-  companies: CompanyTableRow[];
-  searchValue: string;
-  onSearchChange: (value: string) => void;
-  onCreateCompany?: () => void;
-  onCompanyClick?: (company: CompanyTableRow) => void;
+  activeCompany?: CompanyIdentity;
+  onActiveCompanyChange?: (company?: CompanyIdentity) => void;
 }

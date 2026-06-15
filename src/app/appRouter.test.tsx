@@ -15,6 +15,26 @@ import { reportCover } from './appData';
 
 const renderTick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
 
+const originalFetch = globalThis.fetch;
+
+const setFetch = (value: typeof fetch) => {
+  Object.defineProperty(globalThis, 'fetch', {
+    value,
+    configurable: true,
+    writable: true,
+  });
+};
+
+const restoreFetch = () => {
+  setFetch(originalFetch);
+};
+
+const createJsonResponse = (body: unknown, init: ResponseInit = {}): Response =>
+  new Response(JSON.stringify(body), {
+    headers: { 'Content-Type': 'application/json', ...init.headers },
+    ...init,
+  });
+
 const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
   Object.defineProperty(globalThis, key, {
     value,
@@ -202,10 +222,148 @@ await (async () => {
   }
 
   await assertRouteRenders('/dashboard', 'Security Dashboard');
-  await assertRouteRenders(
-    '/companies',
-    'Manage organisations and the assessments associated with them.',
-  );
+  {
+    setFetch(async () =>
+      createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      }),
+    );
+
+    try {
+      const { container, root } = await renderApp('/companies');
+
+      assert.ok(textContent(container).includes('Companies'));
+      assert.ok(textContent(container).includes('Northwind Labs'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    let requestCount = 0;
+
+    setFetch(async input => {
+      requestCount += 1;
+
+      if (requestCount === 1) {
+        return createJsonResponse({ data: [] });
+      }
+
+      if (String(input) === '/api/companies' && requestCount === 2) {
+        return createJsonResponse({
+          data: {
+            id: 'cmp_2',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 1,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        });
+      }
+
+      return createJsonResponse({
+        data: [
+          {
+            id: 'cmp_2',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 1,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      });
+    });
+
+    try {
+      const { container, root } = await renderApp('/companies');
+
+      const newCompanyButton = Array.from(
+        container.querySelectorAll('button'),
+      ).find(button => button.textContent?.includes('New company'));
+
+      assert.ok(newCompanyButton, 'Expected a new company action');
+
+      await act(async () => {
+        newCompanyButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
+
+      const nameInput = container.querySelector(
+        'input#company-name',
+      ) as HTMLInputElement | null;
+
+      assert.ok(nameInput, 'Expected the company name field');
+
+      await act(async () => {
+        nameInput!.value = 'Northwind Labs';
+        nameInput!.dispatchEvent(
+          new window.Event('input', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+        await renderTick();
+      });
+
+      const createButton = Array.from(
+        container.querySelectorAll('button'),
+      ).find(button => button.textContent?.includes('Create company'));
+
+      assert.ok(createButton, 'Expected a create company action');
+
+      await act(async () => {
+        createButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.ok(textContent(container).includes('Northwind Labs'));
+
+      const activeCompanyName = container.querySelector(
+        '.sidebar-company-switcher-name',
+      );
+
+      assert.ok(activeCompanyName, 'Expected the active company label');
+      assert.equal(activeCompanyName?.textContent, 'Northwind Labs');
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
   await assertRouteRenders(
     '/assessments',
     'All application security assessments across your workspace.',

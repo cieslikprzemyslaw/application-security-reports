@@ -5,7 +5,6 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from 'styled-components';
 
-import type { CompanyTableRow } from '~/app/components/appsec/companyTable';
 import type { AssessmentTableRow } from '~/app/components/appsec/assessmentTable';
 import type { GlobalThreatRow } from '~/app/components/appsec/globalThreatTable';
 import Dashboard from '~/app/pages/dashboard';
@@ -15,6 +14,26 @@ import Threats from '~/app/pages/threats';
 import { defaultTheme } from '~/theme';
 
 const renderTick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
+
+const originalFetch = globalThis.fetch;
+
+const setFetch = (value: typeof fetch) => {
+  Object.defineProperty(globalThis, 'fetch', {
+    value,
+    configurable: true,
+    writable: true,
+  });
+};
+
+const restoreFetch = () => {
+  setFetch(originalFetch);
+};
+
+const createJsonResponse = (body: unknown, init: ResponseInit = {}): Response =>
+  new Response(JSON.stringify(body), {
+    headers: { 'Content-Type': 'application/json', ...init.headers },
+    ...init,
+  });
 
 const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
   Object.defineProperty(globalThis, key, {
@@ -69,19 +88,6 @@ const renderComponent = async (element: React.ReactNode) => {
 
 const textContent = (container: HTMLElement) => container.textContent ?? '';
 
-const sampleCompany: CompanyTableRow = {
-  id: 'cmp_1',
-  name: 'Northwind Labs',
-  initials: 'NL',
-  logoTone: 'blue',
-  applicationCount: 2,
-  website: 'northwind.example',
-  primaryContact: 'security@northwind.example',
-  assessmentCount: 4,
-  openThreats: 3,
-  riskPosture: 'medium',
-};
-
 const sampleAssessment: AssessmentTableRow = {
   id: 'asm_1',
   code: 'NWL-2026-001',
@@ -129,65 +135,290 @@ const baseDashboardProps = {
 
 await (async () => {
   {
-    const { container, root } = await renderComponent(
-      <Companies
-        companies={[]}
-        searchValue=""
-        onSearchChange={() => undefined}
-        onCreateCompany={() => undefined}
-      />,
-    );
-
-    assert.ok(textContent(container).includes('No companies yet'));
-    assert.ok(textContent(container).includes('New company'));
-    assert.ok(
-      container.querySelector('[role="status"]'),
-      'Expected the empty state to announce itself politely',
-    );
-
-    await act(async () => {
-      root.unmount();
+    setFetch(async input => {
+      assert.equal(String(input), '/api/companies');
+      return createJsonResponse({ data: [] });
     });
+
+    try {
+      const { container, root } = await renderComponent(
+        <Companies
+          activeCompany={{ id: 'cmp_1', name: 'Northwind Labs' }}
+          onActiveCompanyChange={() => undefined}
+        />,
+      );
+
+      assert.ok(textContent(container).includes('No companies yet'));
+      assert.ok(textContent(container).includes('New company'));
+      assert.ok(
+        container.querySelector('[role="status"]'),
+        'Expected the empty state to announce itself politely',
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
   }
 
   {
-    let clearedSearch = 'not called';
+    setFetch(async input => {
+      assert.equal(String(input), '/api/companies');
+      return createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            description: 'Cloud security partner',
+            website: 'https://northwind.example',
+            contactName: 'A. Example',
+            contactEmail: 'security@northwind.example',
+            logoPath: '/logos/northwind.svg',
+            footerText: 'Confidential',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      });
+    });
 
-    const { container, root } = await renderComponent(
-      <Companies
-        companies={[sampleCompany]}
-        searchValue="zebra"
-        onSearchChange={value => {
-          clearedSearch = value;
-        }}
-      />,
-    );
-
-    assert.ok(textContent(container).includes('No companies match "zebra"'));
-    assert.ok(textContent(container).includes('Clear search'));
-
-    const clearButton = Array.from(container.querySelectorAll('button')).find(
-      button => button.textContent?.includes('Clear search'),
-    );
-
-    assert.ok(clearButton, 'Expected a clear search action');
-
-    await act(async () => {
-      clearButton.dispatchEvent(
-        new window.MouseEvent('click', {
-          bubbles: true,
-          cancelable: true,
-          button: 0,
-        }),
+    try {
+      const { container, root } = await renderComponent(
+        <Companies
+          activeCompany={{ id: 'cmp_1', name: 'Northwind Labs' }}
+          onActiveCompanyChange={() => undefined}
+        />,
       );
-      await renderTick();
+
+      const searchInput = container.querySelector(
+        'input[placeholder="Search companies..."]',
+      ) as HTMLInputElement | null;
+
+      assert.ok(searchInput, 'Expected the companies search input');
+
+      await act(async () => {
+        searchInput!.value = 'zebra';
+        searchInput?.dispatchEvent(
+          new window.Event('input', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+        await renderTick();
+      });
+
+      assert.ok(textContent(container).includes('No companies match "zebra"'));
+      assert.ok(textContent(container).includes('Clear search'));
+
+      const clearButton = Array.from(container.querySelectorAll('button')).find(
+        button => button.textContent?.includes('Clear search'),
+      );
+
+      assert.ok(clearButton, 'Expected a clear search action');
+
+      await act(async () => {
+        clearButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
+
+      assert.equal(searchInput?.value, '');
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    const validationPayload = {
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        details: [
+          {
+            path: 'name',
+            message: 'Text is required',
+          },
+        ],
+      },
+    };
+
+    let requestCount = 0;
+
+    setFetch(async input => {
+      requestCount += 1;
+
+      if (requestCount === 1) {
+        return createJsonResponse({
+          data: [
+            {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              website: 'https://northwind.example',
+              contactEmail: 'security@northwind.example',
+              assessmentCount: 2,
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+          ],
+        });
+      }
+
+      if (String(input) === '/api/companies' && requestCount === 2) {
+        return createJsonResponse(validationPayload, { status: 400 });
+      }
+
+      return createJsonResponse({
+        data: {
+          id: 'cmp_2',
+          name: 'Northwind Labs',
+          website: 'https://northwind.example',
+          contactEmail: 'security@northwind.example',
+          assessmentCount: 2,
+          createdAt: '2026-06-01T00:00:00.000Z',
+          updatedAt: '2026-06-10T00:00:00.000Z',
+        },
+      });
     });
 
-    assert.equal(clearedSearch, '');
+    try {
+      const { container, root } = await renderComponent(
+        <Companies
+          activeCompany={{ id: 'cmp_1', name: 'Northwind Labs' }}
+          onActiveCompanyChange={() => undefined}
+        />,
+      );
 
-    await act(async () => {
-      root.unmount();
-    });
+      const newCompanyButton = Array.from(
+        container.querySelectorAll('button'),
+      ).find(button => button.textContent?.includes('New company'));
+
+      assert.ok(newCompanyButton, 'Expected a new company action');
+
+      await act(async () => {
+        newCompanyButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
+
+      assert.ok(textContent(container).includes('Create company'));
+
+      const nameInput = container.querySelector(
+        'input#company-name',
+      ) as HTMLInputElement | null;
+
+      assert.ok(nameInput, 'Expected the company name field');
+
+      await act(async () => {
+        nameInput!.value = 'Northwind Labs';
+        nameInput!.dispatchEvent(
+          new window.Event('input', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+        await renderTick();
+      });
+
+      const createButton = Array.from(
+        container.querySelectorAll('button'),
+      ).find(button => button.textContent?.includes('Create company'));
+
+      assert.ok(createButton, 'Expected a create company submit action');
+
+      await act(async () => {
+        createButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
+
+      assert.ok(textContent(container).includes('Could not save company'));
+      assert.ok(textContent(container).includes('Text is required'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    setFetch(async () =>
+      createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      }),
+    );
+
+    try {
+      const { container, root } = await renderComponent(
+        <Companies
+          activeCompany={{ id: 'cmp_1', name: 'Northwind Labs' }}
+          onActiveCompanyChange={() => undefined}
+        />,
+      );
+
+      const companyRow = Array.from(
+        container.querySelectorAll('.company-table__row'),
+      )[0] as HTMLTableRowElement | undefined;
+
+      assert.ok(companyRow, 'Expected a company row');
+
+      await act(async () => {
+        companyRow.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
+
+      assert.ok(textContent(container).includes('Edit company'));
+      assert.equal(
+        (container.querySelector('input#company-name') as HTMLInputElement)
+          ?.value,
+        'Northwind Labs',
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
   }
 
   {
