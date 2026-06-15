@@ -2,6 +2,8 @@ import type { CompanyListItem } from '~/domain';
 
 export const companySwitcherRecentsStorageKey =
   'appsec-company-switcher-recents';
+export const companySwitcherRecentOpenTimesStorageKey =
+  'appsec-company-switcher-recent-open-times';
 
 export const companySwitcherRecentLimit = 5;
 
@@ -47,6 +49,62 @@ export const writeRecentCompanyIds = (companyIds: string[]) => {
     // Continue with the in-memory recents list.
   }
 };
+
+export const readRecentCompanyOpenTimes = (): Record<string, string> => {
+  if (typeof window === 'undefined') {
+    return {};
+  }
+
+  try {
+    const storedValue = window.localStorage.getItem(
+      companySwitcherRecentOpenTimesStorageKey,
+    );
+
+    if (!storedValue) {
+      return {};
+    }
+
+    const parsedValue = JSON.parse(storedValue);
+
+    if (typeof parsedValue !== 'object' || parsedValue === null) {
+      return {};
+    }
+
+    return Object.fromEntries(
+      Object.entries(parsedValue).filter(
+        ([, value]) => typeof value === 'string' && value.length > 0,
+      ),
+    ) as Record<string, string>;
+  } catch {
+    return {};
+  }
+};
+
+export const writeRecentCompanyOpenTimes = (
+  companyOpenTimes: Record<string, string>,
+) => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      companySwitcherRecentOpenTimesStorageKey,
+      JSON.stringify(companyOpenTimes),
+    );
+  } catch {
+    // Continue without persisting the last-opened timestamps.
+  }
+};
+
+export const updateRecentCompanyOpenTimes = (
+  recentCompanyOpenTimes: Record<string, string>,
+  companyId: string,
+  openedAt = new Date().toISOString(),
+) => ({
+  ...recentCompanyOpenTimes,
+  [companyId]: openedAt,
+});
 
 export const updateRecentCompanyIds = (
   recentCompanyIds: string[],

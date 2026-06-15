@@ -43,7 +43,10 @@ const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
   });
 };
 
-const setupDom = (pathname: string) => {
+const setupDom = (
+  pathname: string,
+  localStorageEntries?: Record<string, string>,
+) => {
   const dom = new JSDOM(
     '<!doctype html><html><body><div id="root"></div></body></html>',
     { url: `http://localhost${pathname}` },
@@ -68,13 +71,23 @@ const setupDom = (pathname: string) => {
   );
   setGlobal('IS_REACT_ACT_ENVIRONMENT', true);
 
+  if (localStorageEntries) {
+    for (const [key, value] of Object.entries(localStorageEntries)) {
+      window.localStorage.setItem(key, value);
+    }
+  }
+
   return {
     container: window.document.getElementById('root'),
   };
 };
 
-const renderApp = async (pathname: string, settle = true) => {
-  const { container } = setupDom(pathname);
+const renderApp = async (
+  pathname: string,
+  settle = true,
+  localStorageEntries?: Record<string, string>,
+) => {
+  const { container } = setupDom(pathname, localStorageEntries);
 
   assert.ok(container, 'Expected root container to exist');
 
@@ -231,7 +244,7 @@ await (async () => {
       const { container, root } = await renderApp('/');
 
       assert.equal(window.location.pathname, '/dashboard');
-      assert.ok(textContent(container).includes('Security Dashboard'));
+      assert.ok(textContent(container).includes('Recent companies'));
 
       await act(async () => {
         root.unmount();
@@ -259,7 +272,53 @@ await (async () => {
     );
 
     try {
-      await assertRouteRenders('/dashboard', 'Security Dashboard');
+      const { container, root } = await renderApp('/dashboard', true, {
+        'appsec-company-switcher-recents': JSON.stringify(['cmp_2', 'cmp_1']),
+        'appsec-company-switcher-recent-open-times': JSON.stringify({
+          cmp_2: '2026-06-14T16:45:00.000Z',
+          cmp_1: '2026-06-15T08:15:00.000Z',
+        }),
+      });
+
+      const companyTitles = Array.from(
+        container.querySelectorAll('.card-title'),
+      ).map(node => node.textContent);
+
+      assert.deepEqual(companyTitles.slice(0, 3), [
+        'Meridian Finance',
+        'Northwind Labs',
+        'Summit Health',
+      ]);
+      assert.ok(textContent(container).includes('Last opened'));
+
+      const openCompanyButton = Array.from(
+        container.querySelectorAll('button'),
+      ).find(button => button.textContent?.includes('Open company')) as
+        | HTMLButtonElement
+        | undefined;
+
+      assert.ok(openCompanyButton, 'Expected an open company action');
+
+      await act(async () => {
+        openCompanyButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(
+        window.location.pathname,
+        routes.companyWorkspaceOverview('cmp_2'),
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
     } finally {
       restoreFetch();
     }
@@ -271,11 +330,12 @@ await (async () => {
     try {
       const { container, root } = await renderApp('/dashboard');
 
-      assert.ok(textContent(container).includes('Welcome to AppSec Reports'));
+      assert.ok(textContent(container).includes('Recent companies'));
+      assert.ok(textContent(container).includes('No companies yet'));
       assert.ok(textContent(container).includes('Create company'));
 
       const createCompanyButton = container.querySelector(
-        '.dashboard-welcome-card button',
+        '.dashboard-empty-card button',
       ) as HTMLButtonElement | null;
 
       assert.ok(createCompanyButton, 'Expected a create company action');
@@ -293,6 +353,71 @@ await (async () => {
       });
 
       assert.equal(window.location.pathname, '/companies');
+      assert.ok(
+        window.document.querySelector('input#company-name'),
+        'Expected the create company drawer to open from the dashboard',
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    let requestCount = 0;
+
+    setFetch(async () => {
+      requestCount += 1;
+
+      if (requestCount === 1) {
+        throw new Error('Unable to load companies.');
+      }
+
+      return createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      });
+    });
+
+    try {
+      const { container, root } = await renderApp('/dashboard');
+
+      assert.ok(
+        textContent(container).includes('Unable to load recent companies'),
+      );
+      assert.ok(textContent(container).includes('Retry'));
+
+      const retryButton = Array.from(container.querySelectorAll('button')).find(
+        button => button.textContent?.includes('Retry'),
+      ) as HTMLButtonElement | undefined;
+
+      assert.ok(retryButton, 'Expected a retry action');
+
+      await act(async () => {
+        retryButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.ok(textContent(container).includes('Northwind Labs'));
 
       await act(async () => {
         root.unmount();
@@ -1005,7 +1130,7 @@ await (async () => {
     });
 
     assert.equal(window.location.pathname, '/dashboard');
-    assert.ok(textContent(container).includes('Security Dashboard'));
+    assert.ok(textContent(container).includes('Recent companies'));
 
     await act(async () => {
       root.unmount();

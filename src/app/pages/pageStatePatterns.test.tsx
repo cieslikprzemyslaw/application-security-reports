@@ -43,9 +43,10 @@ const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
   });
 };
 
-const setupDom = () => {
+const setupDom = (localStorageEntries?: Record<string, string>) => {
   const dom = new JSDOM(
     '<!doctype html><html><body><div id="root"></div></body></html>',
+    { url: 'http://localhost/' },
   );
   const { window } = dom;
 
@@ -66,6 +67,12 @@ const setupDom = () => {
   );
   setGlobal('IS_REACT_ACT_ENVIRONMENT', true);
 
+  if (localStorageEntries) {
+    for (const [key, value] of Object.entries(localStorageEntries)) {
+      window.localStorage.setItem(key, value);
+    }
+  }
+
   const container = window.document.getElementById('root');
 
   assert.ok(container, 'Expected root container to exist');
@@ -73,8 +80,11 @@ const setupDom = () => {
   return { container };
 };
 
-const renderComponent = async (element: React.ReactNode) => {
-  const { container } = setupDom();
+const renderComponent = async (
+  element: React.ReactNode,
+  localStorageEntries?: Record<string, string>,
+) => {
+  const { container } = setupDom(localStorageEntries);
   const root = createRoot(container);
 
   await act(async () => {
@@ -112,25 +122,6 @@ const sampleThreat: GlobalThreatRow = {
   severity: 'high',
   status: 'open',
   updatedAt: '2026-06-14',
-};
-
-const baseDashboardProps = {
-  stats: {
-    totalAssessments: 0,
-    totalAssessmentsChange: 0,
-    openThreats: 0,
-    openThreatsChange: 0,
-    criticalHighFindings: 0,
-    criticalHighChange: 0,
-    retestRequired: 0,
-    retestRequiredChange: 0,
-  },
-  severityDistribution: [],
-  assessmentStatuses: [],
-  recentAssessments: [],
-  recentActivity: [],
-  selectedPeriod: '90' as const,
-  onPeriodChange: () => undefined,
 };
 
 await (async () => {
@@ -668,13 +659,56 @@ await (async () => {
   {
     const { container, root } = await renderComponent(
       <Dashboard
-        {...baseDashboardProps}
-        onCreateAssessment={() => undefined}
+        companies={[
+          {
+            id: 'cmp_1',
+            name: 'Northstar Digital',
+            assessmentCount: 6,
+            latestAssessment: {
+              id: 'asm_1',
+              name: 'Customer Services Portal',
+              status: 'in-progress',
+            },
+          },
+          {
+            id: 'cmp_2',
+            name: 'Meridian Finance',
+            assessmentCount: 4,
+            latestAssessment: {
+              id: 'asm_2',
+              name: 'Online Banking Portal',
+              status: 'completed',
+            },
+          },
+          {
+            id: 'cmp_3',
+            name: 'Summit Health',
+            assessmentCount: 2,
+          },
+        ]}
+        onOpenCompany={() => undefined}
       />,
+      {
+        'appsec-company-switcher-recents': JSON.stringify(['cmp_2', 'cmp_1']),
+        'appsec-company-switcher-recent-open-times': JSON.stringify({
+          cmp_2: '2026-06-14T16:45:00.000Z',
+          cmp_1: '2026-06-15T08:15:00.000Z',
+        }),
+      },
     );
 
-    assert.ok(textContent(container).includes('No assessments yet'));
-    assert.ok(textContent(container).includes('New Assessment'));
+    const cards = Array.from(
+      container.querySelectorAll('.card .card-title'),
+    ).map(node => node.textContent);
+
+    assert.deepEqual(cards, [
+      'Meridian Finance',
+      'Northstar Digital',
+      'Summit Health',
+    ]);
+    assert.ok(textContent(container).includes('Last opened'));
+    assert.ok(textContent(container).includes('Active assessments'));
+    assert.ok(textContent(container).includes('Latest assessment'));
 
     await act(async () => {
       root.unmount();
@@ -683,18 +717,15 @@ await (async () => {
 
   {
     const { container, root } = await renderComponent(
-      <Dashboard
-        {...baseDashboardProps}
-        isWorkspaceEmpty
-        onCreateCompany={() => undefined}
-      />,
+      <Dashboard companies={[]} onCreateCompany={() => undefined} />,
     );
 
-    assert.ok(textContent(container).includes('Welcome to AppSec Reports'));
+    assert.ok(textContent(container).includes('Recent companies'));
+    assert.ok(textContent(container).includes('No companies yet'));
     assert.ok(textContent(container).includes('Create company'));
     assert.ok(
-      !textContent(container).includes('Total Assessments'),
-      'Expected the welcome state to replace the dashboard cards',
+      !textContent(container).includes('Active assessments'),
+      'Expected the empty state to replace the recent company cards',
     );
 
     await act(async () => {

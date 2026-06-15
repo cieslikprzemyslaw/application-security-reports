@@ -1,4 +1,4 @@
-import { styled, css } from 'styled-components';
+import { css, styled } from 'styled-components';
 
 const StyledDashboard = styled.div.attrs({ className: 'dashboard' })`
   ${({ theme: { colors, mq, radii, shadows, spacing, typography } }) => css`
@@ -28,7 +28,7 @@ const StyledDashboard = styled.div.attrs({ className: 'dashboard' })`
     }
 
     .dashboard-subtitle {
-      margin-top: ${spacing.xxxs};
+      margin-top: ${spacing.xxs};
       color: ${colors.text.muted};
     }
 
@@ -38,7 +38,8 @@ const StyledDashboard = styled.div.attrs({ className: 'dashboard' })`
       gap: ${spacing.xxs};
     }
 
-    .dashboard-welcome-card {
+    .dashboard-empty-card,
+    .dashboard-recent-companies-card {
       overflow: hidden;
       border: 1px solid ${colors.border.subtle};
       border-radius: ${radii.lg};
@@ -46,105 +47,50 @@ const StyledDashboard = styled.div.attrs({ className: 'dashboard' })`
       box-shadow: ${shadows.xs};
     }
 
-    .dashboard-stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-      gap: ${spacing.s};
+    .dashboard-empty-card {
+      padding: ${spacing.xl};
     }
 
-    .dashboard-charts-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: ${spacing.s};
-
-      @media ${mq.min.laptop} {
-        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-      }
-    }
-
-    .dashboard-bottom-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: ${spacing.s};
-
-      @media ${mq.min.laptop} {
-        grid-template-columns: minmax(0, 1.5fr) minmax(20rem, 1fr);
-      }
-    }
-
-    .dashboard-card {
-      overflow: hidden;
-      border: 1px solid ${colors.border.subtle};
-      border-radius: ${radii.lg};
-      background-color: ${colors.surface.card};
-      box-shadow: ${shadows.xs};
-    }
-
-    .dashboard-card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: ${spacing.s};
-
-      min-height: 3.75rem;
-      padding: ${spacing.s} ${spacing.m};
-
-      border-bottom: 1px solid ${colors.border.subtle};
-    }
-
-    .dashboard-card-title-group {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      gap: ${spacing.xxs};
-    }
-
-    .dashboard-card-title {
-      font-size: ${typography.headings.h6.size};
-      line-height: ${typography.headings.h6.lineHeight};
-    }
-
-    .dashboard-card-subtitle {
-      font-size: ${typography.body.small.size};
-      color: ${colors.text.muted};
-    }
-
-    .dashboard-card-body {
+    .dashboard-recent-companies-card {
       padding: ${spacing.m};
     }
 
-    .dashboard-period-select {
-      min-height: 2rem;
-      padding: 0.375rem 2rem 0.375rem 0.75rem;
-
-      border: 1px solid ${colors.border.default};
-      border-radius: ${radii.md};
-
-      font-size: ${typography.body.small.size};
-      color: ${colors.text.secondary};
-      background-color: ${colors.surface.card};
+    .dashboard-recent-companies-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      gap: ${spacing.s};
     }
 
-    .dashboard-view-all-button {
-      display: inline-flex;
-      align-items: center;
-      gap: ${spacing.xxxs};
-
-      padding: 0;
-
-      border: 0;
-
-      font-size: ${typography.body.small.size};
-      font-weight: ${typography.fontWeights.medium};
-      color: ${colors.text.link};
-
-      background: transparent;
+    .dashboard-company-details {
+      display: grid;
+      gap: ${spacing.s};
+      margin: 0;
     }
 
-    .dashboard-empty-state {
-      padding: ${spacing.xl};
+    .dashboard-company-detail {
+      display: grid;
+      gap: ${spacing.xxs};
+    }
+
+    .dashboard-company-detail-label {
+      font-size: ${typography.body.small.size};
       color: ${colors.text.muted};
-      text-align: center;
+    }
+
+    .dashboard-company-detail-value {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: ${spacing.xxs};
+      margin: 0;
+
+      font-size: ${typography.body.medium.size};
+      font-weight: ${typography.fontWeights.medium};
+      color: ${colors.text.primary};
+    }
+
+    .dashboard-company-detail--latest .dashboard-company-detail-value {
+      align-items: flex-start;
     }
   `}
 `;
