@@ -1,4 +1,4 @@
-import React, { lazy, useEffect } from 'react';
+import React, { lazy, useEffect, useState } from 'react';
 import {
   BrowserRouter,
   Navigate,
@@ -164,7 +164,9 @@ const RouterShell = () => {
   );
   const currentCompanyId = companyWorkspaceMatch?.params.companyId;
   const activeCompany = currentCompanyId
-    ? companies.find(company => company.id === currentCompanyId)
+    ? companies.find(
+        (company: CompanyListItem) => company.id === currentCompanyId,
+      )
     : undefined;
   const navigationGroups =
     currentCompanyId && (isCompaniesLoading || activeCompany)
