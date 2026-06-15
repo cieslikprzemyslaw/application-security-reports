@@ -1,3 +1,3 @@
 export { default } from './companies.component';
 
-export type { CompaniesProps } from './companies.type';
+export type { CompanyIdentity, CompaniesProps } from './companies.type';

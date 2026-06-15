@@ -85,29 +85,41 @@ const CompanyTable = ({
             </td>
 
             <td className="company-table__cell">
-              <a
-                className="company-table__link"
-                href={
-                  company.website.startsWith('http')
-                    ? company.website
-                    : `https://${company.website}`
-                }
-                target="_blank"
-                rel="noreferrer"
-                onClick={event => event.stopPropagation()}
-              >
-                {company.website.replace(/^https?:\/\//, '')}
-              </a>
+              {company.website ? (
+                <a
+                  className="company-table__link"
+                  href={
+                    company.website.startsWith('http')
+                      ? company.website
+                      : `https://${company.website}`
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={event => event.stopPropagation()}
+                >
+                  {company.website.replace(/^https?:\/\//, '')}
+                </a>
+              ) : (
+                '—'
+              )}
             </td>
 
             <td className="company-table__cell">
-              <a
-                className="company-table__link"
-                href={`mailto:${company.primaryContact}`}
-                onClick={event => event.stopPropagation()}
-              >
-                {company.primaryContact}
-              </a>
+              {company.primaryContact ? (
+                company.primaryContact.includes('@') ? (
+                  <a
+                    className="company-table__link"
+                    href={`mailto:${company.primaryContact}`}
+                    onClick={event => event.stopPropagation()}
+                  >
+                    {company.primaryContact}
+                  </a>
+                ) : (
+                  company.primaryContact
+                )
+              ) : (
+                '—'
+              )}
             </td>
 
             <td className="company-table__cell">{company.assessmentCount}</td>

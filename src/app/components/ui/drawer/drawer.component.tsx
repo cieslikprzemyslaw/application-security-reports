@@ -1,4 +1,4 @@
-import React, { useEffect, useId } from 'react';
+import React, { useId, useLayoutEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -23,26 +23,84 @@ const Drawer = ({
 }: DrawerProps) => {
   const titleId = useId();
   const descriptionId = useId();
+  const panelRef = useRef<HTMLElement | null>(null);
+  const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isOpen) {
       return undefined;
     }
 
+    previouslyFocusedElementRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+
+    const focusableSelector = [
+      'a[href]',
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+
+    const focusFirstElement = () => {
+      const focusableElement =
+        panelRef.current?.querySelector<HTMLElement>(focusableSelector);
+
+      (focusableElement ?? panelRef.current)?.focus();
+    };
+
+    const getFocusableElements = () =>
+      panelRef.current
+        ? Array.from(
+            panelRef.current.querySelectorAll<HTMLElement>(focusableSelector),
+          ).filter(element => !element.hasAttribute('disabled'))
+        : [];
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        event.preventDefault();
         onClose();
+        return;
+      }
+
+      if (event.key !== 'Tab') {
+        return;
+      }
+
+      const focusableElements = getFocusableElements();
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        panelRef.current?.focus();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement;
+
+      if (event.shiftKey && activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
 
     document.body.style.overflow = 'hidden';
+    focusFirstElement();
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
 
       document.body.style.overflow = '';
+      previouslyFocusedElementRef.current?.focus();
     };
   }, [isOpen, onClose]);
 
@@ -61,7 +119,9 @@ const Drawer = ({
         }}
       >
         <aside
+          ref={panelRef}
           className="drawer-panel"
+          tabIndex={-1}
           style={{ '--drawer-width': getDrawerWidth(size) } as CSSProperties}
           role="dialog"
           aria-modal="true"

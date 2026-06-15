@@ -17,7 +17,6 @@ import {
   assessmentDetailsById,
   assessmentStatuses,
   assessments,
-  companies,
   dashboardStats,
   recentActivity,
   recentAssessments,
@@ -29,6 +28,7 @@ import {
 } from './appData';
 
 import type { DashboardPeriod } from './pages/dashboard';
+import type { CompanyIdentity } from './pages/companies';
 import type { SettingsValue } from './pages/settings';
 
 const Dashboard = lazy(() => import('./pages/dashboard'));
@@ -61,17 +61,20 @@ const DashboardRoute = () => {
   );
 };
 
-const CompaniesRoute = () => {
-  const [searchValue, setSearchValue] = useState('');
+interface CompaniesRouteProps {
+  activeCompany?: CompanyIdentity;
+  onActiveCompanyChange: (company?: CompanyIdentity) => void;
+}
 
-  return (
-    <Companies
-      companies={companies}
-      searchValue={searchValue}
-      onSearchChange={setSearchValue}
-    />
-  );
-};
+const CompaniesRoute = ({
+  activeCompany,
+  onActiveCompanyChange,
+}: CompaniesRouteProps) => (
+  <Companies
+    activeCompany={activeCompany}
+    onActiveCompanyChange={onActiveCompanyChange}
+  />
+);
 
 const AssessmentsRoute = () => {
   const navigate = useNavigate();
@@ -196,33 +199,49 @@ const SettingsRoute = () => {
 
 const RedirectToDashboard = () => <Navigate replace to={routes.dashboard} />;
 
-const AppRouter = () => (
-  <BrowserRouter>
-    <Routes>
-      <Route path={routePatterns.root} element={<RedirectToDashboard />} />
+const RouterShell = () => {
+  const [activeCompany, setActiveCompany] = useState<
+    CompanyIdentity | undefined
+  >();
 
-      <Route element={<AppLayout />}>
-        <Route path={routePatterns.dashboard} element={<DashboardRoute />} />
-        <Route path={routePatterns.companies} element={<CompaniesRoute />} />
-        <Route
-          path={routePatterns.assessments}
-          element={<AssessmentsRoute />}
-        />
-        <Route
-          path={routePatterns.assessmentDetails}
-          element={<AssessmentDetailsRoute />}
-        />
-        <Route
-          path={routePatterns.reportDetails}
-          element={<ReportDetailsRoute />}
-        />
-        <Route path={routePatterns.threats} element={<ThreatsRoute />} />
-        <Route path={routePatterns.reports} element={<ReportsRoute />} />
-        <Route path={routePatterns.settings} element={<SettingsRoute />} />
-        <Route path="*" element={<NotFound />} />
-      </Route>
-    </Routes>
-  </BrowserRouter>
-);
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path={routePatterns.root} element={<RedirectToDashboard />} />
+
+        <Route element={<AppLayout activeCompanyName={activeCompany?.name} />}>
+          <Route path={routePatterns.dashboard} element={<DashboardRoute />} />
+          <Route
+            path={routePatterns.companies}
+            element={
+              <CompaniesRoute
+                activeCompany={activeCompany}
+                onActiveCompanyChange={setActiveCompany}
+              />
+            }
+          />
+          <Route
+            path={routePatterns.assessments}
+            element={<AssessmentsRoute />}
+          />
+          <Route
+            path={routePatterns.assessmentDetails}
+            element={<AssessmentDetailsRoute />}
+          />
+          <Route
+            path={routePatterns.reportDetails}
+            element={<ReportDetailsRoute />}
+          />
+          <Route path={routePatterns.threats} element={<ThreatsRoute />} />
+          <Route path={routePatterns.reports} element={<ReportsRoute />} />
+          <Route path={routePatterns.settings} element={<SettingsRoute />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
+const AppRouter = () => <RouterShell />;
 
 export default AppRouter;

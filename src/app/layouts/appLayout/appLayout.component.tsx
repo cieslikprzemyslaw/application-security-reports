@@ -19,6 +19,10 @@ import type { SidebarNavigationGroup } from '../sidebar';
 
 const sidebarId = 'app-layout-sidebar';
 
+interface AppLayoutProps {
+  activeCompanyName?: string;
+}
+
 const navigationGroups: SidebarNavigationGroup[] = [
   {
     id: 'workspace',
@@ -31,7 +35,7 @@ const navigationGroups: SidebarNavigationGroup[] = [
   },
 ];
 
-const AppLayout = () => {
+const AppLayout = ({ activeCompanyName }: AppLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
 
@@ -67,7 +71,9 @@ const AppLayout = () => {
 
         <span className="sidebar-company-switcher-text">
           <span className="sidebar-company-switcher-label">Company</span>
-          <span className="sidebar-company-switcher-name">Select company</span>
+          <span className="sidebar-company-switcher-name">
+            {activeCompanyName ?? 'Select company'}
+          </span>
         </span>
 
         <IconSVG name="chevronDown" aria-hidden="true" />

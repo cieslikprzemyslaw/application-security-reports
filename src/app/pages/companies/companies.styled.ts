@@ -14,6 +14,10 @@ const StyledCompanies = styled.div.attrs({ className: 'companies' })`
       background-color: ${colors.surface.card};
       box-shadow: ${shadows.xs};
     }
+
+    .companies-status {
+      padding: ${spacing.m};
+    }
   `}
 `;
 

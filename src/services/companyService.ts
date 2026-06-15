@@ -1,4 +1,4 @@
-import type { Company } from '~/domain';
+import type { Company, CompanyListItem } from '~/domain';
 
 import { apiRequest } from './apiClient.js';
 import { requestData, type ApiRequestFn } from './serviceHelpers.js';
@@ -11,7 +11,7 @@ export type CompanyCreateInput = Omit<
 export type CompanyUpdateInput = Partial<CompanyCreateInput>;
 
 export interface CompanyService {
-  list(signal?: AbortSignal): Promise<Company[]>;
+  list(signal?: AbortSignal): Promise<CompanyListItem[]>;
   getById(companyId: string, signal?: AbortSignal): Promise<Company>;
   create(input: CompanyCreateInput): Promise<Company>;
   update(companyId: string, input: CompanyUpdateInput): Promise<Company>;
@@ -22,7 +22,7 @@ export const createCompanyService = (
   request: ApiRequestFn = apiRequest,
 ): CompanyService => ({
   async list(signal) {
-    return requestData<Company[]>(request, '/api/companies', {
+    return requestData<CompanyListItem[]>(request, '/api/companies', {
       method: 'GET',
       signal,
     });
