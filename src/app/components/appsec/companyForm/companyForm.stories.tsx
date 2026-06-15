@@ -28,11 +28,18 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: () => {
-    const [value, setValue] = useState(emptyValue);
+  args: {
+    value: emptyValue,
+    onChange: () => undefined,
+    onSubmit: event => event.preventDefault(),
+    onCancel: () => undefined,
+  },
+  render: args => {
+    const [value, setValue] = useState(args.value);
 
     return (
       <CompanyForm
+        {...args}
         value={value}
         onChange={setValue}
         onSubmit={event => event.preventDefault()}
@@ -43,8 +50,15 @@ export const Default: Story = {
 };
 
 export const WithErrors: Story = {
-  render: () => (
+  args: {
+    value: emptyValue,
+    onChange: () => undefined,
+    onSubmit: event => event.preventDefault(),
+    onCancel: () => undefined,
+  },
+  render: args => (
     <CompanyForm
+      {...args}
       value={emptyValue}
       errors={{
         name: 'Text is required',
