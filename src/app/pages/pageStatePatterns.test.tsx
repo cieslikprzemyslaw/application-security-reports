@@ -336,7 +336,7 @@ await (async () => {
         await renderTick();
       });
 
-      const createButton = window.document.querySelector(
+      const createButton = container.querySelector(
         'button[type="submit"]',
       ) as HTMLButtonElement | null;
 

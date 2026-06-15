@@ -40,13 +40,7 @@ export const DashboardRoute = ({
       selectedPeriod={selectedPeriod}
       onPeriodChange={setSelectedPeriod}
       isWorkspaceEmpty={isWorkspaceEmpty}
-      onCreateCompany={() =>
-        navigate(routes.companies, {
-          state: {
-            openCreateDrawer: true,
-          },
-        })
-      }
+      onCreateCompany={() => navigate(routes.companies)}
       onViewAllAssessments={() => navigate(routes.assessments)}
       onAssessmentClick={assessment =>
         navigate(routes.assessmentDetails(assessment.id))
