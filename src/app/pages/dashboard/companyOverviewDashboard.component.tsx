@@ -1,319 +1,283 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-import AssessmentStatusChart from '~/app/components/appsec/assessmentStatusChart';
-import RecentAssessmentTable from '~/app/components/appsec/recentAssessmentTable';
-import SeverityDistribution from '~/app/components/appsec/severityDistribution';
-import ActivityFeed from '~/app/components/common/activityFeed';
-import StatCard from '~/app/components/common/statCard';
+import CompanyForm from '~/app/components/appsec/companyForm';
+import { RouteLoadingView } from '~/app/components/routeStateViews';
 import Button from '~/app/components/ui/button';
-import EmptyState from '~/app/components/ui/emptyState';
-import IconSVG from '~/app/components/ui/iconSVG';
-import SearchInput from '~/app/components/ui/searchInput';
+import Callout from '~/app/components/ui/callout';
+import Drawer from '~/app/components/ui/drawer';
+import {
+  areCompanyFormValuesEqual,
+  companyToFormValue,
+  createEmptyCompanyFormValue,
+  formValueToCompanyInput,
+} from '~/app/pages/companies/companies.utils';
+import type { CompanyFormValue } from '~/app/components/appsec/companyForm';
+import { companyService } from '~/services';
+import { ApiError } from '~/services/apiClient';
 
+import CompanyOverviewDashboardView from './companyOverviewDashboard.view';
 import StyledDashboard from './companyOverviewDashboard.styled';
-import type { DashboardPeriod, DashboardStats } from './dashboard.type';
-import type { ActivityItem } from '~/app/components/common/activityFeed';
-import type { AssessmentStatusChartItem } from '~/app/components/appsec/assessmentStatusChart';
-import type { RecentAssessmentRow } from '~/app/components/appsec/recentAssessmentTable';
-import type { SeverityDistributionItem } from '~/app/components/appsec/severityDistribution';
+import type { CompanyOverviewDashboardProps } from './companyOverviewDashboard.type';
+import type { CompanyOverviewResponse } from '~/services/companyService';
 
-interface CompanyOverviewDashboardProps {
-  stats: DashboardStats;
-  severityDistribution: SeverityDistributionItem[];
-  assessmentStatuses: AssessmentStatusChartItem[];
-  recentAssessments: RecentAssessmentRow[];
-  recentActivity: ActivityItem[];
-  selectedPeriod: DashboardPeriod;
-  onPeriodChange: (period: DashboardPeriod) => void;
-  isWorkspaceEmpty?: boolean;
-  onCreateCompany?: () => void;
-  onCreateAssessment?: () => void;
-  onViewAllAssessments?: () => void;
-  onAssessmentClick?: (assessment: RecentAssessmentRow) => void;
-}
+const companyFormFieldNames: (keyof CompanyFormValue)[] = [
+  'name',
+  'description',
+  'website',
+  'contactName',
+  'contactEmail',
+  'logoPath',
+  'footerText',
+];
 
-const ClipboardIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-    <path
-      d="M9 4h6v2H9zM7 5H5v16h14V5h-2"
-      strokeWidth="2"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+const createCompanyValidationErrorMap = (details: ApiError['details']) => {
+  const fieldErrors: Partial<Record<keyof CompanyFormValue, string>> = {};
+  const generalErrors: string[] = [];
 
-const ThreatIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-    <path
-      d="M12 3 4 6v5c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z"
-      strokeWidth="2"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+  for (const detail of details) {
+    const path = detail.path.split('.')[0] as
+      | keyof CompanyFormValue
+      | undefined;
 
-const AlertIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-    <path
-      d="M12 9v4M12 17h.01M10.3 4 2 18h20L13.7 4a2 2 0 0 0-3.4 0Z"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+    if (path && companyFormFieldNames.includes(path) && !fieldErrors[path]) {
+      fieldErrors[path] = detail.message;
+      continue;
+    }
 
-const RetestIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-    <path
-      d="M20 7v5h-5M4 17v-5h5M6.5 8a7 7 0 0 1 11.5-1M17.5 16a7 7 0 0 1-11.5 1"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const CompanyIcon = () => <IconSVG name="company" />;
-
-const getDirection = (value: number) => {
-  if (value > 0) {
-    return 'up' as const;
+    generalErrors.push(detail.message);
   }
 
-  if (value < 0) {
-    return 'down' as const;
-  }
-
-  return 'equal' as const;
+  return { fieldErrors, generalErrors };
 };
 
 const CompanyOverviewDashboard = ({
-  stats,
-  severityDistribution,
-  assessmentStatuses,
-  recentAssessments,
-  recentActivity,
-  selectedPeriod,
-  onPeriodChange,
-  isWorkspaceEmpty = false,
-  onCreateCompany,
-  onCreateAssessment,
-  onViewAllAssessments,
-  onAssessmentClick,
+  companyId,
 }: CompanyOverviewDashboardProps) => {
-  if (isWorkspaceEmpty) {
+  const [overview, setOverview] = useState<CompanyOverviewResponse | null>(
+    null,
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | undefined>();
+  const [reloadKey, setReloadKey] = useState(0);
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+  const [draftValue, setDraftValue] = useState(createEmptyCompanyFormValue());
+  const [baselineValue, setBaselineValue] = useState(draftValue);
+  const [fieldErrors, setFieldErrors] = useState<Partial<CompanyFormValue>>({});
+  const [formErrorMessage, setFormErrorMessage] = useState<
+    string | undefined
+  >();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let isActive = true;
+
+    const loadOverview = async () => {
+      setIsLoading(true);
+      setLoadError(undefined);
+
+      try {
+        const nextOverview = await companyService.getOverview(
+          companyId,
+          controller.signal,
+        );
+
+        if (isActive) {
+          setOverview(nextOverview);
+        }
+      } catch (error) {
+        if (
+          !isActive ||
+          (error instanceof DOMException && error.name === 'AbortError')
+        ) {
+          return;
+        }
+
+        setLoadError(
+          error instanceof Error
+            ? error.message
+            : 'Unable to load company overview.',
+        );
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadOverview();
+
+    return () => {
+      isActive = false;
+      controller.abort();
+    };
+  }, [companyId, reloadKey]);
+
+  useEffect(() => {
+    const isDirty =
+      isEditDrawerOpen && !areCompanyFormValuesEqual(draftValue, baselineValue);
+
+    if (!isDirty) {
+      return undefined;
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [baselineValue, draftValue, isEditDrawerOpen]);
+
+  const resetDrawerState = () => {
+    setIsEditDrawerOpen(false);
+    setDraftValue(createEmptyCompanyFormValue());
+    setBaselineValue(createEmptyCompanyFormValue());
+    setFieldErrors({});
+    setFormErrorMessage(undefined);
+    setIsSubmitting(false);
+  };
+
+  const hasUnsavedChanges =
+    isEditDrawerOpen && !areCompanyFormValuesEqual(draftValue, baselineValue);
+
+  const confirmDiscardChanges = () => {
+    if (!hasUnsavedChanges) {
+      return true;
+    }
+
+    return window.confirm('Discard unsaved company changes?');
+  };
+
+  const openEditDrawer = () => {
+    if (!overview) {
+      return;
+    }
+
+    if (!confirmDiscardChanges()) {
+      return;
+    }
+
+    const value = companyToFormValue(overview.company);
+    setDraftValue(value);
+    setBaselineValue(value);
+    setFieldErrors({});
+    setFormErrorMessage(undefined);
+    setIsEditDrawerOpen(true);
+  };
+
+  const requestCloseDrawer = () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    if (!confirmDiscardChanges()) {
+      return;
+    }
+
+    resetDrawerState();
+  };
+
+  const handleEditSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!overview) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFieldErrors({});
+    setFormErrorMessage(undefined);
+
+    try {
+      const updatedCompany = await companyService.update(
+        overview.company.id,
+        formValueToCompanyInput(draftValue),
+      );
+
+      setOverview(current =>
+        current ? { ...current, company: updatedCompany } : current,
+      );
+      resetDrawerState();
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 400) {
+        const { fieldErrors: nextFieldErrors, generalErrors } =
+          createCompanyValidationErrorMap(error.details);
+
+        setFieldErrors(nextFieldErrors);
+        setFormErrorMessage(
+          generalErrors.length > 0
+            ? generalErrors.join(' ')
+            : 'Please fix the highlighted fields and try again.',
+        );
+      } else {
+        setFormErrorMessage(
+          error instanceof Error ? error.message : 'Unable to save company.',
+        );
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
+    return <RouteLoadingView />;
+  }
+
+  if (loadError) {
     return (
       <StyledDashboard>
-        <header className="dashboard-header">
-          <div className="dashboard-title-group">
-            <h1 className="dashboard-title">Welcome to AppSec Reports</h1>
-
-            <p className="dashboard-subtitle">
-              Create your first company to unlock assessments, findings, and
-              reporting.
-            </p>
-          </div>
-        </header>
-
-        <section className="dashboard-welcome-card">
-          <EmptyState
-            title="No company yet"
-            description="Add a company to start building assessments and tracking security posture."
-            icon={<CompanyIcon />}
-            primaryAction={
-              onCreateCompany ? (
-                <Button title="Create company" onClick={onCreateCompany} />
-              ) : undefined
-            }
-          />
-        </section>
+        <Callout
+          variant="error"
+          title="Unable to load company overview"
+          actions={
+            <Button
+              title="Retry"
+              variant="secondary"
+              onClick={() => setReloadKey(key => key + 1)}
+            />
+          }
+        >
+          <p>{loadError}</p>
+        </Callout>
       </StyledDashboard>
     );
   }
 
+  if (!overview) {
+    return <RouteLoadingView />;
+  }
+
   return (
     <StyledDashboard>
-      <header className="dashboard-header">
-        <div className="dashboard-title-group">
-          <h1 className="dashboard-title">Security Dashboard</h1>
+      <CompanyOverviewDashboardView
+        companyId={companyId}
+        overview={overview}
+        onEditCompany={openEditDrawer}
+      />
 
-          <p className="dashboard-subtitle">
-            Posture across all active application security assessments.
-          </p>
-        </div>
-
-        <div className="dashboard-header-actions">
-          <SearchInput
-            label="Filter dashboard"
-            placeholder="Filter dashboard..."
-          />
-
-          {onCreateAssessment && (
-            <Button title="New Assessment" onClick={onCreateAssessment} />
-          )}
-        </div>
-      </header>
-
-      <div className="dashboard-stats-grid">
-        <StatCard
-          label="Total Assessments"
-          value={stats.totalAssessments}
-          icon={<ClipboardIcon />}
-          iconTone="brand"
-          trendDirection={getDirection(stats.totalAssessmentsChange)}
-          trendTone={
-            stats.totalAssessmentsChange >= 0 ? 'positive' : 'negative'
-          }
-          trendValue={Math.abs(stats.totalAssessmentsChange).toString()}
-          helperText="new this quarter"
+      <Drawer
+        isOpen={isEditDrawerOpen}
+        title="Edit company"
+        description="Update the company details used throughout the workspace."
+        onClose={requestCloseDrawer}
+        size="large"
+      >
+        <CompanyForm
+          value={draftValue}
+          errors={fieldErrors}
+          errorMessage={formErrorMessage}
+          isSubmitting={isSubmitting}
+          submitLabel="Save changes"
+          onChange={setDraftValue}
+          onSubmit={handleEditSubmit}
+          onCancel={requestCloseDrawer}
         />
-
-        <StatCard
-          label="Open Threats"
-          value={stats.openThreats}
-          icon={<ThreatIcon />}
-          iconTone="medium"
-          trendDirection={getDirection(stats.openThreatsChange)}
-          trendTone={stats.openThreatsChange <= 0 ? 'positive' : 'negative'}
-          trendValue={Math.abs(stats.openThreatsChange).toString()}
-          helperText="vs. last month"
-        />
-
-        <StatCard
-          label="Critical / High Findings"
-          value={stats.criticalHighFindings}
-          icon={<AlertIcon />}
-          iconTone="critical"
-          trendDirection={getDirection(stats.criticalHighChange)}
-          trendTone={stats.criticalHighChange <= 0 ? 'positive' : 'negative'}
-          trendValue={Math.abs(stats.criticalHighChange).toString()}
-          helperText="remediated this week"
-        />
-
-        <StatCard
-          label="Retest Required"
-          value={stats.retestRequired}
-          icon={<RetestIcon />}
-          iconTone="purple"
-          trendDirection={getDirection(stats.retestRequiredChange)}
-          trendTone={stats.retestRequiredChange <= 0 ? 'positive' : 'negative'}
-          trendValue={Math.abs(stats.retestRequiredChange).toString()}
-          helperText="awaiting verification"
-        />
-      </div>
-
-      <div className="dashboard-charts-grid">
-        <section className="dashboard-card">
-          <header className="dashboard-card-header">
-            <div className="dashboard-card-title-group">
-              <h2 className="dashboard-card-title">Findings by Severity</h2>
-              <span className="dashboard-card-subtitle">
-                Across open assessments
-              </span>
-            </div>
-
-            <select
-              className="dashboard-period-select"
-              aria-label="Findings period"
-              value={selectedPeriod}
-              onChange={event =>
-                onPeriodChange(event.target.value as DashboardPeriod)
-              }
-            >
-              <option value="90">Last 90 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="all">All time</option>
-            </select>
-          </header>
-
-          <div className="dashboard-card-body">
-            <SeverityDistribution
-              items={severityDistribution}
-              showTotal={false}
-            />
-          </div>
-        </section>
-
-        <section className="dashboard-card">
-          <header className="dashboard-card-header">
-            <div className="dashboard-card-title-group">
-              <h2 className="dashboard-card-title">Assessments by Status</h2>
-
-              <span className="dashboard-card-subtitle">
-                {assessmentStatuses.reduce(
-                  (total, item) => total + item.count,
-                  0,
-                )}{' '}
-                total
-              </span>
-            </div>
-          </header>
-
-          <div className="dashboard-card-body">
-            <AssessmentStatusChart items={assessmentStatuses} />
-          </div>
-        </section>
-      </div>
-
-      <div className="dashboard-bottom-grid">
-        <section className="dashboard-card">
-          <header className="dashboard-card-header">
-            <div className="dashboard-card-title-group">
-              <h2 className="dashboard-card-title">Recent Assessments</h2>
-            </div>
-
-            {onViewAllAssessments && (
-              <button
-                className="dashboard-view-all-button"
-                type="button"
-                onClick={onViewAllAssessments}
-              >
-                View all
-                <span aria-hidden="true">→</span>
-              </button>
-            )}
-          </header>
-
-          {recentAssessments.length > 0 ? (
-            <RecentAssessmentTable
-              assessments={recentAssessments.slice(0, 5)}
-              onAssessmentClick={onAssessmentClick}
-            />
-          ) : (
-            <EmptyState
-              title="No assessments yet"
-              description="Create your first assessment to start tracking findings and activity."
-              primaryAction={
-                onCreateAssessment ? (
-                  <Button title="New Assessment" onClick={onCreateAssessment} />
-                ) : undefined
-              }
-              secondaryAction={
-                onViewAllAssessments ? (
-                  <Button
-                    title="View all assessments"
-                    variant="secondary"
-                    onClick={onViewAllAssessments}
-                  />
-                ) : undefined
-              }
-            />
-          )}
-        </section>
-
-        <section className="dashboard-card">
-          <header className="dashboard-card-header">
-            <div className="dashboard-card-title-group">
-              <h2 className="dashboard-card-title">Recent Activity</h2>
-            </div>
-          </header>
-
-          <div className="dashboard-card-body">
-            <ActivityFeed items={recentActivity.slice(0, 5)} />
-          </div>
-        </section>
-      </div>
+      </Drawer>
     </StyledDashboard>
   );
 };

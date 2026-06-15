@@ -11,6 +11,7 @@ import {
   type AssessmentCreateInput,
   type AssessmentUpdateInput,
   type CompanyCreateInput,
+  type CompanyOverviewResponse,
   type CompanyUpdateInput,
   type EvidenceCreateInput,
   type EvidenceUpdateInput,
@@ -91,6 +92,38 @@ const company = {
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-11T09:00:00.000Z',
 } as const;
+
+const companyOverview: CompanyOverviewResponse = {
+  company,
+  assessmentCounts: {
+    total: 6,
+    draft: 1,
+    inProgress: 3,
+    completed: 2,
+  },
+  recentAssessments: [
+    {
+      id: 'asm_00000000-0000-0000-0000-000000000001',
+      applicationName: 'Customer Services Portal',
+      companyName: company.name,
+      assessmentType: 'Web App',
+      severity: 'high',
+      findingsCount: 7,
+      status: 'in-progress',
+    },
+  ],
+  recentReports: [
+    {
+      id: 'rpt_00000000-0000-0000-0000-000000000001',
+      companyName: company.name,
+      assessmentName: 'Customer Services Portal',
+      reportType: 'Draft report',
+      status: 'Generated',
+      generatedAt: '2026-06-12T09:00:00.000Z',
+      updatedAt: '2026-06-12T09:00:00.000Z',
+    },
+  ],
+};
 
 const assessment = {
   id: 'asm_00000000-0000-0000-0000-000000000001',
@@ -216,6 +249,22 @@ const reportView = {
     input: `/api/companies/${company.id}`,
     method: 'GET',
   });
+}
+
+{
+  const controller = new AbortController();
+  const { calls, request } = createRequestSpy({ data: companyOverview });
+  const service = createCompanyService(request);
+
+  assert.deepEqual(
+    await service.getOverview(company.id, controller.signal),
+    companyOverview,
+  );
+  expectSingleCall(calls, {
+    input: `/api/companies/${company.id}/overview`,
+    method: 'GET',
+  });
+  assert.equal(calls[0]?.init?.signal, controller.signal);
 }
 
 {

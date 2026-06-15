@@ -1,4 +1,9 @@
-import type { Company, CompanyListItem } from '~/domain';
+import type {
+  AssessmentStatus,
+  Company,
+  CompanyListItem,
+  Severity,
+} from '~/domain';
 
 import { apiRequest } from './apiClient.js';
 import { requestData, type ApiRequestFn } from './serviceHelpers.js';
@@ -10,9 +15,47 @@ export type CompanyCreateInput = Omit<
 
 export type CompanyUpdateInput = Partial<CompanyCreateInput>;
 
+export interface CompanyOverviewAssessmentCounts {
+  total: number;
+  draft: number;
+  inProgress: number;
+  completed: number;
+}
+
+export interface CompanyOverviewRecentAssessment {
+  id: string;
+  applicationName: string;
+  companyName: string;
+  assessmentType: string;
+  severity: Severity;
+  findingsCount: number;
+  status: AssessmentStatus;
+}
+
+export interface CompanyOverviewRecentReport {
+  id: string;
+  companyName: string;
+  assessmentName: string;
+  reportType: string;
+  status: string;
+  generatedAt?: string;
+  updatedAt: string;
+}
+
+export interface CompanyOverviewResponse {
+  company: Company;
+  assessmentCounts: CompanyOverviewAssessmentCounts;
+  recentAssessments: CompanyOverviewRecentAssessment[];
+  recentReports?: CompanyOverviewRecentReport[] | null;
+}
+
 export interface CompanyService {
   list(signal?: AbortSignal): Promise<CompanyListItem[]>;
   getById(companyId: string, signal?: AbortSignal): Promise<Company>;
+  getOverview(
+    companyId: string,
+    signal?: AbortSignal,
+  ): Promise<CompanyOverviewResponse>;
   create(input: CompanyCreateInput): Promise<Company>;
   update(companyId: string, input: CompanyUpdateInput): Promise<Company>;
   remove(companyId: string): Promise<void>;
@@ -33,6 +76,17 @@ export const createCompanyService = (
       method: 'GET',
       signal,
     });
+  },
+
+  async getOverview(companyId, signal) {
+    return requestData<CompanyOverviewResponse>(
+      request,
+      `/api/companies/${companyId}/overview`,
+      {
+        method: 'GET',
+        signal,
+      },
+    );
   },
 
   async create(input) {

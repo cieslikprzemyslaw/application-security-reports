@@ -108,6 +108,38 @@ const threat = {
 }
 
 {
+  const controller = new AbortController();
+  const { calls, request } = createRequestSpy({
+    data: {
+      company,
+      assessmentCounts: {
+        total: 6,
+        draft: 1,
+        inProgress: 3,
+        completed: 2,
+      },
+      recentAssessments: [],
+      recentReports: null,
+    },
+  });
+  const service = createCompanyService(request);
+
+  assert.deepEqual(await service.getOverview(company.id, controller.signal), {
+    company,
+    assessmentCounts: {
+      total: 6,
+      draft: 1,
+      inProgress: 3,
+      completed: 2,
+    },
+    recentAssessments: [],
+    recentReports: null,
+  });
+  assert.equal(calls[0]?.input, `/api/companies/${company.id}/overview`);
+  assert.equal(calls[0]?.init?.signal, controller.signal);
+}
+
+{
   const error = new ApiError('Company not found', 404);
   const { request } = createRequestSpy(error);
   const service = createCompanyService(request);
@@ -188,6 +220,7 @@ const threat = {
 }
 
 assert.equal(typeof companyService.list, 'function');
+assert.equal(typeof companyService.getOverview, 'function');
 assert.equal(typeof assessmentService.list, 'function');
 assert.equal(typeof evidenceService.list, 'function');
 assert.equal(typeof reportService.getById, 'function');
