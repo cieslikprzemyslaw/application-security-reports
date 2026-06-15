@@ -13,12 +13,13 @@ import Threats from './pages/threats';
 import type { CompanyListItem } from '~/domain';
 import { RouteLoadingView } from '~/app/components/routeStateViews';
 import { routes } from '~/routes';
+import type { RecentCompanyIdentity } from './pages/dashboard';
 
 interface DashboardRouteProps {
   companies: CompanyListItem[];
   companiesLoadError?: string;
   isCompaniesLoading?: boolean;
-  onOpenCompany: (company: CompanyListItem) => void;
+  onOpenCompany: (company: RecentCompanyIdentity) => void;
   onRetryCompanies: () => void;
 }
 

@@ -1,6 +1,7 @@
 import type { CompanyListItem } from '~/domain';
 
 export type DashboardPeriod = '90' | '30' | 'all';
+export type RecentCompanyIdentity = Pick<CompanyListItem, 'id' | 'name'>;
 
 export interface DashboardStats {
   totalAssessments: number;
@@ -20,10 +21,8 @@ export interface RecentCompanyLatestAssessment {
   updatedAt?: string;
 }
 
-export interface RecentCompanyItem extends Omit<
-  CompanyListItem,
-  'createdAt' | 'updatedAt'
-> {
+export interface RecentCompanyItem extends RecentCompanyIdentity {
+  assessmentCount: number;
   lastOpenedAt?: string;
   latestAssessment?: RecentCompanyLatestAssessment;
 }
@@ -32,5 +31,5 @@ export interface DashboardProps {
   companies: RecentCompanyItem[];
   isWorkspaceEmpty?: boolean;
   onCreateCompany?: () => void;
-  onOpenCompany?: (company: RecentCompanyItem) => void;
+  onOpenCompany?: (company: RecentCompanyIdentity) => void;
 }

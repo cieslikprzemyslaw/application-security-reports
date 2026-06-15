@@ -1,5 +1,3 @@
-import type { CompanyListItem } from '~/domain';
-
 import {
   readRecentCompanyIds,
   readRecentCompanyOpenTimes,
@@ -9,7 +7,7 @@ import type { RecentCompanyItem } from './dashboard.type';
 
 export const recentCompanyLimit = 5;
 
-export const orderRecentCompanies = (companies: CompanyListItem[]) => {
+export const orderRecentCompanies = (companies: RecentCompanyItem[]) => {
   const recentCompanyIds = readRecentCompanyIds();
   const companiesById = new Map(
     companies.map(company => [company.id, company]),
@@ -17,7 +15,7 @@ export const orderRecentCompanies = (companies: CompanyListItem[]) => {
 
   const recentCompanies = recentCompanyIds
     .map(companyId => companiesById.get(companyId))
-    .filter((company): company is CompanyListItem => Boolean(company));
+    .filter((company): company is RecentCompanyItem => Boolean(company));
 
   const remainingCompanies = companies.filter(
     company => !recentCompanyIds.includes(company.id),
@@ -30,7 +28,7 @@ export const orderRecentCompanies = (companies: CompanyListItem[]) => {
 };
 
 export const enrichRecentCompanies = (
-  companies: CompanyListItem[],
+  companies: RecentCompanyItem[],
 ): RecentCompanyItem[] => {
   const recentCompanyOpenTimes = readRecentCompanyOpenTimes();
 
