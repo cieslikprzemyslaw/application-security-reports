@@ -42,15 +42,21 @@ const ReportDetails = lazy(() => import('./pages/reportDetails'));
 
 interface CompaniesRouteProps {
   activeCompany?: CompanyIdentity;
+  openCreateDrawer?: boolean;
+  onCompaniesChange: (companies: CompanyListItem[]) => void;
   onActiveCompanyChange: (company?: CompanyIdentity) => void;
 }
 
 const CompaniesRoute = ({
   activeCompany,
+  openCreateDrawer,
+  onCompaniesChange,
   onActiveCompanyChange,
 }: CompaniesRouteProps) => (
   <Companies
     activeCompany={activeCompany}
+    openCreateDrawer={openCreateDrawer}
+    onCompaniesChange={onCompaniesChange}
     onActiveCompanyChange={onActiveCompanyChange}
   />
 );
@@ -114,6 +120,10 @@ const RouterShell = () => {
   const location = useLocation();
   const [companies, setCompanies] = useState<CompanyListItem[]>([]);
   const [isCompaniesLoading, setIsCompaniesLoading] = useState(true);
+  const companiesLocationState = location.state as
+    | { openCreateDrawer?: boolean }
+    | null
+    | undefined;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -202,6 +212,10 @@ const RouterShell = () => {
           element={
             <CompaniesRoute
               activeCompany={activeCompany}
+              openCreateDrawer={Boolean(
+                companiesLocationState?.openCreateDrawer,
+              )}
+              onCompaniesChange={setCompanies}
               onActiveCompanyChange={handleActiveCompanyChange}
             />
           }

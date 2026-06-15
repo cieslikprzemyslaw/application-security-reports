@@ -293,6 +293,10 @@ await (async () => {
       });
 
       assert.equal(window.location.pathname, '/companies');
+      assert.ok(
+        window.document.querySelector('input#company-name'),
+        'Expected the create company drawer to open',
+      );
 
       await act(async () => {
         root.unmount();
@@ -401,7 +405,7 @@ await (async () => {
         await renderTick();
       });
 
-      const nameInput = container.querySelector(
+      const nameInput = window.document.querySelector(
         'input#company-name',
       ) as HTMLInputElement | null;
 
@@ -418,7 +422,7 @@ await (async () => {
         await renderTick();
       });
 
-      const createButton = container.querySelector(
+      const createButton = window.document.querySelector(
         'button[type="submit"]',
       ) as HTMLButtonElement | null;
 
@@ -441,6 +445,10 @@ await (async () => {
       assert.equal(
         window.location.pathname,
         routes.companyWorkspaceOverview('cmp_2'),
+      );
+      assert.ok(
+        !textContent(container).includes('Company not found'),
+        'Expected the refreshed company list to be used before navigation',
       );
 
       const activeCompanyName = container.querySelector(
@@ -677,6 +685,103 @@ await (async () => {
       assert.ok(textContent(container).includes('Return to companies'));
       assert.equal(window.location.pathname, '/companies/cmp_missing/overview');
 
+      const returnLink = container.querySelector(
+        'a[href="/companies"]',
+      ) as HTMLAnchorElement | null;
+
+      assert.ok(returnLink, 'Expected the return link');
+
+      await act(async () => {
+        returnLink.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(window.location.pathname, '/companies');
+      assert.ok(textContent(container).includes('Companies'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    setFetch(async () =>
+      createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+          {
+            id: 'cmp_3',
+            name: 'Summit Health',
+            website: 'https://summit.example',
+            contactEmail: 'security@summit.example',
+            assessmentCount: 3,
+            createdAt: '2026-06-03T00:00:00.000Z',
+            updatedAt: '2026-06-12T00:00:00.000Z',
+          },
+        ],
+      }),
+    );
+
+    try {
+      const { container, root } = await renderApp('/dashboard');
+      const companySwitcher = container.querySelector(
+        '.sidebar-company-switcher',
+      ) as HTMLButtonElement | null;
+
+      assert.ok(companySwitcher, 'Expected the company switcher trigger');
+
+      await act(async () => {
+        companySwitcher.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
+
+      const summitButton = Array.from(
+        document.querySelectorAll('.company-switcher-item-button'),
+      ).find(button => button.textContent?.includes('Summit Health'));
+
+      assert.ok(summitButton, 'Expected a company option');
+
+      await act(async () => {
+        summitButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(
+        window.location.pathname,
+        routes.companyWorkspaceOverview('cmp_3'),
+      );
+
       await act(async () => {
         root.unmount();
       });
@@ -760,6 +865,60 @@ await (async () => {
     await act(async () => {
       root.unmount();
     });
+  }
+
+  {
+    setFetch(async () => createJsonResponse({ data: [] }));
+
+    try {
+      const { container, root } = await renderApp('/dashboard');
+      const companySwitcher = container.querySelector(
+        '.sidebar-company-switcher',
+      ) as HTMLButtonElement | null;
+
+      assert.ok(companySwitcher, 'Expected the company switcher trigger');
+
+      await act(async () => {
+        companySwitcher.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
+
+      const createCompanyButton = Array.from(
+        document.querySelectorAll('.drawer-panel button'),
+      ).find(button => button.textContent?.includes('Create company'));
+
+      assert.ok(createCompanyButton, 'Expected the create company action');
+
+      await act(async () => {
+        createCompanyButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(window.location.pathname, '/companies');
+      assert.ok(
+        window.document.querySelector('input#company-name'),
+        'Expected the create company drawer to open from the switcher',
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
   }
 
   {
