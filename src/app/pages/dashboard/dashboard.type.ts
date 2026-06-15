@@ -1,7 +1,4 @@
-import type { ActivityItem } from '~/app/components/common/activityFeed';
-import type { AssessmentStatusChartItem } from '~/app/components/appsec/assessmentStatusChart';
-import type { RecentAssessmentRow } from '~/app/components/appsec/recentAssessmentTable';
-import type { SeverityDistributionItem } from '~/app/components/appsec/severityDistribution';
+import type { CompanyListItem } from '~/domain';
 
 export type DashboardPeriod = '90' | '30' | 'all';
 
@@ -16,17 +13,21 @@ export interface DashboardStats {
   retestRequiredChange: number;
 }
 
+export interface RecentCompanyLatestAssessment {
+  id?: string;
+  name: string;
+  status?: string;
+  updatedAt?: string;
+}
+
+export interface RecentCompanyItem extends CompanyListItem {
+  lastOpenedAt?: string;
+  latestAssessment?: RecentCompanyLatestAssessment;
+}
+
 export interface DashboardProps {
-  stats: DashboardStats;
-  severityDistribution: SeverityDistributionItem[];
-  assessmentStatuses: AssessmentStatusChartItem[];
-  recentAssessments: RecentAssessmentRow[];
-  recentActivity: ActivityItem[];
-  selectedPeriod: DashboardPeriod;
-  onPeriodChange: (period: DashboardPeriod) => void;
+  companies: RecentCompanyItem[];
   isWorkspaceEmpty?: boolean;
   onCreateCompany?: () => void;
-  onCreateAssessment?: () => void;
-  onViewAllAssessments?: () => void;
-  onAssessmentClick?: (assessment: RecentAssessmentRow) => void;
+  onOpenCompany?: (company: RecentCompanyItem) => void;
 }

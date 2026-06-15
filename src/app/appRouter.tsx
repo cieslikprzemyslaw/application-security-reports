@@ -16,6 +16,11 @@ import NotFound from '~/app/pages/notFound';
 import { routes, routePatterns } from '~/routes';
 import type { CompanyListItem } from '~/domain';
 import { companyService } from '~/services';
+import {
+  readRecentCompanyOpenTimes,
+  updateRecentCompanyOpenTimes,
+  writeRecentCompanyOpenTimes,
+} from '~/app/layouts/sidebar/companySwitcher.utils';
 import CompanyWorkspaceRouteShell, {
   CompanyActivityRoute,
   CompanyAssessmentsRoute,
@@ -120,6 +125,10 @@ const RouterShell = () => {
   const location = useLocation();
   const [companies, setCompanies] = useState<CompanyListItem[]>([]);
   const [isCompaniesLoading, setIsCompaniesLoading] = useState(true);
+  const [companiesLoadError, setCompaniesLoadError] = useState<
+    string | undefined
+  >();
+  const [companiesReloadKey, setCompaniesReloadKey] = useState(0);
   const [selectedCompanyId, setSelectedCompanyId] = useState<
     string | undefined
   >(
@@ -140,6 +149,7 @@ const RouterShell = () => {
 
     const loadCompanies = async () => {
       setIsCompaniesLoading(true);
+      setCompaniesLoadError(undefined);
 
       try {
         const nextCompanies = await companyService.list(controller.signal);
@@ -156,6 +166,9 @@ const RouterShell = () => {
         }
 
         setCompanies([]);
+        setCompaniesLoadError(
+          error instanceof Error ? error.message : 'Unable to load companies.',
+        );
       } finally {
         if (isActive) {
           setIsCompaniesLoading(false);
@@ -169,7 +182,11 @@ const RouterShell = () => {
       isActive = false;
       controller.abort();
     };
-  }, []);
+  }, [companiesReloadKey]);
+
+  const reloadCompanies = () => {
+    setCompaniesReloadKey(key => key + 1);
+  };
 
   const companyWorkspaceMatch = matchPath(
     { path: routePatterns.companyWorkspace, end: false },
@@ -186,6 +203,12 @@ const RouterShell = () => {
 
   const handleActiveCompanyChange = (company?: CompanyIdentity) => {
     if (company) {
+      const nextRecentCompanyOpenTimes = updateRecentCompanyOpenTimes(
+        readRecentCompanyOpenTimes(),
+        company.id,
+      );
+
+      writeRecentCompanyOpenTimes(nextRecentCompanyOpenTimes);
       setSelectedCompanyId(company.id);
       navigate(routes.companyWorkspaceOverview(company.id));
       return;
@@ -218,7 +241,11 @@ const RouterShell = () => {
           path={routePatterns.dashboard}
           element={
             <DashboardRoute
-              isWorkspaceEmpty={!isCompaniesLoading && companies.length === 0}
+              companies={companies}
+              companiesLoadError={companiesLoadError}
+              isCompaniesLoading={isCompaniesLoading}
+              onOpenCompany={handleActiveCompanyChange}
+              onRetryCompanies={reloadCompanies}
             />
           }
         />

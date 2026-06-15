@@ -19,7 +19,7 @@ import {
   reportCover,
   severityDistribution,
 } from './appData';
-import Dashboard from './pages/dashboard';
+import CompanyOverviewDashboard from './pages/dashboard/companyOverviewDashboard.component';
 import type { DashboardPeriod } from './pages/dashboard';
 import Assessments from './pages/assessments';
 import Reports from './pages/reports';
@@ -120,7 +120,7 @@ export const CompanyOverviewRoute = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<DashboardPeriod>('90');
 
   return (
-    <Dashboard
+    <CompanyOverviewDashboard
       key={companyId}
       stats={dashboardStats}
       severityDistribution={severityDistribution}

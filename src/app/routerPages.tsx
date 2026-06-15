@@ -1,50 +1,76 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import {
-  assessmentStatuses,
-  assessments,
-  dashboardStats,
-  recentActivity,
-  recentAssessments,
-  reportCover,
-  settingsValue,
-  severityDistribution,
-  threats,
-} from './appData';
+import { assessments, reportCover, settingsValue, threats } from './appData';
+import Button from '~/app/components/ui/button';
+import Callout from '~/app/components/ui/callout';
+import { PageHeader } from '~/app/components/common';
 import Assessments from './pages/assessments';
 import Dashboard from './pages/dashboard';
 import Reports from './pages/reports';
 import Settings from './pages/settings';
 import Threats from './pages/threats';
-import type { DashboardPeriod } from './pages/dashboard';
+import type { CompanyListItem } from '~/domain';
+import { RouteLoadingView } from '~/app/components/routeStateViews';
 import { routes } from '~/routes';
 
 interface DashboardRouteProps {
-  isWorkspaceEmpty?: boolean;
+  companies: CompanyListItem[];
+  companiesLoadError?: string;
+  isCompaniesLoading?: boolean;
+  onOpenCompany: (company: CompanyListItem) => void;
+  onRetryCompanies: () => void;
 }
 
 export const DashboardRoute = ({
-  isWorkspaceEmpty = false,
+  companies,
+  companiesLoadError,
+  isCompaniesLoading = false,
+  onOpenCompany,
+  onRetryCompanies,
 }: DashboardRouteProps) => {
   const navigate = useNavigate();
-  const [selectedPeriod, setSelectedPeriod] = useState<DashboardPeriod>('90');
+
+  if (isCompaniesLoading) {
+    return <RouteLoadingView />;
+  }
+
+  if (companiesLoadError) {
+    return (
+      <section>
+        <PageHeader
+          eyebrow="Workspace"
+          title="Recent companies"
+          subtitle="Open a company to continue where you left off."
+        />
+
+        <Callout
+          variant="error"
+          title="Unable to load recent companies"
+          actions={
+            <Button
+              title="Retry"
+              variant="secondary"
+              onClick={onRetryCompanies}
+            />
+          }
+        >
+          <p>{companiesLoadError}</p>
+        </Callout>
+      </section>
+    );
+  }
 
   return (
     <Dashboard
-      stats={dashboardStats}
-      severityDistribution={severityDistribution}
-      assessmentStatuses={assessmentStatuses}
-      recentAssessments={recentAssessments}
-      recentActivity={recentActivity}
-      selectedPeriod={selectedPeriod}
-      onPeriodChange={setSelectedPeriod}
-      isWorkspaceEmpty={isWorkspaceEmpty}
-      onCreateCompany={() => navigate(routes.companies)}
-      onViewAllAssessments={() => navigate(routes.assessments)}
-      onAssessmentClick={assessment =>
-        navigate(routes.assessmentDetails(assessment.id))
+      companies={companies}
+      isWorkspaceEmpty={companies.length === 0}
+      onCreateCompany={() =>
+        navigate(routes.companies, {
+          state: { openCreateDrawer: true },
+        })
       }
+      onOpenCompany={onOpenCompany}
     />
   );
 };

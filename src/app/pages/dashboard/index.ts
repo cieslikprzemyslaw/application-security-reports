@@ -4,4 +4,5 @@ export type {
   DashboardPeriod,
   DashboardProps,
   DashboardStats,
+  RecentCompanyItem,
 } from './dashboard.type';
