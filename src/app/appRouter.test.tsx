@@ -254,6 +254,202 @@ await (async () => {
             createdAt: '2026-06-01T00:00:00.000Z',
             updatedAt: '2026-06-10T00:00:00.000Z',
           },
+          {
+            id: 'cmp_3',
+            name: 'Summit Health',
+            website: 'https://summit.example',
+            contactEmail: 'security@summit.example',
+            assessmentCount: 3,
+            createdAt: '2026-06-03T00:00:00.000Z',
+            updatedAt: '2026-06-12T00:00:00.000Z',
+          },
+        ],
+      }),
+    );
+
+    try {
+      const { container, root } = await renderApp('/dashboard');
+      const companySwitcher = container.querySelector(
+        '.sidebar-company-switcher',
+      ) as HTMLButtonElement | null;
+
+      assert.ok(companySwitcher, 'Expected the company switcher trigger');
+
+      await act(async () => {
+        companySwitcher.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
+
+      const summitButton = Array.from(
+        document.querySelectorAll('.company-switcher-item-button'),
+      ).find(button => button.textContent?.includes('Summit Health'));
+
+      assert.ok(summitButton, 'Expected a company option');
+
+      await act(async () => {
+        summitButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(
+        window.location.pathname,
+        routes.companyWorkspaceOverview('cmp_3'),
+      );
+      assert.equal(
+        container.querySelector('.sidebar-company-switcher-name')?.textContent,
+        'Summit Health',
+      );
+
+      const assessmentsLink = container.querySelector(
+        'a[href="/companies/cmp_3/assessments"]',
+      ) as HTMLAnchorElement | null;
+
+      assert.ok(assessmentsLink, 'Expected the company assessments link');
+
+      await act(async () => {
+        assessmentsLink.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(
+        window.location.pathname,
+        routes.companyWorkspaceAssessments('cmp_3'),
+      );
+      assert.equal(
+        container.querySelector('.sidebar-company-switcher-name')?.textContent,
+        'Summit Health',
+      );
+      assert.ok(
+        textContent(container).includes(
+          'All application security assessments across your workspace.',
+        ),
+      );
+
+      const overviewLink = container.querySelector(
+        'a[href="/companies/cmp_3/overview"]',
+      ) as HTMLAnchorElement | null;
+
+      assert.ok(overviewLink, 'Expected the company overview link');
+
+      await act(async () => {
+        overviewLink.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(
+        window.location.pathname,
+        routes.companyWorkspaceOverview('cmp_3'),
+      );
+      assert.equal(
+        container.querySelector('.sidebar-company-switcher-name')?.textContent,
+        'Summit Health',
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    setFetch(async () =>
+      createJsonResponse({
+        data: [
+          {
+            id: 'cmp_3',
+            name: 'Summit Health',
+            website: 'https://summit.example',
+            contactEmail: 'security@summit.example',
+            assessmentCount: 3,
+            createdAt: '2026-06-03T00:00:00.000Z',
+            updatedAt: '2026-06-12T00:00:00.000Z',
+          },
+        ],
+      }),
+    );
+
+    try {
+      const { container, root } = await renderApp(
+        routes.companyWorkspaceOverview('cmp_3'),
+      );
+
+      assert.equal(
+        container.querySelector('.sidebar-company-switcher-name')?.textContent,
+        'Summit Health',
+      );
+
+      await act(async () => {
+        window.history.pushState({}, '', '/assessments');
+        window.dispatchEvent(new window.PopStateEvent('popstate'));
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(window.location.pathname, '/assessments');
+      assert.equal(
+        container.querySelector('.sidebar-company-switcher-name')?.textContent,
+        'Summit Health',
+      );
+      assert.ok(
+        textContent(container).includes(
+          'All application security assessments across your workspace.',
+        ),
+      );
+      assert.ok(
+        !textContent(container).includes('Select company'),
+        'Expected the active company label to stay visible',
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    setFetch(async () =>
+      createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
         ],
       }),
     );
