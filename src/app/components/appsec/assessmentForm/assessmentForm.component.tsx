@@ -19,7 +19,6 @@ import {
 const statusActionLabels: Record<AssessmentFormValue['status'], string> = {
   draft: 'Draft',
   'in-progress': 'In Progress',
-  'in-review': 'In Review',
   completed: 'Completed',
   archived: 'Archived',
 };
@@ -27,7 +26,6 @@ const statusActionLabels: Record<AssessmentFormValue['status'], string> = {
 const statusActionValues: AssessmentFormValue['status'][] = [
   'draft',
   'in-progress',
-  'in-review',
   'completed',
   'archived',
 ];

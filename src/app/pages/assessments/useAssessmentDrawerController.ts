@@ -45,7 +45,9 @@ export const useAssessmentDrawerController = ({
     createEmptyAssessmentFormValue(),
   );
   const [baselineValue, setBaselineValue] = useState(draftValue);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<string, string>>
+  >({});
   const [formErrorMessage, setFormErrorMessage] = useState<
     string | undefined
   >();

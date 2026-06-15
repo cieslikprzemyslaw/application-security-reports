@@ -109,7 +109,7 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
                 label="Status"
                 hideLabel
                 value={statusFilter}
-                options={assessmentStatusOptions}
+                options={[...assessmentStatusOptions]}
                 onChange={event =>
                   handleStatusFilterChange(
                     event.target.value as typeof statusFilter,
@@ -121,7 +121,7 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
                 label="Type"
                 hideLabel
                 value={typeFilter}
-                options={assessmentTypeOptions}
+                options={[...assessmentTypeOptions]}
                 onChange={event =>
                   handleTypeFilterChange(
                     event.target.value as typeof typeFilter,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import type { AssessmentListItem } from '~/services';
@@ -10,12 +10,12 @@ import {
   filterAndSortAssessments,
   readQueryState,
   searchDebounceMs,
-  type AssessmentListSortKey,
   type AssessmentSortDirection,
   type AssessmentStatusFilter,
   type AssessmentTypeFilter,
   type AssessmentsQueryState,
 } from './assessments.utils';
+import type { AssessmentListSortKey } from '~/app/components/appsec/assessmentTable';
 import {
   useAssessmentDrawerController,
   type AssessmentDrawerController,
