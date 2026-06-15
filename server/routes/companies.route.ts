@@ -35,6 +35,7 @@ const sendCompanyResponse = (
 type CompanyRepositoryOperation =
   | 'list'
   | 'retrieve'
+  | 'overview'
   | 'create'
   | 'update'
   | 'delete';
@@ -102,6 +103,31 @@ export const createCompaniesRouter = (
         });
       } catch (error) {
         if (!handleCompanyRepositoryError(error, res, 'list')) {
+          throw error;
+        }
+      }
+    }),
+  );
+
+  router.get(
+    '/:id/overview',
+    createRequestValidationMiddleware({
+      params: companyRouteParamsSchema,
+    }),
+    asyncRoute(async (_req, res) => {
+      const { id } = res.locals.validatedRequest?.params as { id: string };
+
+      try {
+        const overview = await companyRepository.findOverview(id);
+
+        if (!overview) {
+          sendApiError(res, 404, 'COMPANY_NOT_FOUND', 'Company not found');
+          return;
+        }
+
+        res.status(200).json({ data: overview });
+      } catch (error) {
+        if (!handleCompanyRepositoryError(error, res, 'overview')) {
           throw error;
         }
       }

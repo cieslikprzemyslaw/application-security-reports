@@ -7,7 +7,10 @@ import {
   RepositoryConstraintError,
   RepositoryNotFoundError,
 } from '../database/errors.js';
-import type { CompanyRepository } from '../database/repositories/company.repository.js';
+import type {
+  CompanyOverview,
+  CompanyRepository,
+} from '../database/repositories/company.repository.js';
 import { createApiApp } from './api-app.js';
 
 const allowedOrigin = 'http://localhost:5173';
@@ -68,9 +71,27 @@ const defaultCompany = {
   updatedAt: '2026-06-11T09:00:00.000Z',
 };
 
+const defaultOverview: CompanyOverview = {
+  company: defaultCompany,
+  assessmentCounts: { total: 2, draft: 1, inProgress: 1, completed: 0 },
+  recentAssessments: [
+    {
+      id: 'asm_00000000-0000-0000-0000-000000000001',
+      applicationName: 'Customer Portal',
+      companyName: defaultCompany.name,
+      assessmentType: 'Web App',
+      severity: 'high',
+      findingsCount: 3,
+      status: 'in-progress',
+    },
+  ],
+  recentReports: null,
+};
+
 type CompanyRepositoryOverrides = Partial<{
   findAll: () => Promise<Array<typeof defaultCompany>>;
   findById: (id: string) => Promise<typeof defaultCompany | null>;
+  findOverview: (companyId: string) => Promise<CompanyOverview | null>;
   create: (
     input: Parameters<CompanyRepository['create']>[0],
     id?: string,
@@ -88,6 +109,7 @@ const createCompanyRepository = (
   const calls = {
     findAll: 0,
     findById: 0,
+    findOverview: 0,
     create: 0,
     update: 0,
     delete: 0,
@@ -114,6 +136,11 @@ const createCompanyRepository = (
     async findById(id) {
       calls.findById += 1;
       return overrides.findById?.(id) ?? defaultCompany;
+    },
+
+    async findOverview(companyId) {
+      calls.findOverview += 1;
+      return overrides.findOverview?.(companyId) ?? defaultOverview;
     },
 
     async create(input, id) {
@@ -864,6 +891,103 @@ const createApp = (repository: CompanyRepository) =>
         details: [],
       },
     });
+  } finally {
+    await server.close();
+  }
+}
+
+{
+  const { calls, repository } = createCompanyRepository({
+    findOverview: async () => defaultOverview,
+  });
+  const server = await startTestServer(createApp(repository));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/overview`,
+    );
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(await readJson<{ data: CompanyOverview }>(response), {
+      data: defaultOverview,
+    });
+    assert.equal(calls.findOverview, 1);
+  } finally {
+    await server.close();
+  }
+}
+
+{
+  const { calls, repository } = createCompanyRepository({
+    findOverview: async () => null,
+  });
+  const server = await startTestServer(createApp(repository));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/overview`,
+    );
+
+    assert.equal(response.status, 404);
+    assert.deepEqual(await readJson(response), {
+      error: {
+        code: 'COMPANY_NOT_FOUND',
+        message: 'Company not found',
+        details: [],
+      },
+    });
+    assert.equal(calls.findOverview, 1);
+  } finally {
+    await server.close();
+  }
+}
+
+{
+  const { calls, repository } = createCompanyRepository();
+  const server = await startTestServer(createApp(repository));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/not-an-id/overview`,
+    );
+
+    assert.equal(response.status, 400);
+    assert.equal(calls.findOverview, 0);
+    assert.deepEqual(await readJson(response), {
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        details: [
+          {
+            path: 'id',
+            message: 'Company ID must be a prefixed UUID',
+            code: 'invalid_string',
+          },
+        ],
+      },
+    });
+  } finally {
+    await server.close();
+  }
+}
+
+{
+  const { repository } = createCompanyRepository({
+    findOverview: async () => {
+      throw new Error('boom');
+    },
+  });
+  const server = await startTestServer(createApp(repository));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/overview`,
+    );
+
+    assert.equal(response.status, 500);
+    const body = await readJson<ApiErrorBody>(response);
+    assert.equal(body.error.code, 'INTERNAL_SERVER_ERROR');
+    assert.equal(JSON.stringify(body).includes('boom'), false);
   } finally {
     await server.close();
   }

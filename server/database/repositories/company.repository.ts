@@ -8,15 +8,40 @@ import { mapPrismaError, RepositoryNotFoundError } from '../errors.js';
 import type { RepositoryClient } from '../repository.types.js';
 import { toIsoString, toOptionalText } from './repository.helpers.js';
 
+export interface CompanyOverviewCounts {
+  total: number;
+  draft: number;
+  inProgress: number;
+  completed: number;
+}
+
+export interface CompanyOverviewRecentAssessment {
+  id: string;
+  applicationName: string;
+  companyName: string;
+  assessmentType: string;
+  severity: string;
+  findingsCount: number;
+  status: string;
+}
+
+export interface CompanyOverview {
+  company: Company;
+  assessmentCounts: CompanyOverviewCounts;
+  recentAssessments: CompanyOverviewRecentAssessment[];
+  recentReports: null;
+}
+
 export interface CompanyRepository {
   findAll(): Promise<Company[]>;
   findById(id: string): Promise<Company | null>;
+  findOverview(companyId: string): Promise<CompanyOverview | null>;
   create(input: CreateCompanyInput, id?: string): Promise<Company>;
   update(id: string, input: UpdateCompanyInput): Promise<Company>;
   delete(id: string): Promise<void>;
 }
 
-type CompanyRepositoryDb = Pick<RepositoryClient, 'company'>;
+type CompanyRepositoryDb = Pick<RepositoryClient, 'company' | 'assessment'>;
 
 type CompanyRow = {
   id: string;
@@ -77,6 +102,58 @@ export function createCompanyRepository(
       });
 
       return company ? toCompany(company) : null;
+    },
+
+    async findOverview(companyId) {
+      const company = await db.company.findUnique({
+        where: { id: companyId },
+        select: companySelect,
+      });
+
+      if (!company) return null;
+
+      const grouped = await db.assessment.groupBy({
+        by: ['status'],
+        where: { companyId },
+        _count: { _all: true },
+      });
+
+      const countByStatus = (status: string) =>
+        grouped.find(g => g.status === status)?._count._all ?? 0;
+
+      const recent = await db.assessment.findMany({
+        where: { companyId },
+        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+        take: 5,
+        select: {
+          id: true,
+          applicationName: true,
+          assessmentType: true,
+          overallRisk: true,
+          status: true,
+          _count: { select: { threats: true } },
+        },
+      });
+
+      return {
+        company: toCompany(company),
+        assessmentCounts: {
+          total: grouped.reduce((sum, g) => sum + g._count._all, 0),
+          draft: countByStatus('draft'),
+          inProgress: countByStatus('in-progress'),
+          completed: countByStatus('completed'),
+        },
+        recentAssessments: recent.map(a => ({
+          id: a.id,
+          applicationName: a.applicationName ?? '',
+          companyName: company.name,
+          assessmentType: a.assessmentType ?? '',
+          severity: a.overallRisk ?? 'informational',
+          findingsCount: a._count.threats,
+          status: a.status,
+        })),
+        recentReports: null,
+      };
     },
 
     async create(input, id = generateId('company')) {
