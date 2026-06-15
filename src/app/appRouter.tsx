@@ -42,15 +42,21 @@ const ReportDetails = lazy(() => import('./pages/reportDetails'));
 
 interface CompaniesRouteProps {
   activeCompany?: CompanyIdentity;
+  openCreateDrawer?: boolean;
+  onCompaniesChange: (companies: CompanyListItem[]) => void;
   onActiveCompanyChange: (company?: CompanyIdentity) => void;
 }
 
 const CompaniesRoute = ({
   activeCompany,
+  openCreateDrawer,
+  onCompaniesChange,
   onActiveCompanyChange,
 }: CompaniesRouteProps) => (
   <Companies
     activeCompany={activeCompany}
+    openCreateDrawer={openCreateDrawer}
+    onCompaniesChange={onCompaniesChange}
     onActiveCompanyChange={onActiveCompanyChange}
   />
 );
@@ -114,6 +120,19 @@ const RouterShell = () => {
   const location = useLocation();
   const [companies, setCompanies] = useState<CompanyListItem[]>([]);
   const [isCompaniesLoading, setIsCompaniesLoading] = useState(true);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<
+    string | undefined
+  >(
+    () =>
+      matchPath(
+        { path: routePatterns.companyWorkspace, end: false },
+        location.pathname,
+      )?.params.companyId,
+  );
+  const companiesLocationState = location.state as
+    | { openCreateDrawer?: boolean }
+    | null
+    | undefined;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -152,25 +171,31 @@ const RouterShell = () => {
     };
   }, []);
 
-  const handleActiveCompanyChange = (company?: CompanyIdentity) => {
-    if (company) {
-      navigate(routes.companyWorkspaceOverview(company.id));
-    }
-  };
-
   const companyWorkspaceMatch = matchPath(
     { path: routePatterns.companyWorkspace, end: false },
     location.pathname,
   );
   const currentCompanyId = companyWorkspaceMatch?.params.companyId;
-  const activeCompany = currentCompanyId
+  const activeCompanyId = currentCompanyId ?? selectedCompanyId;
+
+  const activeCompany = activeCompanyId
     ? companies.find(
-        (company: CompanyListItem) => company.id === currentCompanyId,
+        (company: CompanyListItem) => company.id === activeCompanyId,
       )
     : undefined;
+
+  const handleActiveCompanyChange = (company?: CompanyIdentity) => {
+    if (company) {
+      setSelectedCompanyId(company.id);
+      navigate(routes.companyWorkspaceOverview(company.id));
+      return;
+    }
+
+    setSelectedCompanyId(undefined);
+  };
   const navigationGroups =
-    currentCompanyId && (isCompaniesLoading || activeCompany)
-      ? createCompanyWorkspaceNavigationGroups(currentCompanyId)
+    activeCompanyId && (isCompaniesLoading || activeCompany)
+      ? createCompanyWorkspaceNavigationGroups(activeCompanyId)
       : undefined;
 
   return (
@@ -180,7 +205,7 @@ const RouterShell = () => {
       <Route
         element={
           <AppLayout
-            key={activeCompany?.id ?? 'no-active-company'}
+            key={activeCompany?.id ?? activeCompanyId ?? 'no-active-company'}
             activeCompany={activeCompany}
             companies={companies}
             isCompaniesLoading={isCompaniesLoading}
@@ -202,6 +227,10 @@ const RouterShell = () => {
           element={
             <CompaniesRoute
               activeCompany={activeCompany}
+              openCreateDrawer={Boolean(
+                companiesLocationState?.openCreateDrawer,
+              )}
+              onCompaniesChange={setCompanies}
               onActiveCompanyChange={handleActiveCompanyChange}
             />
           }

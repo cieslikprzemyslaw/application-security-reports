@@ -1,4 +1,4 @@
-import React, { useId, useLayoutEffect, useRef } from 'react';
+import React, { useEffect, useId, useLayoutEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -25,6 +25,11 @@ const Drawer = ({
   const descriptionId = useId();
   const panelRef = useRef<HTMLElement | null>(null);
   const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useLayoutEffect(() => {
     if (!isOpen) {
@@ -62,7 +67,7 @@ const Drawer = ({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -102,7 +107,7 @@ const Drawer = ({
       document.body.style.overflow = '';
       previouslyFocusedElementRef.current?.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) {
     return null;

@@ -72,23 +72,26 @@ const CompanySwitcher = ({
     );
 
     setStoredRecentCompanyIds(nextRecentCompanyIds);
+    closeSwitcher();
 
     onActiveCompanyChange({
       id: company.id,
       name: company.name,
     });
-
-    closeSwitcher();
   };
 
   const handleViewAll = () => {
-    navigate(routes.companies);
     closeSwitcher();
+    navigate(routes.companies);
   };
 
   const handleCreateCompany = () => {
-    navigate(routes.companies);
     closeSwitcher();
+    navigate(routes.companies, {
+      state: {
+        openCreateDrawer: true,
+      },
+    });
   };
 
   const showEmptyWorkspace = !isLoading && companies.length === 0;
