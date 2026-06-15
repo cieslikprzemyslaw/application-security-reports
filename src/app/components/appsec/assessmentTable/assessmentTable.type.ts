@@ -27,8 +27,29 @@ export interface AssessmentTableRow {
   status: AssessmentStatus;
 }
 
+export type AssessmentListSortKey =
+  | 'name'
+  | 'type'
+  | 'status'
+  | 'findings'
+  | 'updated';
+
+export interface AssessmentListRow {
+  id: string;
+  name: string;
+  type: string;
+  status: AssessmentStatus;
+  findingsCount: number;
+  updatedAt: string;
+  description?: string;
+  scope?: string;
+}
+
 export interface AssessmentTableProps {
-  assessments: AssessmentTableRow[];
-  onAssessmentClick?: (assessment: AssessmentTableRow) => void;
+  assessments: AssessmentListRow[];
+  sortBy: AssessmentListSortKey;
+  sortDirection: 'asc' | 'desc';
+  onSortChange: (sortBy: AssessmentListSortKey) => void;
+  onEditAssessment?: (assessment: AssessmentListRow) => void;
   emptyState?: ReactNode;
 }

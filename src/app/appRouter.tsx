@@ -280,7 +280,7 @@ const RouterShell = () => {
         </Route>
         <Route
           path={routePatterns.assessments}
-          element={<AssessmentsRoute />}
+          element={<AssessmentsRoute activeCompanyId={activeCompany?.id} />}
         />
         <Route
           path={routePatterns.assessmentDetails}
