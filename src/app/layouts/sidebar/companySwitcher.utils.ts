@@ -74,7 +74,7 @@ export const readRecentCompanyOpenTimes = (): Record<string, string> => {
       Object.entries(parsedValue).filter(
         ([, value]) => typeof value === 'string' && value.length > 0,
       ),
-    );
+    ) as Record<string, string>;
   } catch {
     return {};
   }

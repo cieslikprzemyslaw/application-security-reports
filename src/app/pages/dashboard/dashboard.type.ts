@@ -20,7 +20,10 @@ export interface RecentCompanyLatestAssessment {
   updatedAt?: string;
 }
 
-export interface RecentCompanyItem extends CompanyListItem {
+export interface RecentCompanyItem extends Omit<
+  CompanyListItem,
+  'createdAt' | 'updatedAt'
+> {
   lastOpenedAt?: string;
   latestAssessment?: RecentCompanyLatestAssessment;
 }
