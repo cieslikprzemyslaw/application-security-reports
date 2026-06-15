@@ -20,7 +20,7 @@ type AssessmentFormValue = ReturnType<typeof createEmptyAssessmentFormValue>;
 export interface AssessmentDrawerController {
   drawerMode: 'create' | 'edit' | null;
   draftValue: AssessmentFormValue;
-  fieldErrors: Record<string, string>;
+  fieldErrors: Partial<Record<string, string>>;
   formErrorMessage?: string;
   isSubmitting: boolean;
   setDraftValue: Dispatch<SetStateAction<AssessmentFormValue>>;
