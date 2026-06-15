@@ -145,9 +145,20 @@ const createCompanyDb = () => {
     },
   } as RepositoryClient['company'];
 
+  const assessment = {
+    async findMany(args: unknown) {
+      calls.push({ method: 'assessment.findMany', args });
+      return [];
+    },
+    async groupBy(args: unknown) {
+      calls.push({ method: 'assessment.groupBy', args });
+      return [];
+    },
+  } as unknown as RepositoryClient['assessment'];
+
   return {
     calls,
-    db: { company },
+    db: { company, assessment },
   };
 };
 

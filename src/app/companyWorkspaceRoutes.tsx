@@ -10,17 +10,8 @@ import IconSVG from '~/app/components/ui/iconSVG';
 import type { CompanyListItem } from '~/domain';
 import { routes } from '~/routes';
 
-import {
-  assessmentStatuses,
-  assessments,
-  dashboardStats,
-  recentActivity,
-  recentAssessments,
-  reportCover,
-  severityDistribution,
-} from './appData';
+import { assessments, recentActivity, reportCover } from './appData';
 import CompanyOverviewDashboard from './pages/dashboard/companyOverviewDashboard.component';
-import type { DashboardPeriod } from './pages/dashboard';
 import Assessments from './pages/assessments';
 import Reports from './pages/reports';
 
@@ -115,32 +106,11 @@ export const CompanyWorkspaceIndexRoute = () => {
 };
 
 export const CompanyOverviewRoute = () => {
-  const navigate = useNavigate();
   const companyId = useCompanyId();
-  const [selectedPeriod, setSelectedPeriod] = useState<DashboardPeriod>('90');
 
-  return (
-    <CompanyOverviewDashboard
-      key={companyId}
-      stats={dashboardStats}
-      severityDistribution={severityDistribution}
-      assessmentStatuses={assessmentStatuses}
-      recentAssessments={recentAssessments}
-      recentActivity={recentActivity}
-      selectedPeriod={selectedPeriod}
-      onPeriodChange={setSelectedPeriod}
-      onViewAllAssessments={() =>
-        navigate(
-          companyId
-            ? routes.companyWorkspaceAssessments(companyId)
-            : routes.assessments,
-        )
-      }
-      onAssessmentClick={assessment =>
-        navigate(routes.assessmentDetails(assessment.id))
-      }
-    />
-  );
+  return companyId ? (
+    <CompanyOverviewDashboard key={companyId} companyId={companyId} />
+  ) : null;
 };
 
 export const CompanyAssessmentsRoute = () => {

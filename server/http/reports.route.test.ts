@@ -294,6 +294,9 @@ const createCompanyRepository = (
       findByIdCalls += 1;
       return overrides.findById?.(id) ?? defaultCompany;
     },
+    async findOverview() {
+      return null;
+    },
     async create(input, id) {
       return {
         ...defaultCompany,

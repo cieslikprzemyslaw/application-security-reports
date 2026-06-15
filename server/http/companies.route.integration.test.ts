@@ -11,6 +11,7 @@ import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 
 import { loadServerConfig } from '../config.js';
 import { createCompanyRepository } from '../database/repositories/company.repository.js';
+import { createAssessmentRepository } from '../database/repositories/assessment.repository.js';
 import { createApiApp } from './api-app.js';
 
 const repoRoot = path.resolve(process.cwd());
@@ -223,6 +224,131 @@ try {
 } finally {
   await prisma.$disconnect();
   await rm(tempDir, { recursive: true, force: true });
+}
+
+{
+  const overviewTempDir = await mkdtemp(
+    path.join(os.tmpdir(), 'appsec-companies-overview-'),
+  );
+  const overviewDbPath = path.join(overviewTempDir, 'overview.sqlite');
+  const overviewAdapterUrl = `file:${overviewDbPath.replaceAll('\\', '/')}`;
+
+  const overviewBootstrap = new Database(overviewDbPath);
+
+  try {
+    overviewBootstrap.exec(schemaSql);
+  } finally {
+    overviewBootstrap.close();
+  }
+
+  const overviewPrisma = new PrismaClient({
+    adapter: new PrismaBetterSqlite3({ url: overviewAdapterUrl }),
+  });
+
+  try {
+    await overviewPrisma.$executeRawUnsafe('PRAGMA journal_mode = MEMORY');
+    await overviewPrisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
+
+    const companyRepo = createCompanyRepository(overviewPrisma);
+    const assessmentRepo = createAssessmentRepository(overviewPrisma);
+    const overviewServer = await startTestServer(
+      createApiApp(config, {
+        companyRepository: companyRepo,
+        assessmentRepository: assessmentRepo,
+      }),
+    );
+
+    try {
+      const overviewCompany = await companyRepo.create({
+        name: 'Overview Corp',
+        description: undefined,
+        website: undefined,
+        contactName: undefined,
+        contactEmail: undefined,
+        logoPath: undefined,
+        footerText: undefined,
+      });
+
+      await assessmentRepo.create({
+        companyId: overviewCompany.id,
+        title: 'Draft Assessment',
+        status: 'draft',
+        description: undefined,
+        scope: undefined,
+        startedAt: undefined,
+        completedAt: undefined,
+        applicationName: 'Admin Panel',
+        environment: undefined,
+        assessmentType: 'Web App',
+        overallRisk: 'high',
+      });
+
+      await assessmentRepo.create({
+        companyId: overviewCompany.id,
+        title: 'In Progress Assessment',
+        status: 'in-progress',
+        description: undefined,
+        scope: undefined,
+        startedAt: undefined,
+        completedAt: undefined,
+        applicationName: 'Customer Portal',
+        environment: undefined,
+        assessmentType: 'Web App',
+        overallRisk: 'medium',
+      });
+
+      const overviewResponse = await fetch(
+        `${overviewServer.baseUrl}/api/companies/${overviewCompany.id}/overview`,
+      );
+
+      assert.equal(overviewResponse.status, 200);
+      const overviewJson = (await overviewResponse.json()) as {
+        data: {
+          company: { id: string; name: string };
+          assessmentCounts: {
+            total: number;
+            draft: number;
+            inProgress: number;
+            completed: number;
+          };
+          recentAssessments: Array<{
+            id: string;
+            status: string;
+            findingsCount: number;
+          }>;
+          recentReports: null;
+        };
+      };
+
+      assert.equal(overviewJson.data.company.id, overviewCompany.id);
+      assert.equal(overviewJson.data.company.name, 'Overview Corp');
+      assert.equal(overviewJson.data.assessmentCounts.total, 2);
+      assert.equal(overviewJson.data.assessmentCounts.draft, 1);
+      assert.equal(overviewJson.data.assessmentCounts.inProgress, 1);
+      assert.equal(overviewJson.data.assessmentCounts.completed, 0);
+      assert.equal(overviewJson.data.recentAssessments.length, 2);
+      assert.equal(overviewJson.data.recentAssessments[0]?.findingsCount, 0);
+      assert.equal(overviewJson.data.recentReports, null);
+
+      const notFoundResponse = await fetch(
+        `${overviewServer.baseUrl}/api/companies/cmp_00000000-0000-0000-0000-000000000099/overview`,
+      );
+
+      assert.equal(notFoundResponse.status, 404);
+      assert.deepEqual(await notFoundResponse.json(), {
+        error: {
+          code: 'COMPANY_NOT_FOUND',
+          message: 'Company not found',
+          details: [],
+        },
+      });
+    } finally {
+      await overviewServer.close();
+    }
+  } finally {
+    await overviewPrisma.$disconnect();
+    await rm(overviewTempDir, { recursive: true, force: true });
+  }
 }
 
 console.log('companies API integration checks passed');

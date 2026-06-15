@@ -224,21 +224,53 @@ await (async () => {
   }
 
   {
-    setFetch(async () =>
-      createJsonResponse({
-        data: [
-          {
-            id: 'cmp_1',
-            name: 'Northwind Labs',
-            website: 'https://northwind.example',
-            contactEmail: 'security@northwind.example',
-            assessmentCount: 2,
-            createdAt: '2026-06-01T00:00:00.000Z',
-            updatedAt: '2026-06-10T00:00:00.000Z',
+    setFetch(async input => {
+      const path = String(input);
+
+      if (path === '/api/companies') {
+        return createJsonResponse({
+          data: [
+            {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              website: 'https://northwind.example',
+              contactEmail: 'security@northwind.example',
+              assessmentCount: 2,
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+          ],
+        });
+      }
+
+      if (path === '/api/companies/cmp_2/overview') {
+        return createJsonResponse({
+          data: {
+            company: {
+              id: 'cmp_2',
+              name: 'Meridian Finance',
+              description: 'Financial services workspace',
+              website: 'https://meridian.example',
+              contactName: 'B. Example',
+              contactEmail: 'security@meridian.example',
+              logoPath: '/logos/meridian.svg',
+              footerText: 'Confidential',
+              createdAt: '2026-06-02T00:00:00.000Z',
+              updatedAt: '2026-06-11T00:00:00.000Z',
+            },
+            assessmentCounts: {
+              total: 1,
+              draft: 0,
+              inProgress: 1,
+              completed: 0,
+            },
+            recentAssessments: [],
           },
-        ],
-      }),
-    );
+        });
+      }
+
+      throw new Error(`Unexpected request: ${path}`);
+    });
 
     try {
       const { container, root } = await renderApp('/');
@@ -491,6 +523,32 @@ await (async () => {
         });
       }
 
+      if (String(input) === '/api/companies/cmp_2/overview') {
+        return createJsonResponse({
+          data: {
+            company: {
+              id: 'cmp_2',
+              name: 'Northwind Labs',
+              description: 'Cloud security partner',
+              website: 'https://northwind.example',
+              contactName: 'A. Example',
+              contactEmail: 'security@northwind.example',
+              logoPath: '/logos/northwind.svg',
+              footerText: 'Confidential',
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+            assessmentCounts: {
+              total: 1,
+              draft: 0,
+              inProgress: 1,
+              completed: 0,
+            },
+            recentAssessments: [],
+          },
+        });
+      }
+
       return createJsonResponse({
         data: [
           {
@@ -589,20 +647,61 @@ await (async () => {
 
   {
     setFetch(async input => {
-      assert.equal(String(input), '/api/companies');
-      return createJsonResponse({
-        data: [
-          {
-            id: 'cmp_1',
-            name: 'Northwind Labs',
-            website: 'https://northwind.example',
-            contactEmail: 'security@northwind.example',
-            assessmentCount: 2,
-            createdAt: '2026-06-01T00:00:00.000Z',
-            updatedAt: '2026-06-10T00:00:00.000Z',
+      const path = String(input);
+
+      if (path === '/api/companies') {
+        return createJsonResponse({
+          data: [
+            {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              website: 'https://northwind.example',
+              contactEmail: 'security@northwind.example',
+              assessmentCount: 2,
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+          ],
+        });
+      }
+
+      if (path === '/api/companies/cmp_1/overview') {
+        return createJsonResponse({
+          data: {
+            company: {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              description: 'Cloud security partner',
+              website: 'https://northwind.example',
+              contactName: 'A. Example',
+              contactEmail: 'security@northwind.example',
+              logoPath: '/logos/northwind.svg',
+              footerText: 'Confidential',
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+            assessmentCounts: {
+              total: 2,
+              draft: 1,
+              inProgress: 1,
+              completed: 0,
+            },
+            recentAssessments: [
+              {
+                id: 'asm_1',
+                applicationName: 'Customer Services Portal',
+                companyName: 'Northwind Labs',
+                assessmentType: 'Web App',
+                severity: 'high',
+                findingsCount: 7,
+                status: 'in-progress',
+              },
+            ],
           },
-        ],
-      });
+        });
+      }
+
+      throw new Error(`Unexpected request: ${path}`);
     });
 
     try {
@@ -610,7 +709,9 @@ await (async () => {
         routes.companyWorkspaceOverview('cmp_1'),
       );
 
-      assert.ok(textContent(container).includes('Security Dashboard'));
+      assert.ok(textContent(container).includes('Northwind Labs'));
+      assert.ok(textContent(container).includes('Quick actions'));
+      assert.ok(textContent(container).includes('Recent assessments'));
       assert.equal(
         window.location.pathname,
         routes.companyWorkspaceOverview('cmp_1'),
@@ -627,6 +728,7 @@ await (async () => {
       );
       assert.ok(container.querySelector('a[href="/companies/cmp_1/reports"]'));
       assert.ok(container.querySelector('a[href="/companies/cmp_1/activity"]'));
+      assert.ok(!textContent(container).includes('Recent reports'));
 
       await act(async () => {
         root.unmount();
@@ -638,20 +740,51 @@ await (async () => {
 
   {
     setFetch(async input => {
-      assert.equal(String(input), '/api/companies');
-      return createJsonResponse({
-        data: [
-          {
-            id: 'cmp_1',
-            name: 'Northwind Labs',
-            website: 'https://northwind.example',
-            contactEmail: 'security@northwind.example',
-            assessmentCount: 2,
-            createdAt: '2026-06-01T00:00:00.000Z',
-            updatedAt: '2026-06-10T00:00:00.000Z',
+      const path = String(input);
+
+      if (path === '/api/companies') {
+        return createJsonResponse({
+          data: [
+            {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              website: 'https://northwind.example',
+              contactEmail: 'security@northwind.example',
+              assessmentCount: 2,
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+          ],
+        });
+      }
+
+      if (path === '/api/companies/cmp_1/overview') {
+        return createJsonResponse({
+          data: {
+            company: {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              description: 'Cloud security partner',
+              website: 'https://northwind.example',
+              contactName: 'A. Example',
+              contactEmail: 'security@northwind.example',
+              logoPath: '/logos/northwind.svg',
+              footerText: 'Confidential',
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+            assessmentCounts: {
+              total: 2,
+              draft: 1,
+              inProgress: 1,
+              completed: 0,
+            },
+            recentAssessments: [],
           },
-        ],
-      });
+        });
+      }
+
+      throw new Error(`Unexpected request: ${path}`);
     });
 
     try {
@@ -675,20 +808,51 @@ await (async () => {
 
   {
     setFetch(async input => {
-      assert.equal(String(input), '/api/companies');
-      return createJsonResponse({
-        data: [
-          {
-            id: 'cmp_1',
-            name: 'Northwind Labs',
-            website: 'https://northwind.example',
-            contactEmail: 'security@northwind.example',
-            assessmentCount: 2,
-            createdAt: '2026-06-01T00:00:00.000Z',
-            updatedAt: '2026-06-10T00:00:00.000Z',
+      const path = String(input);
+
+      if (path === '/api/companies') {
+        return createJsonResponse({
+          data: [
+            {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              website: 'https://northwind.example',
+              contactEmail: 'security@northwind.example',
+              assessmentCount: 2,
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+          ],
+        });
+      }
+
+      if (path === '/api/companies/cmp_1/overview') {
+        return createJsonResponse({
+          data: {
+            company: {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              description: 'Cloud security partner',
+              website: 'https://northwind.example',
+              contactName: 'A. Example',
+              contactEmail: 'security@northwind.example',
+              logoPath: '/logos/northwind.svg',
+              footerText: 'Confidential',
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+            assessmentCounts: {
+              total: 2,
+              draft: 1,
+              inProgress: 1,
+              completed: 0,
+            },
+            recentAssessments: [],
           },
-        ],
-      });
+        });
+      }
+
+      throw new Error(`Unexpected request: ${path}`);
     });
 
     try {
@@ -701,6 +865,73 @@ await (async () => {
         window.location.pathname,
         routes.companyWorkspaceReports('cmp_1'),
       );
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    setFetch(async input => {
+      const path = String(input);
+
+      if (path === '/api/companies') {
+        return createJsonResponse({
+          data: [
+            {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              website: 'https://northwind.example',
+              contactEmail: 'security@northwind.example',
+              assessmentCount: 0,
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+          ],
+        });
+      }
+
+      if (path === '/api/companies/cmp_1/overview') {
+        return createJsonResponse({
+          data: {
+            company: {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              description: 'Cloud security partner',
+              website: 'https://northwind.example',
+              contactName: 'A. Example',
+              contactEmail: 'security@northwind.example',
+              logoPath: '/logos/northwind.svg',
+              footerText: 'Confidential',
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+            assessmentCounts: {
+              total: 0,
+              draft: 0,
+              inProgress: 0,
+              completed: 0,
+            },
+            recentAssessments: [],
+            recentReports: null,
+          },
+        });
+      }
+
+      throw new Error(`Unexpected request: ${path}`);
+    });
+
+    try {
+      const { container, root } = await renderApp(
+        routes.companyWorkspaceOverview('cmp_1'),
+      );
+
+      assert.ok(textContent(container).includes('No assessments yet'));
+      assert.ok(textContent(container).includes('Edit company'));
+      assert.ok(!textContent(container).includes('Recent reports'));
 
       await act(async () => {
         root.unmount();
@@ -746,20 +977,51 @@ await (async () => {
 
   {
     setFetch(async input => {
-      assert.equal(String(input), '/api/companies');
-      return createJsonResponse({
-        data: [
-          {
-            id: 'cmp_1',
-            name: 'Northwind Labs',
-            website: 'https://northwind.example',
-            contactEmail: 'security@northwind.example',
-            assessmentCount: 2,
-            createdAt: '2026-06-01T00:00:00.000Z',
-            updatedAt: '2026-06-10T00:00:00.000Z',
+      const path = String(input);
+
+      if (path === '/api/companies') {
+        return createJsonResponse({
+          data: [
+            {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              website: 'https://northwind.example',
+              contactEmail: 'security@northwind.example',
+              assessmentCount: 2,
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+          ],
+        });
+      }
+
+      if (path === '/api/companies/cmp_1/overview') {
+        return createJsonResponse({
+          data: {
+            company: {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              description: 'Cloud security partner',
+              website: 'https://northwind.example',
+              contactName: 'A. Example',
+              contactEmail: 'security@northwind.example',
+              logoPath: '/logos/northwind.svg',
+              footerText: 'Confidential',
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+            assessmentCounts: {
+              total: 2,
+              draft: 1,
+              inProgress: 1,
+              completed: 0,
+            },
+            recentAssessments: [],
           },
-        ],
-      });
+        });
+      }
+
+      throw new Error(`Unexpected request: ${path}`);
     });
 
     try {
@@ -769,7 +1031,7 @@ await (async () => {
         window.location.pathname,
         routes.companyWorkspaceOverview('cmp_1'),
       );
-      assert.ok(textContent(container).includes('Security Dashboard'));
+      assert.ok(textContent(container).includes('Northwind Labs'));
 
       await act(async () => {
         root.unmount();
@@ -836,30 +1098,62 @@ await (async () => {
   }
 
   {
-    setFetch(async () =>
-      createJsonResponse({
-        data: [
-          {
-            id: 'cmp_1',
-            name: 'Northwind Labs',
-            website: 'https://northwind.example',
-            contactEmail: 'security@northwind.example',
-            assessmentCount: 2,
-            createdAt: '2026-06-01T00:00:00.000Z',
-            updatedAt: '2026-06-10T00:00:00.000Z',
+    setFetch(async input => {
+      const path = String(input);
+
+      if (path === '/api/companies') {
+        return createJsonResponse({
+          data: [
+            {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              website: 'https://northwind.example',
+              contactEmail: 'security@northwind.example',
+              assessmentCount: 2,
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+            {
+              id: 'cmp_3',
+              name: 'Summit Health',
+              website: 'https://summit.example',
+              contactEmail: 'security@summit.example',
+              assessmentCount: 3,
+              createdAt: '2026-06-03T00:00:00.000Z',
+              updatedAt: '2026-06-12T00:00:00.000Z',
+            },
+          ],
+        });
+      }
+
+      if (path === '/api/companies/cmp_3/overview') {
+        return createJsonResponse({
+          data: {
+            company: {
+              id: 'cmp_3',
+              name: 'Summit Health',
+              description: 'Healthcare security workspace',
+              website: 'https://summit.example',
+              contactName: 'C. Example',
+              contactEmail: 'security@summit.example',
+              logoPath: '/logos/summit.svg',
+              footerText: 'Confidential',
+              createdAt: '2026-06-03T00:00:00.000Z',
+              updatedAt: '2026-06-12T00:00:00.000Z',
+            },
+            assessmentCounts: {
+              total: 3,
+              draft: 1,
+              inProgress: 1,
+              completed: 1,
+            },
+            recentAssessments: [],
           },
-          {
-            id: 'cmp_3',
-            name: 'Summit Health',
-            website: 'https://summit.example',
-            contactEmail: 'security@summit.example',
-            assessmentCount: 3,
-            createdAt: '2026-06-03T00:00:00.000Z',
-            updatedAt: '2026-06-12T00:00:00.000Z',
-          },
-        ],
-      }),
-    );
+        });
+      }
+
+      throw new Error(`Unexpected request: ${path}`);
+    });
 
     try {
       const { container, root } = await renderApp('/dashboard');
