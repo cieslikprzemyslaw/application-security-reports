@@ -259,11 +259,11 @@ await (async () => {
     setFetch(async input => {
       requestCount += 1;
 
-      if (requestCount === 1) {
+      if (requestCount === 1 || requestCount === 2) {
         return createJsonResponse({ data: [] });
       }
 
-      if (String(input) === '/api/companies' && requestCount === 2) {
+      if (String(input) === '/api/companies' && requestCount === 3) {
         return createJsonResponse({
           data: {
             id: 'cmp_2',
@@ -443,28 +443,67 @@ await (async () => {
   }
 
   {
-    const { container, root } = await renderApp('/dashboard');
-    const companiesLink = container.querySelector('a[href="/companies"]');
+    setFetch(async () =>
+      createJsonResponse({
+        data: [
+          {
+            id: 'cmp_3',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
+          },
+        ],
+      }),
+    );
 
-    assert.ok(companiesLink, 'Expected companies link in the navigation');
+    try {
+      const { container, root } = await renderApp('/dashboard');
+      const companySwitcher = container.querySelector(
+        '.sidebar-company-switcher',
+      ) as HTMLButtonElement | null;
 
-    await act(async () => {
-      companiesLink.dispatchEvent(
-        new window.MouseEvent('click', {
-          bubbles: true,
-          cancelable: true,
-          button: 0,
-        }),
-      );
-      await renderTick();
-    });
+      assert.ok(companySwitcher, 'Expected the company switcher trigger');
 
-    assert.equal(window.location.pathname, '/companies');
-    assert.ok(textContent(container).includes('Companies'));
+      await act(async () => {
+        companySwitcher.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
 
-    await act(async () => {
-      root.unmount();
-    });
+      const viewAllButton = Array.from(
+        document.querySelectorAll('button'),
+      ).find(button => button.textContent?.includes('View all'));
+
+      assert.ok(viewAllButton, 'Expected a view all action');
+
+      await act(async () => {
+        viewAllButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
+
+      assert.equal(window.location.pathname, '/companies');
+      assert.ok(textContent(document.body).includes('Companies'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
   }
 
   {

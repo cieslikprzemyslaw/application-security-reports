@@ -1,4 +1,4 @@
-import React, { lazy, useState } from 'react';
+import React, { lazy, useEffect, useState } from 'react';
 import {
   BrowserRouter,
   Navigate,
@@ -12,6 +12,8 @@ import { EntityNotFoundView } from '~/app/components/routeStateViews';
 import { AppLayout } from '~/app/layouts';
 import NotFound from '~/app/pages/notFound';
 import { routes, routePatterns } from '~/routes';
+import type { CompanyListItem } from '~/domain';
+import { companyService } from '~/services';
 
 import {
   assessmentDetailsById,
@@ -200,48 +202,108 @@ const SettingsRoute = () => {
 const RedirectToDashboard = () => <Navigate replace to={routes.dashboard} />;
 
 const RouterShell = () => {
+  const navigate = useNavigate();
   const [activeCompany, setActiveCompany] = useState<
     CompanyIdentity | undefined
   >();
+  const [companies, setCompanies] = useState<CompanyListItem[]>([]);
+  const [isCompaniesLoading, setIsCompaniesLoading] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let isActive = true;
+
+    const loadCompanies = async () => {
+      setIsCompaniesLoading(true);
+
+      try {
+        const nextCompanies = await companyService.list(controller.signal);
+
+        if (isActive) {
+          setCompanies(nextCompanies);
+        }
+      } catch (error) {
+        if (
+          !isActive ||
+          (error instanceof DOMException && error.name === 'AbortError')
+        ) {
+          return;
+        }
+
+        setCompanies([]);
+      } finally {
+        if (isActive) {
+          setIsCompaniesLoading(false);
+        }
+      }
+    };
+
+    void loadCompanies();
+
+    return () => {
+      isActive = false;
+      controller.abort();
+    };
+  }, []);
+
+  const handleActiveCompanyChange = (company?: CompanyIdentity) => {
+    setActiveCompany(company);
+
+    if (company) {
+      navigate(routes.dashboard);
+    }
+  };
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path={routePatterns.root} element={<RedirectToDashboard />} />
+    <Routes>
+      <Route path={routePatterns.root} element={<RedirectToDashboard />} />
 
-        <Route element={<AppLayout activeCompanyName={activeCompany?.name} />}>
-          <Route path={routePatterns.dashboard} element={<DashboardRoute />} />
-          <Route
-            path={routePatterns.companies}
-            element={
-              <CompaniesRoute
-                activeCompany={activeCompany}
-                onActiveCompanyChange={setActiveCompany}
-              />
-            }
+      <Route
+        element={
+          <AppLayout
+            key={activeCompany?.id ?? 'no-active-company'}
+            activeCompany={activeCompany}
+            companies={companies}
+            isCompaniesLoading={isCompaniesLoading}
+            onActiveCompanyChange={handleActiveCompanyChange}
           />
-          <Route
-            path={routePatterns.assessments}
-            element={<AssessmentsRoute />}
-          />
-          <Route
-            path={routePatterns.assessmentDetails}
-            element={<AssessmentDetailsRoute />}
-          />
-          <Route
-            path={routePatterns.reportDetails}
-            element={<ReportDetailsRoute />}
-          />
-          <Route path={routePatterns.threats} element={<ThreatsRoute />} />
-          <Route path={routePatterns.reports} element={<ReportsRoute />} />
-          <Route path={routePatterns.settings} element={<SettingsRoute />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+        }
+      >
+        <Route path={routePatterns.dashboard} element={<DashboardRoute />} />
+        <Route
+          path={routePatterns.companies}
+          element={
+            <CompaniesRoute
+              activeCompany={activeCompany}
+              onActiveCompanyChange={handleActiveCompanyChange}
+            />
+          }
+        />
+        <Route
+          path={routePatterns.assessments}
+          element={<AssessmentsRoute />}
+        />
+        <Route
+          path={routePatterns.assessmentDetails}
+          element={<AssessmentDetailsRoute />}
+        />
+        <Route
+          path={routePatterns.reportDetails}
+          element={<ReportDetailsRoute />}
+        />
+        <Route path={routePatterns.threats} element={<ThreatsRoute />} />
+        <Route path={routePatterns.reports} element={<ReportsRoute />} />
+        <Route path={routePatterns.settings} element={<SettingsRoute />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
   );
 };
 
-const AppRouter = () => <RouterShell />;
+const AppRouter = () => (
+  <BrowserRouter>
+    <RouterShell />
+  </BrowserRouter>
+);
 
 export default AppRouter;
