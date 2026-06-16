@@ -10,7 +10,9 @@ const Tabs = <TTabId extends string>({
   ariaLabel,
 }: TabsProps<TTabId>) => {
   const activeItem = items.find(item => item.id === activeTabId) ?? items[0];
-  const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const tabButtonRefs = useRef<Record<TTabId, HTMLButtonElement | null>>(
+    {} as Record<TTabId, HTMLButtonElement | null>,
+  );
 
   useEffect(() => {
     if (!activeItem) {
@@ -24,7 +26,10 @@ const Tabs = <TTabId extends string>({
     return null;
   }
 
-  const getNextEnabledTabId = (currentTabId: string, offset: number) => {
+  const getNextEnabledTabId = (
+    currentTabId: TTabId,
+    offset: number,
+  ): TTabId => {
     const currentIndex = items.findIndex(item => item.id === currentTabId);
 
     if (currentIndex < 0) {
@@ -46,7 +51,7 @@ const Tabs = <TTabId extends string>({
 
   const handleTabKeyDown = (
     event: React.KeyboardEvent<HTMLButtonElement>,
-    tabId: string,
+    tabId: TTabId,
   ) => {
     if (
       event.key !== 'ArrowLeft' &&
