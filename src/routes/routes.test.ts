@@ -46,9 +46,49 @@ assert.equal(
 );
 
 assert.equal(routePatterns.assessmentDetails, '/assessments/:assessmentId');
+assert.equal(
+  routePatterns.assessmentDetailsOverview,
+  '/assessments/:assessmentId/overview',
+);
+assert.equal(
+  routePatterns.assessmentDetailsFindings,
+  '/assessments/:assessmentId/findings',
+);
+assert.equal(
+  routePatterns.assessmentDetailsEvidence,
+  '/assessments/:assessmentId/evidence',
+);
+assert.equal(
+  routePatterns.assessmentDetailsReports,
+  '/assessments/:assessmentId/reports',
+);
+assert.equal(
+  routePatterns.assessmentDetailsHistory,
+  '/assessments/:assessmentId/history',
+);
 assert.equal(routePatterns.reportDetails, '/reports/:reportId');
 
 assert.equal(routes.assessmentDetails('asm_123'), '/assessments/asm_123');
+assert.equal(
+  routes.assessmentDetailsOverview('asm_123'),
+  '/assessments/asm_123/overview',
+);
+assert.equal(
+  routes.assessmentDetailsFindings('asm_123'),
+  '/assessments/asm_123/findings',
+);
+assert.equal(
+  routes.assessmentDetailsEvidence('asm_123'),
+  '/assessments/asm_123/evidence',
+);
+assert.equal(
+  routes.assessmentDetailsReports('asm_123'),
+  '/assessments/asm_123/reports',
+);
+assert.equal(
+  routes.assessmentDetailsHistory('asm_123'),
+  '/assessments/asm_123/history',
+);
 assert.equal(routes.reportDetails('rpt_123'), '/reports/rpt_123');
 assert.equal(routes.assessmentDetails('asm 123'), '/assessments/asm%20123');
 assert.throws(() => routes.assessmentDetails('   '), /non-empty id/);

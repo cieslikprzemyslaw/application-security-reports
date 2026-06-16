@@ -165,39 +165,60 @@ export const companies: CompanyTableRow[] = [
   },
 ];
 
+const customerServicesPortalAssessment: AssessmentTableRow = {
+  id: 'asm_1',
+  code: 'NSD-CSP-2026-014',
+  initials: 'CSP',
+  logoTone: 'blue',
+  applicationName: 'Customer Services Portal',
+  companyName: 'Northstar Digital',
+  assessmentType: 'Web App',
+  environment: 'Production',
+  overallRisk: 'high',
+  findingsCount: 14,
+  criticalCount: 1,
+  highCount: 3,
+  testerName: 'Alex Mercer',
+  status: 'in-progress',
+};
+
+const onlineBankingPortalAssessment: AssessmentTableRow = {
+  id: 'asm_2',
+  code: 'CB-OBP-2026-013',
+  initials: 'OBP',
+  logoTone: 'indigo',
+  applicationName: 'Online Banking Portal',
+  companyName: 'Continental Bank',
+  assessmentType: 'Web App',
+  environment: 'Production',
+  overallRisk: 'critical',
+  findingsCount: 17,
+  criticalCount: 3,
+  highCount: 4,
+  testerName: 'Priya Shah',
+  status: 'in-progress',
+};
+
+const archivedDataExportServiceAssessment: AssessmentTableRow = {
+  id: 'asm_5',
+  code: 'ND-DES-2025-009',
+  initials: 'DES',
+  logoTone: 'slate',
+  applicationName: 'Data Export Service',
+  companyName: 'Northstar Digital',
+  assessmentType: 'API',
+  environment: 'Production',
+  overallRisk: 'low',
+  findingsCount: 3,
+  criticalCount: 0,
+  highCount: 0,
+  testerName: 'Jordan Lee',
+  status: 'archived',
+};
+
 export const assessments: AssessmentTableRow[] = [
-  {
-    id: 'asm_1',
-    code: 'NSD-CSP-2026-014',
-    initials: 'CSP',
-    logoTone: 'blue',
-    applicationName: 'Customer Services Portal',
-    companyName: 'Northstar Digital',
-    assessmentType: 'Web App',
-    environment: 'Production',
-    overallRisk: 'high',
-    findingsCount: 14,
-    criticalCount: 1,
-    highCount: 3,
-    testerName: 'Alex Mercer',
-    status: 'in-progress',
-  },
-  {
-    id: 'asm_2',
-    code: 'CB-OBP-2026-013',
-    initials: 'OBP',
-    logoTone: 'indigo',
-    applicationName: 'Online Banking Portal',
-    companyName: 'Continental Bank',
-    assessmentType: 'Web App',
-    environment: 'Production',
-    overallRisk: 'critical',
-    findingsCount: 17,
-    criticalCount: 3,
-    highCount: 4,
-    testerName: 'Priya Shah',
-    status: 'in-progress',
-  },
+  customerServicesPortalAssessment,
+  onlineBankingPortalAssessment,
 ];
 
 export const threats: GlobalThreatRow[] = [
@@ -246,11 +267,17 @@ export const assessmentDetailsById: Record<
     threats: GlobalThreatRow[];
   }
 > = {
-  [assessments[0].id]: {
-    assessment: assessments[0],
+  [customerServicesPortalAssessment.id]: {
+    assessment: customerServicesPortalAssessment,
     executiveSummary:
       'The assessment identified 14 confirmed findings across the Customer Services Portal. The overall risk is rated high due to one critical authorization weakness and three high-severity findings.',
     threats,
+  },
+  [archivedDataExportServiceAssessment.id]: {
+    assessment: archivedDataExportServiceAssessment,
+    executiveSummary:
+      'This archived assessment is retained for reference only and is read-only.',
+    threats: [],
   },
 };
 

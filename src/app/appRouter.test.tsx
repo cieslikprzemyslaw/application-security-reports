@@ -11,7 +11,6 @@ import { routes } from '~/routes';
 import { defaultTheme } from '~/theme';
 
 import AppRouter from './appRouter';
-import { reportCover } from './appData';
 
 const renderTick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
 
@@ -199,6 +198,8 @@ const assertRouteRenders = async (pathname: string, expectedText: string) => {
 };
 
 await (async () => {
+  await assert.doesNotReject(async () => import('./appData'));
+
   {
     const { container, root } = await renderRouteLoadingFixture('/dashboard');
 
@@ -1266,11 +1267,137 @@ await (async () => {
   );
 
   {
-    const { container, root } = await renderApp('/assessments/asm_1');
+    const { container, root } = await renderApp(
+      routes.assessmentDetailsOverview('asm_1'),
+    );
 
     assert.ok(textContent(container).includes('Customer Services Portal'));
     assert.ok(textContent(container).includes('NSD-CSP-2026-014'));
-    assert.equal(window.location.pathname, '/assessments/asm_1');
+    assert.equal(
+      container.querySelector('[role="tablist"]')?.getAttribute('aria-label'),
+      'Assessment sections',
+    );
+    assert.equal(
+      window.location.pathname,
+      routes.assessmentDetailsOverview('asm_1'),
+    );
+    assert.equal(
+      container.querySelector('[role="tab"][aria-selected="true"]')
+        ?.textContent,
+      'Overview',
+    );
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
+  {
+    const { container, root } = await renderApp(
+      routes.assessmentDetails('asm_1'),
+    );
+
+    assert.ok(textContent(container).includes('Customer Services Portal'));
+    assert.equal(window.location.pathname, routes.assessmentDetails('asm_1'));
+    assert.equal(
+      container.querySelector('[role="tab"][aria-selected="true"]')
+        ?.textContent,
+      'Overview',
+    );
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
+  {
+    const { container, root } = await renderApp(
+      routes.assessmentDetailsFindings('asm_1'),
+    );
+
+    assert.ok(textContent(container).includes('14 confirmed findings'));
+    assert.equal(
+      window.location.pathname,
+      routes.assessmentDetailsFindings('asm_1'),
+    );
+    assert.equal(
+      container.querySelector('a[href="/assessments/asm_1/overview"]')
+        ?.textContent,
+      'Customer Services Portal',
+    );
+    assert.equal(
+      container.querySelector('[role="tab"][aria-selected="true"]')
+        ?.textContent,
+      'Findings14',
+    );
+
+    const activeTab = container.querySelector(
+      '[role="tab"][aria-selected="true"]',
+    ) as HTMLButtonElement | null;
+
+    assert.ok(activeTab, 'Expected an active tab');
+    assert.ok(activeTab?.textContent?.startsWith('Findings'));
+
+    await act(async () => {
+      activeTab!.dispatchEvent(
+        new window.KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'ArrowRight',
+        }),
+      );
+      await renderTick();
+      await renderTick();
+    });
+
+    assert.equal(
+      window.location.pathname,
+      routes.assessmentDetailsEvidence('asm_1'),
+    );
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
+  {
+    const { container, root } = await renderApp(
+      routes.assessmentDetailsHistory('asm_5'),
+    );
+
+    assert.ok(textContent(container).includes('read-only'));
+    assert.ok(textContent(container).includes('Archived'));
+    assert.ok(
+      !Array.from(container.querySelectorAll('button')).some(button =>
+        button.textContent?.includes('Edit assessment'),
+      ),
+    );
+    assert.ok(
+      !Array.from(container.querySelectorAll('button')).some(button =>
+        button.textContent?.includes('Add finding'),
+      ),
+    );
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
+  {
+    const { container, root } = await renderApp(
+      routes.assessmentDetailsReports('asm_1'),
+    );
+
+    assert.ok(textContent(container).includes('Assessment report details'));
+    assert.equal(
+      window.location.pathname,
+      routes.assessmentDetailsReports('asm_1'),
+    );
+    assert.equal(
+      container.querySelector('[role="tab"][aria-selected="true"]')
+        ?.textContent,
+      'Reports',
+    );
 
     await act(async () => {
       root.unmount();
@@ -1290,6 +1417,8 @@ await (async () => {
   }
 
   {
+    const { reportCover } = await import('./appData');
+
     const { container, root } = await renderApp(
       routes.reportDetails(reportCover.reportId),
     );

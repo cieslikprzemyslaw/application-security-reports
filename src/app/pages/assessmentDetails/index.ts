@@ -1,3 +1,6 @@
 export { default } from './assessmentDetails.component';
 
-export type { AssessmentDetailsProps } from './assessmentDetails.type';
+export type {
+  AssessmentDetailSection,
+  AssessmentDetailsProps,
+} from './assessmentDetails.type';

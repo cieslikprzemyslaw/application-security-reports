@@ -20,17 +20,73 @@ const StyledAssessmentDetails = styled.div.attrs({
       }
     }
 
+    .assessment-details-header-copy {
+      min-width: 0;
+    }
+
     .assessment-details-header-actions {
       display: flex;
+      flex-wrap: wrap;
       gap: ${spacing.xxs};
     }
 
+    .assessment-details-breadcrumb-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: ${spacing.xxs};
+
+      margin: 0 0 ${spacing.xxs};
+      padding: 0;
+
+      list-style: none;
+    }
+
+    .assessment-details-breadcrumb-item {
+      display: inline-flex;
+      align-items: center;
+      gap: ${spacing.xxs};
+
+      font-size: ${typography.body.small.size};
+      line-height: ${typography.body.small.lineHeight};
+      color: ${colors.text.muted};
+    }
+
+    .assessment-details-breadcrumb-item:not(:last-child)::after {
+      content: '/';
+      color: ${colors.neutral.grey400};
+    }
+
+    .assessment-details-breadcrumb-item a {
+      color: ${colors.text.link};
+    }
+
     .assessment-details-title {
+      margin: 0;
       font-size: ${typography.headings.h3.size};
+      line-height: ${typography.headings.h3.lineHeight};
+    }
+
+    .assessment-details-title-link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .assessment-details-title-link:hover,
+    .assessment-details-title-link:focus-visible {
+      color: ${colors.text.link};
+      text-decoration: underline;
     }
 
     .assessment-details-subtitle {
       margin-top: ${spacing.xxxs};
+      color: ${colors.text.muted};
+    }
+
+    .assessment-details-read-only-note {
+      margin-top: ${spacing.xxs};
+
+      font-size: ${typography.body.small.size};
+      line-height: ${typography.body.small.lineHeight};
       color: ${colors.text.muted};
     }
 
@@ -40,11 +96,16 @@ const StyledAssessmentDetails = styled.div.attrs({
       gap: ${spacing.s};
     }
 
-    .assessment-details-summary-card {
+    .assessment-details-summary-card,
+    .assessment-details-placeholder-copy {
       padding: ${spacing.s};
       border: 1px solid ${colors.border.subtle};
       border-radius: ${radii.md};
       background-color: ${colors.surface.card};
+    }
+
+    .assessment-details-summary-card p {
+      margin: ${spacing.xxxs} 0 0;
     }
 
     .assessment-details-section {
@@ -52,6 +113,10 @@ const StyledAssessmentDetails = styled.div.attrs({
       border: 1px solid ${colors.border.subtle};
       border-radius: ${radii.lg};
       background-color: ${colors.surface.card};
+    }
+
+    .assessment-details-section + .assessment-details-section {
+      margin-top: ${spacing.m};
     }
 
     .assessment-details-section-header {
@@ -62,48 +127,17 @@ const StyledAssessmentDetails = styled.div.attrs({
       border-bottom: 1px solid ${colors.border.subtle};
     }
 
+    .assessment-details-section-header h2,
+    .assessment-details-section-header p {
+      margin: 0;
+    }
+
     .assessment-details-section-body {
       padding: ${spacing.m};
     }
 
-    .assessment-details__status-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.125rem 0.5rem;
-      border: 1px solid;
-      border-radius: ${radii.sm};
-      font-size: ${typography.body.small.size};
-      font-weight: ${typography.fontWeights.medium};
-    }
-
-    .assessment-details__status-badge--Draft {
-      color: ${colors.text.secondary};
-      background-color: ${colors.neutral.grey100};
-      border-color: ${colors.border.subtle};
-    }
-
-    .assessment-details__status-badge--In-Progress {
-      color: ${colors.status.inProgress.text};
-      background-color: ${colors.status.inProgress.background};
-      border-color: ${colors.border.focus};
-    }
-
-    .assessment-details__status-badge--In-Review {
-      color: ${colors.severity.medium.text};
-      background-color: ${colors.severity.medium.background};
-      border-color: ${colors.severity.medium.solid};
-    }
-
-    .assessment-details__status-badge--Completed {
-      color: ${colors.status.resolved.text};
-      background-color: ${colors.status.resolved.background};
-      border-color: ${colors.severity.low.solid};
-    }
-
-    .assessment-details__status-badge--Retest-Required {
-      color: ${colors.status.retestRequired.text};
-      background-color: ${colors.status.retestRequired.background};
-      border-color: ${colors.status.retestRequired.text};
+    .assessment-details-placeholder-copy {
+      margin: 0;
     }
   `}
 `;
