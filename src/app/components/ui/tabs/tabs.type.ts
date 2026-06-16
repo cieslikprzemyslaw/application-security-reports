@@ -1,16 +1,16 @@
 import type { ReactNode } from 'react';
 
-export interface TabItem {
-  id: string;
+export interface TabItem<TTabId extends string = string> {
+  id: TTabId;
   label: string;
   content: ReactNode;
   disabled?: boolean;
   count?: number;
 }
 
-export interface TabsProps {
-  items: TabItem[];
-  activeTabId: string;
-  onChange: (tabId: string) => void;
+export interface TabsProps<TTabId extends string = string> {
+  items: TabItem<TTabId>[];
+  activeTabId: TTabId;
+  onChange: (tabId: TTabId) => void;
   ariaLabel: string;
 }

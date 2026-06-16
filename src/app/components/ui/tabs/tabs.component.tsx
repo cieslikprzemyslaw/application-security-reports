@@ -3,7 +3,12 @@ import React, { useEffect, useRef } from 'react';
 import StyledTabs from './tabs.styled';
 import type { TabsProps } from './tabs.type';
 
-const Tabs = ({ items, activeTabId, onChange, ariaLabel }: TabsProps) => {
+const Tabs = <TTabId extends string>({
+  items,
+  activeTabId,
+  onChange,
+  ariaLabel,
+}: TabsProps<TTabId>) => {
   const activeItem = items.find(item => item.id === activeTabId) ?? items[0];
   const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
