@@ -14,6 +14,7 @@ import {
 } from '~/app/components/routeStateViews';
 import { assessmentService, threatService } from '~/services';
 import { ApiError } from '~/services/apiClient';
+import type { ThreatCreateInput } from '~/services/threatService';
 import { routes } from '~/routes';
 
 import AssessmentDetailsView from './assessmentDetails.view';
@@ -104,7 +105,7 @@ const threatToFormValue = (threat: Threat): ThreatFormValue => ({
 const threatFormValueToInput = (
   assessmentId: string,
   value: ThreatFormValue,
-) => ({
+): ThreatCreateInput => ({
   assessmentId,
   title: value.title.trim(),
   severity: value.severity,
@@ -116,6 +117,8 @@ const threatFormValueToInput = (
   customCategory: normalizeOptionalText(value.customCategory),
   affectedComponent: normalizeOptionalText(value.affectedComponent),
   affectedEndpoint: normalizeOptionalText(value.affectedEndpoint),
+  description:
+    normalizeOptionalText(value.observation) ?? value.observation.trim(),
   observation: normalizeOptionalText(value.observation),
   reproductionSteps: normalizeOptionalText(
     value.reproductionSteps ?? value.observation,
@@ -151,7 +154,7 @@ const isThreatFormReadyForOpen = (value: ThreatFormValue) =>
   value.title.trim().length > 0 &&
   Boolean(value.owaspCategoryCode?.trim().length) &&
   (value.owaspCategoryCode !== 'custom' ||
-    value.customCategory?.trim().length > 0) &&
+    (value.customCategory ?? '').trim().length > 0) &&
   value.affectedComponent.trim().length > 0 &&
   value.observation.trim().length > 0 &&
   value.risk.trim().length > 0 &&

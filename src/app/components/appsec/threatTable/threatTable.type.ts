@@ -19,6 +19,9 @@ export interface ThreatTableRow {
   observation?: string;
   reproductionSteps?: string;
   risk?: string;
+  references?: string;
+  resolutionNote?: string;
+  acceptedRiskJustification?: string;
 }
 
 export interface ThreatTableProps {
