@@ -1,6 +1,9 @@
 import type { AssessmentWorkspaceOverview } from '~/services/assessmentService';
 import type { Threat } from '~/domain';
-import type { ThreatCreateInput } from '~/services/threatService';
+import type {
+  ThreatCreateInput,
+  ThreatUpdateInput,
+} from '~/services/threatService';
 
 import type { AssessmentDetailsAssessment } from './assessmentDetails.type';
 import type { ThreatFormValue } from '~/app/components/appsec/threatForm';
@@ -63,11 +66,9 @@ export const threatToFormValue = (threat: Threat): ThreatFormValue => ({
   acceptedRiskJustification: threat.acceptedRiskJustification ?? '',
 });
 
-export const threatFormValueToInput = (
-  assessmentId: string,
+const threatFormValueToPayload = (
   value: ThreatFormValue,
-): ThreatCreateInput => ({
-  assessmentId,
+): Omit<ThreatCreateInput, 'assessmentId'> => ({
   title: value.title.trim(),
   severity: value.severity,
   status: value.status,
@@ -96,6 +97,18 @@ export const threatFormValueToInput = (
     value.acceptedRiskJustification,
   ),
 });
+
+export const threatFormValueToCreateInput = (
+  assessmentId: string,
+  value: ThreatFormValue,
+): ThreatCreateInput => ({
+  assessmentId,
+  ...threatFormValueToPayload(value),
+});
+
+export const threatFormValueToUpdateInput = (
+  value: ThreatFormValue,
+): ThreatUpdateInput => threatFormValueToPayload(value);
 
 export const threatToTableRow = (threat: Threat): ThreatTableRow => ({
   id: threat.id,

@@ -17,7 +17,8 @@ import {
 } from '../assessmentDetails.validation';
 import {
   createEmptyThreatFormValue,
-  threatFormValueToInput,
+  threatFormValueToCreateInput,
+  threatFormValueToUpdateInput,
   threatToFormValue,
 } from '../assessmentDetails.mapper';
 
@@ -254,17 +255,20 @@ export const useAssessmentFindings = ({
       return;
     }
 
-    const payload = threatFormValueToInput(assessmentId, draftValue);
-
     setIsSubmitting(true);
     setFieldErrors({});
     setFormError(undefined);
 
     try {
       if (drawerMode === 'edit' && selectedFindingId) {
-        await threatService.update(selectedFindingId, payload);
+        await threatService.update(
+          selectedFindingId,
+          threatFormValueToUpdateInput(draftValue),
+        );
       } else {
-        await threatService.create(payload);
+        await threatService.create(
+          threatFormValueToCreateInput(assessmentId, draftValue),
+        );
       }
 
       setReloadKey(key => key + 1);
