@@ -250,9 +250,17 @@ const RouterShell = () => {
         >
           <Route index element={<CompanyWorkspaceIndexRoute />} />
           <Route path="overview" element={<CompanyOverviewRoute />} />
-          <Route path="assessments" element={<CompanyAssessmentsRoute />} />
+          <Route
+            path="assessments"
+            element={
+              <CompanyAssessmentsRoute companyName={activeCompany?.name} />
+            }
+          />
           <Route path="reports" element={<CompanyReportsRoute />} />
-          <Route path="activity" element={<CompanyActivityRoute />} />
+          <Route
+            path="activity"
+            element={<CompanyActivityRoute companyName={activeCompany?.name} />}
+          />
           <Route path="*" element={<CompanyWorkspaceNotFoundRoute />} />
         </Route>
         <Route

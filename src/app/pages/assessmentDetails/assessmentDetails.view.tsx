@@ -8,7 +8,6 @@ import Card from '~/app/components/ui/card';
 import IconSVG from '~/app/components/ui/iconSVG';
 import StatCard from '~/app/components/common/statCard';
 import Tabs from '~/app/components/ui/tabs';
-import { routes } from '~/routes';
 
 import StyledAssessmentDetails from './assessmentDetails.styled';
 
@@ -186,22 +185,31 @@ const AssessmentDetailsView = ({
     <StyledAssessmentDetails>
       <header className="assessment-details-header">
         <div className="assessment-details-header-copy">
+          {onBack && (
+            <div className="assessment-details-mobile-back">
+              <Button
+                title="Back to assessments"
+                variant="secondary"
+                size="small"
+                onClick={onBack}
+              />
+            </div>
+          )}
+
           <nav aria-label="Breadcrumb">
             <ol className="assessment-details-breadcrumb-list">
               <li className="assessment-details-breadcrumb-item">
-                <Link to={routes.assessments}>Assessments</Link>
+                <span>{assessment.companyName}</span>
               </li>
 
               <li className="assessment-details-breadcrumb-item">
-                <Link
-                  to={routes.companyWorkspaceAssessments(assessment.companyId)}
-                >
-                  {assessment.companyName}
-                </Link>
+                <Link to={overviewHref}>{assessmentName}</Link>
               </li>
 
               <li className="assessment-details-breadcrumb-item">
-                <span>{sectionLabelMap[activeSection]}</span>
+                <span aria-current="page">
+                  {sectionLabelMap[activeSection]}
+                </span>
               </li>
             </ol>
           </nav>
@@ -234,7 +242,13 @@ const AssessmentDetailsView = ({
 
         <div className="assessment-details-header-actions">
           {onBack && (
-            <Button title="Back" variant="secondary" onClick={onBack} />
+            <Button
+              className="assessment-details-desktop-back"
+              title="Back to assessments"
+              variant="secondary"
+              size="small"
+              onClick={onBack}
+            />
           )}
 
           {actions.map(action => (

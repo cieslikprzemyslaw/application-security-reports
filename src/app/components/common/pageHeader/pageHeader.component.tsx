@@ -16,14 +16,20 @@ const PageHeader = ({
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav aria-label="Breadcrumb">
           <ol className="page-header-breadcrumb-list">
-            {breadcrumbs.map(item => (
+            {breadcrumbs.map((item, index) => (
               <li key={item.label} className="page-header-breadcrumb-item">
                 {item.onClick ? (
                   <button type="button" onClick={item.onClick}>
                     {item.label}
                   </button>
                 ) : (
-                  <span>{item.label}</span>
+                  <span
+                    aria-current={
+                      index === breadcrumbs.length - 1 ? 'page' : undefined
+                    }
+                  >
+                    {item.label}
+                  </span>
                 )}
               </li>
             ))}

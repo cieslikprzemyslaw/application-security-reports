@@ -43,6 +43,14 @@ const CompanyOverviewDashboardView = ({
       <PageHeader
         eyebrow="Company workspace"
         title={overview.company.name}
+        breadcrumbs={[
+          {
+            label: overview.company.name,
+          },
+          {
+            label: 'Overview',
+          },
+        ]}
         subtitle={getCompanySubtitle(overview.company)}
         actions={
           <Button

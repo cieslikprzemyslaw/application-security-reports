@@ -85,6 +85,14 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
       <PageHeader
         eyebrow="Company workspace"
         title="Assessments"
+        breadcrumbs={[
+          {
+            label: companyName ?? 'Company',
+          },
+          {
+            label: 'Assessments',
+          },
+        ]}
         subtitle={
           companyName
             ? `Manage assessments for ${companyName}.`

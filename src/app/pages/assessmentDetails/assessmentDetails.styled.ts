@@ -24,10 +24,26 @@ const StyledAssessmentDetails = styled.div.attrs({
       min-width: 0;
     }
 
+    .assessment-details-mobile-back {
+      display: flex;
+
+      @media ${mq.min.tablet} {
+        display: none;
+      }
+    }
+
     .assessment-details-header-actions {
       display: flex;
       flex-wrap: wrap;
       gap: ${spacing.xxs};
+    }
+
+    .assessment-details-desktop-back {
+      display: none;
+
+      @media ${mq.min.tablet} {
+        display: inline-flex;
+      }
     }
 
     .assessment-details-feedback {
@@ -38,6 +54,7 @@ const StyledAssessmentDetails = styled.div.attrs({
     .assessment-details-breadcrumb-list {
       display: flex;
       flex-wrap: wrap;
+      align-items: center;
       gap: ${spacing.xxs};
 
       margin: 0 0 ${spacing.xxs};
@@ -50,6 +67,7 @@ const StyledAssessmentDetails = styled.div.attrs({
       display: inline-flex;
       align-items: center;
       gap: ${spacing.xxs};
+      min-width: 0;
 
       font-size: ${typography.body.small.size};
       line-height: ${typography.body.small.lineHeight};
@@ -63,17 +81,30 @@ const StyledAssessmentDetails = styled.div.attrs({
 
     .assessment-details-breadcrumb-item a {
       color: ${colors.text.link};
+      overflow-wrap: anywhere;
+    }
+
+    .assessment-details-breadcrumb-item span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .assessment-details-breadcrumb-item span[aria-current='page'] {
+      font-weight: ${typography.fontWeights.semibold};
+      color: ${colors.text.primary};
     }
 
     .assessment-details-title {
       margin: 0;
       font-size: ${typography.headings.h3.size};
       line-height: ${typography.headings.h3.lineHeight};
+      overflow-wrap: anywhere;
     }
 
     .assessment-details-title-link {
       color: inherit;
       text-decoration: none;
+      overflow-wrap: anywhere;
     }
 
     .assessment-details-title-link:hover,
@@ -85,6 +116,7 @@ const StyledAssessmentDetails = styled.div.attrs({
     .assessment-details-subtitle {
       margin-top: ${spacing.xxxs};
       color: ${colors.text.muted};
+      overflow-wrap: anywhere;
     }
 
     .assessment-details-read-only-note {
