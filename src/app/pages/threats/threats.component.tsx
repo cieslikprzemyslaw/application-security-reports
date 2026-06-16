@@ -75,7 +75,7 @@ const Threats = ({
       description="Add the first finding to start tracking security issues across assessments."
       primaryAction={
         onAddThreat ? (
-          <Button title="Add Threat" onClick={onAddThreat} />
+          <Button title="Add finding" onClick={onAddThreat} />
         ) : undefined
       }
     />
@@ -101,7 +101,7 @@ const Threats = ({
     <StyledThreats>
       <header className="threats-header">
         <div>
-          <h1 className="threats-title">Threats</h1>
+          <h1 className="threats-title">Findings</h1>
 
           <p className="threats-subtitle">
             Security findings across all active assessments.
@@ -113,7 +113,7 @@ const Threats = ({
             <Button title="Export" variant="secondary" onClick={onExport} />
           )}
 
-          {onAddThreat && <Button title="Add Threat" onClick={onAddThreat} />}
+          {onAddThreat && <Button title="Add finding" onClick={onAddThreat} />}
         </div>
       </header>
 
@@ -122,7 +122,7 @@ const Threats = ({
           <div className="threats-search-wrap">
             <SearchInput
               value={searchValue}
-              placeholder="Search threats..."
+              placeholder="Search findings..."
               onChange={event => onSearchChange(event.target.value)}
               onClear={() => onSearchChange('')}
             />
@@ -174,7 +174,7 @@ const Threats = ({
           </div>
 
           <span className="threats-summary">
-            {filteredThreats.length} threats
+            {filteredThreats.length} findings
           </span>
         </div>
 
@@ -185,7 +185,7 @@ const Threats = ({
         />
 
         <div className="threats-footer">
-          <span>Showing {filteredThreats.length} results</span>
+          <span>Showing {filteredThreats.length} findings</span>
           <span>Page 1 of 1</span>
         </div>
       </section>

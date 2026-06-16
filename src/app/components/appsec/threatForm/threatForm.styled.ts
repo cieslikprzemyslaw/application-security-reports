@@ -1,7 +1,7 @@
 import { styled, css } from 'styled-components';
 
 const StyledThreatForm = styled.form.attrs({ className: 'threat-form' })`
-  ${({ theme: { colors, mq, spacing } }) => css`
+  ${({ theme: { colors, mq, spacing, typography } }) => css`
     display: flex;
     flex-direction: column;
     gap: ${spacing.m};
@@ -27,6 +27,14 @@ const StyledThreatForm = styled.form.attrs({ className: 'threat-form' })`
 
       padding-top: ${spacing.s};
       border-top: 1px solid ${colors.border.subtle};
+    }
+
+    .threat-form-readiness-note {
+      margin: 0;
+
+      color: ${colors.text.muted};
+      font-size: ${typography.body.small.size};
+      line-height: ${typography.body.small.lineHeight};
     }
   `}
 `;

@@ -64,6 +64,9 @@ const renderView = async () => {
           <AssessmentDetailsView
             activeSection="findings"
             overviewHref="/companies/cmp_1/assessments/asm_1/overview"
+            findingsContent={
+              <div data-testid="findings-content">Live findings</div>
+            }
             onSectionChange={() => undefined}
             onBack={() => undefined}
             onAction={() => undefined}
@@ -117,6 +120,10 @@ await (async () => {
   assert.ok(
     container.querySelector('.assessment-details-mobile-back button'),
     'Expected the compact mobile back action',
+  );
+  assert.ok(
+    container.querySelector('[data-testid="findings-content"]'),
+    'Expected the findings content slot to render',
   );
 
   await act(async () => {

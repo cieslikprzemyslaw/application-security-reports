@@ -227,9 +227,11 @@ export const threats: GlobalThreatRow[] = [
     title: 'Missing Server-Side Authorization',
     applicationName: 'Customer Services Portal',
     companyName: 'Northstar Digital',
+    owaspCategoryCode: 'A01:2021',
     strideCategory: 'elevation-of-privilege',
     severity: 'critical',
     status: 'open',
+    evidenceCount: 3,
     updatedAt: '28 May 2026',
   },
   {
@@ -237,9 +239,11 @@ export const threats: GlobalThreatRow[] = [
     title: 'Verbose Error Messages',
     applicationName: 'Customer Services Portal',
     companyName: 'Northstar Digital',
+    owaspCategoryCode: 'A05:2021',
     strideCategory: 'information-disclosure',
     severity: 'medium',
     status: 'mitigated',
+    evidenceCount: 1,
     updatedAt: '24 May 2026',
   },
 ];

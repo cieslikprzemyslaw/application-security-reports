@@ -1,84 +1,190 @@
 import React from 'react';
 
+import Badge from '~/app/components/ui/badge';
+import Button from '~/app/components/ui/button';
+import Drawer from '~/app/components/ui/drawer';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
-import Button from '~/app/components/ui/button';
-import { STRIDE_LABELS } from '~/domain';
 
 import StyledThreatDrawer from './threatDrawer.styled';
 
-import type { ThreatDrawerProps } from './threatDrawer.type';
+import type {
+  ThreatDrawerFinding,
+  ThreatDrawerProps,
+} from './threatDrawer.type';
+
+const getCategoryLabel = (threat?: ThreatDrawerFinding) =>
+  threat?.customCategory?.trim().length
+    ? threat.customCategory.trim()
+    : threat?.owaspCategoryCode?.trim().length
+      ? threat.owaspCategoryCode.trim()
+      : '—';
+
+const getFieldValue = (value?: string) =>
+  value?.trim().length ? value.trim() : '—';
 
 const ThreatDrawer = ({
   isOpen,
   threat,
+  title,
   description,
-  recommendation,
+  children,
+  footer,
   onClose,
   onEdit,
-}: ThreatDrawerProps) => (
-  <StyledThreatDrawer $isOpen={isOpen} aria-hidden={!isOpen}>
-    {threat && (
-      <>
-        <header className="threat-drawer-header">
-          <div>
-            <h2 className="threat-drawer-title">{threat.title}</h2>
+  closeLabel = 'Close finding details',
+}: ThreatDrawerProps) => {
+  const drawerTitle = title ?? threat?.title ?? 'Finding details';
+  const drawerDescription =
+    typeof description === 'string' ? description : undefined;
+  const showDetailView = children === undefined && Boolean(threat);
 
+  return (
+    <Drawer
+      isOpen={isOpen}
+      title={drawerTitle}
+      description={drawerDescription}
+      footer={footer}
+      closeLabel={closeLabel}
+      onClose={onClose}
+    >
+      <StyledThreatDrawer>
+        {children ? (
+          children
+        ) : showDetailView && threat ? (
+          <div className="threat-drawer-body">
             <div className="threat-drawer-meta">
               <SeverityBadge severity={threat.severity} size="small" />
 
               <StatusBadge status={threat.status} size="small" />
+
+              <Badge
+                label={getCategoryLabel(threat)}
+                variant="neutral"
+                size="small"
+              />
             </div>
+
+            <section className="threat-drawer-section">
+              <h3 className="threat-drawer-section-title">Assessment</h3>
+
+              <p className="threat-drawer-copy">
+                <strong>{getFieldValue(threat.applicationName)}</strong>
+                {' · '}
+                {getFieldValue(threat.companyName)}
+              </p>
+            </section>
+
+            <section className="threat-drawer-section">
+              <h3 className="threat-drawer-section-title">OWASP category</h3>
+
+              <p className="threat-drawer-copy">{getCategoryLabel(threat)}</p>
+            </section>
+
+            <section className="threat-drawer-section">
+              <h3 className="threat-drawer-section-title">
+                Reproduction steps
+              </h3>
+
+              <div className="threat-drawer-copy">
+                {getFieldValue(threat.reproductionSteps ?? threat.observation)}
+              </div>
+            </section>
+
+            <section className="threat-drawer-section">
+              <h3 className="threat-drawer-section-title">Impact</h3>
+
+              <p className="threat-drawer-copy">
+                {getFieldValue(threat.impact ?? threat.risk)}
+              </p>
+            </section>
+
+            <section className="threat-drawer-section">
+              <h3 className="threat-drawer-section-title">Remediation</h3>
+
+              <div className="threat-drawer-copy">
+                {getFieldValue(threat.remediation ?? threat.recommendation)}
+              </div>
+            </section>
+
+            <section className="threat-drawer-section">
+              <h3 className="threat-drawer-section-title">
+                Affected component
+              </h3>
+
+              <p className="threat-drawer-copy">
+                {getFieldValue(threat.affectedComponent)}
+              </p>
+            </section>
+
+            {threat.affectedEndpoint && (
+              <section className="threat-drawer-section">
+                <h3 className="threat-drawer-section-title">Endpoint</h3>
+
+                <p className="threat-drawer-copy">
+                  {getFieldValue(threat.affectedEndpoint)}
+                </p>
+              </section>
+            )}
+
+            {threat.references && (
+              <section className="threat-drawer-section">
+                <h3 className="threat-drawer-section-title">References</h3>
+
+                <p className="threat-drawer-copy">
+                  {getFieldValue(threat.references)}
+                </p>
+              </section>
+            )}
+
+            {threat.resolutionNote && (
+              <section className="threat-drawer-section">
+                <h3 className="threat-drawer-section-title">Resolution note</h3>
+
+                <p className="threat-drawer-copy">
+                  {getFieldValue(threat.resolutionNote)}
+                </p>
+              </section>
+            )}
+
+            {threat.acceptedRiskJustification && (
+              <section className="threat-drawer-section">
+                <h3 className="threat-drawer-section-title">
+                  Accepted-risk justification
+                </h3>
+
+                <p className="threat-drawer-copy">
+                  {getFieldValue(threat.acceptedRiskJustification)}
+                </p>
+              </section>
+            )}
+
+            {typeof threat.evidenceCount === 'number' && (
+              <section className="threat-drawer-section">
+                <h3 className="threat-drawer-section-title">Evidence count</h3>
+
+                <p className="threat-drawer-copy">{threat.evidenceCount}</p>
+              </section>
+            )}
+
+            {threat.updatedAt && (
+              <section className="threat-drawer-section">
+                <h3 className="threat-drawer-section-title">Updated</h3>
+
+                <p className="threat-drawer-copy">{threat.updatedAt}</p>
+              </section>
+            )}
+
+            {onEdit && (
+              <div className="threat-drawer-actions">
+                <Button title="Edit finding" onClick={onEdit} />
+              </div>
+            )}
           </div>
-
-          <button
-            className="threat-drawer-close-button"
-            type="button"
-            aria-label="Close threat details"
-            onClick={onClose}
-          >
-            ×
-          </button>
-        </header>
-
-        <div className="threat-drawer-body">
-          <section className="threat-drawer-section">
-            <h3 className="threat-drawer-section-title">Application</h3>
-
-            <p>
-              {threat.applicationName}
-              {' · '}
-              {threat.companyName}
-            </p>
-          </section>
-
-          <section className="threat-drawer-section">
-            <h3 className="threat-drawer-section-title">STRIDE</h3>
-
-            <p>{STRIDE_LABELS[threat.strideCategory]}</p>
-          </section>
-
-          {description && (
-            <section className="threat-drawer-section">
-              <h3 className="threat-drawer-section-title">Observation</h3>
-
-              {description}
-            </section>
-          )}
-
-          {recommendation && (
-            <section className="threat-drawer-section">
-              <h3 className="threat-drawer-section-title">Recommendation</h3>
-
-              {recommendation}
-            </section>
-          )}
-
-          {onEdit && <Button title="Edit threat" onClick={onEdit} />}
-        </div>
-      </>
-    )}
-  </StyledThreatDrawer>
-);
+        ) : null}
+      </StyledThreatDrawer>
+    </Drawer>
+  );
+};
 
 export default ThreatDrawer;

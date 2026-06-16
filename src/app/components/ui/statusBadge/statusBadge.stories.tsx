@@ -15,7 +15,9 @@ const meta = {
         type: 'select',
       },
       options: [
+        'draft',
         'open',
+        'resolved',
         'in-review',
         'mitigated',
         'accepted-risk',
@@ -56,6 +58,8 @@ export const AllStatuses: Story = {
       }}
     >
       <StatusBadge status="open" />
+      <StatusBadge status="draft" />
+      <StatusBadge status="resolved" />
       <StatusBadge status="in-review" />
       <StatusBadge status="mitigated" />
       <StatusBadge status="accepted-risk" />

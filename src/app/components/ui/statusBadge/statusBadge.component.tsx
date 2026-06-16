@@ -5,7 +5,9 @@ import StyledStatusBadge from './statusBadge.styled';
 import type { StatusBadgeProps } from './statusBadge.type';
 
 const statusLabelMap: Record<ThreatStatus, string> = {
+  draft: 'Draft',
   open: 'Open',
+  resolved: 'Resolved',
   'in-review': 'In Review',
   mitigated: 'Mitigated',
   'accepted-risk': 'Accepted Risk',

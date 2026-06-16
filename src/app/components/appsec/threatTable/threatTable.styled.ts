@@ -1,7 +1,7 @@
 import { styled, css } from 'styled-components';
 
 const StyledThreatTable = styled.div`
-  ${({ theme: { colors, radii, spacing, typography } }) => css`
+  ${({ theme: { colors, spacing, typography } }) => css`
     width: 100%;
     overflow-x: auto;
 
@@ -60,7 +60,7 @@ const StyledThreatTable = styled.div`
       color: ${colors.text.primary};
     }
 
-    .threat-table-threat-endpoint {
+    .threat-table-threat-context {
       display: block;
       margin-top: 0.125rem;
 
@@ -69,21 +69,19 @@ const StyledThreatTable = styled.div`
       color: ${colors.text.muted};
     }
 
-    .threat-table-stride-badge {
-      display: inline-flex;
-      align-items: center;
-
-      padding: 0.125rem 0.5rem;
-      border-radius: ${radii.pill};
-
-      font-size: ${typography.body.small.size};
+    .threat-table-evidence-count {
+      font-variant-numeric: tabular-nums;
       color: ${colors.text.secondary};
-      background-color: ${colors.neutral.grey100};
     }
 
     .threat-table-threat-date {
       white-space: nowrap;
       color: ${colors.text.muted};
+    }
+
+    .threat-table-actions {
+      display: inline-flex;
+      justify-content: flex-end;
     }
   `}
 `;

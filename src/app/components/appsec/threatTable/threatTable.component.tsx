@@ -1,23 +1,43 @@
 import React from 'react';
 
+import Badge from '~/app/components/ui/badge';
+import Button from '~/app/components/ui/button';
 import DataTable from '~/app/components/common/dataTable';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
-import { STRIDE_LABELS } from '~/domain';
 
 import StyledThreatTable from './threatTable.styled';
 
 import type { ThreatTableProps, ThreatTableRow } from './threatTable.type';
+
+const getCategoryLabel = (threat: ThreatTableRow) =>
+  threat.customCategory?.trim().length
+    ? threat.customCategory.trim()
+    : threat.owaspCategoryCode?.trim().length
+      ? threat.owaspCategoryCode.trim()
+      : '—';
+
+const getThreatContext = (threat: ThreatTableRow) =>
+  threat.affectedComponent?.trim().length
+    ? threat.affectedComponent.trim()
+    : threat.applicationName?.trim().length
+      ? threat.applicationName.trim()
+      : threat.companyName?.trim().length
+        ? threat.companyName.trim()
+        : threat.affectedEndpoint?.trim().length
+          ? threat.affectedEndpoint.trim()
+          : '';
 
 const ThreatTable = ({
   threats,
   isLoading = false,
   emptyState,
   onThreatClick,
+  onEditThreatClick,
 }: ThreatTableProps) => (
   <StyledThreatTable>
     <DataTable<ThreatTableRow>
-      caption="Threats"
+      caption="Findings"
       rows={threats}
       isLoading={isLoading}
       emptyState={emptyState}
@@ -26,29 +46,22 @@ const ThreatTable = ({
       columns={[
         {
           id: 'title',
-          header: 'Threat',
-          cell: threat => (
-            <div className="threat-table-threat-title-cell">
-              <strong className="threat-table-threat-title">
-                {threat.title}
-              </strong>
+          header: 'Title',
+          cell: threat => {
+            const context = getThreatContext(threat);
 
-              {threat.endpoint && (
-                <span className="threat-table-threat-endpoint">
-                  {threat.id} · {threat.endpoint}
-                </span>
-              )}
-            </div>
-          ),
-        },
-        {
-          id: 'stride',
-          header: 'STRIDE',
-          cell: threat => (
-            <span className="threat-table-stride-badge">
-              {STRIDE_LABELS[threat.strideCategory]}
-            </span>
-          ),
+            return (
+              <div className="threat-table-threat-title-cell">
+                <strong className="threat-table-threat-title">
+                  {threat.title}
+                </strong>
+
+                {context && (
+                  <span className="threat-table-threat-context">{context}</span>
+                )}
+              </div>
+            );
+          },
         },
         {
           id: 'severity',
@@ -63,15 +76,51 @@ const ThreatTable = ({
           cell: threat => <StatusBadge status={threat.status} size="small" />,
         },
         {
-          id: 'component',
-          header: 'Component',
-          cell: threat => threat.component,
+          id: 'category',
+          header: 'OWASP category',
+          cell: threat => (
+            <Badge
+              label={getCategoryLabel(threat)}
+              variant="neutral"
+              size="small"
+            />
+          ),
+        },
+        {
+          id: 'evidence',
+          header: 'Evidence count',
+          align: 'center',
+          cell: threat => (
+            <span className="threat-table-evidence-count">
+              {threat.evidenceCount ?? 0}
+            </span>
+          ),
         },
         {
           id: 'updated',
           header: 'Updated',
           cell: threat => (
             <time className="threat-table-threat-date">{threat.updatedAt}</time>
+          ),
+        },
+        {
+          id: 'actions',
+          header: 'Actions',
+          align: 'right',
+          cell: threat => (
+            <div className="threat-table-actions">
+              {onEditThreatClick && (
+                <Button
+                  title="Edit finding"
+                  size="small"
+                  variant="secondary"
+                  onClick={event => {
+                    event.stopPropagation();
+                    onEditThreatClick(threat);
+                  }}
+                />
+              )}
+            </div>
           ),
         },
       ]}
