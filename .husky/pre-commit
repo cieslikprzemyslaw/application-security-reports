@@ -1,3 +1,2 @@
 #!/usr/bin/env sh
-PATH=node_modules/.bin:$PATH
-lint-staged
+exec node ./node_modules/lint-staged/bin/lint-staged.js

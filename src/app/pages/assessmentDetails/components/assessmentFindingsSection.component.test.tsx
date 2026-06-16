@@ -48,7 +48,8 @@ const setupDom = () => {
   );
   setGlobal(
     'cancelAnimationFrame',
-    window.cancelAnimationFrame?.bind(window) ?? window.clearTimeout.bind(window),
+    window.cancelAnimationFrame?.bind(window) ??
+      window.clearTimeout.bind(window),
   );
   setGlobal('IS_REACT_ACT_ENVIRONMENT', true);
 
@@ -96,7 +97,9 @@ const assessmentBase: AssessmentDetailsAssessment = {
 
 const textContent = (node: ParentNode) => node.textContent ?? '';
 
-const renderHarness = async (assessmentStatus: AssessmentDetailsAssessment['status']) => {
+const renderHarness = async (
+  assessmentStatus: AssessmentDetailsAssessment['status'],
+) => {
   const { container, window } = setupDom();
 
   assert.ok(container, 'Expected root container to exist');
@@ -178,15 +181,14 @@ const renderHarness = async (assessmentStatus: AssessmentDetailsAssessment['stat
 
 await (async () => {
   {
-    const { container, root, window, events } = await renderHarness(
-      'in-progress',
-    );
+    const { container, root, window, events } =
+      await renderHarness('in-progress');
 
     const row = Array.from(
       container.querySelectorAll('.data-table-row--clickable'),
-    ).find(item => item.textContent?.includes('Broken object-level authorization')) as
-      | HTMLTableRowElement
-      | undefined;
+    ).find(item =>
+      item.textContent?.includes('Broken object-level authorization'),
+    ) as HTMLTableRowElement | undefined;
 
     assert.ok(row, 'Expected a clickable findings row');
 
@@ -271,7 +273,10 @@ await (async () => {
 
     const reopenedCloseButton = getCloseButton();
 
-    assert.ok(reopenedCloseButton, 'Expected the drawer close button to return');
+    assert.ok(
+      reopenedCloseButton,
+      'Expected the drawer close button to return',
+    );
 
     await act(async () => {
       reopenedCloseButton!.dispatchEvent(
@@ -305,9 +310,8 @@ await (async () => {
   }
 
   {
-    const { container, root, window, events } = await renderHarness(
-      'in-progress',
-    );
+    const { container, root, window, events } =
+      await renderHarness('in-progress');
 
     const editButton = Array.from(container.querySelectorAll('button')).find(
       button => button.textContent?.trim() === 'Edit finding',
@@ -350,8 +354,8 @@ await (async () => {
     const { container, root, window } = await renderHarness('archived');
 
     assert.equal(
-      Array.from(container.querySelectorAll('button')).find(button =>
-        button.textContent?.trim() === 'Edit finding',
+      Array.from(container.querySelectorAll('button')).find(
+        button => button.textContent?.trim() === 'Edit finding',
       ) ?? null,
       null,
       'Expected archived assessments to hide the edit action',
@@ -359,9 +363,9 @@ await (async () => {
 
     const row = Array.from(
       container.querySelectorAll('.data-table-row--clickable'),
-    ).find(item => item.textContent?.includes('Broken object-level authorization')) as
-      | HTMLTableRowElement
-      | undefined;
+    ).find(item =>
+      item.textContent?.includes('Broken object-level authorization'),
+    ) as HTMLTableRowElement | undefined;
 
     assert.ok(row, 'Expected the archived finding row');
 
@@ -384,8 +388,8 @@ await (async () => {
       'Expected archived findings to still open the details drawer',
     );
     assert.equal(
-      Array.from(window.document.body.querySelectorAll('button')).find(button =>
-        button.textContent?.trim() === 'Edit finding',
+      Array.from(window.document.body.querySelectorAll('button')).find(
+        button => button.textContent?.trim() === 'Edit finding',
       ) ?? null,
       null,
       'Expected the drawer not to expose edit actions for archived findings',

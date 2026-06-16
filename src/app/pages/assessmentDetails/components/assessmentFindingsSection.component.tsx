@@ -78,7 +78,9 @@ const AssessmentFindingsSection = ({
           value={draftValue}
           errors={fieldErrors}
           isSubmitting={isSubmitting}
-          submitLabel={drawerMode === 'create' ? 'Create finding' : 'Save finding'}
+          submitLabel={
+            drawerMode === 'create' ? 'Create finding' : 'Save finding'
+          }
           onChange={handleFindingChange}
           onSubmit={handleFindingSave}
         />
