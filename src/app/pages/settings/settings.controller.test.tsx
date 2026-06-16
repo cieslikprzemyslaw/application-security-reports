@@ -325,7 +325,7 @@ await (async () => {
 
     const beforeUnloadEvent = new window.Event('beforeunload', {
       cancelable: true,
-    }) as Event & { returnValue?: string };
+    }) as BeforeUnloadEvent;
 
     await act(async () => {
       window.dispatchEvent(beforeUnloadEvent);
