@@ -440,17 +440,26 @@ export const useAssessmentEvidence = ({
       return;
     }
 
-    const requestBody =
+    const nextMode = drawerMode === 'edit' ? 'edit' : 'create';
+    const createRequestBody =
+      drawerMode !== 'edit'
+        ? evidenceFormValueToCreateInput(assessmentId, draftValue)
+        : undefined;
+    const updateRequestBody =
       drawerMode === 'edit'
         ? evidenceFormValueToUpdateInput(draftValue, {
             shouldClearHttpExchanges:
               baselineValue.type === 'http' && draftValue.type !== 'http',
           })
-        : evidenceFormValueToCreateInput(assessmentId, draftValue);
+        : undefined;
 
-    const nextMode = drawerMode === 'edit' ? 'edit' : 'create';
-
-    if (!(await validateAndSubmitEvidence(requestBody, draftValue, nextMode))) {
+    if (
+      !(await validateAndSubmitEvidence(
+        createRequestBody ?? updateRequestBody,
+        draftValue,
+        nextMode,
+      ))
+    ) {
       return;
     }
 
@@ -460,9 +469,14 @@ export const useAssessmentEvidence = ({
 
     try {
       if (drawerMode === 'edit' && selectedEvidenceRecord) {
-        await evidenceService.update(selectedEvidenceRecord.id, requestBody);
+        await evidenceService.update(
+          selectedEvidenceRecord.id,
+          updateRequestBody as NonNullable<typeof updateRequestBody>,
+        );
       } else {
-        await evidenceService.create(requestBody);
+        await evidenceService.create(
+          createRequestBody as NonNullable<typeof createRequestBody>,
+        );
       }
 
       reloadEvidence();
