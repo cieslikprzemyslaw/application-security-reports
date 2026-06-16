@@ -53,6 +53,7 @@ const AssessmentTable = ({
   sortBy,
   sortDirection,
   onSortChange,
+  onAssessmentClick,
   onEditAssessment,
   emptyState,
 }: AssessmentTableProps) => (
@@ -105,7 +106,26 @@ const AssessmentTable = ({
         )}
 
         {assessments.map(assessment => (
-          <tr key={assessment.id} className="assessment-table__row">
+          <tr
+            key={assessment.id}
+            className={[
+              'assessment-table__row',
+              onAssessmentClick ? 'assessment-table__row--clickable' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            tabIndex={onAssessmentClick ? 0 : undefined}
+            onClick={() => onAssessmentClick?.(assessment)}
+            onKeyDown={event => {
+              if (
+                onAssessmentClick &&
+                (event.key === 'Enter' || event.key === ' ')
+              ) {
+                event.preventDefault();
+                onAssessmentClick(assessment);
+              }
+            }}
+          >
             <td className="assessment-table__cell">
               <strong className="assessment-table__name">
                 {assessment.name}
@@ -149,7 +169,10 @@ const AssessmentTable = ({
                 <Button
                   title="Edit"
                   variant="secondary"
-                  onClick={() => onEditAssessment?.(assessment)}
+                  onClick={event => {
+                    event.stopPropagation();
+                    onEditAssessment?.(assessment);
+                  }}
                 />
               </div>
             </td>

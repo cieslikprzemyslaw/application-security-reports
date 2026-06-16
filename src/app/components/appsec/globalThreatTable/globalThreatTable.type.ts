@@ -7,9 +7,12 @@ export interface GlobalThreatRow {
   title: string;
   applicationName: string;
   companyName: string;
+  owaspCategoryCode?: string;
+  customCategory?: string;
   strideCategory: StrideCategory;
   severity: Severity;
   status: ThreatStatus;
+  evidenceCount?: number;
   updatedAt: string;
 }
 

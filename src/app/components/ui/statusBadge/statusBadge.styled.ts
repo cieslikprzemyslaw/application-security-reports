@@ -7,9 +7,11 @@ import type {
 } from './statusBadge.type';
 
 const statusKeyMap = {
+  draft: 'acceptedRisk',
   open: 'open',
   'in-review': 'inProgress',
   mitigated: 'resolved',
+  resolved: 'resolved',
   'accepted-risk': 'acceptedRisk',
   'false-positive': 'retestRequired',
 } as const;

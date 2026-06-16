@@ -39,6 +39,7 @@ export const Default: Story = {
   args: {
     activeSection: 'overview',
     overviewHref: '/companies/cmp_1/assessments/asm_1/overview',
+    findingsContent: <div>Findings table content</div>,
     onSectionChange: () => undefined,
     onAction: () => undefined,
     assessment: {

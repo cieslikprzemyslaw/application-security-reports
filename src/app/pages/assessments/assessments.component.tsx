@@ -1,7 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import AssessmentForm from '~/app/components/appsec/assessmentForm';
-import AssessmentTable from '~/app/components/appsec/assessmentTable';
+import AssessmentTable, {
+  type AssessmentListRow,
+} from '~/app/components/appsec/assessmentTable';
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import Drawer from '~/app/components/ui/drawer';
@@ -14,6 +17,7 @@ import {
   PageHeader,
   TableFooter,
 } from '~/app/components/common';
+import { routes } from '~/routes';
 
 import StyledAssessments from './assessments.styled';
 import type { AssessmentsProps } from './assessments.type';
@@ -25,6 +29,7 @@ import {
 } from './assessments.utils';
 
 const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
+  const navigate = useNavigate();
   const controller = useAssessmentsController({ companyId, companyName });
 
   const {
@@ -57,6 +62,9 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
     clearFilters,
     setDraftValue,
   } = controller;
+  const openAssessmentWorkspace = (assessment: AssessmentListRow) => {
+    navigate(routes.assessmentDetailsOverview(companyId, assessment.id));
+  };
 
   const emptyState = showEmptyWorkspace ? (
     <EmptyState
@@ -178,6 +186,7 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
               sortBy={sortBy}
               sortDirection={sortDirection}
               onSortChange={handleSortChange}
+              onAssessmentClick={openAssessmentWorkspace}
               onEditAssessment={openEditDrawer}
               emptyState={emptyState}
             />

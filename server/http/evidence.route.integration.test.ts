@@ -26,6 +26,14 @@ const migrationPath = path.resolve(
 );
 const migrationSql = readFileSync(migrationPath, 'utf8');
 const schemaSql = migrationSql.slice(migrationSql.indexOf('-- CreateTable'));
+const threatMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260616120000_add_finding_category_fields',
+  'migration.sql',
+);
+const threatMigrationSql = readFileSync(threatMigrationPath, 'utf8');
 const allowedOrigin = 'http://localhost:5173';
 const config = loadServerConfig({
   FRONTEND_ORIGIN: allowedOrigin,
@@ -81,6 +89,7 @@ const bootstrapDb = new Database(databasePath);
 
 try {
   bootstrapDb.exec(schemaSql);
+  bootstrapDb.exec(threatMigrationSql);
 } finally {
   bootstrapDb.close();
 }

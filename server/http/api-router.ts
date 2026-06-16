@@ -49,7 +49,15 @@ export const createApiRouter = (
     );
   }
   if (options.companyRepository) {
-    router.use('/companies', createCompaniesRouter(options.companyRepository));
+    router.use(
+      '/companies',
+      createCompaniesRouter(options.companyRepository, {
+        assessmentRepository: options.assessmentRepository,
+        threatRepository: options.threatRepository,
+        evidenceRepository: options.evidenceRepository,
+        reportRepository: options.reportRepository,
+      }),
+    );
   }
   if (
     options.reportRepository &&

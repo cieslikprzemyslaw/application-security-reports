@@ -6,15 +6,20 @@ export type { StrideCategory } from '~/domain';
 
 export interface ThreatFormValue {
   title: string;
-  strideCategory: StrideCategory;
+  owaspCategoryCode?: string;
+  customCategory?: string;
+  strideCategory?: StrideCategory;
   severity: Severity;
   status: ThreatStatus;
   affectedComponent: string;
   affectedEndpoint: string;
   observation: string;
+  reproductionSteps?: string;
   risk: string;
   recommendation: string;
   references: string;
+  resolutionNote?: string;
+  acceptedRiskJustification?: string;
 }
 
 export interface ThreatFormProps {

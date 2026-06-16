@@ -1,5 +1,4 @@
-import React from 'react';
-import { STRIDE_CATEGORIES, STRIDE_LABELS, THREAT_STATUSES } from '~/domain';
+import React, { useEffect, useMemo, useRef } from 'react';
 
 import Button from '~/app/components/ui/button';
 import Input from '~/app/components/ui/input';
@@ -10,6 +9,45 @@ import StyledThreatForm from './threatForm.styled';
 
 import type { ThreatFormProps, ThreatFormValue } from './threatForm.type';
 
+const owaspCategoryOptions = [
+  { label: 'A01:2021 - Broken Access Control', value: 'A01:2021' },
+  { label: 'A02:2021 - Cryptographic Failures', value: 'A02:2021' },
+  { label: 'A03:2021 - Injection', value: 'A03:2021' },
+  { label: 'A04:2021 - Insecure Design', value: 'A04:2021' },
+  { label: 'A05:2021 - Security Misconfiguration', value: 'A05:2021' },
+  {
+    label: 'A06:2021 - Vulnerable and Outdated Components',
+    value: 'A06:2021',
+  },
+  {
+    label: 'A07:2021 - Identification and Authentication Failures',
+    value: 'A07:2021',
+  },
+  {
+    label: 'A08:2021 - Software and Data Integrity Failures',
+    value: 'A08:2021',
+  },
+  {
+    label: 'A09:2021 - Security Logging and Monitoring Failures',
+    value: 'A09:2021',
+  },
+  {
+    label: 'A10:2021 - Server-Side Request Forgery',
+    value: 'A10:2021',
+  },
+  { label: 'Custom', value: 'custom' },
+] as const;
+
+const statusLabelMap: Record<ThreatFormValue['status'], string> = {
+  draft: 'Draft',
+  open: 'Open',
+  resolved: 'Resolved',
+  'accepted-risk': 'Accepted Risk',
+  'in-review': 'In Review',
+  mitigated: 'Mitigated',
+  'false-positive': 'False Positive',
+};
+
 const updateField = <K extends keyof ThreatFormValue>(
   value: ThreatFormValue,
   field: K,
@@ -19,177 +57,311 @@ const updateField = <K extends keyof ThreatFormValue>(
   [field]: fieldValue,
 });
 
+const fieldIdMap: Record<keyof ThreatFormValue, string> = {
+  title: 'threat-title',
+  owaspCategoryCode: 'threat-owasp-category-code',
+  customCategory: 'threat-custom-category',
+  strideCategory: 'threat-stride-category',
+  severity: 'threat-severity',
+  status: 'threat-status',
+  affectedComponent: 'threat-affected-component',
+  affectedEndpoint: 'threat-affected-endpoint',
+  observation: 'threat-observation',
+  reproductionSteps: 'threat-reproduction-steps',
+  risk: 'threat-risk',
+  recommendation: 'threat-remediation',
+  references: 'threat-references',
+  resolutionNote: 'threat-resolution-note',
+  acceptedRiskJustification: 'threat-accepted-risk-justification',
+};
+
 const ThreatForm = ({
   value,
   errors = {},
   isSubmitting = false,
-  submitLabel = 'Save threat',
+  submitLabel = 'Save finding',
   onChange,
   onSubmit,
-}: ThreatFormProps) => (
-  <StyledThreatForm onSubmit={onSubmit}>
-    <div className="threat-form-grid">
-      <div className="threat-form-full-width">
+}: ThreatFormProps) => {
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const owaspCategoryCode = value.owaspCategoryCode ?? '';
+  const showCustomCategory = owaspCategoryCode === 'custom';
+  const requiresOpenReadiness = value.status !== 'draft';
+  const requiresResolutionNote = value.status === 'resolved';
+  const requiresAcceptedRiskJustification = value.status === 'accepted-risk';
+
+  const firstErrorFieldId = useMemo(() => {
+    const orderedFields: Array<keyof ThreatFormValue> = [
+      'title',
+      'owaspCategoryCode',
+      'customCategory',
+      'severity',
+      'status',
+      'affectedComponent',
+      'affectedEndpoint',
+      'observation',
+      'risk',
+      'recommendation',
+      'references',
+      'resolutionNote',
+      'acceptedRiskJustification',
+    ];
+
+    const errorField = orderedFields.find(field => Boolean(errors[field]));
+
+    return errorField ? fieldIdMap[errorField] : undefined;
+  }, [errors]);
+
+  useEffect(() => {
+    if (!firstErrorFieldId) {
+      return;
+    }
+
+    const field = formRef.current?.querySelector<HTMLElement>(
+      `#${firstErrorFieldId}`,
+    );
+
+    field?.scrollIntoView({ block: 'center' });
+    field?.focus();
+  }, [firstErrorFieldId]);
+
+  return (
+    <StyledThreatForm ref={formRef} onSubmit={onSubmit} noValidate>
+      <div className="threat-form-grid">
+        <div className="threat-form-full-width">
+          <Input
+            id="threat-title"
+            label="Title"
+            value={value.title}
+            error={errors.title}
+            required
+            onChange={event =>
+              onChange(updateField(value, 'title', event.target.value))
+            }
+          />
+        </div>
+
+        <Select
+          id="threat-owasp-category-code"
+          label="OWASP category code"
+          value={owaspCategoryCode}
+          error={errors.owaspCategoryCode}
+          required
+          options={owaspCategoryOptions.map(option => ({
+            label: option.label,
+            value: option.value,
+          }))}
+          onChange={event =>
+            onChange({
+              ...value,
+              owaspCategoryCode: event.target
+                .value as ThreatFormValue['owaspCategoryCode'],
+              customCategory:
+                event.target.value === 'custom' ? value.customCategory : '',
+            })
+          }
+        />
+
+        {showCustomCategory && (
+          <div className="threat-form-full-width">
+            <Input
+              id="threat-custom-category"
+              label="Custom category"
+              value={value.customCategory ?? ''}
+              error={errors.customCategory}
+              placeholder="Business logic flaw"
+              required
+              onChange={event =>
+                onChange(
+                  updateField(value, 'customCategory', event.target.value),
+                )
+              }
+            />
+          </div>
+        )}
+
+        <Select
+          id="threat-severity"
+          label="Severity"
+          value={value.severity}
+          error={errors.severity}
+          required
+          options={(
+            ['critical', 'high', 'medium', 'low', 'informational'] as const
+          ).map(value => ({
+            label:
+              value === 'informational'
+                ? 'Informational'
+                : value.charAt(0).toUpperCase() + value.slice(1),
+            value,
+          }))}
+          onChange={event =>
+            onChange(
+              updateField(
+                value,
+                'severity',
+                event.target.value as ThreatFormValue['severity'],
+              ),
+            )
+          }
+        />
+
+        <Select
+          id="threat-status"
+          label="Status"
+          value={value.status}
+          error={errors.status}
+          required
+          options={Object.entries(statusLabelMap).map(([status, label]) => ({
+            label,
+            value: status,
+          }))}
+          onChange={event =>
+            onChange(
+              updateField(
+                value,
+                'status',
+                event.target.value as ThreatFormValue['status'],
+              ),
+            )
+          }
+        />
+
         <Input
-          label="Title"
-          value={value.title}
-          error={errors.title}
-          required
+          id="threat-affected-component"
+          label="Affected component"
+          value={value.affectedComponent}
+          error={errors.affectedComponent}
+          required={requiresOpenReadiness}
           onChange={event =>
-            onChange(updateField(value, 'title', event.target.value))
+            onChange(
+              updateField(value, 'affectedComponent', event.target.value),
+            )
           }
         />
+
+        <div className="threat-form-full-width">
+          <Input
+            id="threat-affected-endpoint"
+            label="Affected endpoint"
+            value={value.affectedEndpoint}
+            error={errors.affectedEndpoint}
+            placeholder="/api/v1/orders/{id}"
+            onChange={event =>
+              onChange(
+                updateField(value, 'affectedEndpoint', event.target.value),
+              )
+            }
+          />
+        </div>
+
+        <div className="threat-form-full-width">
+          <Textarea
+            id="threat-observation"
+            label="Reproduction steps"
+            value={value.observation}
+            error={errors.observation}
+            required={requiresOpenReadiness}
+            onChange={event =>
+              onChange(updateField(value, 'observation', event.target.value))
+            }
+          />
+        </div>
+
+        <div className="threat-form-full-width">
+          <Textarea
+            id="threat-risk"
+            label="Impact"
+            value={value.risk}
+            error={errors.risk}
+            required={requiresOpenReadiness}
+            onChange={event =>
+              onChange(updateField(value, 'risk', event.target.value))
+            }
+          />
+        </div>
+
+        <div className="threat-form-full-width">
+          <Textarea
+            id="threat-remediation"
+            label="Remediation"
+            value={value.recommendation}
+            error={errors.recommendation}
+            required={requiresOpenReadiness}
+            onChange={event =>
+              onChange(updateField(value, 'recommendation', event.target.value))
+            }
+          />
+        </div>
+
+        {requiresResolutionNote && (
+          <div className="threat-form-full-width">
+            <Textarea
+              id="threat-resolution-note"
+              label="Resolution note"
+              value={value.resolutionNote ?? ''}
+              error={errors.resolutionNote}
+              required
+              onChange={event =>
+                onChange(
+                  updateField(value, 'resolutionNote', event.target.value),
+                )
+              }
+            />
+          </div>
+        )}
+
+        {requiresAcceptedRiskJustification && (
+          <div className="threat-form-full-width">
+            <Textarea
+              id="threat-accepted-risk-justification"
+              label="Accepted-risk justification"
+              value={value.acceptedRiskJustification ?? ''}
+              error={errors.acceptedRiskJustification}
+              required
+              onChange={event =>
+                onChange(
+                  updateField(
+                    value,
+                    'acceptedRiskJustification',
+                    event.target.value,
+                  ),
+                )
+              }
+            />
+          </div>
+        )}
+
+        <div className="threat-form-full-width">
+          <Input
+            id="threat-references"
+            label="References"
+            value={value.references}
+            error={errors.references}
+            required={requiresOpenReadiness}
+            placeholder="OWASP API1:2023, CWE-639"
+            onChange={event =>
+              onChange(updateField(value, 'references', event.target.value))
+            }
+          />
+        </div>
       </div>
 
-      <Select
-        label="STRIDE category"
-        value={value.strideCategory}
-        error={errors.strideCategory}
-        required
-        options={STRIDE_CATEGORIES.map(value => ({
-          label: STRIDE_LABELS[value],
-          value,
-        }))}
-        onChange={event =>
-          onChange(
-            updateField(
-              value,
-              'strideCategory',
-              event.target.value as ThreatFormValue['strideCategory'],
-            ),
-          )
-        }
-      />
+      <p className="threat-form-readiness-note">
+        Draft findings can be saved with partial details. Open, resolved, and
+        accepted-risk findings require the core finding fields and any
+        status-specific notes.
+      </p>
 
-      <Select
-        label="Severity"
-        value={value.severity}
-        error={errors.severity}
-        required
-        options={(
-          ['critical', 'high', 'medium', 'low', 'informational'] as const
-        ).map(value => ({
-          label:
-            value === 'informational'
-              ? 'Informational'
-              : value.charAt(0).toUpperCase() + value.slice(1),
-          value,
-        }))}
-        onChange={event =>
-          onChange(
-            updateField(
-              value,
-              'severity',
-              event.target.value as ThreatFormValue['severity'],
-            ),
-          )
-        }
-      />
-
-      <Select
-        label="Status"
-        value={value.status}
-        error={errors.status}
-        required
-        options={THREAT_STATUSES.map(value => ({
-          label: {
-            open: 'Open',
-            'in-review': 'In Review',
-            mitigated: 'Mitigated',
-            'accepted-risk': 'Accepted Risk',
-            'false-positive': 'False Positive',
-          }[value],
-          value,
-        }))}
-        onChange={event =>
-          onChange(
-            updateField(
-              value,
-              'status',
-              event.target.value as ThreatFormValue['status'],
-            ),
-          )
-        }
-      />
-
-      <Input
-        label="Affected component"
-        value={value.affectedComponent}
-        error={errors.affectedComponent}
-        onChange={event =>
-          onChange(updateField(value, 'affectedComponent', event.target.value))
-        }
-      />
-
-      <div className="threat-form-full-width">
-        <Input
-          label="Affected endpoint"
-          value={value.affectedEndpoint}
-          error={errors.affectedEndpoint}
-          placeholder="/api/v1/orders/{id}"
-          onChange={event =>
-            onChange(updateField(value, 'affectedEndpoint', event.target.value))
-          }
+      <div className="threat-form-actions">
+        <Button
+          type="submit"
+          title={isSubmitting ? 'Saving' : submitLabel}
+          isLoading={isSubmitting}
         />
       </div>
-
-      <div className="threat-form-full-width">
-        <Textarea
-          label="Observation"
-          value={value.observation}
-          error={errors.observation}
-          required
-          onChange={event =>
-            onChange(updateField(value, 'observation', event.target.value))
-          }
-        />
-      </div>
-
-      <div className="threat-form-full-width">
-        <Textarea
-          label="Risk"
-          value={value.risk}
-          error={errors.risk}
-          required
-          onChange={event =>
-            onChange(updateField(value, 'risk', event.target.value))
-          }
-        />
-      </div>
-
-      <div className="threat-form-full-width">
-        <Textarea
-          label="Recommendation"
-          value={value.recommendation}
-          error={errors.recommendation}
-          required
-          onChange={event =>
-            onChange(updateField(value, 'recommendation', event.target.value))
-          }
-        />
-      </div>
-
-      <div className="threat-form-full-width">
-        <Input
-          label="References"
-          value={value.references}
-          error={errors.references}
-          placeholder="OWASP API1:2023, CWE-639"
-          onChange={event =>
-            onChange(updateField(value, 'references', event.target.value))
-          }
-        />
-      </div>
-    </div>
-
-    <div className="threat-form-actions">
-      <Button
-        type="submit"
-        title={isSubmitting ? 'Saving' : submitLabel}
-        isLoading={isSubmitting}
-      />
-    </div>
-  </StyledThreatForm>
-);
+    </StyledThreatForm>
+  );
+};
 
 export default ThreatForm;

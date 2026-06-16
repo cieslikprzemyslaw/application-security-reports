@@ -1,58 +1,21 @@
 import { styled, css } from 'styled-components';
 
-const StyledThreatDrawer = styled.aside.attrs({ className: 'threat-drawer' })<{
-  $isOpen: boolean;
-}>`
-  ${({
-    theme: {
-      colors,
-      radii,
-      shadows,
-      spacing,
-      transitions,
-      typography,
-      zIndices,
-    },
-  }) => css<{ $isOpen: boolean }>`
-    position: fixed;
-    inset: 0 0 0 auto;
-    z-index: ${zIndices.drawer};
+const StyledThreatDrawer = styled.div.attrs({ className: 'threat-drawer' })`
+  ${({ theme: { colors, spacing, typography } }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.m};
 
-    width: min(100%, 32rem);
-    overflow-y: auto;
-
-    transform: translateX(${({ $isOpen }) => ($isOpen ? '0' : '100%')});
-    transition: transform ${transitions.base};
-
-    background-color: ${colors.surface.card};
-    box-shadow: ${shadows.lg};
-
-    .threat-drawer-header {
+    .threat-drawer-meta {
       display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: ${spacing.s};
-
-      padding: ${spacing.m};
-      border-bottom: 1px solid ${colors.border.subtle};
+      flex-wrap: wrap;
+      gap: ${spacing.xxs};
     }
 
     .threat-drawer-body {
       display: flex;
       flex-direction: column;
       gap: ${spacing.m};
-
-      padding: ${spacing.m};
-    }
-
-    .threat-drawer-title {
-      font-size: ${typography.headings.h5.size};
-    }
-
-    .threat-drawer-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: ${spacing.xxs};
     }
 
     .threat-drawer-section {
@@ -65,13 +28,14 @@ const StyledThreatDrawer = styled.aside.attrs({ className: 'threat-drawer' })<{
       font-size: ${typography.headings.h6.size};
     }
 
-    .threat-drawer-close-button {
-      padding: 0.375rem;
-
-      border: 0;
-      border-radius: ${radii.md};
+    .threat-drawer-copy {
       color: ${colors.text.secondary};
-      background: transparent;
+      overflow-wrap: anywhere;
+    }
+
+    .threat-drawer-actions {
+      display: flex;
+      justify-content: flex-end;
     }
   `}
 `;

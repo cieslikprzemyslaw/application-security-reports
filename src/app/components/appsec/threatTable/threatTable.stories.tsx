@@ -13,6 +13,9 @@ const meta = {
     onThreatClick: {
       action: 'threat clicked',
     },
+    onEditThreatClick: {
+      action: 'finding edited',
+    },
   },
 } satisfies Meta<typeof ThreatTable>;
 
@@ -22,26 +25,27 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
+    onEditThreatClick: () => undefined,
     threats: [
       {
         id: 'thr_1',
         title: 'Missing Server-Side Authorization',
-        endpoint: '/api/v1/orders/{id}',
-        strideCategory: 'elevation-of-privilege',
+        owaspCategoryCode: 'A01:2021',
         severity: 'critical',
         status: 'open',
-        component: 'Orders API',
+        evidenceCount: 3,
         updatedAt: '28 May 2026',
+        affectedComponent: 'Orders API',
       },
       {
         id: 'thr_2',
         title: 'Sensitive Data Returned by API',
-        endpoint: '/api/v1/customers/{id}',
-        strideCategory: 'information-disclosure',
+        customCategory: 'Data exposure',
         severity: 'high',
-        status: 'in-review',
-        component: 'Customer API',
+        status: 'draft',
+        evidenceCount: 1,
         updatedAt: '27 May 2026',
+        affectedComponent: 'Customer API',
       },
     ],
   },

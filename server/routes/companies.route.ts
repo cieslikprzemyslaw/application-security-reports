@@ -4,13 +4,16 @@ import {
   type Request,
   type Response,
 } from 'express';
+import { z } from 'zod';
 
 import type { Company } from '../../src/domain/company.js';
+import type { Assessment } from '../../src/domain/assessment.js';
 import {
   companyRouteParamsSchema,
   createCompanyRequestSchema,
   updateCompanyRequestSchema,
 } from '../../src/domain/schemas/index.js';
+import { prefixedUuidSchema } from '../../src/domain/schemas/common.schema.js';
 import { sendApiError } from '../http/api-errors.js';
 import { createRequestValidationMiddleware } from '../http/request-validation.js';
 import {
@@ -20,6 +23,33 @@ import {
   RepositoryNotFoundError,
 } from '../database/errors.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
+import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
+import type { ThreatRepository } from '../database/repositories/threat.repository.js';
+import type { EvidenceRepository } from '../database/repositories/evidence.repository.js';
+import type { ReportRepository } from '../database/repositories/report.repository.js';
+
+const companyAssessmentOverviewRouteParamsSchema = z
+  .object({
+    id: prefixedUuidSchema('cmp_', 'Company'),
+    assessmentId: prefixedUuidSchema('asm_', 'Assessment'),
+  })
+  .strict();
+
+type AssessmentWorkspaceCommand = 'start' | 'complete' | 'reopen' | 'archive';
+
+type AssessmentWorkspaceOverview = {
+  company: {
+    id: string;
+    name: string;
+  };
+  assessment: Assessment & {
+    recordVersion: number;
+    findingsCount: number;
+    evidenceCount: number;
+    reportVersionCount: number;
+    availableActions?: AssessmentWorkspaceCommand[];
+  };
+};
 
 const companyResponse = (company: Company): Company => ({ ...company });
 
@@ -89,6 +119,12 @@ const asyncRoute =
 
 export const createCompaniesRouter = (
   companyRepository: CompanyRepository,
+  dependencies: {
+    assessmentRepository?: AssessmentRepository;
+    threatRepository?: ThreatRepository;
+    evidenceRepository?: EvidenceRepository;
+    reportRepository?: ReportRepository;
+  } = {},
 ): Router => {
   const router = Router();
 
@@ -133,6 +169,91 @@ export const createCompaniesRouter = (
       }
     }),
   );
+
+  if (
+    dependencies.assessmentRepository &&
+    dependencies.threatRepository &&
+    dependencies.evidenceRepository &&
+    dependencies.reportRepository
+  ) {
+    const {
+      assessmentRepository,
+      threatRepository,
+      evidenceRepository,
+      reportRepository,
+    } = dependencies;
+
+    router.get(
+      '/:id/assessments/:assessmentId/overview',
+      createRequestValidationMiddleware({
+        params: companyAssessmentOverviewRouteParamsSchema,
+      }),
+      asyncRoute(async (_req, res) => {
+        const { id: companyId, assessmentId } = res.locals.validatedRequest
+          ?.params as {
+          id: string;
+          assessmentId: string;
+        };
+
+        try {
+          const company = await companyRepository.findById(companyId);
+
+          if (!company) {
+            sendApiError(res, 404, 'COMPANY_NOT_FOUND', 'Company not found');
+            return;
+          }
+
+          const assessment = await assessmentRepository.findById(assessmentId);
+
+          if (!assessment || assessment.companyId !== companyId) {
+            sendApiError(
+              res,
+              404,
+              'ASSESSMENT_NOT_FOUND',
+              'Assessment not found',
+            );
+            return;
+          }
+
+          const [threats, evidence, reports] = await Promise.all([
+            threatRepository.findByAssessmentId(assessmentId),
+            evidenceRepository.findByAssessmentId(assessmentId),
+            reportRepository.findByAssessmentId(assessmentId),
+          ]);
+
+          const workspaceOverview: AssessmentWorkspaceOverview = {
+            company: {
+              id: company.id,
+              name: company.name,
+            },
+            assessment: {
+              ...assessment,
+              recordVersion: new Date(assessment.updatedAt).getTime(),
+              findingsCount: threats.length,
+              evidenceCount: evidence.length,
+              reportVersionCount: reports.length,
+              availableActions:
+                assessment.status === 'draft'
+                  ? ['start', 'archive']
+                  : assessment.status === 'in-progress'
+                    ? ['complete', 'archive']
+                    : assessment.status === 'completed'
+                      ? ['reopen', 'archive']
+                      : ['reopen'],
+            },
+          };
+
+          res.status(200).json({
+            data: workspaceOverview,
+          });
+        } catch (error) {
+          if (!handleCompanyRepositoryError(error, res, 'retrieve')) {
+            throw error;
+          }
+        }
+      }),
+    );
+  }
 
   router.get(
     '/:id',

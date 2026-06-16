@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { AssessmentStatus, Severity } from '~/domain';
 
 export const assessmentDetailSections = [
@@ -50,6 +52,7 @@ export interface AssessmentDetailsViewProps {
   assessment: AssessmentDetailsAssessment;
   activeSection: AssessmentDetailSection;
   overviewHref: string;
+  findingsContent?: ReactNode;
   onSectionChange: (section: AssessmentDetailSection) => void;
   onBack?: () => void;
   onAction: (action: AssessmentDetailAction) => void;

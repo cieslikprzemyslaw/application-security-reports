@@ -41,6 +41,16 @@ const migrationPath = path.resolve(
 );
 const migrationSql = readFileSync(migrationPath, 'utf8');
 const schemaSql = migrationSql.slice(migrationSql.indexOf('-- CreateTable'));
+const threatMigrationPath = path.resolve(
+  buildDir,
+  '..',
+  '..',
+  'prisma',
+  'migrations',
+  '20260616120000_add_finding_category_fields',
+  'migration.sql',
+);
+const threatMigrationSql = readFileSync(threatMigrationPath, 'utf8');
 const adapterUrl = databaseUrl.startsWith('file:')
   ? `file:${databasePath}`
   : databasePath;
@@ -55,6 +65,7 @@ const Database = require('better-sqlite3') as new (databasePath: string) => {
   const bootstrapDb = new Database(databasePath);
   try {
     bootstrapDb.exec(schemaSql);
+    bootstrapDb.exec(threatMigrationSql);
   } finally {
     bootstrapDb.close();
   }

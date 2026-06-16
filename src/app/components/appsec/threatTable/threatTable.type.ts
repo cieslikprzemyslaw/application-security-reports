@@ -1,14 +1,27 @@
-import type { Severity, StrideCategory, ThreatStatus } from '~/domain';
+import type { Severity, ThreatStatus } from '~/domain';
 
 export interface ThreatTableRow {
   id: string;
   title: string;
-  endpoint?: string;
-  strideCategory: StrideCategory;
+  owaspCategoryCode?: string;
+  customCategory?: string;
   severity: Severity;
   status: ThreatStatus;
-  component: string;
+  evidenceCount?: number;
   updatedAt: string;
+  applicationName?: string;
+  companyName?: string;
+  affectedComponent?: string;
+  affectedEndpoint?: string;
+  impact?: string;
+  recommendation?: string;
+  remediation?: string;
+  observation?: string;
+  reproductionSteps?: string;
+  risk?: string;
+  references?: string;
+  resolutionNote?: string;
+  acceptedRiskJustification?: string;
 }
 
 export interface ThreatTableProps {
@@ -16,4 +29,5 @@ export interface ThreatTableProps {
   isLoading?: boolean;
   emptyState?: React.ReactNode;
   onThreatClick?: (threat: ThreatTableRow) => void;
+  onEditThreatClick?: (threat: ThreatTableRow) => void;
 }

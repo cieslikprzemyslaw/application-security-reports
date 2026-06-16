@@ -7,6 +7,8 @@ import type { ThreatFormValue } from './threatForm.type';
 
 const initialValue: ThreatFormValue = {
   title: 'Missing Server-Side Authorization',
+  owaspCategoryCode: 'A01:2021',
+  customCategory: '',
   strideCategory: 'elevation-of-privilege',
   severity: 'critical',
   status: 'open',
@@ -14,9 +16,13 @@ const initialValue: ThreatFormValue = {
   affectedEndpoint: '/api/v1/orders/{id}',
   observation:
     'The endpoint returns objects without verifying resource ownership.',
+  reproductionSteps:
+    'Request another user account while authenticated as a low-privilege user.',
   risk: 'An authenticated user can read another customer’s order details.',
   recommendation: 'Enforce object-level authorization on every request.',
   references: 'OWASP API1:2023, CWE-639',
+  resolutionNote: '',
+  acceptedRiskJustification: '',
 };
 
 const meta = {

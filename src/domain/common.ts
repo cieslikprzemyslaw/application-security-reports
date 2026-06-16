@@ -65,7 +65,9 @@ export const ASSESSMENT_STATUSES = [
 export type AssessmentStatus = (typeof ASSESSMENT_STATUSES)[number];
 
 export const THREAT_STATUSES = [
+  'draft',
   'open',
+  'resolved',
   'in-review',
   'mitigated',
   'accepted-risk',
