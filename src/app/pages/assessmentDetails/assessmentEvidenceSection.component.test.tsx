@@ -54,6 +54,8 @@ const setupDom = () => {
   };
 };
 
+type TestWindow = ReturnType<typeof setupDom>['window'];
+
 const assessment: AssessmentDetailsAssessment = {
   id: 'asm_00000000-0000-0000-0000-000000000001',
   companyId: 'cmp_00000000-0000-0000-0000-000000000001',
@@ -168,13 +170,13 @@ const createEvidenceRecord = (
 });
 
 const setInputValue = (
-  window: Window,
+  window: TestWindow,
   element: HTMLInputElement | HTMLTextAreaElement,
   value: string,
 ) => {
   element.value = value;
   element.dispatchEvent(
-    new window.Event('input', {
+    new Event('input', {
       bubbles: true,
       cancelable: true,
     }),
@@ -182,13 +184,13 @@ const setInputValue = (
 };
 
 const setSelectValue = (
-  window: Window,
+  window: TestWindow,
   element: HTMLSelectElement,
   value: string,
 ) => {
   element.value = value;
   element.dispatchEvent(
-    new window.Event('change', {
+    new Event('change', {
       bubbles: true,
       cancelable: true,
     }),
@@ -196,13 +198,13 @@ const setSelectValue = (
 };
 
 const toggleCheckbox = (
-  window: Window,
+  window: TestWindow,
   element: HTMLInputElement,
   checked: boolean,
 ) => {
   element.checked = checked;
   element.dispatchEvent(
-    new window.Event('change', {
+    new Event('change', {
       bubbles: true,
       cancelable: true,
     }),
@@ -210,7 +212,7 @@ const toggleCheckbox = (
 };
 
 const setFileSelection = (
-  window: Window,
+  window: TestWindow,
   element: HTMLInputElement,
   files: File[],
 ) => {
@@ -220,16 +222,16 @@ const setFileSelection = (
   });
 
   element.dispatchEvent(
-    new window.Event('change', {
+    new Event('change', {
       bubbles: true,
       cancelable: true,
     }),
   );
 };
 
-const clickButton = (window: Window, button: HTMLButtonElement) => {
+const clickButton = (window: TestWindow, button: HTMLButtonElement) => {
   button.dispatchEvent(
-    new window.MouseEvent('click', {
+    new MouseEvent('click', {
       bubbles: true,
       cancelable: true,
       button: 0,

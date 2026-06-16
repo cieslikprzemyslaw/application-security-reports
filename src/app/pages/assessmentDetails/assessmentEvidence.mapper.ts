@@ -132,11 +132,13 @@ interface EvidenceRequestBuildOptions {
   includeClearedHttpExchanges?: boolean;
 }
 
+type EvidenceRequestInput = Omit<EvidenceCreateInput, 'assessmentId'>;
+type EvidenceCreateRequestInput = EvidenceCreateInput;
+
 const buildEvidenceRequestInput = (
   value: EvidenceFormValue,
   options: EvidenceRequestBuildOptions = {},
-): Omit<EvidenceCreateInput, 'assessmentId'> &
-  Partial<Pick<EvidenceUpdateInput, 'assessmentId'>> => {
+): EvidenceRequestInput => {
   const request: Record<string, unknown> = {
     type: value.type,
     title: value.title.trim(),
@@ -162,15 +164,17 @@ const buildEvidenceRequestInput = (
     request.httpExchanges = [];
   }
 
-  return request as Omit<EvidenceCreateInput, 'assessmentId'> &
-    Partial<Pick<EvidenceUpdateInput, 'assessmentId'>>;
+  return request as EvidenceRequestInput;
 };
 
 export const evidenceFormValueToCreateInput = (
   assessmentId: string,
   value: EvidenceFormValue,
 ): EvidenceCreateInput =>
-  buildEvidenceRequestInput(value, { assessmentId }) as EvidenceCreateInput;
+  ({
+    ...buildEvidenceRequestInput(value),
+    assessmentId,
+  }) as EvidenceCreateRequestInput;
 
 export const evidenceFormValueToUpdateInput = (
   value: EvidenceFormValue,
