@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
-import { reportCover, settingsValue, threats } from './appData';
+import { reportCover, threats } from './appData';
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import { PageHeader } from '~/app/components/common';
@@ -124,16 +124,4 @@ export const ThreatsRoute = () => {
 
 export const ReportsRoute = () => <Reports cover={reportCover} />;
 
-export const SettingsRoute = () => {
-  const [value, setValue] = useState(settingsValue);
-
-  return (
-    <Settings
-      value={value}
-      onChange={setValue}
-      onSubmit={event => {
-        event.preventDefault();
-      }}
-    />
-  );
-};
+export const SettingsRoute = () => <Settings />;

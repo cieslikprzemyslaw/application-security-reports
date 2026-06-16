@@ -8,8 +8,6 @@ import type { ReportCoverProps } from '~/app/components/appsec/reportCover';
 import type { SeverityDistributionItem } from '~/app/components/appsec/severityDistribution';
 
 import type { DashboardStats } from './pages/dashboard';
-import type { SettingsValue } from './pages/settings';
-
 const ActivityIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
     <path
@@ -247,21 +245,6 @@ export const threats: GlobalThreatRow[] = [
     updatedAt: '24 May 2026',
   },
 ];
-
-export const settingsValue: SettingsValue = {
-  fullName: 'Alex Mercer',
-  role: 'Lead Pentester',
-  email: 'alex.mercer@appsec.io',
-  companyName: 'Northstar Digital',
-  website: 'www.northstardigital.io',
-  contactEmail: 'security@northstardigital.io',
-  reportFooterText:
-    '© 2026 Northstar Digital. Confidential — do not distribute.',
-  methodology: 'OWASP ASVS / WSTG',
-  reportStyle: 'Technical & structured',
-  includeEvidence: true,
-  confidentialReports: true,
-};
 
 export const assessmentDetailsById: Record<
   string,

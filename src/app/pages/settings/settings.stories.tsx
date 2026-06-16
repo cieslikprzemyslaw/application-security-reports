@@ -8,12 +8,13 @@ import Settings from './settings.component';
 import type { SettingsValue } from './settings.type';
 
 const initialValue: SettingsValue = {
-  fullName: 'Alex Mercer',
-  role: 'Lead Pentester',
-  email: 'alex.mercer@appsec.io',
-  companyName: 'Northstar Digital',
-  website: 'www.northstardigital.io',
-  contactEmail: 'security@northstardigital.io',
+  organisationName: 'Northstar Digital',
+  consultantName: 'Alex Mercer',
+  consultantEmail: 'alex.mercer@appsec.io',
+  defaultReportTitle: 'Northstar Digital Security Assessment',
+  defaultSeverity: 'high',
+  theme: 'system',
+  dateFormat: 'YYYY-MM-DD',
   reportFooterText:
     '© 2026 Northstar Digital. Confidential — do not distribute.',
   methodology: 'OWASP ASVS / WSTG',
@@ -45,6 +46,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     value: initialValue,
+    previewTheme: 'light',
     onChange: () => undefined,
     onSubmit: event => event.preventDefault(),
   },
@@ -54,6 +56,7 @@ export const Default: Story = {
     return (
       <Settings
         value={value}
+        previewTheme={value.theme === 'dark' ? 'dark' : 'light'}
         onChange={setValue}
         onSubmit={event => event.preventDefault()}
       />

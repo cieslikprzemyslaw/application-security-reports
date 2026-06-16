@@ -1,12 +1,19 @@
-import React, { lazy, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  lazy,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import {
-  BrowserRouter,
+  createBrowserRouter,
+  createRoutesFromElements,
   Navigate,
   Route,
-  Routes,
+  RouterProvider,
   matchPath,
-  useNavigate,
   useLocation,
+  useNavigate,
   useParams,
 } from 'react-router-dom';
 
@@ -45,6 +52,32 @@ import type { CompanyIdentity } from './pages/companies';
 const Companies = lazy(() => import('./pages/companies'));
 const AssessmentDetails = lazy(() => import('./pages/assessmentDetails'));
 const ReportDetails = lazy(() => import('./pages/reportDetails'));
+
+interface RouterShellContextValue {
+  activeCompany?: CompanyIdentity;
+  activeCompanyId?: string;
+  companies: CompanyListItem[];
+  companiesLoadError?: string;
+  isCompaniesLoading: boolean;
+  openCreateDrawer: boolean;
+  onActiveCompanyChange: (company?: CompanyIdentity) => void;
+  onCompaniesChange: (companies: CompanyListItem[]) => void;
+  onRetryCompanies: () => void;
+}
+
+const RouterShellContext = createContext<RouterShellContextValue | undefined>(
+  undefined,
+);
+
+const useRouterShellContext = () => {
+  const context = useContext(RouterShellContext);
+
+  if (!context) {
+    throw new Error('Router shell context is unavailable.');
+  }
+
+  return context;
+};
 
 interface CompaniesRouteProps {
   activeCompany?: CompanyIdentity;
@@ -96,6 +129,73 @@ const ReportDetailsRoute = () => {
 };
 
 const RedirectToDashboard = () => <Navigate replace to={routes.dashboard} />;
+
+const DashboardRouteElement = () => {
+  const {
+    companies,
+    companiesLoadError,
+    isCompaniesLoading,
+    onActiveCompanyChange,
+    onRetryCompanies,
+  } = useRouterShellContext();
+
+  return (
+    <DashboardRoute
+      companies={companies}
+      companiesLoadError={companiesLoadError}
+      isCompaniesLoading={isCompaniesLoading}
+      onOpenCompany={onActiveCompanyChange}
+      onRetryCompanies={onRetryCompanies}
+    />
+  );
+};
+
+const CompaniesRouteElement = () => {
+  const {
+    activeCompany,
+    onActiveCompanyChange,
+    onCompaniesChange,
+    openCreateDrawer,
+  } = useRouterShellContext();
+
+  return (
+    <CompaniesRoute
+      activeCompany={activeCompany}
+      openCreateDrawer={openCreateDrawer}
+      onCompaniesChange={onCompaniesChange}
+      onActiveCompanyChange={onActiveCompanyChange}
+    />
+  );
+};
+
+const CompanyWorkspaceRouteShellElement = () => {
+  const { companies, isCompaniesLoading } = useRouterShellContext();
+
+  return (
+    <CompanyWorkspaceRouteShell
+      companies={companies}
+      isCompaniesLoading={isCompaniesLoading}
+    />
+  );
+};
+
+const AssessmentsRouteElement = () => {
+  const { activeCompanyId } = useRouterShellContext();
+
+  return <AssessmentsRoute activeCompanyId={activeCompanyId} />;
+};
+
+const CompanyAssessmentsRouteElement = () => {
+  const { activeCompany } = useRouterShellContext();
+
+  return <CompanyAssessmentsRoute companyName={activeCompany?.name} />;
+};
+
+const CompanyActivityRouteElement = () => {
+  const { activeCompany } = useRouterShellContext();
+
+  return <CompanyActivityRoute companyName={activeCompany?.name} />;
+};
 
 const RouterShell = () => {
   const navigate = useNavigate();
@@ -199,115 +299,104 @@ const RouterShell = () => {
       : undefined;
 
   return (
-    <Routes>
-      <Route path={routePatterns.root} element={<RedirectToDashboard />} />
-
-      <Route
-        element={
-          <AppLayout
-            key={activeCompany?.id ?? activeCompanyId ?? 'no-active-company'}
-            activeCompany={activeCompany}
-            companies={companies}
-            isCompaniesLoading={isCompaniesLoading}
-            navigationGroups={navigationGroups}
-            onActiveCompanyChange={handleActiveCompanyChange}
-          />
-        }
-      >
-        <Route
-          path={routePatterns.dashboard}
-          element={
-            <DashboardRoute
-              companies={companies}
-              companiesLoadError={companiesLoadError}
-              isCompaniesLoading={isCompaniesLoading}
-              onOpenCompany={handleActiveCompanyChange}
-              onRetryCompanies={reloadCompanies}
-            />
-          }
-        />
-        <Route
-          path={routePatterns.companies}
-          element={
-            <CompaniesRoute
-              activeCompany={activeCompany}
-              openCreateDrawer={Boolean(
-                companiesLocationState?.openCreateDrawer,
-              )}
-              onCompaniesChange={setCompanies}
-              onActiveCompanyChange={handleActiveCompanyChange}
-            />
-          }
-        />
-        <Route
-          path={routePatterns.companyWorkspace}
-          element={
-            <CompanyWorkspaceRouteShell
-              companies={companies}
-              isCompaniesLoading={isCompaniesLoading}
-            />
-          }
-        >
-          <Route index element={<CompanyWorkspaceIndexRoute />} />
-          <Route path="overview" element={<CompanyOverviewRoute />} />
-          <Route
-            path="assessments"
-            element={
-              <CompanyAssessmentsRoute companyName={activeCompany?.name} />
-            }
-          />
-          <Route path="reports" element={<CompanyReportsRoute />} />
-          <Route
-            path="activity"
-            element={<CompanyActivityRoute companyName={activeCompany?.name} />}
-          />
-          <Route path="*" element={<CompanyWorkspaceNotFoundRoute />} />
-        </Route>
-        <Route
-          path={routePatterns.assessments}
-          element={<AssessmentsRoute activeCompanyId={activeCompany?.id} />}
-        />
-        <Route
-          path={routePatterns.assessmentDetails}
-          element={<AssessmentDetailsRoute section="overview" />}
-        />
-        <Route
-          path={routePatterns.assessmentDetailsOverview}
-          element={<AssessmentDetailsRoute section="overview" />}
-        />
-        <Route
-          path={routePatterns.assessmentDetailsFindings}
-          element={<AssessmentDetailsRoute section="findings" />}
-        />
-        <Route
-          path={routePatterns.assessmentDetailsEvidence}
-          element={<AssessmentDetailsRoute section="evidence" />}
-        />
-        <Route
-          path={routePatterns.assessmentDetailsReports}
-          element={<AssessmentDetailsRoute section="reports" />}
-        />
-        <Route
-          path={routePatterns.assessmentDetailsHistory}
-          element={<AssessmentDetailsRoute section="history" />}
-        />
-        <Route
-          path={routePatterns.reportDetails}
-          element={<ReportDetailsRoute />}
-        />
-        <Route path={routePatterns.threats} element={<ThreatsRoute />} />
-        <Route path={routePatterns.reports} element={<ReportsRoute />} />
-        <Route path={routePatterns.settings} element={<SettingsRoute />} />
-        <Route path="*" element={<NotFound />} />
-      </Route>
-    </Routes>
+    <RouterShellContext.Provider
+      value={{
+        activeCompany,
+        activeCompanyId,
+        companies,
+        companiesLoadError,
+        isCompaniesLoading,
+        openCreateDrawer: Boolean(companiesLocationState?.openCreateDrawer),
+        onActiveCompanyChange: handleActiveCompanyChange,
+        onCompaniesChange: nextCompanies => setCompanies(nextCompanies),
+        onRetryCompanies: reloadCompanies,
+      }}
+    >
+      <AppLayout
+        key={activeCompany?.id ?? activeCompanyId ?? 'no-active-company'}
+        activeCompany={activeCompany}
+        companies={companies}
+        isCompaniesLoading={isCompaniesLoading}
+        navigationGroups={navigationGroups}
+        onActiveCompanyChange={handleActiveCompanyChange}
+      />
+    </RouterShellContext.Provider>
   );
 };
 
-const AppRouter = () => (
-  <BrowserRouter>
-    <RouterShell />
-  </BrowserRouter>
-);
+const createAppRouter = () =>
+  createBrowserRouter(
+    createRoutesFromElements(
+      <>
+        <Route path={routePatterns.root} element={<RedirectToDashboard />} />
+        <Route element={<RouterShell />}>
+          <Route
+            path={routePatterns.dashboard}
+            element={<DashboardRouteElement />}
+          />
+          <Route
+            path={routePatterns.companies}
+            element={<CompaniesRouteElement />}
+          />
+          <Route
+            path={routePatterns.companyWorkspace}
+            element={<CompanyWorkspaceRouteShellElement />}
+          >
+            <Route index element={<CompanyWorkspaceIndexRoute />} />
+            <Route path="overview" element={<CompanyOverviewRoute />} />
+            <Route
+              path="assessments"
+              element={<CompanyAssessmentsRouteElement />}
+            />
+            <Route path="reports" element={<CompanyReportsRoute />} />
+            <Route path="activity" element={<CompanyActivityRouteElement />} />
+            <Route path="*" element={<CompanyWorkspaceNotFoundRoute />} />
+          </Route>
+          <Route
+            path={routePatterns.assessments}
+            element={<AssessmentsRouteElement />}
+          />
+          <Route
+            path={routePatterns.assessmentDetails}
+            element={<AssessmentDetailsRoute section="overview" />}
+          />
+          <Route
+            path={routePatterns.assessmentDetailsOverview}
+            element={<AssessmentDetailsRoute section="overview" />}
+          />
+          <Route
+            path={routePatterns.assessmentDetailsFindings}
+            element={<AssessmentDetailsRoute section="findings" />}
+          />
+          <Route
+            path={routePatterns.assessmentDetailsEvidence}
+            element={<AssessmentDetailsRoute section="evidence" />}
+          />
+          <Route
+            path={routePatterns.assessmentDetailsReports}
+            element={<AssessmentDetailsRoute section="reports" />}
+          />
+          <Route
+            path={routePatterns.assessmentDetailsHistory}
+            element={<AssessmentDetailsRoute section="history" />}
+          />
+          <Route
+            path={routePatterns.reportDetails}
+            element={<ReportDetailsRoute />}
+          />
+          <Route path={routePatterns.threats} element={<ThreatsRoute />} />
+          <Route path={routePatterns.reports} element={<ReportsRoute />} />
+          <Route path={routePatterns.settings} element={<SettingsRoute />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </>,
+    ),
+  );
+
+const AppRouter = () => {
+  const [router] = useState(createAppRouter);
+
+  return <RouterProvider router={router} />;
+};
 
 export default AppRouter;

@@ -1261,10 +1261,24 @@ await (async () => {
     'Security findings across all active assessments.',
   );
   await assertRouteRenders('/reports', 'Report Preview');
-  await assertRouteRenders(
-    '/settings',
-    'Manage your profile, workspace branding, and report defaults.',
-  );
+  {
+    const { container, root } = await renderApp('/settings');
+
+    assert.ok(
+      textContent(container).includes(
+        'Manage organisation details, report branding, defaults, and user preferences.',
+      ),
+    );
+    assert.ok(
+      !textContent(container).includes('Something went wrong'),
+      'Expected the settings route to avoid the route error boundary',
+    );
+    assert.ok(container.querySelector('.settings-form'));
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
 
   setFetch(async input => {
     const path = String(input);
