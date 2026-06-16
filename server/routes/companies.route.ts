@@ -176,6 +176,13 @@ export const createCompaniesRouter = (
     dependencies.evidenceRepository &&
     dependencies.reportRepository
   ) {
+    const {
+      assessmentRepository,
+      threatRepository,
+      evidenceRepository,
+      reportRepository,
+    } = dependencies;
+
     router.get(
       '/:id/assessments/:assessmentId/overview',
       createRequestValidationMiddleware({
@@ -196,8 +203,7 @@ export const createCompaniesRouter = (
             return;
           }
 
-          const assessment =
-            await dependencies.assessmentRepository.findById(assessmentId);
+          const assessment = await assessmentRepository.findById(assessmentId);
 
           if (!assessment || assessment.companyId !== companyId) {
             sendApiError(
@@ -210,9 +216,9 @@ export const createCompaniesRouter = (
           }
 
           const [threats, evidence, reports] = await Promise.all([
-            dependencies.threatRepository.findByAssessmentId(assessmentId),
-            dependencies.evidenceRepository.findByAssessmentId(assessmentId),
-            dependencies.reportRepository.findByAssessmentId(assessmentId),
+            threatRepository.findByAssessmentId(assessmentId),
+            evidenceRepository.findByAssessmentId(assessmentId),
+            reportRepository.findByAssessmentId(assessmentId),
           ]);
 
           const workspaceOverview: AssessmentWorkspaceOverview = {
