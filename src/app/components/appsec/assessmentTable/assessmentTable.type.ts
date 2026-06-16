@@ -50,6 +50,7 @@ export interface AssessmentTableProps {
   sortBy: AssessmentListSortKey;
   sortDirection: 'asc' | 'desc';
   onSortChange: (sortBy: AssessmentListSortKey) => void;
+  onAssessmentClick?: (assessment: AssessmentListRow) => void;
   onEditAssessment?: (assessment: AssessmentListRow) => void;
   emptyState?: ReactNode;
 }

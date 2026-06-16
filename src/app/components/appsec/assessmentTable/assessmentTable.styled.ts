@@ -33,6 +33,19 @@ const StyledAssessmentTable = styled.div`
       background-color: ${colors.surface.card};
     }
 
+    .assessment-table__row--clickable {
+      cursor: pointer;
+    }
+
+    .assessment-table__row--clickable:hover > td {
+      background-color: ${colors.neutral.grey50};
+    }
+
+    .assessment-table__row--clickable:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: -2px;
+    }
+
     .assessment-table__row:last-child > td {
       border-bottom: 0;
     }
