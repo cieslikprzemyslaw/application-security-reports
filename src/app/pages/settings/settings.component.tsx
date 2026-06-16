@@ -19,6 +19,12 @@ const updateField = <K extends keyof SettingsValue>(
   [field]: fieldValue,
 });
 
+const updateSelectField = <K extends 'theme' | 'dateFormat'>(
+  value: SettingsValue,
+  field: K,
+  fieldValue: SettingsValue[K],
+): SettingsValue => updateField(value, field, fieldValue);
+
 const severityOptions = [
   { label: 'Critical', value: 'critical' },
   { label: 'High', value: 'high' },
@@ -310,7 +316,13 @@ const Settings = ({
                   description="Saved to your profile and used by the application shell."
                   options={themeOptions}
                   onChange={event =>
-                    onChange(updateField(value, 'theme', event.target.value))
+                    onChange(
+                      updateSelectField(
+                        value,
+                        'theme',
+                        event.target.value as SettingsValue['theme'],
+                      ),
+                    )
                   }
                 />
 
@@ -323,7 +335,11 @@ const Settings = ({
                   options={dateFormatOptions}
                   onChange={event =>
                     onChange(
-                      updateField(value, 'dateFormat', event.target.value),
+                      updateSelectField(
+                        value,
+                        'dateFormat',
+                        event.target.value as SettingsValue['dateFormat'],
+                      ),
                     )
                   }
                 />

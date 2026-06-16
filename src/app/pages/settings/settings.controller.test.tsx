@@ -40,7 +40,14 @@ const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
   });
 };
 
-const setupDom = (localStorageEntries?: Record<string, string>) => {
+type TestWindow = Window & typeof globalThis;
+
+const setupDom = (
+  localStorageEntries?: Record<string, string>,
+): {
+  container: HTMLElement;
+  window: TestWindow;
+} => {
   const dom = new JSDOM(
     '<!doctype html><html><body><div id="root"></div></body></html>',
     { url: 'http://localhost/' },
@@ -90,7 +97,7 @@ const setupDom = (localStorageEntries?: Record<string, string>) => {
 
   assert.ok(container, 'Expected root container to exist');
 
-  return { container, window };
+  return { container, window: window as TestWindow };
 };
 
 const renderComponent = async () => {
@@ -115,7 +122,7 @@ const renderComponent = async () => {
   return { container, root, window };
 };
 
-const findByLabel = (window: Window, label: string) =>
+const findByLabel = (window: TestWindow, label: string) =>
   window.document.querySelector(
     `input#${label}, select#${label}, textarea#${label}`,
   ) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
