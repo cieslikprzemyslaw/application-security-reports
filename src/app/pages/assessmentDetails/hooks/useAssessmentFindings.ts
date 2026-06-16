@@ -11,6 +11,7 @@ import type { ThreatTableRow } from '~/app/components/appsec/threatTable';
 import type { AssessmentDetailsAssessment } from '../assessmentDetails.type';
 import {
   areThreatFormValuesEqual,
+  createThreatValidationErrorMap,
   getThreatValidationErrors,
   type ThreatFormErrors,
 } from '../assessmentDetails.validation';
@@ -270,18 +271,15 @@ export const useAssessmentFindings = ({
       resetDrawerState();
     } catch (error) {
       if (error instanceof ApiError && error.status === 400) {
-        setFieldErrors(
-          error.details.reduce<ThreatFormErrors>((accumulator, detail) => {
-            const key = detail.path.split('.')[0] as keyof ThreatFormValue;
+        const { fieldErrors: nextFieldErrors, generalErrors } =
+          createThreatValidationErrorMap(error.details);
 
-            if (key in draftValue && !accumulator[key]) {
-              accumulator[key] = detail.message;
-            }
-
-            return accumulator;
-          }, {}),
+        setFieldErrors(nextFieldErrors);
+        setFormError(
+          generalErrors.length > 0
+            ? generalErrors.join(' ')
+            : 'Please fix the highlighted fields and try again.',
         );
-        setFormError('Please fix the highlighted fields and try again.');
       } else {
         setFormError(
           error instanceof Error ? error.message : 'Unable to save finding.',

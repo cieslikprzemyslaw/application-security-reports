@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 
 import Button from '~/app/components/ui/button';
 import Input from '~/app/components/ui/input';
@@ -57,6 +57,24 @@ const updateField = <K extends keyof ThreatFormValue>(
   [field]: fieldValue,
 });
 
+const fieldIdMap: Record<keyof ThreatFormValue, string> = {
+  title: 'threat-title',
+  owaspCategoryCode: 'threat-owasp-category-code',
+  customCategory: 'threat-custom-category',
+  strideCategory: 'threat-stride-category',
+  severity: 'threat-severity',
+  status: 'threat-status',
+  affectedComponent: 'threat-affected-component',
+  affectedEndpoint: 'threat-affected-endpoint',
+  observation: 'threat-observation',
+  reproductionSteps: 'threat-reproduction-steps',
+  risk: 'threat-risk',
+  recommendation: 'threat-remediation',
+  references: 'threat-references',
+  resolutionNote: 'threat-resolution-note',
+  acceptedRiskJustification: 'threat-accepted-risk-justification',
+};
+
 const ThreatForm = ({
   value,
   errors = {},
@@ -65,17 +83,54 @@ const ThreatForm = ({
   onChange,
   onSubmit,
 }: ThreatFormProps) => {
+  const formRef = useRef<HTMLFormElement | null>(null);
   const owaspCategoryCode = value.owaspCategoryCode ?? '';
   const showCustomCategory = owaspCategoryCode === 'custom';
   const requiresOpenReadiness = value.status !== 'draft';
   const requiresResolutionNote = value.status === 'resolved';
   const requiresAcceptedRiskJustification = value.status === 'accepted-risk';
 
+  const firstErrorFieldId = useMemo(() => {
+    const orderedFields: Array<keyof ThreatFormValue> = [
+      'title',
+      'owaspCategoryCode',
+      'customCategory',
+      'severity',
+      'status',
+      'affectedComponent',
+      'affectedEndpoint',
+      'observation',
+      'risk',
+      'recommendation',
+      'references',
+      'resolutionNote',
+      'acceptedRiskJustification',
+    ];
+
+    const errorField = orderedFields.find(field => Boolean(errors[field]));
+
+    return errorField ? fieldIdMap[errorField] : undefined;
+  }, [errors]);
+
+  useEffect(() => {
+    if (!firstErrorFieldId) {
+      return;
+    }
+
+    const field = formRef.current?.querySelector<HTMLElement>(
+      `#${firstErrorFieldId}`,
+    );
+
+    field?.scrollIntoView({ block: 'center' });
+    field?.focus();
+  }, [firstErrorFieldId]);
+
   return (
-    <StyledThreatForm onSubmit={onSubmit}>
+    <StyledThreatForm ref={formRef} onSubmit={onSubmit} noValidate>
       <div className="threat-form-grid">
         <div className="threat-form-full-width">
           <Input
+            id="threat-title"
             label="Title"
             value={value.title}
             error={errors.title}
@@ -87,6 +142,7 @@ const ThreatForm = ({
         </div>
 
         <Select
+          id="threat-owasp-category-code"
           label="OWASP category code"
           value={owaspCategoryCode}
           error={errors.owaspCategoryCode}
@@ -96,30 +152,36 @@ const ThreatForm = ({
             value: option.value,
           }))}
           onChange={event =>
-            onChange(
-              updateField(
-                value,
-                'owaspCategoryCode',
-                event.target.value as ThreatFormValue['owaspCategoryCode'],
-              ),
-            )
+            onChange({
+              ...value,
+              owaspCategoryCode: event.target
+                .value as ThreatFormValue['owaspCategoryCode'],
+              customCategory:
+                event.target.value === 'custom' ? value.customCategory : '',
+            })
           }
         />
 
-        <div className="threat-form-full-width">
-          <Input
-            label="Custom category"
-            value={value.customCategory ?? ''}
-            error={errors.customCategory}
-            placeholder="Business logic flaw"
-            required={showCustomCategory}
-            onChange={event =>
-              onChange(updateField(value, 'customCategory', event.target.value))
-            }
-          />
-        </div>
+        {showCustomCategory && (
+          <div className="threat-form-full-width">
+            <Input
+              id="threat-custom-category"
+              label="Custom category"
+              value={value.customCategory ?? ''}
+              error={errors.customCategory}
+              placeholder="Business logic flaw"
+              required
+              onChange={event =>
+                onChange(
+                  updateField(value, 'customCategory', event.target.value),
+                )
+              }
+            />
+          </div>
+        )}
 
         <Select
+          id="threat-severity"
           label="Severity"
           value={value.severity}
           error={errors.severity}
@@ -145,6 +207,7 @@ const ThreatForm = ({
         />
 
         <Select
+          id="threat-status"
           label="Status"
           value={value.status}
           error={errors.status}
@@ -165,6 +228,7 @@ const ThreatForm = ({
         />
 
         <Input
+          id="threat-affected-component"
           label="Affected component"
           value={value.affectedComponent}
           error={errors.affectedComponent}
@@ -178,6 +242,7 @@ const ThreatForm = ({
 
         <div className="threat-form-full-width">
           <Input
+            id="threat-affected-endpoint"
             label="Affected endpoint"
             value={value.affectedEndpoint}
             error={errors.affectedEndpoint}
@@ -192,6 +257,7 @@ const ThreatForm = ({
 
         <div className="threat-form-full-width">
           <Textarea
+            id="threat-observation"
             label="Reproduction steps"
             value={value.observation}
             error={errors.observation}
@@ -204,6 +270,7 @@ const ThreatForm = ({
 
         <div className="threat-form-full-width">
           <Textarea
+            id="threat-risk"
             label="Impact"
             value={value.risk}
             error={errors.risk}
@@ -216,6 +283,7 @@ const ThreatForm = ({
 
         <div className="threat-form-full-width">
           <Textarea
+            id="threat-remediation"
             label="Remediation"
             value={value.recommendation}
             error={errors.recommendation}
@@ -229,6 +297,7 @@ const ThreatForm = ({
         {requiresResolutionNote && (
           <div className="threat-form-full-width">
             <Textarea
+              id="threat-resolution-note"
               label="Resolution note"
               value={value.resolutionNote ?? ''}
               error={errors.resolutionNote}
@@ -245,6 +314,7 @@ const ThreatForm = ({
         {requiresAcceptedRiskJustification && (
           <div className="threat-form-full-width">
             <Textarea
+              id="threat-accepted-risk-justification"
               label="Accepted-risk justification"
               value={value.acceptedRiskJustification ?? ''}
               error={errors.acceptedRiskJustification}
@@ -264,6 +334,7 @@ const ThreatForm = ({
 
         <div className="threat-form-full-width">
           <Input
+            id="threat-references"
             label="References"
             value={value.references}
             error={errors.references}

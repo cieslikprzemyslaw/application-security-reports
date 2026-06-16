@@ -1,6 +1,31 @@
 import type { ThreatFormValue } from '~/app/components/appsec/threatForm';
+import type { ValidationFieldError } from '~/validation';
 
 export type ThreatFormErrors = Partial<Record<keyof ThreatFormValue, string>>;
+export interface ThreatValidationErrorMap {
+  fieldErrors: ThreatFormErrors;
+  generalErrors: string[];
+}
+
+const threatFieldAliases: Record<string, keyof ThreatFormValue> = {
+  title: 'title',
+  owaspCategoryCode: 'owaspCategoryCode',
+  customCategory: 'customCategory',
+  strideCategories: 'owaspCategoryCode',
+  description: 'observation',
+  observation: 'observation',
+  reproductionSteps: 'observation',
+  affectedComponent: 'affectedComponent',
+  affectedEndpoint: 'affectedEndpoint',
+  impact: 'risk',
+  risk: 'risk',
+  recommendation: 'recommendation',
+  remediation: 'recommendation',
+  references: 'references',
+  status: 'status',
+  resolutionNote: 'resolutionNote',
+  acceptedRiskJustification: 'acceptedRiskJustification',
+};
 
 const isThreatFormReadyForOpen = (value: ThreatFormValue) =>
   value.title.trim().length > 0 &&
@@ -68,6 +93,30 @@ export const getThreatValidationErrors = (
   }
 
   return errors;
+};
+
+export const createThreatValidationErrorMap = (
+  details: ValidationFieldError[],
+): ThreatValidationErrorMap => {
+  const fieldErrors: ThreatFormErrors = {};
+  const generalErrors: string[] = [];
+
+  for (const detail of details) {
+    const path = detail.path.trim();
+    const fieldName = threatFieldAliases[path.split('.')[0] ?? ''];
+
+    if (fieldName && !fieldErrors[fieldName]) {
+      fieldErrors[fieldName] = detail.message;
+      continue;
+    }
+
+    generalErrors.push(detail.message);
+  }
+
+  return {
+    fieldErrors,
+    generalErrors,
+  };
 };
 
 export const areThreatFormValuesEqual = (

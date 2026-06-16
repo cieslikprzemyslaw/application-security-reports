@@ -45,7 +45,8 @@ export const threatToFormValue = (threat: Threat): ThreatFormValue => ({
   title: threat.title,
   owaspCategoryCode:
     threat.owaspCategoryCode ?? (threat.customCategory ? 'custom' : 'A01:2021'),
-  customCategory: threat.customCategory ?? '',
+  customCategory:
+    threat.owaspCategoryCode === 'custom' ? (threat.customCategory ?? '') : '',
   strideCategory: threat.strideCategories[0] ?? 'spoofing',
   severity: threat.severity,
   status: threat.status,
@@ -74,7 +75,10 @@ export const threatFormValueToInput = (
     ? [value.strideCategory]
     : ['spoofing'],
   owaspCategoryCode: normalizeOptionalText(value.owaspCategoryCode),
-  customCategory: normalizeOptionalText(value.customCategory),
+  customCategory:
+    value.owaspCategoryCode === 'custom'
+      ? normalizeOptionalText(value.customCategory)
+      : undefined,
   affectedComponent: normalizeOptionalText(value.affectedComponent),
   affectedEndpoint: normalizeOptionalText(value.affectedEndpoint),
   description:

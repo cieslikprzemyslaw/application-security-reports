@@ -96,13 +96,18 @@ model Threat {
   severity          Severity
   strideCategories  Json
   status            String
+  owaspCategoryCode String?
+  customCategory    String?
   affectedAsset     String?
   impact            String?
   recommendation    String?
+  remediation       String?
   observation       String?
+  reproductionSteps String?
   affectedComponent String?
   affectedEndpoint  String?
   risk              String?
+  references        String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 

@@ -28,6 +28,14 @@ const migrationPath = path.resolve(
 );
 const migrationSql = readFileSync(migrationPath, 'utf8');
 const schemaSql = migrationSql.slice(migrationSql.indexOf('-- CreateTable'));
+const threatMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260616120000_add_finding_category_fields',
+  'migration.sql',
+);
+const threatMigrationSql = readFileSync(threatMigrationPath, 'utf8');
 const allowedOrigin = 'http://localhost:5173';
 const config = loadServerConfig({
   FRONTEND_ORIGIN: allowedOrigin,
@@ -83,6 +91,7 @@ const bootstrapDb = new Database(databasePath);
 
 try {
   bootstrapDb.exec(schemaSql);
+  bootstrapDb.exec(threatMigrationSql);
 } finally {
   bootstrapDb.close();
 }
@@ -158,13 +167,18 @@ try {
         severity: 'critical',
         strideCategories: ['spoofing', 'tampering'],
         status: 'accepted-risk',
+        owaspCategoryCode: 'A09:2021',
         affectedAsset: '/api/v1/orders/{id}',
         impact: 'Unauthorised access to customer order data',
         recommendation: 'Apply object-level authorization on every request.',
+        remediation: 'Apply object-level authorization on every request.',
         observation: 'An authenticated user can access another customer order.',
+        reproductionSteps:
+          'Request another customer order while authenticated as a low-privilege user.',
         affectedComponent: 'Orders API',
         affectedEndpoint: '/api/v1/orders/{id}',
         risk: 'Sensitive order data is exposed.',
+        references: 'OWASP API1:2023, CWE-639',
       }),
     });
 
@@ -178,11 +192,15 @@ try {
         id: string;
         assessmentId: string;
         severity: string;
+        owaspCategoryCode?: string;
+        customCategory?: string;
       };
     };
     assert.equal(createdJson.data.id.startsWith('thr_'), true);
     assert.equal(createdJson.data.assessmentId, primaryAssessment.id);
     assert.equal(createdJson.data.severity, 'critical');
+    assert.equal(createdJson.data.owaspCategoryCode, 'A09:2021');
+    assert.equal(createdJson.data.customCategory, undefined);
 
     const primaryThreatId = createdJson.data.id;
 
@@ -193,34 +211,62 @@ try {
       severity: 'high',
       strideCategories: ['spoofing'],
       status: 'open',
+      owaspCategoryCode: 'custom',
+      customCategory: 'Information exposure',
       affectedAsset: undefined,
       impact: undefined,
-      recommendation: undefined,
-      observation: undefined,
+      recommendation: 'Review access checks for object lookups.',
+      remediation: 'Review access checks for object lookups.',
+      observation: 'The same identifier returns another customer record.',
+      reproductionSteps:
+        'Request another customer record while authenticated as a basic user.',
       affectedComponent: undefined,
       affectedEndpoint: undefined,
-      risk: undefined,
+      risk: 'Customer data is exposed.',
+      references: 'OWASP API1:2023',
     });
+
+    const customGetResponse = await fetch(
+      `${server.baseUrl}/api/threats/${secondaryThreat.id}`,
+    );
+    assert.equal(customGetResponse.status, 200);
+    const customGetJson = (await customGetResponse.json()) as {
+      data: {
+        id: string;
+        owaspCategoryCode?: string;
+        customCategory?: string;
+      };
+    };
+    assert.equal(customGetJson.data.id, secondaryThreat.id);
+    assert.equal(customGetJson.data.owaspCategoryCode, 'custom');
+    assert.equal(customGetJson.data.customCategory, 'Information exposure');
 
     const listResponse = await fetch(
       `${server.baseUrl}/api/threats?assessmentId=${primaryAssessment.id}`,
     );
     assert.equal(listResponse.status, 200);
     const listJson = (await listResponse.json()) as {
-      data: Array<{ id: string }>;
+      data: Array<{ id: string; owaspCategoryCode?: string }>;
     };
     assert.equal(listJson.data.length, 1);
     assert.equal(listJson.data[0]?.id, primaryThreatId);
+    assert.equal(listJson.data[0]?.owaspCategoryCode, 'A09:2021');
 
     const getResponse = await fetch(
       `${server.baseUrl}/api/threats/${primaryThreatId}`,
     );
     assert.equal(getResponse.status, 200);
     const getJson = (await getResponse.json()) as {
-      data: { id: string; assessmentId: string; title: string };
+      data: {
+        id: string;
+        assessmentId: string;
+        title: string;
+        owaspCategoryCode?: string;
+      };
     };
     assert.equal(getJson.data.id, primaryThreatId);
     assert.equal(getJson.data.assessmentId, primaryAssessment.id);
+    assert.equal(getJson.data.owaspCategoryCode, 'A09:2021');
 
     const patchResponse = await fetch(
       `${server.baseUrl}/api/threats/${primaryThreatId}`,
@@ -238,12 +284,19 @@ try {
     );
     assert.equal(patchResponse.status, 200);
     const patchJson = (await patchResponse.json()) as {
-      data: { id: string; title: string; status: string; risk?: string };
+      data: {
+        id: string;
+        title: string;
+        status: string;
+        risk?: string;
+        owaspCategoryCode?: string;
+      };
     };
     assert.equal(patchJson.data.id, primaryThreatId);
     assert.equal(patchJson.data.title, 'Missing server-side authorization');
     assert.equal(patchJson.data.status, 'mitigated');
     assert.equal(patchJson.data.risk, 'Risk reduced after remediation');
+    assert.equal(patchJson.data.owaspCategoryCode, 'A09:2021');
 
     const deleteSecondaryResponse = await fetch(
       `${server.baseUrl}/api/threats/${secondaryThreat.id}`,
