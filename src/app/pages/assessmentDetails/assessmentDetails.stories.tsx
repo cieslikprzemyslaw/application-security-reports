@@ -19,6 +19,9 @@ const meta = {
   ],
   tags: ['autodocs'],
   argTypes: {
+    onSectionChange: {
+      action: 'change section',
+    },
     onBack: {
       action: 'back',
     },
@@ -40,6 +43,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
+    activeSection: 'overview',
+    overviewHref: '/assessments/asm_1/overview',
     assessment: {
       id: 'asm_1',
       code: 'NSD-CSP-2026-014',

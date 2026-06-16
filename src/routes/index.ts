@@ -24,6 +24,11 @@ export const routePatterns = {
   companyWorkspaceActivity: '/companies/:companyId/activity',
   assessments: '/assessments',
   assessmentDetails: '/assessments/:assessmentId',
+  assessmentDetailsOverview: '/assessments/:assessmentId/overview',
+  assessmentDetailsFindings: '/assessments/:assessmentId/findings',
+  assessmentDetailsEvidence: '/assessments/:assessmentId/evidence',
+  assessmentDetailsReports: '/assessments/:assessmentId/reports',
+  assessmentDetailsHistory: '/assessments/:assessmentId/history',
   threats: '/threats',
   reports: '/reports',
   reportDetails: '/reports/:reportId',
@@ -51,6 +56,36 @@ export const routes = {
       assessmentId,
       'assessmentDetails',
     ),
+  assessmentDetailsOverview: (assessmentId: string) =>
+    `${buildRouteWithId(
+      routePatterns.assessments,
+      assessmentId,
+      'assessmentDetails',
+    )}/overview`,
+  assessmentDetailsFindings: (assessmentId: string) =>
+    `${buildRouteWithId(
+      routePatterns.assessments,
+      assessmentId,
+      'assessmentDetails',
+    )}/findings`,
+  assessmentDetailsEvidence: (assessmentId: string) =>
+    `${buildRouteWithId(
+      routePatterns.assessments,
+      assessmentId,
+      'assessmentDetails',
+    )}/evidence`,
+  assessmentDetailsReports: (assessmentId: string) =>
+    `${buildRouteWithId(
+      routePatterns.assessments,
+      assessmentId,
+      'assessmentDetails',
+    )}/reports`,
+  assessmentDetailsHistory: (assessmentId: string) =>
+    `${buildRouteWithId(
+      routePatterns.assessments,
+      assessmentId,
+      'assessmentDetails',
+    )}/history`,
   threats: routePatterns.threats,
   reports: routePatterns.reports,
   reportDetails: (reportId: string) =>

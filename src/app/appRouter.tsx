@@ -21,6 +21,7 @@ import {
   updateRecentCompanyOpenTimes,
   writeRecentCompanyOpenTimes,
 } from '~/app/layouts/sidebar/companySwitcher.utils';
+import type { AssessmentDetailSection } from './pages/assessmentDetails/assessmentDetails.type';
 import CompanyWorkspaceRouteShell, {
   CompanyActivityRoute,
   CompanyAssessmentsRoute,
@@ -66,7 +67,31 @@ const CompaniesRoute = ({
   />
 );
 
-const AssessmentDetailsRoute = () => {
+const getAssessmentDetailsSectionHref = (
+  assessmentId: string,
+  section: AssessmentDetailSection,
+) => {
+  switch (section) {
+    case 'overview':
+      return routes.assessmentDetailsOverview(assessmentId);
+    case 'findings':
+      return routes.assessmentDetailsFindings(assessmentId);
+    case 'evidence':
+      return routes.assessmentDetailsEvidence(assessmentId);
+    case 'reports':
+      return routes.assessmentDetailsReports(assessmentId);
+    case 'history':
+      return routes.assessmentDetailsHistory(assessmentId);
+    default:
+      return routes.assessmentDetailsOverview(assessmentId);
+  }
+};
+
+interface AssessmentDetailsRouteProps {
+  section: AssessmentDetailSection;
+}
+
+const AssessmentDetailsRoute = ({ section }: AssessmentDetailsRouteProps) => {
   const navigate = useNavigate();
   const { assessmentId } = useParams<{
     assessmentId?: string;
@@ -93,6 +118,11 @@ const AssessmentDetailsRoute = () => {
       assessment={assessment}
       threats={assessmentThreats}
       executiveSummary={summary}
+      activeSection={section}
+      overviewHref={routes.assessmentDetailsOverview(assessmentId)}
+      onSectionChange={section =>
+        navigate(getAssessmentDetailsSectionHref(assessmentId, section))
+      }
       onBack={() => navigate(routes.assessments)}
     />
   );
@@ -284,7 +314,27 @@ const RouterShell = () => {
         />
         <Route
           path={routePatterns.assessmentDetails}
-          element={<AssessmentDetailsRoute />}
+          element={<AssessmentDetailsRoute section="overview" />}
+        />
+        <Route
+          path={routePatterns.assessmentDetailsOverview}
+          element={<AssessmentDetailsRoute section="overview" />}
+        />
+        <Route
+          path={routePatterns.assessmentDetailsFindings}
+          element={<AssessmentDetailsRoute section="findings" />}
+        />
+        <Route
+          path={routePatterns.assessmentDetailsEvidence}
+          element={<AssessmentDetailsRoute section="evidence" />}
+        />
+        <Route
+          path={routePatterns.assessmentDetailsReports}
+          element={<AssessmentDetailsRoute section="reports" />}
+        />
+        <Route
+          path={routePatterns.assessmentDetailsHistory}
+          element={<AssessmentDetailsRoute section="history" />}
         />
         <Route
           path={routePatterns.reportDetails}

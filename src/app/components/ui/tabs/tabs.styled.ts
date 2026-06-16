@@ -59,6 +59,11 @@ const StyledTabs = styled.div`
       color: ${colors.text.primary};
     }
 
+    .tabs-tab-button:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: 0.25rem;
+    }
+
     .tabs-tab-button:disabled {
       cursor: not-allowed;
       color: ${colors.neutral.grey400};

@@ -252,6 +252,12 @@ export const assessmentDetailsById: Record<
       'The assessment identified 14 confirmed findings across the Customer Services Portal. The overall risk is rated high due to one critical authorization weakness and three high-severity findings.',
     threats,
   },
+  [assessments[4].id]: {
+    assessment: assessments[4],
+    executiveSummary:
+      'This archived assessment is retained for reference only and is read-only.',
+    threats: [],
+  },
 };
 
 export const reportCover: ReportCoverProps = {
