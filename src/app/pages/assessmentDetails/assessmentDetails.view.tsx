@@ -87,7 +87,9 @@ const formatDateRange = (startedAt?: string, completedAt?: string) => {
   return `${start} to ${end}`;
 };
 
-const getAvailableActions = (assessment: AssessmentDetailsAssessment) =>
+const getAvailableActions = (
+  assessment: AssessmentDetailsAssessment,
+): AssessmentDetailAction[] =>
   assessment.availableActions && assessment.availableActions.length > 0
     ? assessment.availableActions
     : assessment.status === 'draft'
