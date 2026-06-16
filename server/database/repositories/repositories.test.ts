@@ -69,13 +69,16 @@ const evidenceRow = {
   id: 'evd_123',
   assessmentId: 'asm_123',
   threatLinks: [{ threatId: 'thr_123' }],
+  httpExchanges: [],
   type: 'note',
   title: 'Evidence',
   description: null,
   content: null,
   fileName: null,
   filePath: null,
+  storageKey: null,
   mimeType: null,
+  attachmentSizeBytes: null,
   capturedAt: null,
   createdAt,
   updatedAt,
@@ -267,6 +270,36 @@ const createEvidenceDb = () => {
         return { evidenceId: 'evd_123', threatId: 'thr_123' };
       },
     } as RepositoryTransactionClient['evidenceThreat'],
+    evidenceExchange: {
+      async deleteMany(args: unknown) {
+        calls.push({ method: 'evidenceExchange.deleteMany', args });
+        return { count: 1 };
+      },
+      async createMany(args: unknown) {
+        calls.push({ method: 'evidenceExchange.createMany', args });
+        return { count: 1 };
+      },
+      async create(args: unknown) {
+        calls.push({ method: 'evidenceExchange.create', args });
+        return {
+          id: 'evx_123',
+          evidenceId: 'evd_123',
+          position: 0,
+          request: {},
+          response: {},
+        };
+      },
+      async delete(args: unknown) {
+        calls.push({ method: 'evidenceExchange.delete', args });
+        return {
+          id: 'evx_123',
+          evidenceId: 'evd_123',
+          position: 0,
+          request: {},
+          response: {},
+        };
+      },
+    } as RepositoryTransactionClient['evidenceExchange'],
     report: {} as RepositoryTransactionClient['report'],
     reportThreat: {} as RepositoryTransactionClient['reportThreat'],
     activity: {} as RepositoryTransactionClient['activity'],
@@ -281,7 +314,10 @@ const createEvidenceDb = () => {
     async $transaction<T>(fn: (tx: RepositoryTransactionClient) => Promise<T>) {
       return fn(transactionDb);
     },
-  } as Pick<RepositoryClient, 'evidence' | 'evidenceThreat' | '$transaction'>;
+  } as Pick<
+    RepositoryClient,
+    'evidence' | 'evidenceExchange' | 'evidenceThreat' | '$transaction'
+  >;
 
   return {
     calls,
@@ -435,22 +471,50 @@ const createSettingsDb = () => {
   const evidence = await repository.create({
     assessmentId: 'asm_123',
     threatIds: ['thr_123', 'thr_123'],
-    type: 'note',
+    type: 'http',
     title: 'Evidence',
     description: undefined,
     content: undefined,
     fileName: undefined,
     filePath: undefined,
+    storageKey: undefined,
     mimeType: undefined,
+    attachmentSizeBytes: undefined,
     capturedAt: undefined,
+    httpExchanges: [
+      {
+        request: {
+          method: 'GET',
+          url: '/api/orders/1',
+        },
+        response: {
+          statusCode: 200,
+        },
+      },
+      {
+        request: {
+          method: 'POST',
+          url: '/api/orders/1',
+        },
+        response: {
+          statusCode: 201,
+        },
+      },
+    ],
   });
 
   assert.equal(evidence.id, evidenceRow.id);
   assert.equal(calls[0]?.method, 'evidence.create');
+  assert.equal(calls[1]?.method, 'evidenceExchange.deleteMany');
+  assert.equal(calls[2]?.method, 'evidenceExchange.createMany');
   const createArgs = calls[0]?.args as {
     data?: { threatLinks?: { create?: Array<{ threatId: string }> } };
   };
   assert.equal(createArgs?.data?.threatLinks?.create?.length, 1);
+  const exchangeArgs = calls[2]?.args as {
+    data?: Array<{ position: number }>;
+  };
+  assert.equal(exchangeArgs?.data?.length, 2);
 
   const detached = await repository.detachFromThreat('evd_123', 'thr_123');
   assert.equal(detached, undefined);

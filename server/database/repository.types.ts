@@ -6,6 +6,7 @@ export type RepositoryClient = Pick<
   | 'assessment'
   | 'threat'
   | 'evidence'
+  | 'evidenceExchange'
   | 'report'
   | 'evidenceThreat'
   | 'reportThreat'

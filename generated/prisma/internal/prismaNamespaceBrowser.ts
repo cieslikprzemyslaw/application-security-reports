@@ -55,6 +55,7 @@ export const ModelName = {
   Assessment: 'Assessment',
   Threat: 'Threat',
   Evidence: 'Evidence',
+  EvidenceExchange: 'EvidenceExchange',
   Report: 'Report',
   EvidenceThreat: 'EvidenceThreat',
   ReportThreat: 'ReportThreat',
@@ -147,13 +148,28 @@ export const EvidenceScalarFieldEnum = {
   content: 'content',
   fileName: 'fileName',
   filePath: 'filePath',
+  storageKey: 'storageKey',
   mimeType: 'mimeType',
+  attachmentSizeBytes: 'attachmentSizeBytes',
   capturedAt: 'capturedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type EvidenceScalarFieldEnum = (typeof EvidenceScalarFieldEnum)[keyof typeof EvidenceScalarFieldEnum]
+
+
+export const EvidenceExchangeScalarFieldEnum = {
+  id: 'id',
+  evidenceId: 'evidenceId',
+  position: 'position',
+  request: 'request',
+  response: 'response',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EvidenceExchangeScalarFieldEnum = (typeof EvidenceExchangeScalarFieldEnum)[keyof typeof EvidenceExchangeScalarFieldEnum]
 
 
 export const ReportScalarFieldEnum = {

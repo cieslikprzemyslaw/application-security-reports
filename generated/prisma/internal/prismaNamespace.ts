@@ -388,6 +388,7 @@ export const ModelName = {
   Assessment: 'Assessment',
   Threat: 'Threat',
   Evidence: 'Evidence',
+  EvidenceExchange: 'EvidenceExchange',
   Report: 'Report',
   EvidenceThreat: 'EvidenceThreat',
   ReportThreat: 'ReportThreat',
@@ -408,7 +409,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "company" | "assessment" | "threat" | "evidence" | "report" | "evidenceThreat" | "reportThreat" | "activity" | "settings"
+    modelProps: "company" | "assessment" | "threat" | "evidence" | "evidenceExchange" | "report" | "evidenceThreat" | "reportThreat" | "activity" | "settings"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -705,6 +706,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.EvidenceCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.EvidenceCountAggregateOutputType> | number
+        }
+      }
+    }
+    EvidenceExchange: {
+      payload: Prisma.$EvidenceExchangePayload<ExtArgs>
+      fields: Prisma.EvidenceExchangeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EvidenceExchangeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EvidenceExchangePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EvidenceExchangeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EvidenceExchangePayload>
+        }
+        findFirst: {
+          args: Prisma.EvidenceExchangeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EvidenceExchangePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EvidenceExchangeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EvidenceExchangePayload>
+        }
+        findMany: {
+          args: Prisma.EvidenceExchangeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EvidenceExchangePayload>[]
+        }
+        create: {
+          args: Prisma.EvidenceExchangeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EvidenceExchangePayload>
+        }
+        createMany: {
+          args: Prisma.EvidenceExchangeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EvidenceExchangeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EvidenceExchangePayload>[]
+        }
+        delete: {
+          args: Prisma.EvidenceExchangeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EvidenceExchangePayload>
+        }
+        update: {
+          args: Prisma.EvidenceExchangeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EvidenceExchangePayload>
+        }
+        deleteMany: {
+          args: Prisma.EvidenceExchangeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EvidenceExchangeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EvidenceExchangeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EvidenceExchangePayload>[]
+        }
+        upsert: {
+          args: Prisma.EvidenceExchangeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EvidenceExchangePayload>
+        }
+        aggregate: {
+          args: Prisma.EvidenceExchangeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEvidenceExchange>
+        }
+        groupBy: {
+          args: Prisma.EvidenceExchangeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EvidenceExchangeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EvidenceExchangeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EvidenceExchangeCountAggregateOutputType> | number
         }
       }
     }
@@ -1186,13 +1261,28 @@ export const EvidenceScalarFieldEnum = {
   content: 'content',
   fileName: 'fileName',
   filePath: 'filePath',
+  storageKey: 'storageKey',
   mimeType: 'mimeType',
+  attachmentSizeBytes: 'attachmentSizeBytes',
   capturedAt: 'capturedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type EvidenceScalarFieldEnum = (typeof EvidenceScalarFieldEnum)[keyof typeof EvidenceScalarFieldEnum]
+
+
+export const EvidenceExchangeScalarFieldEnum = {
+  id: 'id',
+  evidenceId: 'evidenceId',
+  position: 'position',
+  request: 'request',
+  response: 'response',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EvidenceExchangeScalarFieldEnum = (typeof EvidenceExchangeScalarFieldEnum)[keyof typeof EvidenceExchangeScalarFieldEnum]
 
 
 export const ReportScalarFieldEnum = {
@@ -1347,16 +1437,16 @@ export type EnumEvidenceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
 
 
 /**
- * Reference to a field of type 'ReportStatus'
+ * Reference to a field of type 'Int'
  */
-export type EnumReportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportStatus'>
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
     
 
 
 /**
- * Reference to a field of type 'Int'
+ * Reference to a field of type 'ReportStatus'
  */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+export type EnumReportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportStatus'>
     
 
 
@@ -1501,6 +1591,7 @@ export type GlobalOmitConfig = {
   assessment?: Prisma.AssessmentOmit
   threat?: Prisma.ThreatOmit
   evidence?: Prisma.EvidenceOmit
+  evidenceExchange?: Prisma.EvidenceExchangeOmit
   report?: Prisma.ReportOmit
   evidenceThreat?: Prisma.EvidenceThreatOmit
   reportThreat?: Prisma.ReportThreatOmit

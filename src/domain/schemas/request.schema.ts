@@ -18,6 +18,7 @@ import { reportObjectSchema } from './report.schema.js';
 import { settingsObjectSchema } from './settings.schema.js';
 import { threatObjectSchema } from './threat.schema.js';
 import {
+  nonNegativeIntegerSchema,
   optionalTrimmedTextSchema,
   prefixedUuidSchema,
 } from './common.schema.js';
@@ -201,6 +202,10 @@ const evidenceFileNameSchema = optionalTrimmedTextSchema.refine(
 );
 
 const evidenceMimeTypeSchema = z.enum(supportedEvidenceMimeTypes).optional();
+const evidenceAttachmentSizeBytesSchema = nonNegativeIntegerSchema.refine(
+  value => value <= 5 * 1024 * 1024,
+  'Evidence attachment must be 5 MB or smaller',
+);
 
 const evidenceRequestBaseSchema = evidenceObjectSchema
   .omit({
@@ -208,10 +213,12 @@ const evidenceRequestBaseSchema = evidenceObjectSchema
     createdAt: true,
     updatedAt: true,
     filePath: true,
+    storageKey: true,
   })
   .extend({
     fileName: evidenceFileNameSchema,
     mimeType: evidenceMimeTypeSchema,
+    attachmentSizeBytes: evidenceAttachmentSizeBytesSchema.optional(),
   });
 
 const validateEvidenceFileMetadata = (
@@ -234,8 +241,48 @@ const validateEvidenceFileMetadata = (
   }
 };
 
-export const createEvidenceRequestSchema =
-  evidenceRequestBaseSchema.superRefine(validateEvidenceFileMetadata);
+const validateEvidenceExchanges = (
+  value: {
+    type?: string;
+    httpExchanges?: Array<unknown>;
+  },
+  ctx: z.RefinementCtx,
+) => {
+  if (value.httpExchanges !== undefined && value.httpExchanges.length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['httpExchanges'],
+      message: 'HTTP evidence must include at least one exchange',
+    });
+    return;
+  }
+
+  const hasHttpExchanges = value.httpExchanges !== undefined;
+
+  if (value.type === 'http') {
+    if (!hasHttpExchanges) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['httpExchanges'],
+        message: 'HTTP evidence must include at least one exchange',
+      });
+    }
+
+    return;
+  }
+
+  if (value.type !== undefined && hasHttpExchanges) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['httpExchanges'],
+      message: 'Only HTTP evidence can include exchanges',
+    });
+  }
+};
+
+export const createEvidenceRequestSchema = evidenceRequestBaseSchema
+  .superRefine(validateEvidenceFileMetadata)
+  .superRefine(validateEvidenceExchanges);
 type CreateEvidenceRequestSchemaOutput = Required<
   z.output<typeof createEvidenceRequestSchema>
 >;
@@ -247,7 +294,9 @@ const _createEvidenceRequestSchemaCompatibilityCheck: CreateEvidenceRequestSchem
 export const updateEvidenceRequestSchema = requireAtLeastOneField(
   evidenceRequestBaseSchema.omit({ assessmentId: true }).partial(),
   'At least one evidence field is required',
-).superRefine(validateEvidenceFileMetadata);
+)
+  .superRefine(validateEvidenceFileMetadata)
+  .superRefine(validateEvidenceExchanges);
 type UpdateEvidenceRequestSchemaOutput = Required<
   z.output<typeof updateEvidenceRequestSchema>
 >;

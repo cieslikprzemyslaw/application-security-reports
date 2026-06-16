@@ -26,12 +26,15 @@ import {
   RepositoryNotFoundError,
 } from '../database/errors.js';
 import type { ValidationFieldError } from '../../src/validation/index.js';
-import { resolvePathWithinRoot } from '../../src/validation/index.js';
 
-type CreateEvidenceRequestBody = Omit<CreateEvidenceInput, 'filePath'>;
-type UpdateEvidenceRequestBody = Omit<UpdateEvidenceInput, 'filePath'>;
-
-const evidenceFileRoot = 'uploads/evidence';
+type CreateEvidenceRequestBody = Omit<
+  CreateEvidenceInput,
+  'filePath' | 'storageKey'
+>;
+type UpdateEvidenceRequestBody = Omit<
+  UpdateEvidenceInput,
+  'filePath' | 'storageKey'
+>;
 
 const evidenceResponse = (evidence: Evidence): Evidence => ({ ...evidence });
 
@@ -82,20 +85,6 @@ const asyncRoute =
   (req: Request, res: Response, next: NextFunction): void => {
     void handler(req, res, next).catch(next);
   };
-
-const buildEvidenceFilePath = (
-  fileName?: string,
-): string | null | undefined => {
-  if (!fileName) {
-    return undefined;
-  }
-
-  const candidateFilePath = `${evidenceFileRoot}/${fileName}`;
-
-  return resolvePathWithinRoot(evidenceFileRoot, candidateFilePath)
-    ? candidateFilePath
-    : null;
-};
 
 const validateAssessmentExists = async (
   assessmentRepository: AssessmentRepository,
@@ -268,24 +257,7 @@ export const createEvidenceRouter = (
           return;
         }
 
-        const filePath = buildEvidenceFilePath(body.fileName);
-
-        if (filePath === null) {
-          sendValidationError(res, [
-            {
-              path: 'fileName',
-              message:
-                'Evidence file name must resolve within uploads/evidence',
-              code: 'custom',
-            },
-          ]);
-          return;
-        }
-
-        const evidence = await evidenceRepository.create({
-          ...body,
-          ...(filePath ? { filePath } : {}),
-        });
+        const evidence = await evidenceRepository.create(body);
         const response = res.location(`/api/evidence/${evidence.id}`);
 
         sendEvidenceResponse(response, 201, evidence);
@@ -329,6 +301,21 @@ export const createEvidenceRouter = (
         }
 
         if (
+          body.httpExchanges &&
+          existingEvidence.type !== 'http' &&
+          body.type !== 'http'
+        ) {
+          sendValidationError(res, [
+            {
+              path: 'httpExchanges',
+              message: 'Only HTTP evidence can include exchanges',
+              code: 'custom',
+            },
+          ]);
+          return;
+        }
+
+        if (
           body.threatIds &&
           !(await validateEvidenceThreatLinks(
             threatRepository,
@@ -340,24 +327,7 @@ export const createEvidenceRouter = (
           return;
         }
 
-        const filePath = buildEvidenceFilePath(body.fileName);
-
-        if (filePath === null) {
-          sendValidationError(res, [
-            {
-              path: 'fileName',
-              message:
-                'Evidence file name must resolve within uploads/evidence',
-              code: 'custom',
-            },
-          ]);
-          return;
-        }
-
-        const updatedEvidence = await evidenceRepository.update(id, {
-          ...body,
-          ...(filePath ? { filePath } : {}),
-        });
+        const updatedEvidence = await evidenceRepository.update(id, body);
 
         sendEvidenceResponse(res, 200, updatedEvidence);
       } catch (error) {

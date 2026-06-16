@@ -17,8 +17,31 @@ export interface Evidence extends TimestampedEntity {
   content?: string;
   fileName?: string;
   filePath?: string;
+  storageKey?: string;
   mimeType?: string;
+  attachmentSizeBytes?: number;
   capturedAt?: ISODateString;
+  httpExchanges?: EvidenceHttpExchange[];
+}
+
+export interface EvidenceHttpMessage {
+  headers?: Record<string, string>;
+  body?: string;
+}
+
+export interface EvidenceHttpRequest extends EvidenceHttpMessage {
+  method: string;
+  url: string;
+}
+
+export interface EvidenceHttpResponse extends EvidenceHttpMessage {
+  statusCode: number;
+  statusText?: string;
+}
+
+export interface EvidenceHttpExchange {
+  request: EvidenceHttpRequest;
+  response: EvidenceHttpResponse;
 }
 
 export type CreateEvidenceInput = Omit<

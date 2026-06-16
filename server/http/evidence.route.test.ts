@@ -263,10 +263,16 @@ const createEvidenceRepository = (
     async create(input) {
       calls.create += 1;
       calls.createArgs = { input };
+      const storageKey = input.fileName
+        ? `uploads/evidence/mock/${input.fileName}`
+        : defaultEvidence.filePath;
       return (
         (await overrides.create?.(input)) ?? {
           ...defaultEvidence,
           ...input,
+          filePath: storageKey,
+          storageKey,
+          httpExchanges: input.httpExchanges ?? [],
         }
       );
     },
@@ -274,11 +280,17 @@ const createEvidenceRepository = (
     async update(id, input) {
       calls.update += 1;
       calls.updateArgs = { id, input };
+      const storageKey = input.fileName
+        ? `uploads/evidence/mock/${input.fileName}`
+        : defaultEvidence.filePath;
       return (
         (await overrides.update?.(id, input)) ?? {
           ...defaultEvidence,
           id,
           ...input,
+          filePath: storageKey,
+          storageKey,
+          httpExchanges: input.httpExchanges ?? defaultEvidence.httpExchanges,
         }
       );
     },
@@ -476,7 +488,7 @@ const createApp = (
     );
     const body = await readJson<{ data: typeof defaultEvidence }>(response);
     assert.equal(body.data.assessmentId, defaultAssessment.id);
-    assert.equal(body.data.filePath, 'uploads/evidence/evidence.png');
+    assert.equal(body.data.filePath, 'uploads/evidence/mock/evidence.png');
     assert.equal(calls.findById, 1);
     assert.equal(threatCalls.findById, 2);
     assert.equal(evidenceCalls.create, 1);
@@ -484,10 +496,8 @@ const createApp = (
       evidenceCalls.createArgs?.input.assessmentId,
       defaultAssessment.id,
     );
-    assert.equal(
-      evidenceCalls.createArgs?.input.filePath,
-      'uploads/evidence/evidence.png',
-    );
+    assert.equal(evidenceCalls.createArgs?.input.filePath, undefined);
+    assert.equal(evidenceCalls.createArgs?.input.storageKey, undefined);
   } finally {
     await server.close();
   }
@@ -532,6 +542,120 @@ const createApp = (
           detail.message.includes(
             'Evidence file name extension must match the supplied mime type',
           ),
+      ),
+    );
+  } finally {
+    await server.close();
+  }
+}
+
+{
+  const { repository } = createAssessmentRepository();
+  const { repository: threatRepository } = createThreatRepository();
+  const { calls: evidenceCalls, repository: evidenceRepository } =
+    createEvidenceRepository({
+      create: async input => ({
+        ...defaultEvidence,
+        ...input,
+        httpExchanges: input.httpExchanges ?? [],
+      }),
+    });
+  const server = await startTestServer(
+    createApp(repository, threatRepository, evidenceRepository),
+  );
+
+  try {
+    const response = await fetch(`${server.baseUrl}/api/evidence`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        assessmentId: defaultAssessment.id,
+        type: 'http',
+        title: 'HTTP evidence',
+        httpExchanges: [
+          {
+            request: {
+              method: 'GET',
+              url: '/api/orders/1',
+            },
+            response: {
+              statusCode: 200,
+              body: 'ok',
+            },
+          },
+          {
+            request: {
+              method: 'POST',
+              url: '/api/orders/1',
+              body: 'body',
+            },
+            response: {
+              statusCode: 201,
+              body: 'created',
+            },
+          },
+        ],
+      }),
+    });
+
+    assert.equal(response.status, 201);
+    const body = await readJson<{ data: Evidence }>(response);
+    assert.equal(body.data.type, 'http');
+    assert.equal(body.data.httpExchanges?.length, 2);
+    assert.equal(body.data.httpExchanges?.[0]?.request.method, 'GET');
+    assert.equal(body.data.httpExchanges?.[1]?.response.statusCode, 201);
+    assert.equal(evidenceCalls.create, 1);
+    assert.equal(evidenceCalls.createArgs?.input.httpExchanges?.length, 2);
+  } finally {
+    await server.close();
+  }
+}
+
+{
+  const { calls, repository } = createAssessmentRepository();
+  const { repository: threatRepository } = createThreatRepository();
+  const { calls: evidenceCalls, repository: evidenceRepository } =
+    createEvidenceRepository();
+  const server = await startTestServer(
+    createApp(repository, threatRepository, evidenceRepository),
+  );
+
+  try {
+    const response = await fetch(`${server.baseUrl}/api/evidence`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        assessmentId: defaultAssessment.id,
+        type: 'text',
+        title: 'Notes',
+        httpExchanges: [
+          {
+            request: {
+              method: 'GET',
+              url: '/api/orders/1',
+            },
+            response: {
+              statusCode: 200,
+            },
+          },
+        ],
+      }),
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(calls.findById, 0);
+    assert.equal(evidenceCalls.create, 0);
+    const body = await readJson<ApiErrorBody>(response);
+    assert.equal(body.error.code, 'VALIDATION_ERROR');
+    assert.ok(
+      body.error.details.some(
+        detail =>
+          detail.path === 'httpExchanges' &&
+          detail.message.includes('Only HTTP evidence can include exchanges'),
       ),
     );
   } finally {
@@ -657,16 +781,17 @@ const createApp = (
     assert.equal(response.status, 200);
     const body = await readJson<{ data: typeof defaultEvidence }>(response);
     assert.equal(body.data.title, 'Updated evidence title');
-    assert.equal(body.data.filePath, 'uploads/evidence/updated-evidence.png');
+    assert.equal(
+      body.data.filePath,
+      'uploads/evidence/mock/updated-evidence.png',
+    );
     assert.equal(evidenceCalls.findById, 1);
     assert.equal(calls.findById, 1);
     assert.equal(evidenceCalls.update, 1);
     assert.equal(evidenceCalls.updateArgs?.id, defaultEvidence.id);
     assert.equal(evidenceCalls.updateArgs?.input.assessmentId, undefined);
-    assert.equal(
-      evidenceCalls.updateArgs?.input.filePath,
-      'uploads/evidence/updated-evidence.png',
-    );
+    assert.equal(evidenceCalls.updateArgs?.input.filePath, undefined);
+    assert.equal(evidenceCalls.updateArgs?.input.storageKey, undefined);
   } finally {
     await server.close();
   }

@@ -62,6 +62,11 @@ export type Threat = Prisma.ThreatModel
  */
 export type Evidence = Prisma.EvidenceModel
 /**
+ * Model EvidenceExchange
+ * 
+ */
+export type EvidenceExchange = Prisma.EvidenceExchangeModel
+/**
  * Model Report
  * 
  */
