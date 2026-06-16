@@ -30,6 +30,7 @@ const StyledPageHeader = styled.header`
 
     .page-header-title {
       margin: 0;
+      overflow-wrap: anywhere;
     }
 
     .page-header-subtitle {
@@ -37,6 +38,7 @@ const StyledPageHeader = styled.header`
       margin-top: ${spacing.xxxs};
 
       color: ${colors.text.muted};
+      overflow-wrap: anywhere;
     }
 
     .page-header-actions {
@@ -65,6 +67,7 @@ const StyledPageHeader = styled.header`
       display: inline-flex;
       align-items: center;
       gap: ${spacing.xxxs};
+      min-width: 0;
 
       font-size: ${typography.body.small.size};
       line-height: ${typography.body.small.lineHeight};
@@ -82,6 +85,17 @@ const StyledPageHeader = styled.header`
 
       color: ${colors.text.link};
       background: transparent;
+    }
+
+    .page-header-breadcrumb-item button,
+    .page-header-breadcrumb-item span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .page-header-breadcrumb-item span[aria-current='page'] {
+      font-weight: ${typography.fontWeights.semibold};
+      color: ${colors.text.primary};
     }
   `}
 `;

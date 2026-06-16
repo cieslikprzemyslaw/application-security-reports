@@ -24,6 +24,10 @@ interface CompanyWorkspaceRouteShellProps {
   isCompaniesLoading: boolean;
 }
 
+interface CompanyWorkspaceRouteProps {
+  companyName?: string;
+}
+
 const CompanyWorkspaceRouteShell = ({
   companies,
   isCompaniesLoading,
@@ -113,11 +117,17 @@ export const CompanyOverviewRoute = () => {
   ) : null;
 };
 
-export const CompanyAssessmentsRoute = () => {
+export const CompanyAssessmentsRoute = ({
+  companyName,
+}: CompanyWorkspaceRouteProps) => {
   const companyId = useCompanyId();
 
   return companyId ? (
-    <Assessments key={companyId} companyId={companyId} />
+    <Assessments
+      key={companyId}
+      companyId={companyId}
+      companyName={companyName}
+    />
   ) : null;
 };
 
@@ -127,7 +137,9 @@ export const CompanyReportsRoute = () => {
   return <Reports key={companyId} cover={reportCover} />;
 };
 
-export const CompanyActivityRoute = () => {
+export const CompanyActivityRoute = ({
+  companyName,
+}: CompanyWorkspaceRouteProps) => {
   const companyId = useCompanyId();
 
   return (
@@ -135,6 +147,14 @@ export const CompanyActivityRoute = () => {
       <PageHeader
         eyebrow="Workspace"
         title="Activity"
+        breadcrumbs={[
+          {
+            label: companyName ?? 'Company',
+          },
+          {
+            label: 'Activity',
+          },
+        ]}
         subtitle="Recent actions across the active company workspace."
       />
 
