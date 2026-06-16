@@ -67,6 +67,8 @@ const renderView = async () => {
               company: {
                 id: 'cmp_1',
                 name: 'Northstar Digital',
+                createdAt: '2026-01-01T00:00:00.000Z',
+                updatedAt: '2026-01-02T00:00:00.000Z',
               },
               assessmentCounts: {
                 total: 3,
