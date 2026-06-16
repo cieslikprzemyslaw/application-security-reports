@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
-import { assessments, reportCover, settingsValue, threats } from './appData';
+import { reportCover, settingsValue, threats } from './appData';
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import { PageHeader } from '~/app/components/common';
-import Assessments from './pages/assessments';
 import Dashboard from './pages/dashboard';
 import Reports from './pages/reports';
 import Settings from './pages/settings';
@@ -76,29 +75,23 @@ export const DashboardRoute = ({
   );
 };
 
-export const AssessmentsRoute = () => {
-  const navigate = useNavigate();
-  const [searchValue, setSearchValue] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [riskFilter, setRiskFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
+interface AssessmentsRouteProps {
+  activeCompanyId?: string;
+}
 
-  return (
-    <Assessments
-      assessments={assessments}
-      searchValue={searchValue}
-      statusFilter={statusFilter}
-      riskFilter={riskFilter}
-      typeFilter={typeFilter}
-      onSearchChange={setSearchValue}
-      onStatusFilterChange={setStatusFilter}
-      onRiskFilterChange={setRiskFilter}
-      onTypeFilterChange={setTypeFilter}
-      onAssessmentClick={assessment =>
-        navigate(routes.assessmentDetails(assessment.id))
-      }
-    />
-  );
+export const AssessmentsRoute = ({
+  activeCompanyId,
+}: AssessmentsRouteProps) => {
+  if (activeCompanyId) {
+    return (
+      <Navigate
+        replace
+        to={routes.companyWorkspaceAssessments(activeCompanyId)}
+      />
+    );
+  }
+
+  return <Navigate replace to={routes.dashboard} />;
 };
 
 export const ThreatsRoute = () => {

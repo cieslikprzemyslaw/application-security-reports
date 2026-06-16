@@ -10,8 +10,8 @@ const meta = {
   },
   tags: ['autodocs'],
   argTypes: {
-    onAssessmentClick: {
-      action: 'assessment clicked',
+    onEditAssessment: {
+      action: 'assessment edited',
     },
   },
 } satisfies Meta<typeof AssessmentTable>;
@@ -25,18 +25,15 @@ export const Default: Story = {
     assessments: [
       {
         id: 'asm_1',
-        code: 'ASMT-001',
-        initials: 'ND',
-        companyName: 'Northstar Digital',
-        applicationName: 'Customer Services Portal',
-        environment: 'Production',
-        assessmentType: 'Web Application',
-        overallRisk: 'high',
-        findingsCount: 5,
-        highCount: 2,
+        name: 'Customer Services Portal',
+        type: 'Web App',
         status: 'in-progress',
-        testerName: 'Alex Mercer',
+        findingsCount: 5,
+        updatedAt: '2026-06-14T10:15:00.000Z',
       },
     ],
+    sortBy: 'updated',
+    sortDirection: 'desc',
+    onSortChange: () => undefined,
   },
 };

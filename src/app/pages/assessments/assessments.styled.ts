@@ -50,35 +50,9 @@ const StyledAssessments = styled.div.attrs({ className: 'assessments' })`
       box-shadow: ${shadows.xs};
     }
 
-    .assessments-toolbar {
-      display: flex;
-      flex-direction: column;
-      gap: ${spacing.xxs};
-      padding: ${spacing.s};
-      border-bottom: 1px solid ${colors.border.subtle};
-
-      @media ${mq.min.tablet} {
-        flex-direction: row;
-        align-items: center;
-      }
-    }
-
-    .assessments-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: ${spacing.xxs};
-    }
-
-    .assessments-summary {
-      margin-left: auto;
-      font-size: ${typography.body.small.size};
+    .assessments-status {
+      padding: ${spacing.l};
       color: ${colors.text.muted};
-    }
-
-    .assessments-empty {
-      padding: ${spacing.xl};
-      color: ${colors.text.muted};
-      text-align: center;
     }
   `}
 `;

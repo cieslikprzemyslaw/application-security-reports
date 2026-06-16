@@ -1,4 +1,4 @@
-import type { Assessment } from '~/domain';
+import type { Assessment, AssessmentStatus } from '~/domain';
 
 import { apiRequest } from './apiClient.js';
 import { requestData, type ApiRequestFn } from './serviceHelpers.js';
@@ -12,13 +12,53 @@ export type AssessmentUpdateInput = Partial<
   Omit<AssessmentCreateInput, 'companyId'>
 >;
 
+export interface AssessmentListItem {
+  id: string;
+  companyId?: string;
+  name: string;
+  type: string;
+  status: AssessmentStatus;
+  findingsCount: number;
+  updatedAt: string;
+  description?: string;
+  scope?: string;
+}
+
+interface AssessmentListApiItem {
+  id: string;
+  companyId?: string;
+  title?: string;
+  name?: string;
+  assessmentType?: string;
+  type?: string;
+  status: AssessmentStatus;
+  findingsCount?: number;
+  updatedAt: string;
+  description?: string;
+  scope?: string;
+}
+
+const mapAssessmentListItem = (
+  item: AssessmentListApiItem,
+): AssessmentListItem => ({
+  id: item.id,
+  companyId: item.companyId,
+  name: item.name ?? item.title ?? 'Untitled assessment',
+  type: item.type ?? item.assessmentType ?? 'Unspecified',
+  status: item.status,
+  findingsCount: item.findingsCount ?? 0,
+  updatedAt: item.updatedAt,
+  description: item.description,
+  scope: item.scope,
+});
+
 export interface AssessmentService {
   list(
     filters?: {
       companyId?: string;
     },
     signal?: AbortSignal,
-  ): Promise<Assessment[]>;
+  ): Promise<AssessmentListItem[]>;
   getById(assessmentId: string, signal?: AbortSignal): Promise<Assessment>;
   create(input: AssessmentCreateInput): Promise<Assessment>;
   update(
@@ -32,13 +72,19 @@ export const createAssessmentService = (
   request: ApiRequestFn = apiRequest,
 ): AssessmentService => ({
   async list(filters, signal) {
-    return requestData<Assessment[]>(request, '/api/assessments', {
-      method: 'GET',
-      query: {
-        companyId: filters?.companyId,
+    const items = await requestData<AssessmentListApiItem[]>(
+      request,
+      '/api/assessments',
+      {
+        method: 'GET',
+        query: {
+          companyId: filters?.companyId,
+        },
+        signal,
       },
-      signal,
-    });
+    );
+
+    return items.map(mapAssessmentListItem);
   },
 
   async getById(assessmentId, signal) {

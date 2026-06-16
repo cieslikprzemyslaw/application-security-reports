@@ -142,6 +142,18 @@ const assessment = {
   updatedAt: '2026-06-11T09:00:00.000Z',
 } as const;
 
+const assessmentSummary = {
+  id: assessment.id,
+  companyId: assessment.companyId,
+  name: assessment.title,
+  type: assessment.assessmentType,
+  status: assessment.status,
+  findingsCount: 7,
+  updatedAt: assessment.updatedAt,
+  description: assessment.description,
+  scope: assessment.scope,
+} as const;
+
 const threat = {
   id: 'thr_00000000-0000-0000-0000-000000000001',
   assessmentId: assessment.id,
@@ -312,10 +324,12 @@ const reportView = {
 }
 
 {
-  const { calls, request } = createRequestSpy({ data: [assessment] });
+  const { calls, request } = createRequestSpy({ data: [assessmentSummary] });
   const service = createAssessmentService(request);
 
-  assert.deepEqual(await service.list({ companyId: company.id }), [assessment]);
+  assert.deepEqual(await service.list({ companyId: company.id }), [
+    assessmentSummary,
+  ]);
   expectSingleCall(calls, {
     input: '/api/assessments',
     method: 'GET',

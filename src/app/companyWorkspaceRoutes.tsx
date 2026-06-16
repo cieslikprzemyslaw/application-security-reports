@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Navigate, Outlet, useNavigate, useParams } from 'react-router-dom';
+import React from 'react';
+import { Navigate, Outlet, useParams } from 'react-router-dom';
 
 import { ActivityFeed, PageHeader } from '~/app/components/common';
 import {
@@ -10,7 +10,7 @@ import IconSVG from '~/app/components/ui/iconSVG';
 import type { CompanyListItem } from '~/domain';
 import { routes } from '~/routes';
 
-import { assessments, recentActivity, reportCover } from './appData';
+import { recentActivity, reportCover } from './appData';
 import CompanyOverviewDashboard from './pages/dashboard/companyOverviewDashboard.component';
 import Assessments from './pages/assessments';
 import Reports from './pages/reports';
@@ -114,30 +114,11 @@ export const CompanyOverviewRoute = () => {
 };
 
 export const CompanyAssessmentsRoute = () => {
-  const navigate = useNavigate();
   const companyId = useCompanyId();
-  const [searchValue, setSearchValue] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [riskFilter, setRiskFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
 
-  return (
-    <Assessments
-      key={companyId}
-      assessments={assessments}
-      searchValue={searchValue}
-      statusFilter={statusFilter}
-      riskFilter={riskFilter}
-      typeFilter={typeFilter}
-      onSearchChange={setSearchValue}
-      onStatusFilterChange={setStatusFilter}
-      onRiskFilterChange={setRiskFilter}
-      onTypeFilterChange={setTypeFilter}
-      onAssessmentClick={assessment =>
-        navigate(routes.assessmentDetails(assessment.id))
-      }
-    />
-  );
+  return companyId ? (
+    <Assessments key={companyId} companyId={companyId} />
+  ) : null;
 };
 
 export const CompanyReportsRoute = () => {

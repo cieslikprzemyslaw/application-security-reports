@@ -701,6 +701,23 @@ await (async () => {
         });
       }
 
+      if (path.startsWith('/api/assessments')) {
+        return createJsonResponse({
+          data: [
+            {
+              id: 'asm_1',
+              name: 'Customer Services Portal',
+              type: 'Web App',
+              status: 'in-progress',
+              findingsCount: 7,
+              updatedAt: '2026-06-14T10:15:00.000Z',
+              description: 'Assessment of the customer portal',
+              scope: 'Web application',
+            },
+          ],
+        });
+      }
+
       throw new Error(`Unexpected request: ${path}`);
     });
 
@@ -784,6 +801,23 @@ await (async () => {
         });
       }
 
+      if (path.startsWith('/api/assessments')) {
+        return createJsonResponse({
+          data: [
+            {
+              id: 'asm_1',
+              name: 'Customer Services Portal',
+              type: 'Web App',
+              status: 'in-progress',
+              findingsCount: 7,
+              updatedAt: '2026-06-14T10:15:00.000Z',
+              description: 'Assessment of the customer portal',
+              scope: 'Web application',
+            },
+          ],
+        });
+      }
+
       throw new Error(`Unexpected request: ${path}`);
     });
 
@@ -792,11 +826,9 @@ await (async () => {
         routes.companyWorkspaceAssessments('cmp_1'),
       );
 
-      assert.ok(
-        textContent(container).includes(
-          'All application security assessments across your workspace.',
-        ),
-      );
+      assert.ok(textContent(container).includes('Assessments'));
+      assert.ok(textContent(container).includes('Customer Services Portal'));
+      assert.ok(textContent(container).includes('Findings'));
 
       await act(async () => {
         root.unmount();
@@ -1204,10 +1236,25 @@ await (async () => {
       restoreFetch();
     }
   }
-  await assertRouteRenders(
-    '/assessments',
-    'All application security assessments across your workspace.',
-  );
+  {
+    setFetch(async input => {
+      assert.equal(String(input), '/api/companies');
+      return createJsonResponse({ data: [] });
+    });
+
+    try {
+      const { container, root } = await renderApp('/assessments');
+
+      assert.equal(window.location.pathname, '/dashboard');
+      assert.ok(textContent(container).includes('No companies yet'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
   await assertRouteRenders(
     '/threats',
     'Security findings across all active assessments.',

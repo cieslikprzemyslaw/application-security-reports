@@ -5,7 +5,6 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from 'styled-components';
 
-import type { AssessmentTableRow } from '~/app/components/appsec/assessmentTable';
 import type { GlobalThreatRow } from '~/app/components/appsec/globalThreatTable';
 import Dashboard from '~/app/pages/dashboard';
 import Companies from '~/app/pages/companies';
@@ -97,21 +96,6 @@ const renderComponent = async (
 };
 
 const textContent = (container: HTMLElement) => container.textContent ?? '';
-
-const sampleAssessment: AssessmentTableRow = {
-  id: 'asm_1',
-  code: 'NWL-2026-001',
-  initials: 'NL',
-  logoTone: 'indigo',
-  applicationName: 'Northwind Portal',
-  companyName: 'Northwind Labs',
-  assessmentType: 'Web App',
-  environment: 'Production',
-  overallRisk: 'high',
-  findingsCount: 7,
-  testerName: 'J. Example',
-  status: 'draft',
-};
 
 const sampleThreat: GlobalThreatRow = {
   id: 'thr_1',
@@ -495,80 +479,104 @@ await (async () => {
   }
 
   {
-    const { container, root } = await renderComponent(
-      <Assessments
-        assessments={[]}
-        searchValue=""
-        statusFilter="all"
-        riskFilter="all"
-        typeFilter="all"
-        onSearchChange={() => undefined}
-        onStatusFilterChange={() => undefined}
-        onRiskFilterChange={() => undefined}
-        onTypeFilterChange={() => undefined}
-        onCreateAssessment={() => undefined}
-      />,
+    setFetch(async () =>
+      createJsonResponse({
+        data: [],
+      }),
     );
 
-    assert.ok(textContent(container).includes('No assessments yet'));
-    assert.ok(textContent(container).includes('New Assessment'));
+    try {
+      const { container, root } = await renderComponent(
+        <Assessments companyId="cmp_1" companyName="Northstar Digital" />,
+      );
 
-    await act(async () => {
-      root.unmount();
-    });
+      assert.ok(textContent(container).includes('No assessments yet'));
+      assert.ok(textContent(container).includes('New assessment'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
   }
 
   {
-    const updates: string[] = [];
-
-    const { container, root } = await renderComponent(
-      <Assessments
-        assessments={[sampleAssessment]}
-        searchValue="missing"
-        statusFilter="draft"
-        riskFilter="all"
-        typeFilter="all"
-        onSearchChange={value => updates.push(`search:${value}`)}
-        onStatusFilterChange={value => updates.push(`status:${value}`)}
-        onRiskFilterChange={value => updates.push(`risk:${value}`)}
-        onTypeFilterChange={value => updates.push(`type:${value}`)}
-      />,
+    setFetch(async () =>
+      createJsonResponse({
+        data: [
+          {
+            id: 'asm_1',
+            name: 'Northwind Portal',
+            type: 'Web App',
+            status: 'draft',
+            findingsCount: 7,
+            updatedAt: '2026-06-14T10:15:00.000Z',
+            description: 'Assessment of the customer portal',
+            scope: 'Web application',
+          },
+        ],
+      }),
     );
 
-    assert.ok(
-      textContent(container).includes(
-        'No assessments match your current search and filters',
-      ),
-    );
-    assert.ok(textContent(container).includes('Clear filters'));
-
-    const clearButton = Array.from(container.querySelectorAll('button')).find(
-      button => button.textContent?.includes('Clear filters'),
-    );
-
-    assert.ok(clearButton, 'Expected a clear filters action');
-
-    await act(async () => {
-      clearButton.dispatchEvent(
-        new window.MouseEvent('click', {
-          bubbles: true,
-          cancelable: true,
-          button: 0,
-        }),
+    try {
+      const { container, root } = await renderComponent(
+        <Assessments companyId="cmp_1" companyName="Northstar Digital" />,
       );
-      await renderTick();
-    });
 
-    assert.deepEqual(updates, [
-      'search:',
-      'status:all',
-      'risk:all',
-      'type:all',
-    ]);
+      assert.ok(textContent(container).includes('Northwind Portal'));
+      assert.ok(textContent(container).includes('Findings'));
+      assert.ok(textContent(container).includes('Updated'));
 
-    await act(async () => {
-      root.unmount();
-    });
+      const searchInput = container.querySelector(
+        'input[placeholder="Search assessments..."]',
+      ) as HTMLInputElement | null;
+
+      assert.ok(searchInput, 'Expected the assessments search input');
+
+      await act(async () => {
+        searchInput!.value = 'missing';
+        searchInput?.dispatchEvent(
+          new window.Event('input', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+        await renderTick();
+      });
+
+      assert.ok(
+        textContent(container).includes(
+          'No assessments match your current search and filters',
+        ),
+      );
+      assert.ok(textContent(container).includes('Clear filters'));
+
+      const clearButton = Array.from(container.querySelectorAll('button')).find(
+        button => button.textContent?.includes('Clear filters'),
+      );
+
+      assert.ok(clearButton, 'Expected a clear filters action');
+
+      await act(async () => {
+        clearButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
+
+      assert.equal(searchInput?.value, '');
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
   }
 
   {
