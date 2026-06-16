@@ -30,6 +30,11 @@ const StyledAssessmentDetails = styled.div.attrs({
       gap: ${spacing.xxs};
     }
 
+    .assessment-details-feedback {
+      display: grid;
+      gap: ${spacing.xxs};
+    }
+
     .assessment-details-breadcrumb-list {
       display: flex;
       flex-wrap: wrap;
@@ -91,6 +96,12 @@ const StyledAssessmentDetails = styled.div.attrs({
     }
 
     .assessment-details-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+      gap: ${spacing.s};
+    }
+
+    .assessment-details-count-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
       gap: ${spacing.s};

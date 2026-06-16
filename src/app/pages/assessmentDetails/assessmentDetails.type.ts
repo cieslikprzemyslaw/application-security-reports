@@ -1,5 +1,4 @@
-import type { AssessmentTableRow } from '../../components/appsec/assessmentTable';
-import type { GlobalThreatRow } from '../../components/appsec/globalThreatTable';
+import type { AssessmentStatus, Severity } from '~/domain';
 
 export const assessmentDetailSections = [
   'overview',
@@ -17,15 +16,45 @@ export const isAssessmentDetailSection = (
   value !== undefined &&
   assessmentDetailSections.includes(value as AssessmentDetailSection);
 
-export interface AssessmentDetailsProps {
-  assessment: AssessmentTableRow;
-  threats: GlobalThreatRow[];
-  executiveSummary: string;
+export const assessmentDetailActions = [
+  'start',
+  'complete',
+  'reopen',
+  'archive',
+] as const;
+
+export type AssessmentDetailAction = (typeof assessmentDetailActions)[number];
+
+export interface AssessmentDetailsAssessment {
+  id: string;
+  companyId: string;
+  companyName: string;
+  applicationName: string;
+  assessmentType?: string;
+  description?: string;
+  scope?: string;
+  startedAt?: string;
+  completedAt?: string;
+  environment?: string;
+  status: AssessmentStatus;
+  overallRisk?: Severity;
+  recordVersion: number;
+  findingsCount: number;
+  evidenceCount: number;
+  reportVersionCount: number;
+  testerName?: string;
+  availableActions?: AssessmentDetailAction[];
+}
+
+export interface AssessmentDetailsViewProps {
+  assessment: AssessmentDetailsAssessment;
   activeSection: AssessmentDetailSection;
   overviewHref: string;
   onSectionChange: (section: AssessmentDetailSection) => void;
   onBack?: () => void;
-  onEdit?: () => void;
-  onAddThreat?: () => void;
-  onThreatClick?: (threat: GlobalThreatRow) => void;
+  onAction: (action: AssessmentDetailAction) => void;
+  isActionLoading?: boolean;
+  pendingAction?: AssessmentDetailAction;
+  actionError?: string;
+  conflictError?: string;
 }

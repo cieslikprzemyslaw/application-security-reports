@@ -2,11 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react';
 
 import PageContent from '~/app/layouts/pageContent';
 
-import AssessmentDetails from './assessmentDetails.component';
+import AssessmentDetailsView from './assessmentDetails.view';
 
 const meta = {
   title: 'Pages/AssessmentDetails',
-  component: AssessmentDetails,
+  component: AssessmentDetailsView,
   parameters: {
     layout: 'fullscreen',
   },
@@ -25,17 +25,11 @@ const meta = {
     onBack: {
       action: 'back',
     },
-    onEdit: {
-      action: 'edit assessment',
-    },
-    onAddThreat: {
-      action: 'add threat',
-    },
-    onThreatClick: {
-      action: 'threat clicked',
+    onAction: {
+      action: 'assessment action',
     },
   },
-} satisfies Meta<typeof AssessmentDetails>;
+} satisfies Meta<typeof AssessmentDetailsView>;
 
 export default meta;
 
@@ -44,49 +38,28 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     activeSection: 'overview',
-    overviewHref: '/assessments/asm_1/overview',
+    overviewHref: '/companies/cmp_1/assessments/asm_1/overview',
     onSectionChange: () => undefined,
+    onAction: () => undefined,
     assessment: {
       id: 'asm_1',
-      code: 'NSD-CSP-2026-014',
-      initials: 'CSP',
-      logoTone: 'blue',
-      applicationName: 'Customer Services Portal',
+      companyId: 'cmp_1',
       companyName: 'Northstar Digital',
+      applicationName: 'Customer Services Portal',
       assessmentType: 'Web App',
+      description: 'Assessment of the customer portal',
+      scope: 'Authenticated portal workflows',
+      startedAt: '2026-06-01',
+      completedAt: '2026-06-10',
       environment: 'Production',
-      overallRisk: 'high',
-      findingsCount: 14,
-      criticalCount: 1,
-      highCount: 3,
-      testerName: 'Alex Mercer',
       status: 'in-progress',
+      overallRisk: 'high',
+      recordVersion: 3,
+      findingsCount: 14,
+      evidenceCount: 6,
+      reportVersionCount: 2,
+      testerName: 'Alex Mercer',
+      availableActions: ['complete', 'archive'],
     },
-
-    executiveSummary:
-      'The assessment identified 14 confirmed findings across the Customer Services Portal. The overall risk is rated High due to one critical authorization weakness and three high-severity findings.',
-
-    threats: [
-      {
-        id: 'thr_1',
-        title: 'Missing Server-Side Authorization',
-        applicationName: 'Customer Services Portal',
-        companyName: 'Northstar Digital',
-        strideCategory: 'elevation-of-privilege',
-        severity: 'critical',
-        status: 'open',
-        updatedAt: '28 May 2026',
-      },
-      {
-        id: 'thr_2',
-        title: 'Verbose Error Messages',
-        applicationName: 'Customer Services Portal',
-        companyName: 'Northstar Digital',
-        strideCategory: 'information-disclosure',
-        severity: 'medium',
-        status: 'mitigated',
-        updatedAt: '24 May 2026',
-      },
-    ],
   },
 };

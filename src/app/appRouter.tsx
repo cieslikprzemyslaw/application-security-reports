@@ -39,7 +39,7 @@ import {
   ThreatsRoute,
 } from './routerPages';
 
-import { assessmentDetailsById, reportDetailsById } from './appData';
+import { reportDetailsById } from './appData';
 import type { CompanyIdentity } from './pages/companies';
 
 const Companies = lazy(() => import('./pages/companies'));
@@ -67,65 +67,12 @@ const CompaniesRoute = ({
   />
 );
 
-const getAssessmentDetailsSectionHref = (
-  assessmentId: string,
-  section: AssessmentDetailSection,
-) => {
-  switch (section) {
-    case 'overview':
-      return routes.assessmentDetailsOverview(assessmentId);
-    case 'findings':
-      return routes.assessmentDetailsFindings(assessmentId);
-    case 'evidence':
-      return routes.assessmentDetailsEvidence(assessmentId);
-    case 'reports':
-      return routes.assessmentDetailsReports(assessmentId);
-    case 'history':
-      return routes.assessmentDetailsHistory(assessmentId);
-    default:
-      return routes.assessmentDetailsOverview(assessmentId);
-  }
-};
-
 interface AssessmentDetailsRouteProps {
   section: AssessmentDetailSection;
 }
 
 const AssessmentDetailsRoute = ({ section }: AssessmentDetailsRouteProps) => {
-  const navigate = useNavigate();
-  const { assessmentId } = useParams<{
-    assessmentId?: string;
-  }>();
-
-  if (!assessmentId || !assessmentDetailsById[assessmentId]) {
-    return (
-      <EntityNotFoundView
-        entityName="Assessment"
-        listHref={routes.assessments}
-        listLabel="Return to assessments"
-      />
-    );
-  }
-
-  const {
-    assessment,
-    executiveSummary: summary,
-    threats: assessmentThreats,
-  } = assessmentDetailsById[assessmentId];
-
-  return (
-    <AssessmentDetails
-      assessment={assessment}
-      threats={assessmentThreats}
-      executiveSummary={summary}
-      activeSection={section}
-      overviewHref={routes.assessmentDetailsOverview(assessmentId)}
-      onSectionChange={section =>
-        navigate(getAssessmentDetailsSectionHref(assessmentId, section))
-      }
-      onBack={() => navigate(routes.assessments)}
-    />
-  );
+  return <AssessmentDetails activeSection={section} />;
 };
 
 const ReportDetailsRoute = () => {

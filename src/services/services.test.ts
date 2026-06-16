@@ -142,6 +142,22 @@ const assessment = {
   updatedAt: '2026-06-11T09:00:00.000Z',
 } as const;
 
+const assessmentOverview = {
+  company: {
+    id: company.id,
+    name: company.name,
+  },
+  assessment: {
+    ...assessment,
+    recordVersion: 3,
+    findingsCount: 7,
+    evidenceCount: 2,
+    reportVersionCount: 1,
+    testerName: 'Alex Mercer',
+    availableActions: ['complete', 'archive'],
+  },
+} as const;
+
 const assessmentSummary = {
   id: assessment.id,
   companyId: assessment.companyId,
@@ -340,6 +356,22 @@ const reportView = {
 }
 
 {
+  const controller = new AbortController();
+  const { calls, request } = createRequestSpy({ data: assessmentOverview });
+  const service = createAssessmentService(request);
+
+  assert.deepEqual(
+    await service.getOverview(company.id, assessment.id, controller.signal),
+    assessmentOverview,
+  );
+  expectSingleCall(calls, {
+    input: `/api/companies/${company.id}/assessments/${assessment.id}/overview`,
+    method: 'GET',
+  });
+  assert.equal(calls[0]?.init?.signal, controller.signal);
+}
+
+{
   const { calls, request } = createRequestSpy({ data: assessment });
   const service = createAssessmentService(request);
 
@@ -387,6 +419,66 @@ const reportView = {
     input: `/api/assessments/${assessment.id}`,
     method: 'PATCH',
     body: input,
+  });
+}
+
+{
+  const { calls, request } = createRequestSpy({ data: assessmentOverview });
+  const service = createAssessmentService(request);
+
+  assert.deepEqual(
+    await service.start(company.id, assessment.id, 3),
+    assessmentOverview,
+  );
+  expectSingleCall(calls, {
+    input: `/api/companies/${company.id}/assessments/${assessment.id}/commands/start`,
+    method: 'POST',
+    body: { recordVersion: 3 },
+  });
+}
+
+{
+  const { calls, request } = createRequestSpy({ data: assessmentOverview });
+  const service = createAssessmentService(request);
+
+  assert.deepEqual(
+    await service.complete(company.id, assessment.id, 3),
+    assessmentOverview,
+  );
+  expectSingleCall(calls, {
+    input: `/api/companies/${company.id}/assessments/${assessment.id}/commands/complete`,
+    method: 'POST',
+    body: { recordVersion: 3 },
+  });
+}
+
+{
+  const { calls, request } = createRequestSpy({ data: assessmentOverview });
+  const service = createAssessmentService(request);
+
+  assert.deepEqual(
+    await service.reopen(company.id, assessment.id, 3),
+    assessmentOverview,
+  );
+  expectSingleCall(calls, {
+    input: `/api/companies/${company.id}/assessments/${assessment.id}/commands/reopen`,
+    method: 'POST',
+    body: { recordVersion: 3 },
+  });
+}
+
+{
+  const { calls, request } = createRequestSpy({ data: assessmentOverview });
+  const service = createAssessmentService(request);
+
+  assert.deepEqual(
+    await service.archive(company.id, assessment.id, 3),
+    assessmentOverview,
+  );
+  expectSingleCall(calls, {
+    input: `/api/companies/${company.id}/assessments/${assessment.id}/commands/archive`,
+    method: 'POST',
+    body: { recordVersion: 3 },
   });
 }
 
