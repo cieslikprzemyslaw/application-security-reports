@@ -1359,6 +1359,50 @@ await (async () => {
       });
     }
 
+    if (path.startsWith('/api/evidence')) {
+      if (path.includes('assessmentId=asm_1')) {
+        return createJsonResponse({
+          data: [
+            {
+              id: 'evd_1',
+              assessmentId: 'asm_1',
+              threatIds: ['thr_1'],
+              type: 'http',
+              title: 'Evidence screenshot',
+              description: 'Captured evidence for the assessment',
+              content: 'Plain-text evidence',
+              fileName: 'evidence.png',
+              filePath: 'uploads/evidence/evd_1/attachment.png',
+              storageKey: 'uploads/evidence/evd_1/attachment.png',
+              mimeType: 'image/png',
+              attachmentSizeBytes: 1234,
+              capturedAt: '2026-06-05',
+              httpExchanges: [
+                {
+                  request: {
+                    method: 'GET',
+                    url: '/api/orders/1',
+                    body: 'request body',
+                  },
+                  response: {
+                    statusCode: 200,
+                    statusText: 'OK',
+                    body: 'response body',
+                  },
+                },
+              ],
+              createdAt: '2026-06-05T00:00:00.000Z',
+              updatedAt: '2026-06-05T00:00:00.000Z',
+            },
+          ],
+        });
+      }
+
+      if (path.includes('assessmentId=asm_5')) {
+        return createJsonResponse({ data: [] });
+      }
+    }
+
     if (path === '/api/companies/cmp_1/assessments/asm_5/overview') {
       return createJsonResponse({
         data: {
@@ -1684,6 +1728,8 @@ await (async () => {
         window.location.pathname,
         routes.assessmentDetailsEvidence('cmp_1', 'asm_1'),
       );
+      assert.ok(textContent(container).includes('Add evidence'));
+      assert.ok(textContent(container).includes('Evidence screenshot'));
 
       await act(async () => {
         root.unmount();
