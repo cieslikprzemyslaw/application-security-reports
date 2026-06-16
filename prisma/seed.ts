@@ -237,6 +237,7 @@ export const loadSeedInput = async (
 
 const clearSeedData = async (db: RepositoryTransactionClient) => {
   await db.reportThreat.deleteMany({});
+  await db.evidenceExchange.deleteMany({});
   await db.evidenceThreat.deleteMany({});
   await db.report.deleteMany({});
   await db.evidence.deleteMany({});
@@ -291,7 +292,7 @@ const insertEvidence = async (
   rows: Evidence[],
 ) => {
   for (const row of rows) {
-    const { threatIds, ...evidence } = row;
+    const { threatIds, httpExchanges, ...evidence } = row;
 
     await db.evidence.create({
       data: stripUndefined({
@@ -306,6 +307,18 @@ const insertEvidence = async (
         data: {
           evidenceId: row.id,
           threatId,
+        },
+      });
+    }
+
+    for (const [position, exchange] of (httpExchanges ?? []).entries()) {
+      await db.evidenceExchange.create({
+        data: {
+          id: `${row.id}-${position}`,
+          evidenceId: row.id,
+          position,
+          request: exchange.request,
+          response: exchange.response,
         },
       });
     }

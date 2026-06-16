@@ -20,8 +20,18 @@ export type EvidenceModel = runtime.Types.Result.DefaultSelection<Prisma.$Eviden
 
 export type AggregateEvidence = {
   _count: EvidenceCountAggregateOutputType | null
+  _avg: EvidenceAvgAggregateOutputType | null
+  _sum: EvidenceSumAggregateOutputType | null
   _min: EvidenceMinAggregateOutputType | null
   _max: EvidenceMaxAggregateOutputType | null
+}
+
+export type EvidenceAvgAggregateOutputType = {
+  attachmentSizeBytes: number | null
+}
+
+export type EvidenceSumAggregateOutputType = {
+  attachmentSizeBytes: number | null
 }
 
 export type EvidenceMinAggregateOutputType = {
@@ -33,7 +43,9 @@ export type EvidenceMinAggregateOutputType = {
   content: string | null
   fileName: string | null
   filePath: string | null
+  storageKey: string | null
   mimeType: string | null
+  attachmentSizeBytes: number | null
   capturedAt: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -48,7 +60,9 @@ export type EvidenceMaxAggregateOutputType = {
   content: string | null
   fileName: string | null
   filePath: string | null
+  storageKey: string | null
   mimeType: string | null
+  attachmentSizeBytes: number | null
   capturedAt: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -63,13 +77,23 @@ export type EvidenceCountAggregateOutputType = {
   content: number
   fileName: number
   filePath: number
+  storageKey: number
   mimeType: number
+  attachmentSizeBytes: number
   capturedAt: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type EvidenceAvgAggregateInputType = {
+  attachmentSizeBytes?: true
+}
+
+export type EvidenceSumAggregateInputType = {
+  attachmentSizeBytes?: true
+}
 
 export type EvidenceMinAggregateInputType = {
   id?: true
@@ -80,7 +104,9 @@ export type EvidenceMinAggregateInputType = {
   content?: true
   fileName?: true
   filePath?: true
+  storageKey?: true
   mimeType?: true
+  attachmentSizeBytes?: true
   capturedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -95,7 +121,9 @@ export type EvidenceMaxAggregateInputType = {
   content?: true
   fileName?: true
   filePath?: true
+  storageKey?: true
   mimeType?: true
+  attachmentSizeBytes?: true
   capturedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -110,7 +138,9 @@ export type EvidenceCountAggregateInputType = {
   content?: true
   fileName?: true
   filePath?: true
+  storageKey?: true
   mimeType?: true
+  attachmentSizeBytes?: true
   capturedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -155,6 +185,18 @@ export type EvidenceAggregateArgs<ExtArgs extends runtime.Types.Extensions.Inter
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: EvidenceAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: EvidenceSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: EvidenceMinAggregateInputType
@@ -185,6 +227,8 @@ export type EvidenceGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   _count?: EvidenceCountAggregateInputType | true
+  _avg?: EvidenceAvgAggregateInputType
+  _sum?: EvidenceSumAggregateInputType
   _min?: EvidenceMinAggregateInputType
   _max?: EvidenceMaxAggregateInputType
 }
@@ -198,11 +242,15 @@ export type EvidenceGroupByOutputType = {
   content: string | null
   fileName: string | null
   filePath: string | null
+  storageKey: string | null
   mimeType: string | null
+  attachmentSizeBytes: number | null
   capturedAt: string | null
   createdAt: Date
   updatedAt: Date
   _count: EvidenceCountAggregateOutputType | null
+  _avg: EvidenceAvgAggregateOutputType | null
+  _sum: EvidenceSumAggregateOutputType | null
   _min: EvidenceMinAggregateOutputType | null
   _max: EvidenceMaxAggregateOutputType | null
 }
@@ -234,12 +282,15 @@ export type EvidenceWhereInput = {
   content?: Prisma.StringNullableFilter<"Evidence"> | string | null
   fileName?: Prisma.StringNullableFilter<"Evidence"> | string | null
   filePath?: Prisma.StringNullableFilter<"Evidence"> | string | null
+  storageKey?: Prisma.StringNullableFilter<"Evidence"> | string | null
   mimeType?: Prisma.StringNullableFilter<"Evidence"> | string | null
+  attachmentSizeBytes?: Prisma.IntNullableFilter<"Evidence"> | number | null
   capturedAt?: Prisma.StringNullableFilter<"Evidence"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Evidence"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Evidence"> | Date | string
   assessment?: Prisma.XOR<Prisma.AssessmentScalarRelationFilter, Prisma.AssessmentWhereInput>
   threatLinks?: Prisma.EvidenceThreatListRelationFilter
+  httpExchanges?: Prisma.EvidenceExchangeListRelationFilter
 }
 
 export type EvidenceOrderByWithRelationInput = {
@@ -251,12 +302,15 @@ export type EvidenceOrderByWithRelationInput = {
   content?: Prisma.SortOrderInput | Prisma.SortOrder
   fileName?: Prisma.SortOrderInput | Prisma.SortOrder
   filePath?: Prisma.SortOrderInput | Prisma.SortOrder
+  storageKey?: Prisma.SortOrderInput | Prisma.SortOrder
   mimeType?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentSizeBytes?: Prisma.SortOrderInput | Prisma.SortOrder
   capturedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   assessment?: Prisma.AssessmentOrderByWithRelationInput
   threatLinks?: Prisma.EvidenceThreatOrderByRelationAggregateInput
+  httpExchanges?: Prisma.EvidenceExchangeOrderByRelationAggregateInput
 }
 
 export type EvidenceWhereUniqueInput = Prisma.AtLeast<{
@@ -271,12 +325,15 @@ export type EvidenceWhereUniqueInput = Prisma.AtLeast<{
   content?: Prisma.StringNullableFilter<"Evidence"> | string | null
   fileName?: Prisma.StringNullableFilter<"Evidence"> | string | null
   filePath?: Prisma.StringNullableFilter<"Evidence"> | string | null
+  storageKey?: Prisma.StringNullableFilter<"Evidence"> | string | null
   mimeType?: Prisma.StringNullableFilter<"Evidence"> | string | null
+  attachmentSizeBytes?: Prisma.IntNullableFilter<"Evidence"> | number | null
   capturedAt?: Prisma.StringNullableFilter<"Evidence"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Evidence"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Evidence"> | Date | string
   assessment?: Prisma.XOR<Prisma.AssessmentScalarRelationFilter, Prisma.AssessmentWhereInput>
   threatLinks?: Prisma.EvidenceThreatListRelationFilter
+  httpExchanges?: Prisma.EvidenceExchangeListRelationFilter
 }, "id">
 
 export type EvidenceOrderByWithAggregationInput = {
@@ -288,13 +345,17 @@ export type EvidenceOrderByWithAggregationInput = {
   content?: Prisma.SortOrderInput | Prisma.SortOrder
   fileName?: Prisma.SortOrderInput | Prisma.SortOrder
   filePath?: Prisma.SortOrderInput | Prisma.SortOrder
+  storageKey?: Prisma.SortOrderInput | Prisma.SortOrder
   mimeType?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentSizeBytes?: Prisma.SortOrderInput | Prisma.SortOrder
   capturedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.EvidenceCountOrderByAggregateInput
+  _avg?: Prisma.EvidenceAvgOrderByAggregateInput
   _max?: Prisma.EvidenceMaxOrderByAggregateInput
   _min?: Prisma.EvidenceMinOrderByAggregateInput
+  _sum?: Prisma.EvidenceSumOrderByAggregateInput
 }
 
 export type EvidenceScalarWhereWithAggregatesInput = {
@@ -309,7 +370,9 @@ export type EvidenceScalarWhereWithAggregatesInput = {
   content?: Prisma.StringNullableWithAggregatesFilter<"Evidence"> | string | null
   fileName?: Prisma.StringNullableWithAggregatesFilter<"Evidence"> | string | null
   filePath?: Prisma.StringNullableWithAggregatesFilter<"Evidence"> | string | null
+  storageKey?: Prisma.StringNullableWithAggregatesFilter<"Evidence"> | string | null
   mimeType?: Prisma.StringNullableWithAggregatesFilter<"Evidence"> | string | null
+  attachmentSizeBytes?: Prisma.IntNullableWithAggregatesFilter<"Evidence"> | number | null
   capturedAt?: Prisma.StringNullableWithAggregatesFilter<"Evidence"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Evidence"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Evidence"> | Date | string
@@ -323,12 +386,15 @@ export type EvidenceCreateInput = {
   content?: string | null
   fileName?: string | null
   filePath?: string | null
+  storageKey?: string | null
   mimeType?: string | null
+  attachmentSizeBytes?: number | null
   capturedAt?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   assessment: Prisma.AssessmentCreateNestedOneWithoutEvidenceInput
   threatLinks?: Prisma.EvidenceThreatCreateNestedManyWithoutEvidenceInput
+  httpExchanges?: Prisma.EvidenceExchangeCreateNestedManyWithoutEvidenceInput
 }
 
 export type EvidenceUncheckedCreateInput = {
@@ -340,11 +406,14 @@ export type EvidenceUncheckedCreateInput = {
   content?: string | null
   fileName?: string | null
   filePath?: string | null
+  storageKey?: string | null
   mimeType?: string | null
+  attachmentSizeBytes?: number | null
   capturedAt?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   threatLinks?: Prisma.EvidenceThreatUncheckedCreateNestedManyWithoutEvidenceInput
+  httpExchanges?: Prisma.EvidenceExchangeUncheckedCreateNestedManyWithoutEvidenceInput
 }
 
 export type EvidenceUpdateInput = {
@@ -355,12 +424,15 @@ export type EvidenceUpdateInput = {
   content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   filePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   capturedAt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assessment?: Prisma.AssessmentUpdateOneRequiredWithoutEvidenceNestedInput
   threatLinks?: Prisma.EvidenceThreatUpdateManyWithoutEvidenceNestedInput
+  httpExchanges?: Prisma.EvidenceExchangeUpdateManyWithoutEvidenceNestedInput
 }
 
 export type EvidenceUncheckedUpdateInput = {
@@ -372,11 +444,14 @@ export type EvidenceUncheckedUpdateInput = {
   content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   filePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   capturedAt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   threatLinks?: Prisma.EvidenceThreatUncheckedUpdateManyWithoutEvidenceNestedInput
+  httpExchanges?: Prisma.EvidenceExchangeUncheckedUpdateManyWithoutEvidenceNestedInput
 }
 
 export type EvidenceCreateManyInput = {
@@ -388,7 +463,9 @@ export type EvidenceCreateManyInput = {
   content?: string | null
   fileName?: string | null
   filePath?: string | null
+  storageKey?: string | null
   mimeType?: string | null
+  attachmentSizeBytes?: number | null
   capturedAt?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -402,7 +479,9 @@ export type EvidenceUpdateManyMutationInput = {
   content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   filePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   capturedAt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -417,7 +496,9 @@ export type EvidenceUncheckedUpdateManyInput = {
   content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   filePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   capturedAt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -442,10 +523,16 @@ export type EvidenceCountOrderByAggregateInput = {
   content?: Prisma.SortOrder
   fileName?: Prisma.SortOrder
   filePath?: Prisma.SortOrder
+  storageKey?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
+  attachmentSizeBytes?: Prisma.SortOrder
   capturedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type EvidenceAvgOrderByAggregateInput = {
+  attachmentSizeBytes?: Prisma.SortOrder
 }
 
 export type EvidenceMaxOrderByAggregateInput = {
@@ -457,7 +544,9 @@ export type EvidenceMaxOrderByAggregateInput = {
   content?: Prisma.SortOrder
   fileName?: Prisma.SortOrder
   filePath?: Prisma.SortOrder
+  storageKey?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
+  attachmentSizeBytes?: Prisma.SortOrder
   capturedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -472,10 +561,16 @@ export type EvidenceMinOrderByAggregateInput = {
   content?: Prisma.SortOrder
   fileName?: Prisma.SortOrder
   filePath?: Prisma.SortOrder
+  storageKey?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
+  attachmentSizeBytes?: Prisma.SortOrder
   capturedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type EvidenceSumOrderByAggregateInput = {
+  attachmentSizeBytes?: Prisma.SortOrder
 }
 
 export type EvidenceScalarRelationFilter = {
@@ -529,6 +624,28 @@ export type EnumEvidenceTypeFieldUpdateOperationsInput = {
   set?: $Enums.EvidenceType
 }
 
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type EvidenceCreateNestedOneWithoutHttpExchangesInput = {
+  create?: Prisma.XOR<Prisma.EvidenceCreateWithoutHttpExchangesInput, Prisma.EvidenceUncheckedCreateWithoutHttpExchangesInput>
+  connectOrCreate?: Prisma.EvidenceCreateOrConnectWithoutHttpExchangesInput
+  connect?: Prisma.EvidenceWhereUniqueInput
+}
+
+export type EvidenceUpdateOneRequiredWithoutHttpExchangesNestedInput = {
+  create?: Prisma.XOR<Prisma.EvidenceCreateWithoutHttpExchangesInput, Prisma.EvidenceUncheckedCreateWithoutHttpExchangesInput>
+  connectOrCreate?: Prisma.EvidenceCreateOrConnectWithoutHttpExchangesInput
+  upsert?: Prisma.EvidenceUpsertWithoutHttpExchangesInput
+  connect?: Prisma.EvidenceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EvidenceUpdateToOneWithWhereWithoutHttpExchangesInput, Prisma.EvidenceUpdateWithoutHttpExchangesInput>, Prisma.EvidenceUncheckedUpdateWithoutHttpExchangesInput>
+}
+
 export type EvidenceCreateNestedOneWithoutThreatLinksInput = {
   create?: Prisma.XOR<Prisma.EvidenceCreateWithoutThreatLinksInput, Prisma.EvidenceUncheckedCreateWithoutThreatLinksInput>
   connectOrCreate?: Prisma.EvidenceCreateOrConnectWithoutThreatLinksInput
@@ -551,11 +668,14 @@ export type EvidenceCreateWithoutAssessmentInput = {
   content?: string | null
   fileName?: string | null
   filePath?: string | null
+  storageKey?: string | null
   mimeType?: string | null
+  attachmentSizeBytes?: number | null
   capturedAt?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   threatLinks?: Prisma.EvidenceThreatCreateNestedManyWithoutEvidenceInput
+  httpExchanges?: Prisma.EvidenceExchangeCreateNestedManyWithoutEvidenceInput
 }
 
 export type EvidenceUncheckedCreateWithoutAssessmentInput = {
@@ -566,11 +686,14 @@ export type EvidenceUncheckedCreateWithoutAssessmentInput = {
   content?: string | null
   fileName?: string | null
   filePath?: string | null
+  storageKey?: string | null
   mimeType?: string | null
+  attachmentSizeBytes?: number | null
   capturedAt?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   threatLinks?: Prisma.EvidenceThreatUncheckedCreateNestedManyWithoutEvidenceInput
+  httpExchanges?: Prisma.EvidenceExchangeUncheckedCreateNestedManyWithoutEvidenceInput
 }
 
 export type EvidenceCreateOrConnectWithoutAssessmentInput = {
@@ -610,10 +733,100 @@ export type EvidenceScalarWhereInput = {
   content?: Prisma.StringNullableFilter<"Evidence"> | string | null
   fileName?: Prisma.StringNullableFilter<"Evidence"> | string | null
   filePath?: Prisma.StringNullableFilter<"Evidence"> | string | null
+  storageKey?: Prisma.StringNullableFilter<"Evidence"> | string | null
   mimeType?: Prisma.StringNullableFilter<"Evidence"> | string | null
+  attachmentSizeBytes?: Prisma.IntNullableFilter<"Evidence"> | number | null
   capturedAt?: Prisma.StringNullableFilter<"Evidence"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Evidence"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Evidence"> | Date | string
+}
+
+export type EvidenceCreateWithoutHttpExchangesInput = {
+  id: string
+  type: $Enums.EvidenceType
+  title: string
+  description?: string | null
+  content?: string | null
+  fileName?: string | null
+  filePath?: string | null
+  storageKey?: string | null
+  mimeType?: string | null
+  attachmentSizeBytes?: number | null
+  capturedAt?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  assessment: Prisma.AssessmentCreateNestedOneWithoutEvidenceInput
+  threatLinks?: Prisma.EvidenceThreatCreateNestedManyWithoutEvidenceInput
+}
+
+export type EvidenceUncheckedCreateWithoutHttpExchangesInput = {
+  id: string
+  assessmentId: string
+  type: $Enums.EvidenceType
+  title: string
+  description?: string | null
+  content?: string | null
+  fileName?: string | null
+  filePath?: string | null
+  storageKey?: string | null
+  mimeType?: string | null
+  attachmentSizeBytes?: number | null
+  capturedAt?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  threatLinks?: Prisma.EvidenceThreatUncheckedCreateNestedManyWithoutEvidenceInput
+}
+
+export type EvidenceCreateOrConnectWithoutHttpExchangesInput = {
+  where: Prisma.EvidenceWhereUniqueInput
+  create: Prisma.XOR<Prisma.EvidenceCreateWithoutHttpExchangesInput, Prisma.EvidenceUncheckedCreateWithoutHttpExchangesInput>
+}
+
+export type EvidenceUpsertWithoutHttpExchangesInput = {
+  update: Prisma.XOR<Prisma.EvidenceUpdateWithoutHttpExchangesInput, Prisma.EvidenceUncheckedUpdateWithoutHttpExchangesInput>
+  create: Prisma.XOR<Prisma.EvidenceCreateWithoutHttpExchangesInput, Prisma.EvidenceUncheckedCreateWithoutHttpExchangesInput>
+  where?: Prisma.EvidenceWhereInput
+}
+
+export type EvidenceUpdateToOneWithWhereWithoutHttpExchangesInput = {
+  where?: Prisma.EvidenceWhereInput
+  data: Prisma.XOR<Prisma.EvidenceUpdateWithoutHttpExchangesInput, Prisma.EvidenceUncheckedUpdateWithoutHttpExchangesInput>
+}
+
+export type EvidenceUpdateWithoutHttpExchangesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumEvidenceTypeFieldUpdateOperationsInput | $Enums.EvidenceType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  filePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  capturedAt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assessment?: Prisma.AssessmentUpdateOneRequiredWithoutEvidenceNestedInput
+  threatLinks?: Prisma.EvidenceThreatUpdateManyWithoutEvidenceNestedInput
+}
+
+export type EvidenceUncheckedUpdateWithoutHttpExchangesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  assessmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumEvidenceTypeFieldUpdateOperationsInput | $Enums.EvidenceType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  filePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  capturedAt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  threatLinks?: Prisma.EvidenceThreatUncheckedUpdateManyWithoutEvidenceNestedInput
 }
 
 export type EvidenceCreateWithoutThreatLinksInput = {
@@ -624,11 +837,14 @@ export type EvidenceCreateWithoutThreatLinksInput = {
   content?: string | null
   fileName?: string | null
   filePath?: string | null
+  storageKey?: string | null
   mimeType?: string | null
+  attachmentSizeBytes?: number | null
   capturedAt?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   assessment: Prisma.AssessmentCreateNestedOneWithoutEvidenceInput
+  httpExchanges?: Prisma.EvidenceExchangeCreateNestedManyWithoutEvidenceInput
 }
 
 export type EvidenceUncheckedCreateWithoutThreatLinksInput = {
@@ -640,10 +856,13 @@ export type EvidenceUncheckedCreateWithoutThreatLinksInput = {
   content?: string | null
   fileName?: string | null
   filePath?: string | null
+  storageKey?: string | null
   mimeType?: string | null
+  attachmentSizeBytes?: number | null
   capturedAt?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  httpExchanges?: Prisma.EvidenceExchangeUncheckedCreateNestedManyWithoutEvidenceInput
 }
 
 export type EvidenceCreateOrConnectWithoutThreatLinksInput = {
@@ -670,11 +889,14 @@ export type EvidenceUpdateWithoutThreatLinksInput = {
   content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   filePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   capturedAt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assessment?: Prisma.AssessmentUpdateOneRequiredWithoutEvidenceNestedInput
+  httpExchanges?: Prisma.EvidenceExchangeUpdateManyWithoutEvidenceNestedInput
 }
 
 export type EvidenceUncheckedUpdateWithoutThreatLinksInput = {
@@ -686,10 +908,13 @@ export type EvidenceUncheckedUpdateWithoutThreatLinksInput = {
   content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   filePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   capturedAt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  httpExchanges?: Prisma.EvidenceExchangeUncheckedUpdateManyWithoutEvidenceNestedInput
 }
 
 export type EvidenceCreateManyAssessmentInput = {
@@ -700,7 +925,9 @@ export type EvidenceCreateManyAssessmentInput = {
   content?: string | null
   fileName?: string | null
   filePath?: string | null
+  storageKey?: string | null
   mimeType?: string | null
+  attachmentSizeBytes?: number | null
   capturedAt?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -714,11 +941,14 @@ export type EvidenceUpdateWithoutAssessmentInput = {
   content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   filePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   capturedAt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   threatLinks?: Prisma.EvidenceThreatUpdateManyWithoutEvidenceNestedInput
+  httpExchanges?: Prisma.EvidenceExchangeUpdateManyWithoutEvidenceNestedInput
 }
 
 export type EvidenceUncheckedUpdateWithoutAssessmentInput = {
@@ -729,11 +959,14 @@ export type EvidenceUncheckedUpdateWithoutAssessmentInput = {
   content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   filePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   capturedAt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   threatLinks?: Prisma.EvidenceThreatUncheckedUpdateManyWithoutEvidenceNestedInput
+  httpExchanges?: Prisma.EvidenceExchangeUncheckedUpdateManyWithoutEvidenceNestedInput
 }
 
 export type EvidenceUncheckedUpdateManyWithoutAssessmentInput = {
@@ -744,7 +977,9 @@ export type EvidenceUncheckedUpdateManyWithoutAssessmentInput = {
   content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   filePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   capturedAt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -757,10 +992,12 @@ export type EvidenceUncheckedUpdateManyWithoutAssessmentInput = {
 
 export type EvidenceCountOutputType = {
   threatLinks: number
+  httpExchanges: number
 }
 
 export type EvidenceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   threatLinks?: boolean | EvidenceCountOutputTypeCountThreatLinksArgs
+  httpExchanges?: boolean | EvidenceCountOutputTypeCountHttpExchangesArgs
 }
 
 /**
@@ -780,6 +1017,13 @@ export type EvidenceCountOutputTypeCountThreatLinksArgs<ExtArgs extends runtime.
   where?: Prisma.EvidenceThreatWhereInput
 }
 
+/**
+ * EvidenceCountOutputType without action
+ */
+export type EvidenceCountOutputTypeCountHttpExchangesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EvidenceExchangeWhereInput
+}
+
 
 export type EvidenceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -790,12 +1034,15 @@ export type EvidenceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   content?: boolean
   fileName?: boolean
   filePath?: boolean
+  storageKey?: boolean
   mimeType?: boolean
+  attachmentSizeBytes?: boolean
   capturedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   assessment?: boolean | Prisma.AssessmentDefaultArgs<ExtArgs>
   threatLinks?: boolean | Prisma.Evidence$threatLinksArgs<ExtArgs>
+  httpExchanges?: boolean | Prisma.Evidence$httpExchangesArgs<ExtArgs>
   _count?: boolean | Prisma.EvidenceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["evidence"]>
 
@@ -808,7 +1055,9 @@ export type EvidenceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   content?: boolean
   fileName?: boolean
   filePath?: boolean
+  storageKey?: boolean
   mimeType?: boolean
+  attachmentSizeBytes?: boolean
   capturedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -824,7 +1073,9 @@ export type EvidenceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   content?: boolean
   fileName?: boolean
   filePath?: boolean
+  storageKey?: boolean
   mimeType?: boolean
+  attachmentSizeBytes?: boolean
   capturedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -840,16 +1091,19 @@ export type EvidenceSelectScalar = {
   content?: boolean
   fileName?: boolean
   filePath?: boolean
+  storageKey?: boolean
   mimeType?: boolean
+  attachmentSizeBytes?: boolean
   capturedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type EvidenceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "assessmentId" | "type" | "title" | "description" | "content" | "fileName" | "filePath" | "mimeType" | "capturedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["evidence"]>
+export type EvidenceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "assessmentId" | "type" | "title" | "description" | "content" | "fileName" | "filePath" | "storageKey" | "mimeType" | "attachmentSizeBytes" | "capturedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["evidence"]>
 export type EvidenceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   assessment?: boolean | Prisma.AssessmentDefaultArgs<ExtArgs>
   threatLinks?: boolean | Prisma.Evidence$threatLinksArgs<ExtArgs>
+  httpExchanges?: boolean | Prisma.Evidence$httpExchangesArgs<ExtArgs>
   _count?: boolean | Prisma.EvidenceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EvidenceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -864,6 +1118,7 @@ export type $EvidencePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   objects: {
     assessment: Prisma.$AssessmentPayload<ExtArgs>
     threatLinks: Prisma.$EvidenceThreatPayload<ExtArgs>[]
+    httpExchanges: Prisma.$EvidenceExchangePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -874,7 +1129,9 @@ export type $EvidencePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     content: string | null
     fileName: string | null
     filePath: string | null
+    storageKey: string | null
     mimeType: string | null
+    attachmentSizeBytes: number | null
     capturedAt: string | null
     createdAt: Date
     updatedAt: Date
@@ -1274,6 +1531,7 @@ export interface Prisma__EvidenceClient<T, Null = never, ExtArgs extends runtime
   readonly [Symbol.toStringTag]: "PrismaPromise"
   assessment<T extends Prisma.AssessmentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AssessmentDefaultArgs<ExtArgs>>): Prisma.Prisma__AssessmentClient<runtime.Types.Result.GetResult<Prisma.$AssessmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   threatLinks<T extends Prisma.Evidence$threatLinksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Evidence$threatLinksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EvidenceThreatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  httpExchanges<T extends Prisma.Evidence$httpExchangesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Evidence$httpExchangesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EvidenceExchangePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1311,7 +1569,9 @@ export interface EvidenceFieldRefs {
   readonly content: Prisma.FieldRef<"Evidence", 'String'>
   readonly fileName: Prisma.FieldRef<"Evidence", 'String'>
   readonly filePath: Prisma.FieldRef<"Evidence", 'String'>
+  readonly storageKey: Prisma.FieldRef<"Evidence", 'String'>
   readonly mimeType: Prisma.FieldRef<"Evidence", 'String'>
+  readonly attachmentSizeBytes: Prisma.FieldRef<"Evidence", 'Int'>
   readonly capturedAt: Prisma.FieldRef<"Evidence", 'String'>
   readonly createdAt: Prisma.FieldRef<"Evidence", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Evidence", 'DateTime'>
@@ -1735,6 +1995,30 @@ export type Evidence$threatLinksArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.EvidenceThreatScalarFieldEnum | Prisma.EvidenceThreatScalarFieldEnum[]
+}
+
+/**
+ * Evidence.httpExchanges
+ */
+export type Evidence$httpExchangesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EvidenceExchange
+   */
+  select?: Prisma.EvidenceExchangeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EvidenceExchange
+   */
+  omit?: Prisma.EvidenceExchangeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EvidenceExchangeInclude<ExtArgs> | null
+  where?: Prisma.EvidenceExchangeWhereInput
+  orderBy?: Prisma.EvidenceExchangeOrderByWithRelationInput | Prisma.EvidenceExchangeOrderByWithRelationInput[]
+  cursor?: Prisma.EvidenceExchangeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EvidenceExchangeScalarFieldEnum | Prisma.EvidenceExchangeScalarFieldEnum[]
 }
 
 /**

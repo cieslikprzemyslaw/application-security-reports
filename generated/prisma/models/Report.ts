@@ -485,14 +485,6 @@ export type EnumReportStatusFieldUpdateOperationsInput = {
   set?: $Enums.ReportStatus
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type ReportCreateNestedOneWithoutSelectedThreatsInput = {
   create?: Prisma.XOR<Prisma.ReportCreateWithoutSelectedThreatsInput, Prisma.ReportUncheckedCreateWithoutSelectedThreatsInput>
   connectOrCreate?: Prisma.ReportCreateOrConnectWithoutSelectedThreatsInput

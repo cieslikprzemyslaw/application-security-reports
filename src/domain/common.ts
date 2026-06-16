@@ -45,12 +45,15 @@ export const STRIDE_LABELS: Record<StrideCategory, string> = {
 };
 
 export const EVIDENCE_TYPES = [
+  'http',
+  'text',
+  'terminal',
+  'log',
+  'file',
   'note',
   'screenshot',
   'request',
   'response',
-  'log',
-  'file',
 ] as const;
 
 export type EvidenceType = (typeof EVIDENCE_TYPES)[number];

@@ -34,6 +34,14 @@ const threatMigrationPath = path.resolve(
   'migration.sql',
 );
 const threatMigrationSql = readFileSync(threatMigrationPath, 'utf8');
+const evidenceMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260616190000_add_structured_evidence',
+  'migration.sql',
+);
+const evidenceMigrationSql = readFileSync(evidenceMigrationPath, 'utf8');
 const allowedOrigin = 'http://localhost:5173';
 const config = loadServerConfig({
   FRONTEND_ORIGIN: allowedOrigin,
@@ -90,6 +98,7 @@ const bootstrapDb = new Database(databasePath);
 try {
   bootstrapDb.exec(schemaSql);
   bootstrapDb.exec(threatMigrationSql);
+  bootstrapDb.exec(evidenceMigrationSql);
 } finally {
   bootstrapDb.close();
 }
@@ -192,7 +201,13 @@ try {
 
     assert.equal(createResponse.status, 201);
     const createdJson = (await createResponse.json()) as {
-      data: { id: string; assessmentId: string; threatIds: string[] };
+      data: {
+        id: string;
+        assessmentId: string;
+        threatIds: string[];
+        filePath?: string;
+        storageKey?: string;
+      };
     };
     assert.equal(createdJson.data.id.startsWith('evd_'), true);
     assert.equal(createdJson.data.assessmentId, assessment.id);
@@ -200,6 +215,13 @@ try {
       createdJson.data.threatIds.sort(),
       [primaryThreat.id, secondaryThreat.id].sort(),
     );
+    assert.equal(
+      createdJson.data.filePath?.startsWith(
+        `uploads/evidence/${createdJson.data.id}/`,
+      ),
+      true,
+    );
+    assert.equal(createdJson.data.storageKey, createdJson.data.filePath);
 
     const evidenceId = createdJson.data.id;
 
@@ -218,10 +240,14 @@ try {
     );
     assert.equal(getResponse.status, 200);
     const getJson = (await getResponse.json()) as {
-      data: { id: string; filePath?: string };
+      data: { id: string; filePath?: string; storageKey?: string };
     };
     assert.equal(getJson.data.id, evidenceId);
-    assert.equal(getJson.data.filePath, 'uploads/evidence/evidence.png');
+    assert.equal(
+      getJson.data.filePath?.startsWith(`uploads/evidence/${evidenceId}/`),
+      true,
+    );
+    assert.equal(getJson.data.storageKey, getJson.data.filePath);
 
     const patchResponse = await fetch(
       `${server.baseUrl}/api/evidence/${evidenceId}`,
@@ -244,15 +270,17 @@ try {
         title: string;
         threatIds: string[];
         filePath?: string;
+        storageKey?: string;
       };
     };
     assert.equal(patchJson.data.id, evidenceId);
     assert.equal(patchJson.data.title, 'Updated evidence title');
     assert.deepEqual(patchJson.data.threatIds, [secondaryThreat.id]);
     assert.equal(
-      patchJson.data.filePath,
-      'uploads/evidence/updated-evidence.png',
+      patchJson.data.filePath?.startsWith(`uploads/evidence/${evidenceId}/`),
+      true,
     );
+    assert.equal(patchJson.data.storageKey, patchJson.data.filePath);
 
     const storedEvidence = await prisma.evidence.findUnique({
       where: { id: evidenceId },
@@ -269,6 +297,169 @@ try {
       ),
       [secondaryThreat.id],
     );
+
+    const httpEvidenceResponse = await fetch(`${server.baseUrl}/api/evidence`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        assessmentId: assessment.id,
+        type: 'http',
+        title: 'HTTP exchange evidence',
+        httpExchanges: [
+          {
+            request: {
+              method: 'GET',
+              url: '/api/v1/orders/1',
+            },
+            response: {
+              statusCode: 200,
+              body: '{"ok":true}',
+            },
+          },
+          {
+            request: {
+              method: 'POST',
+              url: '/api/v1/orders/1',
+              body: '{"confirm":true}',
+            },
+            response: {
+              statusCode: 201,
+              body: '{"created":true}',
+            },
+          },
+        ],
+      }),
+    });
+
+    assert.equal(httpEvidenceResponse.status, 201);
+    const httpEvidenceJson = (await httpEvidenceResponse.json()) as {
+      data: {
+        id: string;
+        httpExchanges: Array<{
+          request: { method: string; url: string; body?: string };
+          response: { statusCode: number; body?: string };
+        }>;
+      };
+    };
+    assert.equal(httpEvidenceJson.data.id.startsWith('evd_'), true);
+    assert.equal(httpEvidenceJson.data.httpExchanges.length, 2);
+    assert.equal(httpEvidenceJson.data.httpExchanges[0]?.request.method, 'GET');
+    assert.equal(
+      httpEvidenceJson.data.httpExchanges[1]?.response.statusCode,
+      201,
+    );
+
+    const storedHttpEvidence = await prisma.evidence.findUnique({
+      where: { id: httpEvidenceJson.data.id },
+      include: {
+        httpExchanges: {
+          orderBy: { position: 'asc' },
+          select: {
+            position: true,
+            request: true,
+            response: true,
+          },
+        },
+      },
+    });
+    assert.deepEqual(
+      storedHttpEvidence?.httpExchanges.map(
+        (exchange: {
+          request: { method: string };
+          response: { statusCode: number };
+        }) => exchange.request.method,
+      ),
+      ['GET', 'POST'],
+    );
+
+    const invalidClearResponse = await fetch(
+      `${server.baseUrl}/api/evidence/${httpEvidenceJson.data.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'http',
+          httpExchanges: [],
+        }),
+      },
+    );
+    assert.equal(invalidClearResponse.status, 400);
+    const invalidClearJson = (await invalidClearResponse.json()) as {
+      error: {
+        code: string;
+        message: string;
+        details: Array<{ path: string }>;
+      };
+    };
+    assert.equal(invalidClearJson.error.code, 'VALIDATION_ERROR');
+
+    const storedAfterFailedClear = await prisma.evidence.findUnique({
+      where: { id: httpEvidenceJson.data.id },
+      include: {
+        httpExchanges: {
+          orderBy: { position: 'asc' },
+          select: {
+            position: true,
+            request: true,
+            response: true,
+          },
+        },
+      },
+    });
+    assert.deepEqual(
+      storedAfterFailedClear?.httpExchanges.map(
+        (exchange: {
+          request: { method: string };
+          response: { statusCode: number };
+        }) => exchange.request.method,
+      ),
+      ['GET', 'POST'],
+    );
+
+    const clearHttpExchangesResponse = await fetch(
+      `${server.baseUrl}/api/evidence/${httpEvidenceJson.data.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'text',
+          httpExchanges: [],
+        }),
+      },
+    );
+    assert.equal(clearHttpExchangesResponse.status, 200);
+    const clearedEvidenceJson = (await clearHttpExchangesResponse.json()) as {
+      data: {
+        type: string;
+        httpExchanges: Array<{
+          request: { method: string; url: string; body?: string };
+          response: { statusCode: number; body?: string };
+        }>;
+      };
+    };
+    assert.equal(clearedEvidenceJson.data.type, 'text');
+    assert.deepEqual(clearedEvidenceJson.data.httpExchanges, []);
+
+    const storedClearedEvidence = await prisma.evidence.findUnique({
+      where: { id: httpEvidenceJson.data.id },
+      include: {
+        httpExchanges: {
+          orderBy: { position: 'asc' },
+          select: {
+            position: true,
+            request: true,
+            response: true,
+          },
+        },
+      },
+    });
+    assert.equal(storedClearedEvidence?.httpExchanges.length, 0);
 
     const deleteResponse = await fetch(
       `${server.baseUrl}/api/evidence/${evidenceId}`,

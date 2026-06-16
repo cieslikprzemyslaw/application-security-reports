@@ -9,6 +9,7 @@ const ENTITY_PREFIXES = {
   assessment: 'asm_',
   threat: 'thr_',
   evidence: 'evd_',
+  evidenceExchange: 'evx_',
   report: 'rpt_',
   activity: 'act_',
   settings: 'set_',

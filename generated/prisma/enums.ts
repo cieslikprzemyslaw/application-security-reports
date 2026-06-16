@@ -21,12 +21,15 @@ export type Severity = (typeof Severity)[keyof typeof Severity]
 
 
 export const EvidenceType = {
+  http: 'http',
+  text: 'text',
+  terminal: 'terminal',
+  log: 'log',
+  file: 'file',
   note: 'note',
   screenshot: 'screenshot',
   request: 'request',
-  response: 'response',
-  log: 'log',
-  file: 'file'
+  response: 'response'
 } as const
 
 export type EvidenceType = (typeof EvidenceType)[keyof typeof EvidenceType]

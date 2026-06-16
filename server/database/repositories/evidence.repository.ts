@@ -1,6 +1,9 @@
+import path from 'node:path';
+
 import type { Evidence } from '../../../src/domain/evidence.js';
 import type {
   CreateEvidenceInput,
+  EvidenceHttpExchange,
   UpdateEvidenceInput,
 } from '../../../src/domain/evidence.js';
 import { generateId } from '../../utils/id.js';
@@ -27,24 +30,38 @@ export interface EvidenceRepository {
 
 type EvidenceRepositoryDb = Pick<
   RepositoryClient,
-  'evidence' | 'evidenceThreat' | '$transaction'
+  'evidence' | 'evidenceExchange' | 'evidenceThreat' | '$transaction'
 >;
 
 type EvidenceLookupDb = Pick<RepositoryClient, 'evidence'>;
 
 type EvidenceLinkDb = Pick<RepositoryClient, 'evidenceThreat'>;
 
+type EvidenceExchangeLinkDb = Pick<RepositoryClient, 'evidenceExchange'>;
+
+type EvidenceExchangeRow = {
+  request: unknown;
+  response: unknown;
+};
+
 type EvidenceRow = {
   id: string;
   assessmentId: string;
   threatLinks: Array<{ threatId: string }>;
+  httpExchanges: Array<{
+    position: number;
+    request: unknown;
+    response: unknown;
+  }>;
   type: string;
   title: string;
   description: string | null;
   content: string | null;
   fileName: string | null;
   filePath: string | null;
+  storageKey: string | null;
   mimeType: string | null;
+  attachmentSizeBytes: number | null;
   capturedAt: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -57,17 +74,42 @@ const evidenceSelect = {
     select: { threatId: true },
     orderBy: { threatId: 'asc' },
   },
+  httpExchanges: {
+    select: {
+      position: true,
+      request: true,
+      response: true,
+    },
+    orderBy: { position: 'asc' },
+  },
   type: true,
   title: true,
   description: true,
   content: true,
   fileName: true,
   filePath: true,
+  storageKey: true,
   mimeType: true,
+  attachmentSizeBytes: true,
   capturedAt: true,
   createdAt: true,
   updatedAt: true,
 } as const;
+
+const buildAttachmentStorageKey = (
+  evidenceId: string,
+  fileName: string,
+): string => {
+  const extension = path.extname(fileName).toLowerCase();
+  const attachmentId = generateId('evidenceExchange');
+
+  return `uploads/evidence/${evidenceId}/${attachmentId}${extension}`;
+};
+
+const toHttpExchange = (row: EvidenceExchangeRow): EvidenceHttpExchange => ({
+  request: row.request as EvidenceHttpExchange['request'],
+  response: row.response as EvidenceHttpExchange['response'],
+});
 
 const toEvidence = (row: EvidenceRow): Evidence => ({
   id: row.id,
@@ -79,8 +121,12 @@ const toEvidence = (row: EvidenceRow): Evidence => ({
   content: toOptionalText(row.content),
   fileName: toOptionalText(row.fileName),
   filePath: toOptionalText(row.filePath),
+  storageKey: toOptionalText(row.storageKey),
   mimeType: toOptionalText(row.mimeType),
+  attachmentSizeBytes: row.attachmentSizeBytes ?? undefined,
   capturedAt: toOptionalText(row.capturedAt) as Evidence['capturedAt'],
+  httpExchanges:
+    row.type === 'http' ? row.httpExchanges.map(toHttpExchange) : [],
   createdAt: toIsoString(row.createdAt),
   updatedAt: toIsoString(row.updatedAt),
 });
@@ -117,6 +163,56 @@ const replaceEvidenceThreatLinks = async (
   });
 };
 
+const replaceEvidenceHttpExchanges = async (
+  db: EvidenceExchangeLinkDb,
+  evidenceId: string,
+  exchanges: readonly EvidenceHttpExchange[],
+) => {
+  await db.evidenceExchange.deleteMany({
+    where: { evidenceId },
+  });
+
+  if (exchanges.length === 0) {
+    return;
+  }
+
+  await db.evidenceExchange.createMany({
+    data: exchanges.map((exchange, position) => ({
+      id: generateId('evidenceExchange'),
+      evidenceId,
+      position,
+      request: exchange.request,
+      response: exchange.response,
+    })),
+  });
+};
+
+const buildEvidenceData = (
+  input: CreateEvidenceInput | UpdateEvidenceInput,
+  evidenceId: string,
+) => {
+  const data: Record<string, unknown> = {
+    assessmentId: input.assessmentId,
+    type: input.type,
+    title: input.title,
+    description: input.description,
+    content: input.content,
+    fileName: input.fileName,
+    mimeType: input.mimeType,
+    attachmentSizeBytes: input.attachmentSizeBytes,
+    capturedAt: input.capturedAt,
+  };
+
+  if (input.fileName) {
+    const storageKey = buildAttachmentStorageKey(evidenceId, input.fileName);
+
+    data.filePath = storageKey;
+    data.storageKey = storageKey;
+  }
+
+  return data;
+};
+
 export function createEvidenceRepository(
   db: EvidenceRepositoryDb,
 ): EvidenceRepository {
@@ -137,20 +233,14 @@ export function createEvidenceRepository(
 
     async create(input) {
       try {
+        const evidenceId = generateId('evidence');
+
         return await db.$transaction(
           async (tx: RepositoryTransactionClient) => {
             const evidence = await tx.evidence.create({
               data: {
-                id: generateId('evidence'),
-                assessmentId: input.assessmentId,
-                type: input.type,
-                title: input.title,
-                description: input.description,
-                content: input.content,
-                fileName: input.fileName,
-                filePath: input.filePath,
-                mimeType: input.mimeType,
-                capturedAt: input.capturedAt,
+                id: evidenceId,
+                ...buildEvidenceData(input, evidenceId),
                 threatLinks: input.threatIds
                   ? {
                       create: dedupeStrings(input.threatIds).map(threatId => ({
@@ -161,6 +251,22 @@ export function createEvidenceRepository(
               },
               select: evidenceSelect,
             });
+
+            if (input.httpExchanges !== undefined) {
+              await replaceEvidenceHttpExchanges(
+                tx,
+                evidence.id,
+                input.httpExchanges,
+              );
+
+              const loadedEvidence = await loadEvidenceById(tx, evidence.id);
+
+              if (!loadedEvidence) {
+                throw new Error('Evidence disappeared during create.');
+              }
+
+              return loadedEvidence;
+            }
 
             return toEvidence(evidence);
           },
@@ -176,21 +282,15 @@ export function createEvidenceRepository(
           async (tx: RepositoryTransactionClient) => {
             await tx.evidence.update({
               where: { id },
-              data: {
-                assessmentId: input.assessmentId,
-                type: input.type,
-                title: input.title,
-                description: input.description,
-                content: input.content,
-                fileName: input.fileName,
-                filePath: input.filePath,
-                mimeType: input.mimeType,
-                capturedAt: input.capturedAt,
-              },
+              data: buildEvidenceData(input, id),
             });
 
             if (input.threatIds) {
               await replaceEvidenceThreatLinks(tx, id, input.threatIds);
+            }
+
+            if (input.httpExchanges !== undefined) {
+              await replaceEvidenceHttpExchanges(tx, id, input.httpExchanges);
             }
 
             const evidence = await loadEvidenceById(tx, id);

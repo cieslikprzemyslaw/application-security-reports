@@ -158,6 +158,34 @@ const validEvidence = {
   updatedAt: '2026-06-05T00:00:00.000Z',
 };
 
+const validHttpEvidence = {
+  ...validEvidence,
+  type: 'http',
+  httpExchanges: [
+    {
+      request: {
+        method: 'GET',
+        url: '/api/orders/1',
+      },
+      response: {
+        statusCode: 200,
+        body: '{"ok":true}',
+      },
+    },
+    {
+      request: {
+        method: 'POST',
+        url: '/api/orders/1',
+        body: '{"confirm":true}',
+      },
+      response: {
+        statusCode: 201,
+        body: '{"created":true}',
+      },
+    },
+  ],
+};
+
 const validReport = {
   id: 'rep_1',
   assessmentId: validAssessment.id,
@@ -447,6 +475,10 @@ assertValid(
   evidenceSchema.safeParse(validEvidence).success,
   'Multiple threat IDs should pass',
 );
+assertValid(
+  evidenceSchema.safeParse(validHttpEvidence).success,
+  'HTTP evidence with exchanges should pass',
+);
 expectField(
   getFieldErrors(evidenceSchema, { ...validEvidence, type: 'unknown' }),
   'type',
@@ -675,6 +707,16 @@ assertValid(
   }).success,
   'Create evidence request with file metadata should pass',
 );
+assertValid(
+  createEvidenceRequestSchema.safeParse({
+    assessmentId: validAssessment.id,
+    threatIds: [],
+    type: 'http',
+    title: 'HTTP evidence',
+    httpExchanges: validHttpEvidence.httpExchanges,
+  }).success,
+  'Create HTTP evidence request should pass',
+);
 expectField(
   getFieldErrors(createEvidenceRequestSchema, {
     assessmentId: validAssessment.id,
@@ -697,6 +739,39 @@ expectField(
   }),
   'fileName',
   'Evidence file name extension must match the supplied mime type',
+);
+expectField(
+  getFieldErrors(createEvidenceRequestSchema, {
+    assessmentId: validAssessment.id,
+    threatIds: [],
+    type: 'text',
+    title: 'Evidence',
+    httpExchanges: validHttpEvidence.httpExchanges,
+  }),
+  'httpExchanges',
+  'Only HTTP evidence can include exchanges',
+);
+expectField(
+  getFieldErrors(createEvidenceRequestSchema, {
+    assessmentId: validAssessment.id,
+    threatIds: [],
+    type: 'http',
+    title: 'Evidence',
+    httpExchanges: [],
+  }),
+  'httpExchanges',
+  'HTTP evidence must include at least one exchange',
+);
+expectField(
+  getFieldErrors(createEvidenceRequestSchema, {
+    assessmentId: validAssessment.id,
+    threatIds: [],
+    type: 'file',
+    title: 'Evidence',
+    attachmentSizeBytes: 5 * 1024 * 1024 + 1,
+  }),
+  'attachmentSizeBytes',
+  'Evidence attachment must be 5 MB or smaller',
 );
 expectField(
   getFieldErrors(createEvidenceRequestSchema, {
@@ -760,6 +835,13 @@ expectField(
   getFieldErrors(updateEvidenceRequestSchema, {}),
   '',
   'At least one evidence field is required',
+);
+assertValid(
+  updateEvidenceRequestSchema.safeParse({
+    type: 'text',
+    httpExchanges: [],
+  }).success,
+  'Partial evidence update with an explicit empty exchange list should pass',
 );
 expectField(
   getFieldErrors(updateEvidenceRequestSchema, {

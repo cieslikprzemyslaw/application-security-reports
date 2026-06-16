@@ -16,12 +16,15 @@ enum Severity {
 }
 
 enum EvidenceType {
+  http
+  text
+  terminal
+  log
+  file
   note
   screenshot
   request
   response
-  log
-  file
 }
 
 enum ReportStatus {
@@ -122,25 +125,43 @@ model Threat {
 }
 
 model Evidence {
-  id           String       @id
-  assessmentId String
-  type         EvidenceType
-  title        String
-  description  String?
-  content      String?
-  fileName     String?
-  filePath     String?
-  mimeType     String?
-  capturedAt   String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id                 String             @id
+  assessmentId       String
+  type               EvidenceType
+  title              String
+  description        String?
+  content            String?
+  fileName           String?
+  filePath           String?
+  storageKey         String?
+  mimeType           String?
+  attachmentSizeBytes Int?
+  capturedAt         String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 
-  assessment  Assessment       @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  threatLinks EvidenceThreat[]
+  assessment   Assessment        @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  threatLinks  EvidenceThreat[]
+  httpExchanges EvidenceExchange[]
 
   @@index([assessmentId])
   @@index([assessmentId, createdAt])
   @@index([capturedAt])
+}
+
+model EvidenceExchange {
+  id         String   @id
+  evidenceId String
+  position   Int
+  request    Json
+  response   Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  evidence Evidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+
+  @@unique([evidenceId, position])
+  @@index([evidenceId])
 }
 
 model Report {
