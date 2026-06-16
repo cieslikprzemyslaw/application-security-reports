@@ -11,7 +11,6 @@ import { routes } from '~/routes';
 import { defaultTheme } from '~/theme';
 
 import AppRouter from './appRouter';
-import { reportCover } from './appData';
 
 const renderTick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
 
@@ -199,6 +198,8 @@ const assertRouteRenders = async (pathname: string, expectedText: string) => {
 };
 
 await (async () => {
+  await assert.doesNotReject(async () => import('./appData'));
+
   {
     const { container, root } = await renderRouteLoadingFixture('/dashboard');
 
@@ -1416,6 +1417,8 @@ await (async () => {
   }
 
   {
+    const { reportCover } = await import('./appData');
+
     const { container, root } = await renderApp(
       routes.reportDetails(reportCover.reportId),
     );
