@@ -5,9 +5,9 @@ import Button from '~/app/components/ui/button';
 import Input from '~/app/components/ui/input';
 import Select from '~/app/components/ui/select';
 import Textarea from '~/app/components/ui/textarea';
-import SeverityBadge from '~/app/components/ui/severityBadge';
 
 import StyledSettings from './settings.styled';
+import SettingsPreview from './settings.preview';
 import type { SettingsProps, SettingsValue } from './settings.type';
 
 const updateField = <K extends keyof SettingsValue>(
@@ -19,222 +19,339 @@ const updateField = <K extends keyof SettingsValue>(
   [field]: fieldValue,
 });
 
-const Settings = ({ value, onChange, onSubmit }: SettingsProps) => (
-  <StyledSettings>
-    <header className="settings-header">
-      <h1 className="settings-title">Settings</h1>
+const severityOptions = [
+  { label: 'Critical', value: 'critical' },
+  { label: 'High', value: 'high' },
+  { label: 'Medium', value: 'medium' },
+  { label: 'Low', value: 'low' },
+  { label: 'Informational', value: 'informational' },
+];
 
-      <p className="settings-subtitle">
-        Manage your profile, workspace branding, and report defaults.
-      </p>
-    </header>
+const methodologyOptions = [
+  { label: 'OWASP ASVS / WSTG', value: 'OWASP ASVS / WSTG' },
+  { label: 'OWASP MASVS', value: 'OWASP MASVS' },
+];
 
-    <form className="settings-form" onSubmit={onSubmit}>
-      <div className="settings-grid">
-        <div className="settings-stack">
-          <SettingsPanel title="Profile">
-            <div className="settings-avatar-row">
-              <div className="settings-avatar">
-                {value.fullName
-                  .split(' ')
-                  .map(part => part[0])
-                  .join('')
-                  .slice(0, 2)
-                  .toUpperCase()}
-              </div>
+const reportStyleOptions = [
+  { label: 'Technical & structured', value: 'Technical & structured' },
+  { label: 'Executive summary', value: 'Executive summary' },
+];
 
-              <div>
-                <Button title="Change photo" variant="secondary" size="small" />
+const themeOptions = [
+  { label: 'Light', value: 'light' },
+  { label: 'Dark', value: 'dark' },
+  { label: 'System', value: 'system' },
+];
 
-                <p>JPG or PNG, up to 2 MB</p>
-              </div>
-            </div>
+const dateFormatOptions = [
+  { label: 'DD/MM/YYYY', value: 'DD/MM/YYYY' },
+  { label: 'MM/DD/YYYY', value: 'MM/DD/YYYY' },
+  { label: 'YYYY-MM-DD', value: 'YYYY-MM-DD' },
+];
 
-            <div className="settings-two-column">
-              <Input
-                label="Full name"
-                value={value.fullName}
-                onChange={event =>
-                  onChange(updateField(value, 'fullName', event.target.value))
-                }
-              />
+const Settings = ({
+  value,
+  fieldErrors,
+  statusMessage,
+  errorMessage,
+  isDirty = false,
+  isSaving = false,
+  previewTheme,
+  onChange,
+  onSubmit,
+}: SettingsProps) => {
+  return (
+    <StyledSettings>
+      <header className="settings-header">
+        <h1 className="settings-title">Settings</h1>
 
-              <Select
-                label="Role"
-                value={value.role}
-                options={[
-                  { label: 'Lead Pentester', value: 'Lead Pentester' },
-                  { label: 'AppSec Engineer', value: 'AppSec Engineer' },
-                  { label: 'Security Analyst', value: 'Security Analyst' },
-                ]}
-                onChange={event =>
-                  onChange(updateField(value, 'role', event.target.value))
-                }
-              />
-            </div>
+        <p className="settings-subtitle">
+          Manage organisation details, report branding, defaults, and user
+          preferences.
+        </p>
+      </header>
 
-            <Input
-              label="Email"
-              value={value.email}
-              onChange={event =>
-                onChange(updateField(value, 'email', event.target.value))
-              }
-            />
-          </SettingsPanel>
+      <form className="settings-form" onSubmit={onSubmit}>
+        <div className="settings-form-status-group" aria-live="polite">
+          {statusMessage && (
+            <p
+              className="settings-status settings-status--success"
+              role="status"
+            >
+              {statusMessage}
+            </p>
+          )}
 
-          <SettingsPanel
-            title="Workspace & Report Branding"
-            subtitle="Applied to generated reports"
-          >
-            <div className="settings-two-column">
-              <Input
-                label="Company name"
-                value={value.companyName}
-                onChange={event =>
-                  onChange(
-                    updateField(value, 'companyName', event.target.value),
-                  )
-                }
-              />
+          {errorMessage && (
+            <p className="settings-status settings-status--error" role="alert">
+              {errorMessage}
+            </p>
+          )}
 
-              <Input
-                label="Website"
-                value={value.website}
-                onChange={event =>
-                  onChange(updateField(value, 'website', event.target.value))
-                }
-              />
-
-              <Input
-                label="Contact email"
-                value={value.contactEmail}
-                onChange={event =>
-                  onChange(
-                    updateField(value, 'contactEmail', event.target.value),
-                  )
-                }
-              />
-
-              <div>
-                <label>Company logo</label>
-
-                <div className="settings-upload-box">
-                  Upload logo · SVG or PNG
-                </div>
-              </div>
-            </div>
-
-            <Textarea
-              label="Report footer text"
-              value={value.reportFooterText}
-              onChange={event =>
-                onChange(
-                  updateField(value, 'reportFooterText', event.target.value),
-                )
-              }
-            />
-          </SettingsPanel>
+          {isDirty && !isSaving && (
+            <p className="settings-status settings-status--dirty">
+              You have unsaved changes.
+            </p>
+          )}
         </div>
 
-        <div className="settings-stack">
-          <SettingsPanel title="Report Defaults">
-            <Select
-              label="Default methodology"
-              value={value.methodology}
-              options={[
-                { label: 'OWASP ASVS / WSTG', value: 'OWASP ASVS / WSTG' },
-                { label: 'OWASP MASVS', value: 'OWASP MASVS' },
-              ]}
-              onChange={event =>
-                onChange(updateField(value, 'methodology', event.target.value))
-              }
-            />
+        <div className="settings-grid">
+          <div className="settings-stack">
+            <SettingsPanel
+              title="Organisation details"
+              subtitle="Shared identity information for reports"
+            >
+              <div className="settings-two-column">
+                <Input
+                  id="organisationName"
+                  label="Organisation name"
+                  value={value.organisationName}
+                  error={fieldErrors?.organisationName}
+                  onChange={event =>
+                    onChange(
+                      updateField(
+                        value,
+                        'organisationName',
+                        event.target.value,
+                      ),
+                    )
+                  }
+                />
 
-            <Select
-              label="Default report style"
-              value={value.reportStyle}
-              options={[
-                {
-                  label: 'Technical & structured',
-                  value: 'Technical & structured',
-                },
-                { label: 'Executive summary', value: 'Executive summary' },
-              ]}
-              onChange={event =>
-                onChange(updateField(value, 'reportStyle', event.target.value))
-              }
-            />
+                <Input
+                  id="defaultReportTitle"
+                  label="Default report title"
+                  value={value.defaultReportTitle}
+                  error={fieldErrors?.defaultReportTitle}
+                  onChange={event =>
+                    onChange(
+                      updateField(
+                        value,
+                        'defaultReportTitle',
+                        event.target.value,
+                      ),
+                    )
+                  }
+                />
 
-            <div className="settings-toggle-row">
-              <span>Include evidence in exports</span>
+                <Input
+                  id="consultantName"
+                  label="Consultant name"
+                  value={value.consultantName}
+                  error={fieldErrors?.consultantName}
+                  onChange={event =>
+                    onChange(
+                      updateField(value, 'consultantName', event.target.value),
+                    )
+                  }
+                />
 
-              <input
-                className="settings-toggle"
-                type="checkbox"
-                checked={value.includeEvidence}
-                onChange={event =>
-                  onChange(
-                    updateField(value, 'includeEvidence', event.target.checked),
-                  )
-                }
-              />
-            </div>
+                <Input
+                  id="consultantEmail"
+                  label="Consultant email"
+                  value={value.consultantEmail}
+                  error={fieldErrors?.consultantEmail}
+                  onChange={event =>
+                    onChange(
+                      updateField(value, 'consultantEmail', event.target.value),
+                    )
+                  }
+                />
+              </div>
+            </SettingsPanel>
 
-            <div className="settings-toggle-row">
-              <span>Mark all reports Confidential</span>
+            <SettingsPanel
+              title="Report issuer branding"
+              subtitle="Displayed on the report header and footer"
+            >
+              <div className="settings-two-column">
+                <Textarea
+                  id="reportFooterText"
+                  label="Report footer text"
+                  value={value.reportFooterText}
+                  error={fieldErrors?.reportFooterText}
+                  onChange={event =>
+                    onChange(
+                      updateField(
+                        value,
+                        'reportFooterText',
+                        event.target.value,
+                      ),
+                    )
+                  }
+                />
 
-              <input
-                className="settings-toggle"
-                type="checkbox"
-                checked={value.confidentialReports}
-                onChange={event =>
-                  onChange(
-                    updateField(
-                      value,
-                      'confidentialReports',
-                      event.target.checked,
-                    ),
-                  )
-                }
-              />
-            </div>
-          </SettingsPanel>
+                <label
+                  className="settings-checkbox-row"
+                  htmlFor="confidentialReports"
+                >
+                  <div className="settings-checkbox-copy">
+                    <span className="settings-checkbox-label">
+                      Mark reports confidential
+                    </span>
 
-          <SettingsPanel title="Severity Model">
-            <div className="settings-severity-list">
-              {[
-                ['Critical', 'CVSS 9.0 – 10.0'],
-                ['High', 'CVSS 7.0 – 8.9'],
-                ['Medium', 'CVSS 4.0 – 6.9'],
-                ['Low', 'CVSS 0.1 – 3.9'],
-                ['Informational', 'No score'],
-              ].map(([severity, range]) => (
-                <div key={severity} className="settings-severity-row">
-                  <SeverityBadge
-                    severity={
-                      severity as
-                        | 'critical'
-                        | 'high'
-                        | 'medium'
-                        | 'low'
-                        | 'informational'
+                    <span className="settings-checkbox-description">
+                      Adds a confidentiality label to the report preview and
+                      exported reports.
+                    </span>
+                  </div>
+
+                  <input
+                    id="confidentialReports"
+                    className="settings-checkbox"
+                    type="checkbox"
+                    checked={value.confidentialReports}
+                    onChange={event =>
+                      onChange(
+                        updateField(
+                          value,
+                          'confidentialReports',
+                          event.target.checked,
+                        ),
+                      )
                     }
-                    size="small"
                   />
+                </label>
+              </div>
+            </SettingsPanel>
 
-                  <span>{range}</span>
-                </div>
-              ))}
-            </div>
-          </SettingsPanel>
+            <SettingsPanel
+              title="Report defaults"
+              subtitle="Applied when creating new reports"
+            >
+              <div className="settings-two-column">
+                <Select
+                  id="defaultSeverity"
+                  label="Default severity"
+                  value={value.defaultSeverity}
+                  error={fieldErrors?.defaultSeverity}
+                  options={severityOptions}
+                  onChange={event =>
+                    onChange(
+                      updateField(
+                        value,
+                        'defaultSeverity',
+                        event.target.value as SettingsValue['defaultSeverity'],
+                      ),
+                    )
+                  }
+                />
+
+                <Select
+                  id="methodology"
+                  label="Methodology"
+                  value={value.methodology}
+                  error={fieldErrors?.methodology}
+                  options={methodologyOptions}
+                  onChange={event =>
+                    onChange(
+                      updateField(value, 'methodology', event.target.value),
+                    )
+                  }
+                />
+
+                <Select
+                  id="reportStyle"
+                  label="Report style"
+                  value={value.reportStyle}
+                  error={fieldErrors?.reportStyle}
+                  options={reportStyleOptions}
+                  onChange={event =>
+                    onChange(
+                      updateField(value, 'reportStyle', event.target.value),
+                    )
+                  }
+                />
+
+                <label
+                  className="settings-checkbox-row"
+                  htmlFor="includeEvidence"
+                >
+                  <div className="settings-checkbox-copy">
+                    <span className="settings-checkbox-label">
+                      Include evidence in exports
+                    </span>
+
+                    <span className="settings-checkbox-description">
+                      Keeps screenshots and supporting evidence in exported
+                      reports.
+                    </span>
+                  </div>
+
+                  <input
+                    id="includeEvidence"
+                    className="settings-checkbox"
+                    type="checkbox"
+                    checked={value.includeEvidence}
+                    onChange={event =>
+                      onChange(
+                        updateField(
+                          value,
+                          'includeEvidence',
+                          event.target.checked,
+                        ),
+                      )
+                    }
+                  />
+                </label>
+              </div>
+            </SettingsPanel>
+
+            <SettingsPanel
+              title="Appearance and user preferences"
+              subtitle="Controls the application look and report formatting"
+            >
+              <div className="settings-two-column">
+                <Select
+                  id="theme"
+                  label="Theme preference"
+                  value={value.theme}
+                  error={fieldErrors?.theme}
+                  description="Saved to your profile and used by the application shell."
+                  options={themeOptions}
+                  onChange={event =>
+                    onChange(updateField(value, 'theme', event.target.value))
+                  }
+                />
+
+                <Select
+                  id="dateFormat"
+                  label="Date format"
+                  value={value.dateFormat}
+                  error={fieldErrors?.dateFormat}
+                  description="Used for dates shown in the application and report preview."
+                  options={dateFormatOptions}
+                  onChange={event =>
+                    onChange(
+                      updateField(value, 'dateFormat', event.target.value),
+                    )
+                  }
+                />
+              </div>
+            </SettingsPanel>
+          </div>
+
+          <div className="settings-stack">
+            <SettingsPanel
+              title="Live preview"
+              subtitle="Branding stays responsive in light and dark UI"
+            >
+              <SettingsPreview value={value} previewTheme={previewTheme} />
+            </SettingsPanel>
+          </div>
         </div>
-      </div>
 
-      <div className="settings-actions">
-        <Button type="submit" title="Save settings" />
-      </div>
-    </form>
-  </StyledSettings>
-);
+        <div className="settings-actions">
+          <Button
+            type="submit"
+            title="Save settings"
+            disabled={!isDirty || isSaving}
+            isLoading={isSaving}
+          />
+        </div>
+      </form>
+    </StyledSettings>
+  );
+};
 
 export default Settings;
