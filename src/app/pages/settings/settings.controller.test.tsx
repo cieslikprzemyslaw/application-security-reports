@@ -97,7 +97,7 @@ const setupDom = (
 
   assert.ok(container, 'Expected root container to exist');
 
-  return { container, window: window as TestWindow };
+  return { container, window: window as unknown as TestWindow };
 };
 
 const renderComponent = async () => {
