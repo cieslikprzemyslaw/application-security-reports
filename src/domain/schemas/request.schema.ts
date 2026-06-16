@@ -250,8 +250,15 @@ const validateEvidenceExchanges = (
     httpExchanges?: Array<unknown>;
   },
   ctx: z.RefinementCtx,
+  options: {
+    allowExplicitEmptyHttpExchanges: boolean;
+  },
 ) => {
-  if (value.httpExchanges !== undefined && value.httpExchanges.length === 0) {
+  if (
+    !options.allowExplicitEmptyHttpExchanges &&
+    value.httpExchanges !== undefined &&
+    value.httpExchanges.length === 0
+  ) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['httpExchanges'],
@@ -285,7 +292,11 @@ const validateEvidenceExchanges = (
 
 export const createEvidenceRequestSchema = evidenceRequestBaseSchema
   .superRefine(validateEvidenceFileMetadata)
-  .superRefine(validateEvidenceExchanges);
+  .superRefine((value, ctx) =>
+    validateEvidenceExchanges(value, ctx, {
+      allowExplicitEmptyHttpExchanges: false,
+    }),
+  );
 type CreateEvidenceRequestSchemaOutput = Required<
   z.output<typeof createEvidenceRequestSchema>
 >;
@@ -299,7 +310,11 @@ export const updateEvidenceRequestSchema = requireAtLeastOneField(
   'At least one evidence field is required',
 )
   .superRefine(validateEvidenceFileMetadata)
-  .superRefine(validateEvidenceExchanges);
+  .superRefine((value, ctx) =>
+    validateEvidenceExchanges(value, ctx, {
+      allowExplicitEmptyHttpExchanges: true,
+    }),
+  );
 type UpdateEvidenceRequestSchemaOutput = Required<
   z.output<typeof updateEvidenceRequestSchema>
 >;

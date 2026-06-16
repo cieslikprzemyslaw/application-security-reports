@@ -374,6 +374,52 @@ try {
       ['GET', 'POST'],
     );
 
+    const invalidClearResponse = await fetch(
+      `${server.baseUrl}/api/evidence/${httpEvidenceJson.data.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'http',
+          httpExchanges: [],
+        }),
+      },
+    );
+    assert.equal(invalidClearResponse.status, 400);
+    const invalidClearJson = (await invalidClearResponse.json()) as {
+      error: {
+        code: string;
+        message: string;
+        details: Array<{ path: string }>;
+      };
+    };
+    assert.equal(invalidClearJson.error.code, 'VALIDATION_ERROR');
+
+    const storedAfterFailedClear = await prisma.evidence.findUnique({
+      where: { id: httpEvidenceJson.data.id },
+      include: {
+        httpExchanges: {
+          orderBy: { position: 'asc' },
+          select: {
+            position: true,
+            request: true,
+            response: true,
+          },
+        },
+      },
+    });
+    assert.deepEqual(
+      storedAfterFailedClear?.httpExchanges.map(
+        (exchange: {
+          request: { method: string };
+          response: { statusCode: number };
+        }) => exchange.request.method,
+      ),
+      ['GET', 'POST'],
+    );
+
     const clearHttpExchangesResponse = await fetch(
       `${server.baseUrl}/api/evidence/${httpEvidenceJson.data.id}`,
       {

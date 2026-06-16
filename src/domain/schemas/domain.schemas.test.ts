@@ -836,6 +836,13 @@ expectField(
   '',
   'At least one evidence field is required',
 );
+assertValid(
+  updateEvidenceRequestSchema.safeParse({
+    type: 'text',
+    httpExchanges: [],
+  }).success,
+  'Partial evidence update with an explicit empty exchange list should pass',
+);
 expectField(
   getFieldErrors(updateEvidenceRequestSchema, {
     assessmentId: validAssessment.id,
