@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 
 import { AppThemeProvider, themePreferenceStorageKey } from '~/theme';
 import type { Settings } from '~/domain';
@@ -105,13 +105,26 @@ const renderComponent = async () => {
     [themePreferenceStorageKey]: 'light',
   });
   const root = createRoot(container);
+  const router = createMemoryRouter(
+    [
+      {
+        path: '/settings',
+        element: <SettingsRoute />,
+      },
+      {
+        path: '/dashboard',
+        element: <h1>Dashboard page</h1>,
+      },
+    ],
+    {
+      initialEntries: ['/settings'],
+    },
+  );
 
   await act(async () => {
     root.render(
       <AppThemeProvider>
-        <BrowserRouter>
-          <SettingsRoute />
-        </BrowserRouter>
+        <RouterProvider router={router} />
       </AppThemeProvider>,
     );
 
@@ -119,13 +132,24 @@ const renderComponent = async () => {
     await renderTick();
   });
 
-  return { container, root, window };
+  return { container, root, router, window };
 };
 
 const findByLabel = (window: TestWindow, label: string) =>
   window.document.querySelector(
     `input#${label}, select#${label}, textarea#${label}`,
   ) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
+
+const setWindowConfirm = (
+  targetWindow: TestWindow,
+  value: typeof targetWindow.confirm,
+) => {
+  Object.defineProperty(targetWindow, 'confirm', {
+    value,
+    configurable: true,
+    writable: true,
+  });
+};
 
 await (async () => {
   const baselineSettings: Settings = {
@@ -174,10 +198,16 @@ await (async () => {
     throw new Error(`Unexpected request method: ${request.method}`);
   });
 
+  let originalConfirm: ((message?: string) => boolean) | undefined;
+  let testWindow: TestWindow | undefined;
+
   try {
-    const { container, root, window } = await renderComponent();
+    const { container, root, router, window } = await renderComponent();
+    testWindow = window;
+    originalConfirm = window.confirm;
 
     assert.equal(requestCount, 1);
+    assert.equal(router.state.location.pathname, '/settings');
 
     const consultantNameInput = findByLabel(window, 'consultantName');
     const themeSelect = findByLabel(window, 'theme');
@@ -238,6 +268,103 @@ await (async () => {
       root.unmount();
     });
   } finally {
+    if (originalConfirm && testWindow) {
+      setWindowConfirm(testWindow, originalConfirm);
+    }
+    restoreFetch();
+  }
+})();
+
+await (async () => {
+  setFetch(async () =>
+    createJsonResponse({
+      data: {
+        id: 'settings_1',
+        organisationName: 'Northstar Digital',
+        consultantName: 'Alex Mercer',
+        consultantEmail: 'alex.mercer@appsec.io',
+        defaultReportTitle: 'Northstar Digital Security Assessment',
+        defaultSeverity: 'medium',
+        theme: 'system',
+        dateFormat: 'YYYY-MM-DD',
+        reportFooterText: 'Confidential - do not distribute.',
+        methodology: 'OWASP ASVS / WSTG',
+        reportStyle: 'Technical & structured',
+        includeEvidence: true,
+        confidentialReports: false,
+        createdAt: '2026-06-10T00:00:00.000Z',
+        updatedAt: '2026-06-11T00:00:00.000Z',
+      },
+    }),
+  );
+
+  let originalConfirm: ((message?: string) => boolean) | undefined;
+  let testWindow: TestWindow | undefined;
+
+  try {
+    const { container, root, router, window } = await renderComponent();
+    testWindow = window;
+    originalConfirm = window.confirm;
+
+    const consultantNameInput = findByLabel(window, 'consultantName');
+
+    assert.ok(consultantNameInput, 'Expected the consultant name field');
+
+    await act(async () => {
+      consultantNameInput!.value = 'Jordan Lee';
+      consultantNameInput!.dispatchEvent(
+        new window.Event('input', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      await renderTick();
+    });
+
+    assert.ok(container.textContent?.includes('You have unsaved changes.'));
+
+    const beforeUnloadEvent = new window.Event('beforeunload', {
+      cancelable: true,
+    }) as Event & { returnValue?: string };
+
+    await act(async () => {
+      window.dispatchEvent(beforeUnloadEvent);
+      await renderTick();
+    });
+
+    assert.equal(beforeUnloadEvent.defaultPrevented, true);
+
+    setWindowConfirm(window, () => false);
+
+    await act(async () => {
+      await router.navigate('/dashboard');
+      await renderTick();
+    });
+
+    assert.equal(router.state.location.pathname, '/settings');
+    assert.ok(container.textContent?.includes('Settings'));
+    assert.ok(
+      !container.textContent?.includes('Dashboard page'),
+      'Expected navigation to stay on settings when the prompt is cancelled',
+    );
+
+    setWindowConfirm(window, () => true);
+
+    await act(async () => {
+      await router.navigate('/dashboard');
+      await renderTick();
+    });
+
+    assert.equal(router.state.location.pathname, '/dashboard');
+    assert.ok(container.textContent?.includes('Dashboard page'));
+
+    await act(async () => {
+      root.unmount();
+    });
+  } finally {
+    if (originalConfirm && testWindow) {
+      setWindowConfirm(testWindow, originalConfirm);
+    }
     restoreFetch();
   }
 })();
