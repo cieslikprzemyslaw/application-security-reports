@@ -183,12 +183,15 @@ const supportedEvidenceFileExtensionsByMimeType: Record<
   'text/plain': ['.txt'],
 };
 
+export type SupportedEvidenceMimeType =
+  (typeof supportedEvidenceMimeTypes)[number];
+
 const isSafeEvidenceFileName = (value: string): boolean =>
   !/[\\/:<>"|?*\0]/.test(value) && value !== '.' && value !== '..';
 
-const isEvidenceFileNameCompatibleWithMimeType = (
+export const isEvidenceFileNameCompatibleWithMimeType = (
   fileName: string,
-  mimeType: (typeof supportedEvidenceMimeTypes)[number],
+  mimeType: SupportedEvidenceMimeType,
 ): boolean => {
   const extension = path.extname(fileName).toLowerCase();
   const allowedExtensions = supportedEvidenceFileExtensionsByMimeType[mimeType];

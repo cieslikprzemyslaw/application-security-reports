@@ -14,6 +14,10 @@ import type {
   UpdateEvidenceInput,
 } from '../../src/domain/evidence.js';
 import {
+  isEvidenceFileNameCompatibleWithMimeType,
+  type SupportedEvidenceMimeType,
+} from '../../src/domain/schemas/request.schema.js';
+import {
   evidenceListQuerySchema,
   evidenceRouteParamsSchema,
   createEvidenceRequestSchema,
@@ -58,6 +62,97 @@ const sendValidationError = (
     'Request validation failed',
     details,
   );
+};
+
+const validateEvidenceFileMetadataUpdate = (
+  existingEvidence: Evidence,
+  body: UpdateEvidenceRequestBody,
+  res: Response,
+): boolean => {
+  if (body.fileName === undefined && body.mimeType === undefined) {
+    return true;
+  }
+
+  const fileName = body.fileName ?? existingEvidence.fileName;
+  const mimeType = body.mimeType ?? existingEvidence.mimeType;
+
+  if (
+    fileName &&
+    mimeType &&
+    !isEvidenceFileNameCompatibleWithMimeType(
+      fileName,
+      mimeType as SupportedEvidenceMimeType,
+    )
+  ) {
+    sendValidationError(res, [
+      {
+        path: 'fileName',
+        message:
+          'Evidence file name extension must match the supplied mime type',
+        code: 'custom',
+      },
+    ]);
+    return false;
+  }
+
+  return true;
+};
+
+const validateEvidenceExchangeUpdate = (
+  existingEvidence: Evidence,
+  body: UpdateEvidenceRequestBody,
+  res: Response,
+): boolean => {
+  const resultingType = body.type ?? existingEvidence.type;
+  const hasExplicitHttpExchanges = body.httpExchanges !== undefined;
+  const resultingHttpExchanges = hasExplicitHttpExchanges
+    ? body.httpExchanges
+    : existingEvidence.httpExchanges;
+
+  if (resultingType === 'http') {
+    if (!resultingHttpExchanges || resultingHttpExchanges.length === 0) {
+      sendValidationError(res, [
+        {
+          path: 'httpExchanges',
+          message: 'HTTP evidence must include at least one exchange',
+          code: 'custom',
+        },
+      ]);
+      return false;
+    }
+
+    return true;
+  }
+
+  if (!resultingHttpExchanges || resultingHttpExchanges.length === 0) {
+    return true;
+  }
+
+  if (
+    existingEvidence.type === 'http' &&
+    body.type !== undefined &&
+    body.type !== 'http' &&
+    !hasExplicitHttpExchanges
+  ) {
+    sendValidationError(res, [
+      {
+        path: 'httpExchanges',
+        message:
+          'HTTP evidence exchanges must be cleared when changing evidence to a non-HTTP type',
+        code: 'custom',
+      },
+    ]);
+    return false;
+  }
+
+  sendValidationError(res, [
+    {
+      path: 'httpExchanges',
+      message: 'Only HTTP evidence can include exchanges',
+      code: 'custom',
+    },
+  ]);
+  return false;
 };
 
 const handleEvidenceRepositoryError = (
@@ -301,17 +396,9 @@ export const createEvidenceRouter = (
         }
 
         if (
-          body.httpExchanges &&
-          existingEvidence.type !== 'http' &&
-          body.type !== 'http'
+          !validateEvidenceFileMetadataUpdate(existingEvidence, body, res) ||
+          !validateEvidenceExchangeUpdate(existingEvidence, body, res)
         ) {
-          sendValidationError(res, [
-            {
-              path: 'httpExchanges',
-              message: 'Only HTTP evidence can include exchanges',
-              code: 'custom',
-            },
-          ]);
           return;
         }
 

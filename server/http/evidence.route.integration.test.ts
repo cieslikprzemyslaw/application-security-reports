@@ -374,6 +374,47 @@ try {
       ['GET', 'POST'],
     );
 
+    const clearHttpExchangesResponse = await fetch(
+      `${server.baseUrl}/api/evidence/${httpEvidenceJson.data.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'text',
+          httpExchanges: [],
+        }),
+      },
+    );
+    assert.equal(clearHttpExchangesResponse.status, 200);
+    const clearedEvidenceJson = (await clearHttpExchangesResponse.json()) as {
+      data: {
+        type: string;
+        httpExchanges: Array<{
+          request: { method: string; url: string; body?: string };
+          response: { statusCode: number; body?: string };
+        }>;
+      };
+    };
+    assert.equal(clearedEvidenceJson.data.type, 'text');
+    assert.deepEqual(clearedEvidenceJson.data.httpExchanges, []);
+
+    const storedClearedEvidence = await prisma.evidence.findUnique({
+      where: { id: httpEvidenceJson.data.id },
+      include: {
+        httpExchanges: {
+          orderBy: { position: 'asc' },
+          select: {
+            position: true,
+            request: true,
+            response: true,
+          },
+        },
+      },
+    });
+    assert.equal(storedClearedEvidence?.httpExchanges.length, 0);
+
     const deleteResponse = await fetch(
       `${server.baseUrl}/api/evidence/${evidenceId}`,
       {

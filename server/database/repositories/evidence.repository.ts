@@ -125,7 +125,8 @@ const toEvidence = (row: EvidenceRow): Evidence => ({
   mimeType: toOptionalText(row.mimeType),
   attachmentSizeBytes: row.attachmentSizeBytes ?? undefined,
   capturedAt: toOptionalText(row.capturedAt) as Evidence['capturedAt'],
-  httpExchanges: row.httpExchanges.map(toHttpExchange),
+  httpExchanges:
+    row.type === 'http' ? row.httpExchanges.map(toHttpExchange) : [],
   createdAt: toIsoString(row.createdAt),
   updatedAt: toIsoString(row.updatedAt),
 });
@@ -251,7 +252,7 @@ export function createEvidenceRepository(
               select: evidenceSelect,
             });
 
-            if (input.httpExchanges) {
+            if (input.httpExchanges !== undefined) {
               await replaceEvidenceHttpExchanges(
                 tx,
                 evidence.id,
@@ -288,7 +289,7 @@ export function createEvidenceRepository(
               await replaceEvidenceThreatLinks(tx, id, input.threatIds);
             }
 
-            if (input.httpExchanges) {
+            if (input.httpExchanges !== undefined) {
               await replaceEvidenceHttpExchanges(tx, id, input.httpExchanges);
             }
 
