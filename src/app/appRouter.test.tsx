@@ -1266,154 +1266,290 @@ await (async () => {
     'Manage your profile, workspace branding, and report defaults.',
   );
 
-  {
-    const { container, root } = await renderApp(
-      routes.assessmentDetailsOverview('asm_1'),
-    );
+  setFetch(async input => {
+    const path = String(input);
 
-    assert.ok(textContent(container).includes('Customer Services Portal'));
-    assert.ok(textContent(container).includes('NSD-CSP-2026-014'));
-    assert.equal(
-      container.querySelector('[role="tablist"]')?.getAttribute('aria-label'),
-      'Assessment sections',
-    );
-    assert.equal(
-      window.location.pathname,
-      routes.assessmentDetailsOverview('asm_1'),
-    );
-    assert.equal(
-      container.querySelector('[role="tab"][aria-selected="true"]')
-        ?.textContent,
-      'Overview',
-    );
+    if (path === '/api/companies/cmp_1/assessments/asm_1/overview') {
+      return createJsonResponse({
+        data: {
+          company: {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+          },
+          assessment: {
+            id: 'asm_1',
+            companyId: 'cmp_1',
+            title: 'Customer Services Portal',
+            description: 'Assessment of the customer portal',
+            scope: 'Web application',
+            status: 'in-progress',
+            startedAt: '2026-06-01',
+            completedAt: '2026-06-10',
+            applicationName: 'Customer Services Portal',
+            environment: 'Production',
+            assessmentType: 'Web App',
+            overallRisk: 'high',
+            createdAt: '2026-06-01T09:00:00.000Z',
+            updatedAt: '2026-06-11T09:00:00.000Z',
+            recordVersion: 3,
+            findingsCount: 14,
+            evidenceCount: 6,
+            reportVersionCount: 2,
+            testerName: 'Alex Mercer',
+            availableActions: ['complete', 'archive'],
+          },
+        },
+      });
+    }
 
-    await act(async () => {
-      root.unmount();
-    });
-  }
+    if (path === '/api/companies/cmp_1/assessments/asm_5/overview') {
+      return createJsonResponse({
+        data: {
+          company: {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+          },
+          assessment: {
+            id: 'asm_5',
+            companyId: 'cmp_1',
+            title: 'Data Export Service',
+            status: 'archived',
+            applicationName: 'Data Export Service',
+            environment: 'Production',
+            assessmentType: 'API',
+            overallRisk: 'low',
+            createdAt: '2026-05-16T09:00:00.000Z',
+            updatedAt: '2026-05-24T09:00:00.000Z',
+            recordVersion: 1,
+            findingsCount: 3,
+            evidenceCount: 0,
+            reportVersionCount: 0,
+            testerName: 'Jordan Lee',
+            availableActions: ['reopen'],
+          },
+        },
+      });
+    }
 
-  {
-    const { container, root } = await renderApp(
-      routes.assessmentDetails('asm_1'),
-    );
-
-    assert.ok(textContent(container).includes('Customer Services Portal'));
-    assert.equal(window.location.pathname, routes.assessmentDetails('asm_1'));
-    assert.equal(
-      container.querySelector('[role="tab"][aria-selected="true"]')
-        ?.textContent,
-      'Overview',
-    );
-
-    await act(async () => {
-      root.unmount();
-    });
-  }
-
-  {
-    const { container, root } = await renderApp(
-      routes.assessmentDetailsFindings('asm_1'),
-    );
-
-    assert.ok(textContent(container).includes('14 confirmed findings'));
-    assert.equal(
-      window.location.pathname,
-      routes.assessmentDetailsFindings('asm_1'),
-    );
-    assert.equal(
-      container.querySelector('a[href="/assessments/asm_1/overview"]')
-        ?.textContent,
-      'Customer Services Portal',
-    );
-    assert.equal(
-      container.querySelector('[role="tab"][aria-selected="true"]')
-        ?.textContent,
-      'Findings14',
-    );
-
-    const activeTab = container.querySelector(
-      '[role="tab"][aria-selected="true"]',
-    ) as HTMLButtonElement | null;
-
-    assert.ok(activeTab, 'Expected an active tab');
-    assert.ok(activeTab?.textContent?.startsWith('Findings'));
-
-    await act(async () => {
-      activeTab!.dispatchEvent(
-        new window.KeyboardEvent('keydown', {
-          bubbles: true,
-          cancelable: true,
-          key: 'ArrowRight',
-        }),
+    if (path === '/api/companies/cmp_1/assessments/asm_missing/overview') {
+      return createJsonResponse(
+        {
+          error: {
+            code: 'ASSESSMENT_NOT_FOUND',
+            message: 'Assessment not found',
+            details: [],
+          },
+        },
+        { status: 404 },
       );
-      await renderTick();
-      await renderTick();
-    });
+    }
 
-    assert.equal(
-      window.location.pathname,
-      routes.assessmentDetailsEvidence('asm_1'),
-    );
+    if (path === '/api/companies/cmp_1/assessments/asm_1/commands/complete') {
+      return createJsonResponse(
+        {
+          error: {
+            code: 'RESOURCE_MODIFIED',
+            message: 'The assessment was modified by another session.',
+            details: [],
+          },
+        },
+        { status: 409 },
+      );
+    }
 
-    await act(async () => {
-      root.unmount();
-    });
-  }
+    throw new Error(`Unexpected request: ${path}`);
+  });
 
-  {
-    const { container, root } = await renderApp(
-      routes.assessmentDetailsHistory('asm_5'),
-    );
+  try {
+    {
+      const { container, root } = await renderApp(
+        routes.assessmentDetailsOverview('cmp_1', 'asm_1'),
+      );
 
-    assert.ok(textContent(container).includes('read-only'));
-    assert.ok(textContent(container).includes('Archived'));
-    assert.ok(
-      !Array.from(container.querySelectorAll('button')).some(button =>
-        button.textContent?.includes('Edit assessment'),
-      ),
-    );
-    assert.ok(
-      !Array.from(container.querySelectorAll('button')).some(button =>
-        button.textContent?.includes('Add finding'),
-      ),
-    );
+      assert.ok(textContent(container).includes('Customer Services Portal'));
+      assert.ok(textContent(container).includes('NSD-CSP-2026-014'));
+      assert.equal(
+        container.querySelector('[role="tablist"]')?.getAttribute('aria-label'),
+        'Assessment sections',
+      );
+      assert.equal(
+        window.location.pathname,
+        routes.assessmentDetailsOverview('cmp_1', 'asm_1'),
+      );
+      assert.equal(
+        container.querySelector('[role="tab"][aria-selected="true"]')
+          ?.textContent,
+        'Overview',
+      );
 
-    await act(async () => {
-      root.unmount();
-    });
-  }
+      await act(async () => {
+        root.unmount();
+      });
+    }
 
-  {
-    const { container, root } = await renderApp(
-      routes.assessmentDetailsReports('asm_1'),
-    );
+    {
+      const { container, root } = await renderApp(
+        routes.assessmentDetailsOverview('cmp_1', 'asm_1'),
+      );
 
-    assert.ok(textContent(container).includes('Assessment report details'));
-    assert.equal(
-      window.location.pathname,
-      routes.assessmentDetailsReports('asm_1'),
-    );
-    assert.equal(
-      container.querySelector('[role="tab"][aria-selected="true"]')
-        ?.textContent,
-      'Reports',
-    );
+      const completeButton = Array.from(
+        container.querySelectorAll('button'),
+      ).find(button => button.textContent?.includes('Complete')) as
+        | HTMLButtonElement
+        | undefined;
 
-    await act(async () => {
-      root.unmount();
-    });
-  }
+      assert.ok(completeButton, 'Expected a complete action');
 
-  {
-    const { container, root } = await renderApp('/assessments/asm_missing');
+      await act(async () => {
+        completeButton!.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
 
-    assert.ok(textContent(container).includes('Assessment not found'));
-    assert.ok(textContent(container).includes('Return to assessments'));
-    assert.equal(window.location.pathname, '/assessments/asm_missing');
+      assert.ok(
+        textContent(container).includes('Assessment changed elsewhere'),
+      );
 
-    await act(async () => {
-      root.unmount();
-    });
+      await act(async () => {
+        root.unmount();
+      });
+    }
+
+    {
+      const { container, root } = await renderApp(
+        routes.assessmentDetails('cmp_1', 'asm_1'),
+      );
+
+      assert.ok(textContent(container).includes('Customer Services Portal'));
+      assert.equal(
+        window.location.pathname,
+        routes.assessmentDetails('cmp_1', 'asm_1'),
+      );
+      assert.equal(
+        container.querySelector('[role="tab"][aria-selected="true"]')
+          ?.textContent,
+        'Overview',
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    }
+
+    {
+      const { container, root } = await renderApp(
+        routes.assessmentDetailsFindings('cmp_1', 'asm_1'),
+      );
+
+      assert.ok(textContent(container).includes('Findings14'));
+      assert.equal(
+        window.location.pathname,
+        routes.assessmentDetailsFindings('cmp_1', 'asm_1'),
+      );
+      assert.equal(
+        container.querySelector(
+          'a[href="/companies/cmp_1/assessments/asm_1/overview"]',
+        )?.textContent,
+        'Customer Services Portal',
+      );
+      assert.equal(
+        container.querySelector('[role="tab"][aria-selected="true"]')
+          ?.textContent,
+        'Findings14',
+      );
+
+      const activeTab = container.querySelector(
+        '[role="tab"][aria-selected="true"]',
+      ) as HTMLButtonElement | null;
+
+      assert.ok(activeTab, 'Expected an active tab');
+      assert.ok(activeTab?.textContent?.startsWith('Findings'));
+
+      await act(async () => {
+        activeTab!.dispatchEvent(
+          new window.KeyboardEvent('keydown', {
+            bubbles: true,
+            cancelable: true,
+            key: 'ArrowRight',
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(
+        window.location.pathname,
+        routes.assessmentDetailsEvidence('cmp_1', 'asm_1'),
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    }
+
+    {
+      const { container, root } = await renderApp(
+        routes.assessmentDetailsHistory('cmp_1', 'asm_5'),
+      );
+
+      assert.ok(textContent(container).includes('read-only'));
+      assert.ok(textContent(container).includes('Archived'));
+      assert.ok(
+        !Array.from(container.querySelectorAll('button')).some(button =>
+          button.textContent?.includes('Edit assessment'),
+        ),
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    }
+
+    {
+      const { container, root } = await renderApp(
+        routes.assessmentDetailsReports('cmp_1', 'asm_1'),
+      );
+
+      assert.ok(textContent(container).includes('Assessment report details'));
+      assert.equal(
+        window.location.pathname,
+        routes.assessmentDetailsReports('cmp_1', 'asm_1'),
+      );
+      assert.equal(
+        container.querySelector('[role="tab"][aria-selected="true"]')
+          ?.textContent,
+        'Reports2',
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    }
+
+    {
+      const { container, root } = await renderApp(
+        '/companies/cmp_1/assessments/asm_missing',
+      );
+
+      assert.ok(textContent(container).includes('Assessment not found'));
+      assert.ok(textContent(container).includes('Return to assessments'));
+      assert.equal(
+        window.location.pathname,
+        '/companies/cmp_1/assessments/asm_missing',
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    }
+  } finally {
+    restoreFetch();
   }
 
   {

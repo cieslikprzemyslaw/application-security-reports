@@ -235,7 +235,9 @@ await (async () => {
   }
 
   {
-    const { container, root } = await renderApp('/assessments/asm_123');
+    const { container, root } = await renderApp(
+      '/companies/cmp_123/assessments/asm_123',
+    );
 
     const dashboardLink = container.querySelector('a[href="/dashboard"]');
 

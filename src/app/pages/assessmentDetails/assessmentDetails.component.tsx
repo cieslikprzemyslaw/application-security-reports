@@ -1,249 +1,245 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
-import GlobalThreatTable from '~/app/components/appsec/globalThreatTable';
-import Badge from '~/app/components/ui/badge';
-import Button from '~/app/components/ui/button';
-import SeverityBadge from '~/app/components/ui/severityBadge';
-import Tabs from '~/app/components/ui/tabs';
+import {
+  EntityNotFoundView,
+  RouteLoadingView,
+} from '~/app/components/routeStateViews';
+import { assessmentService } from '~/services';
+import { ApiError } from '~/services/apiClient';
 import { routes } from '~/routes';
 
-import StyledAssessmentDetails from './assessmentDetails.styled';
+import AssessmentDetailsView from './assessmentDetails.view';
 
-import type { AssessmentDetailsProps } from './assessmentDetails.type';
+import type {
+  AssessmentDetailAction,
+  AssessmentDetailSection,
+  AssessmentDetailsAssessment,
+} from './assessmentDetails.type';
 
-const assessmentStatusLabelMap: Record<string, string> = {
-  draft: 'Draft',
-  'in-progress': 'In Progress',
-  'in-review': 'In Review',
-  completed: 'Completed',
-  archived: 'Archived',
+import type { AssessmentWorkspaceOverview } from '~/services/assessmentService';
+
+interface AssessmentDetailsRouteProps {
+  activeSection: AssessmentDetailSection;
+}
+
+const sectionHrefMap: Record<
+  AssessmentDetailSection,
+  (companyId: string, assessmentId: string) => string
+> = {
+  overview: routes.assessmentDetailsOverview,
+  findings: routes.assessmentDetailsFindings,
+  evidence: routes.assessmentDetailsEvidence,
+  reports: routes.assessmentDetailsReports,
+  history: routes.assessmentDetailsHistory,
 };
 
-const sectionLabelMap: Record<AssessmentDetailsProps['activeSection'], string> =
-  {
-    overview: 'Overview',
-    findings: 'Findings',
-    evidence: 'Evidence',
-    reports: 'Reports',
-    history: 'History',
+const toAssessmentViewModel = (
+  overview: AssessmentWorkspaceOverview,
+): AssessmentDetailsAssessment => ({
+  ...overview.assessment,
+  companyName: overview.company.name,
+  applicationName:
+    overview.assessment.applicationName?.trim() ||
+    overview.assessment.title?.trim() ||
+    'Untitled assessment',
+});
+
+const getActionCommand = (
+  action: AssessmentDetailAction,
+  companyId: string,
+  assessmentId: string,
+  recordVersion: number,
+) => {
+  switch (action) {
+    case 'start':
+      return assessmentService.start(companyId, assessmentId, recordVersion);
+    case 'complete':
+      return assessmentService.complete(companyId, assessmentId, recordVersion);
+    case 'reopen':
+      return assessmentService.reopen(companyId, assessmentId, recordVersion);
+    case 'archive':
+      return assessmentService.archive(companyId, assessmentId, recordVersion);
+    default:
+      return Promise.reject(new Error('Unsupported assessment action.'));
+  }
+};
+
+const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
+  const navigate = useNavigate();
+  const { companyId, assessmentId } = useParams<{
+    companyId?: string;
+    assessmentId?: string;
+  }>();
+  const [overview, setOverview] = useState<
+    AssessmentWorkspaceOverview | undefined
+  >();
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | undefined>();
+  const [isNotFound, setIsNotFound] = useState(false);
+  const [pendingAction, setPendingAction] = useState<AssessmentDetailAction>();
+  const [actionError, setActionError] = useState<string | undefined>();
+  const [conflictError, setConflictError] = useState<string | undefined>();
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let isActive = true;
+
+    const loadOverview = async () => {
+      if (!companyId || !assessmentId) {
+        if (isActive) {
+          setIsNotFound(true);
+          setIsLoading(false);
+        }
+
+        return;
+      }
+
+      setIsLoading(true);
+      setLoadError(undefined);
+      setIsNotFound(false);
+      setActionError(undefined);
+      setConflictError(undefined);
+
+      try {
+        const nextOverview = await assessmentService.getOverview(
+          companyId,
+          assessmentId,
+          controller.signal,
+        );
+
+        if (isActive) {
+          setOverview(nextOverview);
+        }
+      } catch (error) {
+        if (
+          !isActive ||
+          (error instanceof DOMException && error.name === 'AbortError')
+        ) {
+          return;
+        }
+
+        if (error instanceof ApiError && error.status === 404) {
+          setIsNotFound(true);
+          setOverview(undefined);
+          return;
+        }
+
+        setOverview(undefined);
+        setLoadError(
+          error instanceof Error
+            ? error.message
+            : 'Unable to load assessment overview.',
+        );
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadOverview();
+
+    return () => {
+      isActive = false;
+      controller.abort();
+    };
+  }, [assessmentId, companyId]);
+
+  const assessmentView = useMemo(
+    () => (overview ? toAssessmentViewModel(overview) : undefined),
+    [overview],
+  );
+
+  const handleSectionChange = (section: AssessmentDetailSection) => {
+    if (!companyId || !assessmentId) {
+      return;
+    }
+
+    navigate(sectionHrefMap[section](companyId, assessmentId));
   };
 
-const sectionPlaceholderCopy: Record<
-  Exclude<AssessmentDetailsProps['activeSection'], 'overview' | 'findings'>,
-  string
-> = {
-  evidence: 'Evidence management will be added in a later issue.',
-  reports: 'Assessment report details will be added in a later issue.',
-  history: 'Version history details will be added in a later issue.',
-};
+  const handleAction = async (action: AssessmentDetailAction) => {
+    if (!companyId || !assessmentId || !overview) {
+      return;
+    }
 
-const AssessmentDetails = ({
-  assessment,
-  threats,
-  executiveSummary,
-  activeSection,
-  overviewHref,
-  onSectionChange,
-  onBack,
-  onEdit,
-  onAddThreat,
-  onThreatClick,
-}: AssessmentDetailsProps) => {
-  const isArchived = assessment.status === 'archived';
-  const assessmentNameLink =
-    activeSection === 'overview' ? undefined : overviewHref;
+    setPendingAction(action);
+    setActionError(undefined);
+    setConflictError(undefined);
 
-  const renderAssessmentName = (className: string) =>
-    assessmentNameLink ? (
-      <Link className={className} to={assessmentNameLink}>
-        {assessment.applicationName}
-      </Link>
-    ) : (
-      <span className={className}>{assessment.applicationName}</span>
+    try {
+      const nextOverview = await getActionCommand(
+        action,
+        companyId,
+        assessmentId,
+        overview.assessment.recordVersion,
+      );
+
+      setOverview(nextOverview);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 409) {
+        setConflictError(
+          error.message || 'The assessment was modified by another session.',
+        );
+        return;
+      }
+
+      setActionError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to update the assessment.',
+      );
+    } finally {
+      setPendingAction(undefined);
+    }
+  };
+
+  if (isLoading) {
+    return <RouteLoadingView />;
+  }
+
+  if (isNotFound || !companyId || !assessmentId) {
+    const returnHref = companyId
+      ? routes.companyWorkspaceAssessments(companyId)
+      : routes.assessments;
+
+    return (
+      <EntityNotFoundView
+        entityName="Assessment"
+        listHref={returnHref}
+        listLabel="Return to assessments"
+      />
     );
+  }
 
-  const renderSummaryGrid = () => (
-    <div className="assessment-details-summary-grid">
-      <div className="assessment-details-summary-card">
-        <strong>Environment</strong>
+  if (loadError) {
+    return (
+      <div role="alert">
+        <h1>Assessment workspace</h1>
 
-        <p>{assessment.environment}</p>
+        <p>{loadError}</p>
       </div>
+    );
+  }
 
-      <div className="assessment-details-summary-card">
-        <strong>Type</strong>
-
-        <p>{assessment.assessmentType}</p>
-      </div>
-
-      <div className="assessment-details-summary-card">
-        <strong>Overall risk</strong>
-
-        <SeverityBadge severity={assessment.overallRisk} size="small" />
-      </div>
-
-      <div className="assessment-details-summary-card">
-        <strong>Status</strong>
-
-        <Badge
-          label={assessmentStatusLabelMap[assessment.status]}
-          variant="neutral"
-          size="small"
-        />
-      </div>
-    </div>
-  );
-
-  const renderOverviewPanel = () => (
-    <>
-      <section className="assessment-details-section">
-        <header className="assessment-details-section-header">
-          <h2>Overview</h2>
-        </header>
-
-        <div className="assessment-details-section-body">
-          {renderSummaryGrid()}
-        </div>
-      </section>
-
-      <section className="assessment-details-section">
-        <header className="assessment-details-section-header">
-          <h2>Executive Summary</h2>
-        </header>
-
-        <div className="assessment-details-section-body">
-          <p>{executiveSummary}</p>
-        </div>
-      </section>
-    </>
-  );
-
-  const renderFindingsPanel = () => (
-    <section className="assessment-details-section">
-      <header className="assessment-details-section-header">
-        <div>
-          <h2>Findings</h2>
-
-          <p>{threats.length} confirmed findings</p>
-        </div>
-
-        {onAddThreat && !isArchived && (
-          <Button title="Add finding" onClick={onAddThreat} />
-        )}
-      </header>
-
-      <GlobalThreatTable threats={threats} onThreatClick={onThreatClick} />
-    </section>
-  );
-
-  const renderPlaceholderPanel = (
-    section: Exclude<
-      AssessmentDetailsProps['activeSection'],
-      'overview' | 'findings'
-    >,
-  ) => (
-    <section className="assessment-details-section">
-      <header className="assessment-details-section-header">
-        <h2>{sectionLabelMap[section]}</h2>
-      </header>
-
-      <div className="assessment-details-section-body">
-        <p className="assessment-details-placeholder-copy">
-          {sectionPlaceholderCopy[section]}
-        </p>
-      </div>
-    </section>
-  );
+  if (!assessmentView) {
+    return <RouteLoadingView />;
+  }
 
   return (
-    <StyledAssessmentDetails>
-      <header className="assessment-details-header">
-        <div className="assessment-details-header-copy">
-          <nav aria-label="Breadcrumb">
-            <ol className="assessment-details-breadcrumb-list">
-              <li className="assessment-details-breadcrumb-item">
-                <Link to={routes.assessments}>Assessments</Link>
-              </li>
-
-              <li className="assessment-details-breadcrumb-item">
-                {assessmentNameLink ? (
-                  <Link to={assessmentNameLink}>
-                    {assessment.applicationName}
-                  </Link>
-                ) : (
-                  <span>{assessment.applicationName}</span>
-                )}
-              </li>
-
-              <li className="assessment-details-breadcrumb-item">
-                <span>{sectionLabelMap[activeSection]}</span>
-              </li>
-            </ol>
-          </nav>
-
-          <h1 className="assessment-details-title">
-            {renderAssessmentName('assessment-details-title-link')}
-          </h1>
-
-          <p className="assessment-details-subtitle">
-            {assessment.companyName}
-            {' · '}
-            {assessment.code}
-          </p>
-
-          {isArchived && (
-            <p className="assessment-details-read-only-note">
-              Archived assessments are read-only.
-            </p>
-          )}
-        </div>
-
-        <div className="assessment-details-header-actions">
-          {onBack && (
-            <Button title="Back" variant="secondary" onClick={onBack} />
-          )}
-
-          {onEdit && !isArchived && (
-            <Button title="Edit assessment" onClick={onEdit} />
-          )}
-        </div>
-      </header>
-
-      <Tabs
-        ariaLabel="Assessment sections"
-        activeTabId={activeSection}
-        onChange={onSectionChange}
-        items={[
-          {
-            id: 'overview',
-            label: 'Overview',
-            content: renderOverviewPanel(),
-          },
-          {
-            id: 'findings',
-            label: 'Findings',
-            count: threats.length,
-            content: renderFindingsPanel(),
-          },
-          {
-            id: 'evidence',
-            label: 'Evidence',
-            content: renderPlaceholderPanel('evidence'),
-          },
-          {
-            id: 'reports',
-            label: 'Reports',
-            content: renderPlaceholderPanel('reports'),
-          },
-          {
-            id: 'history',
-            label: 'History',
-            content: renderPlaceholderPanel('history'),
-          },
-        ]}
-      />
-    </StyledAssessmentDetails>
+    <AssessmentDetailsView
+      assessment={assessmentView}
+      activeSection={activeSection}
+      overviewHref={routes.assessmentDetailsOverview(companyId, assessmentId)}
+      onSectionChange={handleSectionChange}
+      onBack={() => navigate(routes.companyWorkspaceAssessments(companyId))}
+      onAction={handleAction}
+      isActionLoading={pendingAction !== undefined}
+      pendingAction={pendingAction}
+      actionError={actionError}
+      conflictError={conflictError}
+    />
   );
 };
 

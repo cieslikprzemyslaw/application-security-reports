@@ -153,7 +153,7 @@ const CompanyOverviewDashboardView = ({
               <RecentAssessmentTable
                 assessments={recentAssessments}
                 onAssessmentClick={assessment =>
-                  navigate(routes.assessmentDetails(assessment.id))
+                  navigate(routes.assessmentDetails(companyId, assessment.id))
                 }
               />
             ) : (

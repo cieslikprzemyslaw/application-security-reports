@@ -45,53 +45,63 @@ assert.equal(
   '/companies/cmp_123/activity',
 );
 
-assert.equal(routePatterns.assessmentDetails, '/assessments/:assessmentId');
+assert.equal(
+  routePatterns.assessmentDetails,
+  '/companies/:companyId/assessments/:assessmentId',
+);
 assert.equal(
   routePatterns.assessmentDetailsOverview,
-  '/assessments/:assessmentId/overview',
+  '/companies/:companyId/assessments/:assessmentId/overview',
 );
 assert.equal(
   routePatterns.assessmentDetailsFindings,
-  '/assessments/:assessmentId/findings',
+  '/companies/:companyId/assessments/:assessmentId/findings',
 );
 assert.equal(
   routePatterns.assessmentDetailsEvidence,
-  '/assessments/:assessmentId/evidence',
+  '/companies/:companyId/assessments/:assessmentId/evidence',
 );
 assert.equal(
   routePatterns.assessmentDetailsReports,
-  '/assessments/:assessmentId/reports',
+  '/companies/:companyId/assessments/:assessmentId/reports',
 );
 assert.equal(
   routePatterns.assessmentDetailsHistory,
-  '/assessments/:assessmentId/history',
+  '/companies/:companyId/assessments/:assessmentId/history',
 );
 assert.equal(routePatterns.reportDetails, '/reports/:reportId');
 
-assert.equal(routes.assessmentDetails('asm_123'), '/assessments/asm_123');
 assert.equal(
-  routes.assessmentDetailsOverview('asm_123'),
-  '/assessments/asm_123/overview',
+  routes.assessmentDetails('cmp_123', 'asm_123'),
+  '/companies/cmp_123/assessments/asm_123',
 );
 assert.equal(
-  routes.assessmentDetailsFindings('asm_123'),
-  '/assessments/asm_123/findings',
+  routes.assessmentDetailsOverview('cmp_123', 'asm_123'),
+  '/companies/cmp_123/assessments/asm_123/overview',
 );
 assert.equal(
-  routes.assessmentDetailsEvidence('asm_123'),
-  '/assessments/asm_123/evidence',
+  routes.assessmentDetailsFindings('cmp_123', 'asm_123'),
+  '/companies/cmp_123/assessments/asm_123/findings',
 );
 assert.equal(
-  routes.assessmentDetailsReports('asm_123'),
-  '/assessments/asm_123/reports',
+  routes.assessmentDetailsEvidence('cmp_123', 'asm_123'),
+  '/companies/cmp_123/assessments/asm_123/evidence',
 );
 assert.equal(
-  routes.assessmentDetailsHistory('asm_123'),
-  '/assessments/asm_123/history',
+  routes.assessmentDetailsReports('cmp_123', 'asm_123'),
+  '/companies/cmp_123/assessments/asm_123/reports',
+);
+assert.equal(
+  routes.assessmentDetailsHistory('cmp_123', 'asm_123'),
+  '/companies/cmp_123/assessments/asm_123/history',
 );
 assert.equal(routes.reportDetails('rpt_123'), '/reports/rpt_123');
-assert.equal(routes.assessmentDetails('asm 123'), '/assessments/asm%20123');
-assert.throws(() => routes.assessmentDetails('   '), /non-empty id/);
+assert.equal(
+  routes.assessmentDetails('cmp 123', 'asm 123'),
+  '/companies/cmp%20123/assessments/asm%20123',
+);
+assert.throws(() => routes.assessmentDetails('   ', 'asm_123'), /non-empty id/);
+assert.throws(() => routes.assessmentDetails('cmp_123', '   '), /non-empty id/);
 assert.throws(() => routes.reportDetails(''), /non-empty id/);
 
 console.log('route configuration checks passed');

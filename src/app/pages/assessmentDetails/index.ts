@@ -2,5 +2,7 @@ export { default } from './assessmentDetails.component';
 
 export type {
   AssessmentDetailSection,
-  AssessmentDetailsProps,
+  AssessmentDetailAction,
+  AssessmentDetailsAssessment,
+  AssessmentDetailsViewProps,
 } from './assessmentDetails.type';

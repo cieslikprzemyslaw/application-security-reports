@@ -222,6 +222,11 @@ const threat = {
 assert.equal(typeof companyService.list, 'function');
 assert.equal(typeof companyService.getOverview, 'function');
 assert.equal(typeof assessmentService.list, 'function');
+assert.equal(typeof assessmentService.getOverview, 'function');
+assert.equal(typeof assessmentService.start, 'function');
+assert.equal(typeof assessmentService.complete, 'function');
+assert.equal(typeof assessmentService.reopen, 'function');
+assert.equal(typeof assessmentService.archive, 'function');
 assert.equal(typeof evidenceService.list, 'function');
 assert.equal(typeof reportService.getById, 'function');
 assert.equal(typeof settingsService.get, 'function');
