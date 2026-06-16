@@ -65,6 +65,25 @@ const AssessmentFindingsSection = ({
       : drawerMode === 'edit'
         ? 'Edit finding'
         : 'Finding details';
+  const drawerContent =
+    drawerMode === 'create' || drawerMode === 'edit' ? (
+      <>
+        {formError && (
+          <Callout variant="error" title="Unable to save finding">
+            <p>{formError}</p>
+          </Callout>
+        )}
+
+        <ThreatForm
+          value={draftValue}
+          errors={fieldErrors}
+          isSubmitting={isSubmitting}
+          submitLabel={drawerMode === 'create' ? 'Create finding' : 'Save finding'}
+          onChange={handleFindingChange}
+          onSubmit={handleFindingSave}
+        />
+      </>
+    ) : undefined;
 
   return (
     <>
@@ -114,28 +133,8 @@ const AssessmentFindingsSection = ({
             ? () => openEditFinding(selectedFinding)
             : undefined
         }
-      >
-        {drawerMode === 'create' || drawerMode === 'edit' ? (
-          <>
-            {formError && (
-              <Callout variant="error" title="Unable to save finding">
-                <p>{formError}</p>
-              </Callout>
-            )}
-
-            <ThreatForm
-              value={draftValue}
-              errors={fieldErrors}
-              isSubmitting={isSubmitting}
-              submitLabel={
-                drawerMode === 'create' ? 'Create finding' : 'Save finding'
-              }
-              onChange={handleFindingChange}
-              onSubmit={handleFindingSave}
-            />
-          </>
-        ) : null}
-      </ThreatDrawer>
+        children={drawerContent}
+      />
     </>
   );
 };

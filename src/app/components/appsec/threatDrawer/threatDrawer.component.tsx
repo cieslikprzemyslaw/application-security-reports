@@ -37,7 +37,7 @@ const ThreatDrawer = ({
   const drawerTitle = title ?? threat?.title ?? 'Finding details';
   const drawerDescription =
     typeof description === 'string' ? description : undefined;
-  const showDetailView = children === undefined && Boolean(threat);
+  const showDetailView = children == null && Boolean(threat);
 
   return (
     <Drawer
@@ -49,7 +49,7 @@ const ThreatDrawer = ({
       onClose={onClose}
     >
       <StyledThreatDrawer>
-        {children ? (
+        {children != null ? (
           children
         ) : showDetailView && threat ? (
           <div className="threat-drawer-body">
@@ -64,6 +64,14 @@ const ThreatDrawer = ({
                 size="small"
               />
             </div>
+
+            <section className="threat-drawer-section">
+              <h3 className="threat-drawer-section-title">Title</h3>
+
+              <p className="threat-drawer-copy">
+                {getFieldValue(threat.title)}
+              </p>
+            </section>
 
             <section className="threat-drawer-section">
               <h3 className="threat-drawer-section-title">Assessment</h3>
@@ -117,7 +125,7 @@ const ThreatDrawer = ({
               </p>
             </section>
 
-            {threat.affectedEndpoint && (
+            {threat.affectedEndpoint != null && (
               <section className="threat-drawer-section">
                 <h3 className="threat-drawer-section-title">Endpoint</h3>
 
@@ -127,7 +135,7 @@ const ThreatDrawer = ({
               </section>
             )}
 
-            {threat.references && (
+            {threat.references != null && (
               <section className="threat-drawer-section">
                 <h3 className="threat-drawer-section-title">References</h3>
 
@@ -137,7 +145,7 @@ const ThreatDrawer = ({
               </section>
             )}
 
-            {threat.resolutionNote && (
+            {threat.resolutionNote != null && (
               <section className="threat-drawer-section">
                 <h3 className="threat-drawer-section-title">Resolution note</h3>
 
@@ -147,7 +155,7 @@ const ThreatDrawer = ({
               </section>
             )}
 
-            {threat.acceptedRiskJustification && (
+            {threat.acceptedRiskJustification != null && (
               <section className="threat-drawer-section">
                 <h3 className="threat-drawer-section-title">
                   Accepted-risk justification
