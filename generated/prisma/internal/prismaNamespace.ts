@@ -1332,15 +1332,19 @@ export const SettingsScalarFieldEnum = {
   organisationName: 'organisationName',
   consultantName: 'consultantName',
   consultantEmail: 'consultantEmail',
+  issuerLogoId: 'issuerLogoId',
   defaultReportTitle: 'defaultReportTitle',
   defaultSeverity: 'defaultSeverity',
   theme: 'theme',
   dateFormat: 'dateFormat',
   reportFooterText: 'reportFooterText',
+  reportConfidentialityLabel: 'reportConfidentialityLabel',
   methodology: 'methodology',
   reportStyle: 'reportStyle',
   includeEvidence: 'includeEvidence',
   confidentialReports: 'confidentialReports',
+  allowedBrandingModes: 'allowedBrandingModes',
+  defaultBrandingMode: 'defaultBrandingMode',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1361,6 +1365,14 @@ export const JsonNullValueInput = {
 } as const
 
 export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const NullsOrder = {
@@ -1468,6 +1480,13 @@ export type EnumThemePreferenceFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'ReportBrandingMode'
+ */
+export type EnumReportBrandingModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportBrandingMode'>
     
 
 

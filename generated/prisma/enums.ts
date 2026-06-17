@@ -53,6 +53,15 @@ export const ThemePreference = {
 export type ThemePreference = (typeof ThemePreference)[keyof typeof ThemePreference]
 
 
+export const ReportBrandingMode = {
+  issuer: 'issuer',
+  client: 'client',
+  none: 'none'
+} as const
+
+export type ReportBrandingMode = (typeof ReportBrandingMode)[keyof typeof ReportBrandingMode]
+
+
 export const ActivityEntityType = {
   company: 'company',
   assessment: 'assessment',

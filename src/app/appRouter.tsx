@@ -2,6 +2,7 @@ import React, {
   createContext,
   lazy,
   useContext,
+  useCallback,
   useEffect,
   useState,
 } from 'react';
@@ -293,6 +294,12 @@ const RouterShell = () => {
 
     setSelectedCompanyId(undefined);
   };
+  const handleCompaniesChange = useCallback(
+    (nextCompanies: CompanyListItem[]) => {
+      setCompanies(nextCompanies);
+    },
+    [],
+  );
   const navigationGroups =
     activeCompanyId && (isCompaniesLoading || activeCompany)
       ? createCompanyWorkspaceNavigationGroups(activeCompanyId)
@@ -308,7 +315,7 @@ const RouterShell = () => {
         isCompaniesLoading,
         openCreateDrawer: Boolean(companiesLocationState?.openCreateDrawer),
         onActiveCompanyChange: handleActiveCompanyChange,
-        onCompaniesChange: nextCompanies => setCompanies(nextCompanies),
+        onCompaniesChange: handleCompaniesChange,
         onRetryCompanies: reloadCompanies,
       }}
     >
