@@ -203,6 +203,20 @@ const validReportSnapshot = {
   companyName: validCompany.name,
   assessmentTitle: validAssessment.title,
   executiveSummary: validReport.executiveSummary,
+  branding: {
+    brandingMode: 'issuer',
+    issuerName: 'Northstar Digital',
+    issuerContactName: 'Alex Mercer',
+    issuerContactEmail: 'alex.mercer@example.com',
+    issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
+    clientName: validCompany.name,
+    clientWebsite: validCompany.website,
+    clientContactEmail: validCompany.contactEmail,
+    clientFooterText: validCompany.footerText,
+    reportFooterText: 'Confidential',
+    confidentialityLabel: 'Strictly confidential',
+    confidentialReports: true,
+  },
   threats: [
     {
       threatId: validThreat.id,
@@ -241,15 +255,19 @@ const validSettings = {
   organisationName: 'Northstar Digital',
   consultantName: 'Alex Mercer',
   consultantEmail: 'alex.mercer@example.com',
+  issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
   defaultReportTitle: 'Application Security Assessment',
   defaultSeverity: 'medium',
   theme: 'system',
   dateFormat: 'YYYY-MM-DD',
   reportFooterText: 'Confidential',
+  reportConfidentialityLabel: 'Strictly confidential',
   methodology: 'OWASP ASVS / WSTG',
   reportStyle: 'Technical & structured',
   includeEvidence: true,
   confidentialReports: true,
+  allowedBrandingModes: ['issuer', 'client'],
+  defaultBrandingMode: 'issuer',
   createdAt: '2026-06-01T00:00:00.000Z',
   updatedAt: '2026-06-10T00:00:00.000Z',
 };
@@ -555,6 +573,17 @@ expectField(
   'threats.0.threatId',
   'ID is required',
 );
+expectField(
+  getFieldErrors(reportSnapshotSchema, {
+    ...validReportSnapshot,
+    branding: {
+      ...validReportSnapshot.branding,
+      issuerLogoId: '/logos/issuer.svg',
+    },
+  }),
+  'branding.issuerLogoId',
+  'prefixed UUID',
+);
 
 assertValid(
   reportVersionSchema.safeParse(validReportVersion).success,
@@ -641,6 +670,31 @@ expectField(
   getFieldErrors(settingsSchema, { ...validSettings, companyId: 'cmp_1' }),
   'companyId',
   'Unknown property',
+);
+expectField(
+  getFieldErrors(settingsSchema, {
+    ...validSettings,
+    issuerLogoId: '../uploads/logo.svg',
+  }),
+  'issuerLogoId',
+  'prefixed UUID',
+);
+expectField(
+  getFieldErrors(settingsSchema, {
+    ...validSettings,
+    allowedBrandingModes: ['issuer', 'issuer'],
+  }),
+  'allowedBrandingModes',
+  'Branding modes must not contain duplicates',
+);
+expectField(
+  getFieldErrors(settingsSchema, {
+    ...validSettings,
+    allowedBrandingModes: ['client'],
+    defaultBrandingMode: 'issuer',
+  }),
+  'defaultBrandingMode',
+  'Default branding mode must be allowed',
 );
 
 assertValid(
@@ -973,6 +1027,21 @@ expectField(
   getFieldErrors(updateSettingsRequestSchema, {}),
   '',
   'At least one settings field is required',
+);
+expectField(
+  getFieldErrors(updateSettingsRequestSchema, {
+    issuerLogoId: 'C:\\uploads\\issuer-logo.svg',
+  }),
+  'issuerLogoId',
+  'prefixed UUID',
+);
+expectField(
+  getFieldErrors(updateSettingsRequestSchema, {
+    allowedBrandingModes: ['client'],
+    defaultBrandingMode: 'issuer',
+  }),
+  'defaultBrandingMode',
+  'Default branding mode must be allowed',
 );
 
 expectField(

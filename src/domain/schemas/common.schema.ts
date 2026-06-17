@@ -10,7 +10,11 @@ import {
   STRIDE_CATEGORIES,
   THREAT_STATUSES,
 } from '../common.js';
-import { DATE_FORMATS, THEME_PREFERENCES } from '../settings.js';
+import {
+  DATE_FORMATS,
+  REPORT_BRANDING_MODES,
+  THEME_PREFERENCES,
+} from '../settings.js';
 
 const isRealCalendarDate = (value: string) => {
   const [yearPart, monthPart, dayPart] = value.split('-');
@@ -104,6 +108,8 @@ export const activityEntityTypeSchema = z.enum(ACTIVITY_ENTITY_TYPES);
 export const themePreferenceSchema = z.enum(THEME_PREFERENCES);
 
 export const dateFormatSchema = z.enum(DATE_FORMATS);
+
+export const reportBrandingModeSchema = z.enum(REPORT_BRANDING_MODES);
 
 export const nonNegativeIntegerSchema = z.number().int().min(0);
 

@@ -10,6 +10,7 @@ import type {
   ThreatStatus,
   TimestampedEntity,
 } from './common.js';
+import type { ReportBrandingMode } from './settings.js';
 
 export interface Report extends TimestampedEntity {
   id: ReportId;
@@ -33,11 +34,27 @@ export interface ReportThreatSnapshot {
   recommendation?: string;
 }
 
+export interface ReportSnapshotBranding {
+  brandingMode?: ReportBrandingMode;
+  issuerName?: string;
+  issuerContactName?: string;
+  issuerContactEmail?: string;
+  issuerLogoId?: string;
+  clientName: string;
+  clientWebsite?: string;
+  clientContactEmail?: string;
+  clientFooterText?: string;
+  reportFooterText?: string;
+  confidentialityLabel?: string;
+  confidentialReports?: boolean;
+}
+
 export interface ReportSnapshot {
   reportTitle: string;
   companyName: string;
   assessmentTitle: string;
   executiveSummary?: string;
+  branding: ReportSnapshotBranding;
   threats: ReportThreatSnapshot[];
 }
 

@@ -35,6 +35,15 @@ const validReportVersion = {
     reportTitle: 'Security Report',
     companyName: 'Northstar Digital',
     assessmentTitle: 'Customer Services Portal',
+    branding: {
+      brandingMode: 'issuer',
+      issuerName: 'Northstar Digital',
+      issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
+      clientName: 'Northstar Digital',
+      reportFooterText: 'Confidential',
+      confidentialityLabel: 'Strictly confidential',
+      confidentialReports: true,
+    },
     threats: [
       {
         threatId: 'thr_1',

@@ -15,6 +15,7 @@ export type {
   EvidenceType,
   ISODateString,
   Report,
+  ReportBrandingMode,
   ReportId,
   ReportSnapshot,
   ReportStatus,

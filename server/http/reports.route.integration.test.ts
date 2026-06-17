@@ -28,6 +28,17 @@ const migrationPath = path.resolve(
 );
 const migrationSql = readFileSync(migrationPath, 'utf8');
 const schemaSql = migrationSql.slice(migrationSql.indexOf('-- CreateTable'));
+const settingsBrandingMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260617120000_extend_settings_branding',
+  'migration.sql',
+);
+const settingsBrandingMigrationSql = readFileSync(
+  settingsBrandingMigrationPath,
+  'utf8',
+);
 const threatMigrationPath = path.resolve(
   repoRoot,
   'prisma',
@@ -99,6 +110,7 @@ const bootstrapDb = new Database(databasePath);
 
 try {
   bootstrapDb.exec(schemaSql);
+  bootstrapDb.exec(settingsBrandingMigrationSql);
   bootstrapDb.exec(threatMigrationSql);
   bootstrapDb.exec(evidenceMigrationSql);
 } finally {
@@ -272,15 +284,19 @@ try {
     organisationName: 'Northstar Digital',
     consultantName: 'Alex Mercer',
     consultantEmail: 'alex.mercer@example.com',
+    issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
     defaultReportTitle: 'Application Security Assessment',
     defaultSeverity: 'medium',
     theme: 'system',
     dateFormat: 'YYYY-MM-DD',
     reportFooterText: 'Confidential',
+    reportConfidentialityLabel: 'Strictly confidential',
     methodology: 'OWASP ASVS / WSTG',
     reportStyle: 'Technical & structured',
     includeEvidence: true,
     confidentialReports: true,
+    allowedBrandingModes: ['issuer', 'client'],
+    defaultBrandingMode: 'issuer',
   });
 
   const server = await startTestServer(
@@ -309,8 +325,22 @@ try {
             evidence: Array<{ id: string; filePath?: string }>;
           }>;
         }>;
-        branding: { reportFooterText?: string; confidentialReports?: boolean };
+        branding: {
+          issuerLogoId?: string;
+          reportFooterText?: string;
+          reportConfidentialityLabel?: string;
+          confidentialReports?: boolean;
+          defaultBrandingMode?: string;
+        };
         configuration: { methodology?: string; includeEvidence?: boolean };
+        snapshot: {
+          branding: {
+            issuerLogoId?: string;
+            clientName: string;
+            confidentialityLabel?: string;
+            brandingMode?: string;
+          };
+        };
       };
     };
 
@@ -339,7 +369,26 @@ try {
       false,
     );
     assert.equal(body.data.branding.reportFooterText, 'Confidential');
+    assert.equal(
+      body.data.branding.reportConfidentialityLabel,
+      'Strictly confidential',
+    );
     assert.equal(body.data.branding.confidentialReports, true);
+    assert.equal(
+      body.data.branding.issuerLogoId,
+      'logo_00000000-0000-0000-0000-000000000001',
+    );
+    assert.equal(body.data.branding.defaultBrandingMode, 'issuer');
+    assert.equal(
+      body.data.snapshot.branding.issuerLogoId,
+      'logo_00000000-0000-0000-0000-000000000001',
+    );
+    assert.equal(body.data.snapshot.branding.clientName, company.name);
+    assert.equal(
+      body.data.snapshot.branding.confidentialityLabel,
+      'Strictly confidential',
+    );
+    assert.equal(body.data.snapshot.branding.brandingMode, 'issuer');
     assert.equal(body.data.configuration.methodology, 'OWASP ASVS / WSTG');
     assert.equal(body.data.configuration.includeEvidence, true);
   } finally {

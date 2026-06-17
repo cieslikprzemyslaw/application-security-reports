@@ -110,15 +110,19 @@ const settingsRow = {
   organisationName: 'Acme Ltd',
   consultantName: null,
   consultantEmail: null,
+  issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
   defaultReportTitle: null,
   defaultSeverity: 'medium',
   theme: 'system',
   dateFormat: 'YYYY-MM-DD',
   reportFooterText: null,
+  reportConfidentialityLabel: 'Confidential',
   methodology: null,
   reportStyle: null,
   includeEvidence: null,
   confidentialReports: null,
+  allowedBrandingModes: ['issuer', 'client'],
+  defaultBrandingMode: 'issuer',
   createdAt,
   updatedAt,
 };
@@ -662,10 +666,17 @@ const createSettingsDb = () => {
     theme: 'system',
     dateFormat: 'YYYY-MM-DD',
     organisationName: 'Acme Ltd',
+    issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
+    reportConfidentialityLabel: 'Confidential',
+    allowedBrandingModes: ['issuer', 'client'],
+    defaultBrandingMode: 'issuer',
   });
 
   assert.equal(missingSettings, null);
   assert.equal(settings.id, settingsRow.id);
+  assert.equal(settings.issuerLogoId, settingsRow.issuerLogoId);
+  assert.deepEqual(settings.allowedBrandingModes, ['issuer', 'client']);
+  assert.equal(settings.defaultBrandingMode, 'issuer');
   assert.equal(calls[0]?.method, 'findFirst');
   assert.equal(calls[1]?.method, 'findFirst');
   assert.equal(calls[2]?.method, 'create');

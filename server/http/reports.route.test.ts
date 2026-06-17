@@ -183,15 +183,19 @@ const settings: Settings = {
   organisationName: 'Northstar Digital',
   consultantName: 'Alex Mercer',
   consultantEmail: 'alex.mercer@example.com',
+  issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
   defaultReportTitle: 'Application Security Assessment',
   defaultSeverity: 'medium',
   theme: 'system',
   dateFormat: 'YYYY-MM-DD',
   reportFooterText: 'Confidential',
+  reportConfidentialityLabel: 'Strictly confidential',
   methodology: 'OWASP ASVS / WSTG',
   reportStyle: 'Technical & structured',
   includeEvidence: true,
   confidentialReports: true,
+  allowedBrandingModes: ['issuer', 'client'],
+  defaultBrandingMode: 'issuer',
   createdAt: '2026-06-11T09:00:00.000Z',
   updatedAt: '2026-06-11T09:00:00.000Z',
 };
@@ -466,6 +470,18 @@ const createApp = (
             evidence: Array<{ id: string; filePath?: never }>;
           }>;
         }>;
+        branding: {
+          issuerLogoId?: string;
+          reportConfidentialityLabel?: string;
+          defaultBrandingMode?: string;
+        };
+        snapshot: {
+          branding: {
+            issuerLogoId?: string;
+            confidentialityLabel?: string;
+            brandingMode?: string;
+          };
+        };
       };
     }>(response);
     assert.equal(body.data.report.id, report.id);
@@ -484,6 +500,24 @@ const createApp = (
       'filePath' in (body.data.assessments[0]?.findings[0]?.evidence[0] ?? {}),
       false,
     );
+    assert.equal(
+      body.data.branding.issuerLogoId,
+      'logo_00000000-0000-0000-0000-000000000001',
+    );
+    assert.equal(
+      body.data.branding.reportConfidentialityLabel,
+      'Strictly confidential',
+    );
+    assert.equal(body.data.branding.defaultBrandingMode, 'issuer');
+    assert.equal(
+      body.data.snapshot.branding.issuerLogoId,
+      'logo_00000000-0000-0000-0000-000000000001',
+    );
+    assert.equal(
+      body.data.snapshot.branding.confidentialityLabel,
+      'Strictly confidential',
+    );
+    assert.equal(body.data.snapshot.branding.brandingMode, 'issuer');
   } finally {
     await server.close();
   }

@@ -15,7 +15,10 @@ import { assessmentObjectSchema } from './assessment.schema.js';
 import { companyObjectSchema } from './company.schema.js';
 import { evidenceObjectSchema } from './evidence.schema.js';
 import { reportObjectSchema } from './report.schema.js';
-import { settingsObjectSchema } from './settings.schema.js';
+import {
+  settingsObjectBaseSchema,
+  validateSettingsBrandingModes,
+} from './settings.schema.js';
 import { threatObjectSchema } from './threat.schema.js';
 import {
   nonNegativeIntegerSchema,
@@ -367,7 +370,7 @@ const _updateReportRequestSchemaCompatibilityCheck: UpdateReportRequestSchemaOut
   ? true
   : never = true;
 
-const createSettingsBaseSchema = settingsObjectSchema.omit({
+const createSettingsBaseSchema = settingsObjectBaseSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -376,7 +379,7 @@ const createSettingsBaseSchema = settingsObjectSchema.omit({
 export const updateSettingsRequestSchema = requireAtLeastOneField(
   createSettingsBaseSchema.partial(),
   'At least one settings field is required',
-);
+).superRefine(validateSettingsBrandingModes);
 type UpdateSettingsRequestSchemaOutput = Required<
   z.output<typeof updateSettingsRequestSchema>
 >;
@@ -384,7 +387,9 @@ const _updateSettingsRequestSchemaCompatibilityCheck: UpdateSettingsRequestSchem
   ? true
   : never = true;
 
-export const createSettingsRequestSchema = createSettingsBaseSchema;
+export const createSettingsRequestSchema = createSettingsBaseSchema.superRefine(
+  validateSettingsBrandingModes,
+);
 type CreateSettingsRequestSchemaOutput = Required<
   z.output<typeof createSettingsRequestSchema>
 >;

@@ -9,6 +9,7 @@ import type {
   ReportView,
   ReportViewEvidence,
 } from '../../src/domain/report-view.js';
+import type { ReportSnapshot } from '../../src/domain/report.js';
 import {
   reportRouteParamsSchema,
   reportViewSchema,
@@ -234,6 +235,48 @@ export const createReportsRouter = (
           }
         }
 
+        const snapshot: ReportSnapshot = {
+          reportTitle: report.title,
+          companyName: company.name,
+          assessmentTitle: assessment.title,
+          executiveSummary: report.executiveSummary,
+          branding: {
+            brandingMode: settings.defaultBrandingMode,
+            issuerName: settings.organisationName,
+            issuerContactName: settings.consultantName,
+            issuerContactEmail: settings.consultantEmail,
+            issuerLogoId: settings.issuerLogoId,
+            clientName: company.name,
+            clientWebsite: company.website,
+            clientContactEmail: company.contactEmail,
+            clientFooterText: company.footerText,
+            reportFooterText: settings.reportFooterText,
+            confidentialityLabel: settings.reportConfidentialityLabel,
+            confidentialReports: settings.confidentialReports,
+          },
+          threats: selectedThreatIds.map(threatId => {
+            const threat = threatsById.get(threatId);
+
+            if (!threat) {
+              throw new Error(
+                'Validated report threat missing during snapshot assembly.',
+              );
+            }
+
+            return {
+              threatId: threat.id,
+              title: threat.title,
+              description: threat.description,
+              severity: threat.severity,
+              status: threat.status,
+              strideCategories: [...threat.strideCategories],
+              affectedAsset: threat.affectedAsset,
+              impact: threat.impact,
+              recommendation: threat.recommendation,
+            };
+          }),
+        };
+
         const reportView: ReportView = {
           report,
           company,
@@ -264,14 +307,22 @@ export const createReportsRouter = (
             companyContactEmail: company.contactEmail,
             companyLogoPath: company.logoPath,
             companyFooterText: company.footerText,
+            issuerName: settings.organisationName,
+            issuerContactName: settings.consultantName,
+            issuerContactEmail: settings.consultantEmail,
+            issuerLogoId: settings.issuerLogoId,
             reportFooterText: settings.reportFooterText,
+            reportConfidentialityLabel: settings.reportConfidentialityLabel,
             confidentialReports: settings.confidentialReports,
+            allowedBrandingModes: settings.allowedBrandingModes,
+            defaultBrandingMode: settings.defaultBrandingMode,
           },
           configuration: {
             methodology: settings.methodology,
             reportStyle: settings.reportStyle,
             includeEvidence: settings.includeEvidence,
           },
+          snapshot,
         };
 
         sendReportViewResponse(res, 200, reportView);
