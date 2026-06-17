@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import CompanyForm from '~/app/components/appsec/companyForm';
 import CompanyTable from '~/app/components/appsec/companyTable';
@@ -14,6 +15,7 @@ import {
   PaginationSummary,
   TableFooter,
 } from '~/app/components/common';
+import { routes } from '~/routes';
 
 import StyledCompanies from './companies.styled';
 import type { CompaniesProps } from './companies.type';
@@ -26,8 +28,8 @@ const Companies = ({
   activeCompany,
   onCompaniesChange,
   onActiveCompanyChange,
-  openCreateDrawer = false,
 }: CompaniesProps) => {
+  const navigate = useNavigate();
   const {
     filteredCompanies,
     pagedCompanies,
@@ -44,7 +46,6 @@ const Companies = ({
     showEmptyWorkspace,
     showNoResults,
     setDraftValue,
-    openCreateDrawer: handleOpenCreateDrawer,
     reloadCompanies,
     requestCloseDrawer,
     handleSave,
@@ -56,8 +57,9 @@ const Companies = ({
     activeCompany,
     onCompaniesChange,
     onActiveCompanyChange,
-    openCreateDrawer,
   });
+
+  const handleNewCompany = () => navigate(routes.companiesNew);
 
   const query = searchValue.toLowerCase().trim();
   const pageSummary = (
@@ -73,9 +75,7 @@ const Companies = ({
     <EmptyState
       title="No companies yet"
       description="Add a company to start building assessments and reports."
-      primaryAction={
-        <Button title="New company" onClick={handleOpenCreateDrawer} />
-      }
+      primaryAction={<Button title="New company" onClick={handleNewCompany} />}
     />
   ) : showNoResults ? (
     <EmptyState
@@ -101,9 +101,7 @@ const Companies = ({
         eyebrow="Workspace"
         title="Companies"
         subtitle="Manage client organisations and the assessments associated with them."
-        actions={
-          <Button title="New company" onClick={handleOpenCreateDrawer} />
-        }
+        actions={<Button title="New company" onClick={handleNewCompany} />}
       />
 
       <section className="companies-card">
@@ -168,12 +166,8 @@ const Companies = ({
 
       <Drawer
         isOpen={drawerMode !== null}
-        title={drawerMode === 'edit' ? 'Edit company' : 'Create company'}
-        description={
-          drawerMode === 'edit'
-            ? 'Update the company details used throughout the workspace.'
-            : 'Create a company to unlock assessments and report branding.'
-        }
+        title="Edit company"
+        description="Update the company details used throughout the workspace."
         onClose={requestCloseDrawer}
         size="large"
       >
@@ -182,9 +176,7 @@ const Companies = ({
           errors={fieldErrors}
           errorMessage={formErrorMessage}
           isSubmitting={isSubmitting}
-          submitLabel={
-            drawerMode === 'edit' ? 'Save changes' : 'Create company'
-          }
+          submitLabel="Save changes"
           onChange={setDraftValue}
           onSubmit={handleSave}
           onCancel={requestCloseDrawer}

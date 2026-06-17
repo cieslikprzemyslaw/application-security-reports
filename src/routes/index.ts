@@ -31,6 +31,7 @@ export const routePatterns = {
   root: '/',
   dashboard: '/dashboard',
   companies: '/companies',
+  companiesNew: '/companies/new',
   companyWorkspace: '/companies/:companyId',
   companyWorkspaceOverview: '/companies/:companyId/overview',
   companyWorkspaceAssessments: '/companies/:companyId/assessments',
@@ -58,6 +59,7 @@ export const routes = {
   root: routePatterns.root,
   dashboard: routePatterns.dashboard,
   companies: routePatterns.companies,
+  companiesNew: routePatterns.companiesNew,
   companyWorkspace: (companyId: string) =>
     buildCompanyWorkspaceRoute(companyId, 'companyWorkspace'),
   companyWorkspaceOverview: (companyId: string) =>

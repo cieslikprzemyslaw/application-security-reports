@@ -51,6 +51,9 @@ import { reportDetailsById } from './appData';
 import type { CompanyIdentity } from './pages/companies';
 
 const Companies = lazy(() => import('./pages/companies'));
+const CreateCompany = lazy(
+  () => import('./pages/companies/createCompany.component'),
+);
 const AssessmentDetails = lazy(() => import('./pages/assessmentDetails'));
 const ReportDetails = lazy(() => import('./pages/reportDetails'));
 
@@ -60,7 +63,6 @@ interface RouterShellContextValue {
   companies: CompanyListItem[];
   companiesLoadError?: string;
   isCompaniesLoading: boolean;
-  openCreateDrawer: boolean;
   onActiveCompanyChange: (company?: CompanyIdentity) => void;
   onCompaniesChange: (companies: CompanyListItem[]) => void;
   onRetryCompanies: () => void;
@@ -82,20 +84,17 @@ const useRouterShellContext = () => {
 
 interface CompaniesRouteProps {
   activeCompany?: CompanyIdentity;
-  openCreateDrawer?: boolean;
   onCompaniesChange: (companies: CompanyListItem[]) => void;
   onActiveCompanyChange: (company?: CompanyIdentity) => void;
 }
 
 const CompaniesRoute = ({
   activeCompany,
-  openCreateDrawer,
   onCompaniesChange,
   onActiveCompanyChange,
 }: CompaniesRouteProps) => (
   <Companies
     activeCompany={activeCompany}
-    openCreateDrawer={openCreateDrawer}
     onCompaniesChange={onCompaniesChange}
     onActiveCompanyChange={onActiveCompanyChange}
   />
@@ -152,17 +151,25 @@ const DashboardRouteElement = () => {
 };
 
 const CompaniesRouteElement = () => {
-  const {
-    activeCompany,
-    onActiveCompanyChange,
-    onCompaniesChange,
-    openCreateDrawer,
-  } = useRouterShellContext();
+  const { activeCompany, onActiveCompanyChange, onCompaniesChange } =
+    useRouterShellContext();
 
   return (
     <CompaniesRoute
       activeCompany={activeCompany}
-      openCreateDrawer={openCreateDrawer}
+      onCompaniesChange={onCompaniesChange}
+      onActiveCompanyChange={onActiveCompanyChange}
+    />
+  );
+};
+
+const CreateCompanyRouteElement = () => {
+  const { companies, onCompaniesChange, onActiveCompanyChange } =
+    useRouterShellContext();
+
+  return (
+    <CreateCompany
+      companies={companies}
       onCompaniesChange={onCompaniesChange}
       onActiveCompanyChange={onActiveCompanyChange}
     />
@@ -216,10 +223,6 @@ const RouterShell = () => {
         location.pathname,
       )?.params.companyId,
   );
-  const companiesLocationState = location.state as
-    | { openCreateDrawer?: boolean }
-    | null
-    | undefined;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -313,7 +316,6 @@ const RouterShell = () => {
         companies,
         companiesLoadError,
         isCompaniesLoading,
-        openCreateDrawer: Boolean(companiesLocationState?.openCreateDrawer),
         onActiveCompanyChange: handleActiveCompanyChange,
         onCompaniesChange: handleCompaniesChange,
         onRetryCompanies: reloadCompanies,
@@ -344,6 +346,10 @@ const createAppRouter = () =>
           <Route
             path={routePatterns.companies}
             element={<CompaniesRouteElement />}
+          />
+          <Route
+            path={routePatterns.companiesNew}
+            element={<CreateCompanyRouteElement />}
           />
           <Route
             path={routePatterns.companyWorkspace}

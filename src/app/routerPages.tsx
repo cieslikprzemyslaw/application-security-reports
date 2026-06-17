@@ -70,11 +70,7 @@ export const DashboardRoute = ({
     <Dashboard
       companies={companies}
       isWorkspaceEmpty={companies.length === 0}
-      onCreateCompany={() =>
-        navigate(routes.companies, {
-          state: { openCreateDrawer: true },
-        })
-      }
+      onCreateCompany={() => navigate(routes.companiesNew)}
       onOpenCompany={onOpenCompany}
     />
   );
