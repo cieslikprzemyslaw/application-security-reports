@@ -8,7 +8,7 @@ import {
   renderHarness,
   renderTick,
   textContent,
-} from './assessmentEvidenceSection.component.test';
+} from '../testUtils/renderEvidenceTestApp';
 
 await (async () => {
   {

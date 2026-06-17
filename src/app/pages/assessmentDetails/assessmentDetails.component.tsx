@@ -12,7 +12,7 @@ import { useAssessmentActions } from './hooks/useAssessmentActions';
 import { useAssessmentFindings } from './hooks/useAssessmentFindings';
 import { useAssessmentEvidence } from './evidence/hooks/useAssessmentEvidence';
 import AssessmentFindingsSection from './components/assessmentFindingsSection.component';
-import AssessmentEvidenceSection from './evidence/section/assessmentEvidenceSection.component';
+import AssessmentEvidenceSection from './evidence/section/EvidenceSection';
 
 import type { AssessmentDetailSection } from './assessmentDetails.type';
 

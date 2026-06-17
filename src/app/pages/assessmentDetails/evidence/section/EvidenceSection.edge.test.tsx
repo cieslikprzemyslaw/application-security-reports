@@ -12,7 +12,7 @@ import {
   seededEvidence,
   setFileSelection,
   textContent,
-} from './assessmentEvidenceSection.component.test';
+} from '../testUtils/renderEvidenceTestApp';
 
 await (async () => {
   const originalGetById = evidenceService.getById;

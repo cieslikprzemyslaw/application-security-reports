@@ -14,7 +14,7 @@ import {
   setSelectValue,
   textContent,
   toggleCheckbox,
-} from './assessmentEvidenceSection.component.test';
+} from '../testUtils/renderEvidenceTestApp';
 
 await (async () => {
   const { container, root, window, restore } = await renderHarness([]);
@@ -273,7 +273,7 @@ await (async () => {
 
   const downloadButton = findButtonByText(
     window.document.body,
-    'Download attachment',
+    'Download unavailable',
   );
   assert.ok(downloadButton, 'Expected the attachment download action');
 

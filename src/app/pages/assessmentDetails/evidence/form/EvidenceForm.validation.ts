@@ -1,7 +1,7 @@
 import type { ValidationFieldError } from '~/validation';
 
-import type { EvidenceFormErrors } from './assessmentEvidence.types';
-import type { EvidenceFormValue } from './assessmentEvidence.mapper';
+import type { EvidenceFormValue } from './EvidenceForm.mapper';
+import type { EvidenceFormErrors } from './EvidenceForm.types';
 
 const evidenceFieldAliases: Record<
   string,

@@ -9,7 +9,7 @@ import type { Evidence, Threat } from '~/domain';
 import { evidenceService } from '~/services';
 import { defaultTheme } from '~/theme';
 
-import AssessmentEvidenceSection from './assessmentEvidenceSection.component';
+import AssessmentEvidenceSection from '../section/EvidenceSection';
 import { useAssessmentEvidence } from '../hooks/useAssessmentEvidence';
 import type { AssessmentDetailsAssessment } from '../../assessmentDetails.type';
 
