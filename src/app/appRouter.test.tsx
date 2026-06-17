@@ -385,10 +385,10 @@ await (async () => {
         await renderTick();
       });
 
-      assert.equal(window.location.pathname, '/companies');
+      assert.equal(window.location.pathname, '/companies/new');
       assert.ok(
         window.document.querySelector('input#company-name'),
-        'Expected the create company drawer to open from the dashboard',
+        'Expected the create company form to render from the dashboard',
       );
 
       await act(async () => {
@@ -583,7 +583,10 @@ await (async () => {
           }),
         );
         await renderTick();
+        await renderTick();
       });
+
+      assert.equal(window.location.pathname, '/companies/new');
 
       const nameInput = window.document.querySelector(
         'input#company-name',
@@ -2069,10 +2072,10 @@ await (async () => {
         await renderTick();
       });
 
-      assert.equal(window.location.pathname, '/companies');
+      assert.equal(window.location.pathname, '/companies/new');
       assert.ok(
         window.document.querySelector('input#company-name'),
-        'Expected the create company drawer to open from the switcher',
+        'Expected the create company form to render from the switcher',
       );
 
       await act(async () => {
@@ -2176,6 +2179,75 @@ await (async () => {
     await act(async () => {
       root.unmount();
     });
+  }
+
+  {
+    setFetch(async () => createJsonResponse({ data: [] }));
+
+    try {
+      const { container, root } = await renderApp('/companies/new');
+
+      assert.equal(window.location.pathname, '/companies/new');
+      assert.ok(
+        window.document.querySelector('input#company-name'),
+        'Expected the create company form to render at /companies/new',
+      );
+      assert.ok(
+        textContent(container).includes('Create company'),
+        'Expected the create company heading',
+      );
+      assert.ok(
+        !container.querySelector('.drawer-panel input#company-name'),
+        'Expected the create form to be in page content, not the aside',
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
+  {
+    setFetch(async () => createJsonResponse({ data: [] }));
+
+    try {
+      const { container, root } = await renderApp('/companies/new');
+
+      const cancelButton = Array.from(
+        container.querySelectorAll('button'),
+      ).find(button => button.textContent?.includes('Cancel')) as
+        | HTMLButtonElement
+        | undefined;
+
+      assert.ok(cancelButton, 'Expected a cancel action');
+
+      await act(async () => {
+        cancelButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(
+        window.location.pathname,
+        '/companies',
+        'Expected cancel to return to the companies list',
+      );
+      assert.ok(textContent(container).includes('Companies'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
   }
 
   console.log('router checks passed');

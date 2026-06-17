@@ -87,11 +87,7 @@ const CompanySwitcher = ({
 
   const handleCreateCompany = () => {
     closeSwitcher();
-    navigate(routes.companies, {
-      state: {
-        openCreateDrawer: true,
-      },
-    });
+    navigate(routes.companiesNew);
   };
 
   const showEmptyWorkspace = !isLoading && companies.length === 0;

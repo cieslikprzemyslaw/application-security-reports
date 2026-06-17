@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 
 import type { CompanyListItem } from '~/domain';
 import { ApiError } from '~/services/apiClient';
@@ -57,16 +57,13 @@ export const useCompaniesController = ({
   activeCompany,
   onCompaniesChange,
   onActiveCompanyChange,
-  openCreateDrawer: shouldOpenCreateDrawer = false,
 }: CompaniesProps) => {
   const [companies, setCompanies] = useState<CompanyListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | undefined>();
   const [searchValue, setSearchValue] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [drawerMode, setDrawerMode] = useState<'create' | 'edit' | null>(
-    shouldOpenCreateDrawer ? 'create' : null,
-  );
+  const [drawerMode, setDrawerMode] = useState<'edit' | null>(null);
   const [selectedCompanyId, setSelectedCompanyId] = useState<
     string | undefined
   >();
@@ -168,20 +165,6 @@ export const useCompaniesController = ({
     return window.confirm('Discard unsaved company changes?');
   };
 
-  const openCreateDrawer = () => {
-    if (!confirmDiscardChanges()) {
-      return;
-    }
-
-    setDrawerMode('create');
-    const value = createEmptyCompanyFormValue();
-    setSelectedCompanyId(undefined);
-    setDraftValue(value);
-    setBaselineValue(value);
-    setFieldErrors({});
-    setFormErrorMessage(undefined);
-  };
-
   const openEditDrawer = (companyId: string) => {
     if (!confirmDiscardChanges()) {
       return;
@@ -214,50 +197,35 @@ export const useCompaniesController = ({
     resetDrawerState();
   };
 
-  const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSave = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (!selectedCompanyId) {
+      return;
+    }
+
     const payload = formValueToCompanyInput(draftValue);
-    const isFirstCompany = companies.length === 0;
 
     setIsSubmitting(true);
     setFieldErrors({});
     setFormErrorMessage(undefined);
 
     try {
-      if (drawerMode === 'edit' && selectedCompanyId) {
-        const updated = await companyService.update(selectedCompanyId, payload);
-        const nextCompanies = companies.map(company =>
-          company.id === updated.id
-            ? {
-                ...company,
-                ...updated,
-              }
-            : company,
-        );
+      const updated = await companyService.update(selectedCompanyId, payload);
+      const nextCompanies = companies.map(company =>
+        company.id === updated.id
+          ? {
+              ...company,
+              ...updated,
+            }
+          : company,
+      );
 
-        setCompanies(nextCompanies);
-        onCompaniesChange?.(nextCompanies);
+      setCompanies(nextCompanies);
+      onCompaniesChange?.(nextCompanies);
 
-        if (activeCompanyId === updated.id) {
-          onActiveCompanyChange?.({ id: updated.id, name: updated.name });
-        }
-      } else {
-        const created = await companyService.create(payload);
-        const nextCompanies: CompanyListItem[] = [
-          {
-            ...created,
-            assessmentCount: 0,
-          },
-          ...companies,
-        ];
-
-        setCompanies(nextCompanies);
-        onCompaniesChange?.(nextCompanies);
-
-        if (isFirstCompany) {
-          onActiveCompanyChange?.({ id: created.id, name: created.name });
-        }
+      if (activeCompanyId === updated.id) {
+        onActiveCompanyChange?.({ id: updated.id, name: updated.name });
       }
 
       setReloadKey(key => key + 1);
@@ -354,7 +322,6 @@ export const useCompaniesController = ({
     showEmptyWorkspace,
     showNoResults,
     setDraftValue,
-    openCreateDrawer,
     reloadCompanies,
     requestCloseDrawer,
     handleSave,

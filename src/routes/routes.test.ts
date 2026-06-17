@@ -6,6 +6,8 @@ assert.equal(routePatterns.root, '/');
 assert.equal(routes.root, '/');
 assert.equal(routes.dashboard, '/dashboard');
 assert.equal(routes.companies, '/companies');
+assert.equal(routePatterns.companiesNew, '/companies/new');
+assert.equal(routes.companiesNew, '/companies/new');
 assert.equal(routePatterns.companyWorkspace, '/companies/:companyId');
 assert.equal(
   routePatterns.companyWorkspaceOverview,

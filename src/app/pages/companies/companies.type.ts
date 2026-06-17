@@ -9,5 +9,4 @@ export interface CompaniesProps {
   activeCompany?: CompanyIdentity;
   onActiveCompanyChange?: (company?: CompanyIdentity) => void;
   onCompaniesChange?: (companies: CompanyListItem[]) => void;
-  openCreateDrawer?: boolean;
 }
