@@ -9,6 +9,8 @@ import {
   nonNegativeIntegerSchema,
   optionalTrimmedTextSchema,
   positiveIntegerSchema,
+  prefixedUuidSchema,
+  reportBrandingModeSchema,
   reportStatusSchema,
   severitySchema,
   strideCategorySchema,
@@ -32,12 +34,32 @@ export const reportThreatSnapshotObjectSchema = z
 
 export const reportThreatSnapshotSchema = reportThreatSnapshotObjectSchema;
 
+export const reportSnapshotBrandingObjectSchema = z
+  .object({
+    brandingMode: reportBrandingModeSchema.optional(),
+    issuerName: optionalTrimmedTextSchema,
+    issuerContactName: optionalTrimmedTextSchema,
+    issuerContactEmail: z.string().trim().email().optional(),
+    issuerLogoId: prefixedUuidSchema('logo_', 'Issuer logo').optional(),
+    clientName: nonEmptyTextSchema,
+    clientWebsite: z.string().trim().url().optional(),
+    clientContactEmail: z.string().trim().email().optional(),
+    clientFooterText: optionalTrimmedTextSchema,
+    reportFooterText: optionalTrimmedTextSchema,
+    confidentialityLabel: optionalTrimmedTextSchema,
+    confidentialReports: z.boolean().optional(),
+  })
+  .strict();
+
+export const reportSnapshotBrandingSchema = reportSnapshotBrandingObjectSchema;
+
 export const reportSnapshotObjectSchema = z
   .object({
     reportTitle: nonEmptyTextSchema,
     companyName: nonEmptyTextSchema,
     assessmentTitle: nonEmptyTextSchema,
     executiveSummary: optionalTrimmedTextSchema,
+    branding: reportSnapshotBrandingSchema,
     threats: z.array(reportThreatSnapshotSchema),
   })
   .strict();

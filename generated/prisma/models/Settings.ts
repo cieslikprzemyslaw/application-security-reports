@@ -29,15 +29,18 @@ export type SettingsMinAggregateOutputType = {
   organisationName: string | null
   consultantName: string | null
   consultantEmail: string | null
+  issuerLogoId: string | null
   defaultReportTitle: string | null
   defaultSeverity: $Enums.Severity | null
   theme: $Enums.ThemePreference | null
   dateFormat: string | null
   reportFooterText: string | null
+  reportConfidentialityLabel: string | null
   methodology: string | null
   reportStyle: string | null
   includeEvidence: boolean | null
   confidentialReports: boolean | null
+  defaultBrandingMode: $Enums.ReportBrandingMode | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -47,15 +50,18 @@ export type SettingsMaxAggregateOutputType = {
   organisationName: string | null
   consultantName: string | null
   consultantEmail: string | null
+  issuerLogoId: string | null
   defaultReportTitle: string | null
   defaultSeverity: $Enums.Severity | null
   theme: $Enums.ThemePreference | null
   dateFormat: string | null
   reportFooterText: string | null
+  reportConfidentialityLabel: string | null
   methodology: string | null
   reportStyle: string | null
   includeEvidence: boolean | null
   confidentialReports: boolean | null
+  defaultBrandingMode: $Enums.ReportBrandingMode | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -65,15 +71,19 @@ export type SettingsCountAggregateOutputType = {
   organisationName: number
   consultantName: number
   consultantEmail: number
+  issuerLogoId: number
   defaultReportTitle: number
   defaultSeverity: number
   theme: number
   dateFormat: number
   reportFooterText: number
+  reportConfidentialityLabel: number
   methodology: number
   reportStyle: number
   includeEvidence: number
   confidentialReports: number
+  allowedBrandingModes: number
+  defaultBrandingMode: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -85,15 +95,18 @@ export type SettingsMinAggregateInputType = {
   organisationName?: true
   consultantName?: true
   consultantEmail?: true
+  issuerLogoId?: true
   defaultReportTitle?: true
   defaultSeverity?: true
   theme?: true
   dateFormat?: true
   reportFooterText?: true
+  reportConfidentialityLabel?: true
   methodology?: true
   reportStyle?: true
   includeEvidence?: true
   confidentialReports?: true
+  defaultBrandingMode?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -103,15 +116,18 @@ export type SettingsMaxAggregateInputType = {
   organisationName?: true
   consultantName?: true
   consultantEmail?: true
+  issuerLogoId?: true
   defaultReportTitle?: true
   defaultSeverity?: true
   theme?: true
   dateFormat?: true
   reportFooterText?: true
+  reportConfidentialityLabel?: true
   methodology?: true
   reportStyle?: true
   includeEvidence?: true
   confidentialReports?: true
+  defaultBrandingMode?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -121,15 +137,19 @@ export type SettingsCountAggregateInputType = {
   organisationName?: true
   consultantName?: true
   consultantEmail?: true
+  issuerLogoId?: true
   defaultReportTitle?: true
   defaultSeverity?: true
   theme?: true
   dateFormat?: true
   reportFooterText?: true
+  reportConfidentialityLabel?: true
   methodology?: true
   reportStyle?: true
   includeEvidence?: true
   confidentialReports?: true
+  allowedBrandingModes?: true
+  defaultBrandingMode?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -212,15 +232,19 @@ export type SettingsGroupByOutputType = {
   organisationName: string | null
   consultantName: string | null
   consultantEmail: string | null
+  issuerLogoId: string | null
   defaultReportTitle: string | null
   defaultSeverity: $Enums.Severity
   theme: $Enums.ThemePreference
   dateFormat: string
   reportFooterText: string | null
+  reportConfidentialityLabel: string | null
   methodology: string | null
   reportStyle: string | null
   includeEvidence: boolean | null
   confidentialReports: boolean | null
+  allowedBrandingModes: runtime.JsonValue | null
+  defaultBrandingMode: $Enums.ReportBrandingMode | null
   createdAt: Date
   updatedAt: Date
   _count: SettingsCountAggregateOutputType | null
@@ -251,15 +275,19 @@ export type SettingsWhereInput = {
   organisationName?: Prisma.StringNullableFilter<"Settings"> | string | null
   consultantName?: Prisma.StringNullableFilter<"Settings"> | string | null
   consultantEmail?: Prisma.StringNullableFilter<"Settings"> | string | null
+  issuerLogoId?: Prisma.StringNullableFilter<"Settings"> | string | null
   defaultReportTitle?: Prisma.StringNullableFilter<"Settings"> | string | null
   defaultSeverity?: Prisma.EnumSeverityFilter<"Settings"> | $Enums.Severity
   theme?: Prisma.EnumThemePreferenceFilter<"Settings"> | $Enums.ThemePreference
   dateFormat?: Prisma.StringFilter<"Settings"> | string
   reportFooterText?: Prisma.StringNullableFilter<"Settings"> | string | null
+  reportConfidentialityLabel?: Prisma.StringNullableFilter<"Settings"> | string | null
   methodology?: Prisma.StringNullableFilter<"Settings"> | string | null
   reportStyle?: Prisma.StringNullableFilter<"Settings"> | string | null
   includeEvidence?: Prisma.BoolNullableFilter<"Settings"> | boolean | null
   confidentialReports?: Prisma.BoolNullableFilter<"Settings"> | boolean | null
+  allowedBrandingModes?: Prisma.JsonNullableFilter<"Settings">
+  defaultBrandingMode?: Prisma.EnumReportBrandingModeNullableFilter<"Settings"> | $Enums.ReportBrandingMode | null
   createdAt?: Prisma.DateTimeFilter<"Settings"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Settings"> | Date | string
 }
@@ -269,15 +297,19 @@ export type SettingsOrderByWithRelationInput = {
   organisationName?: Prisma.SortOrderInput | Prisma.SortOrder
   consultantName?: Prisma.SortOrderInput | Prisma.SortOrder
   consultantEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  issuerLogoId?: Prisma.SortOrderInput | Prisma.SortOrder
   defaultReportTitle?: Prisma.SortOrderInput | Prisma.SortOrder
   defaultSeverity?: Prisma.SortOrder
   theme?: Prisma.SortOrder
   dateFormat?: Prisma.SortOrder
   reportFooterText?: Prisma.SortOrderInput | Prisma.SortOrder
+  reportConfidentialityLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   methodology?: Prisma.SortOrderInput | Prisma.SortOrder
   reportStyle?: Prisma.SortOrderInput | Prisma.SortOrder
   includeEvidence?: Prisma.SortOrderInput | Prisma.SortOrder
   confidentialReports?: Prisma.SortOrderInput | Prisma.SortOrder
+  allowedBrandingModes?: Prisma.SortOrderInput | Prisma.SortOrder
+  defaultBrandingMode?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -290,15 +322,19 @@ export type SettingsWhereUniqueInput = Prisma.AtLeast<{
   organisationName?: Prisma.StringNullableFilter<"Settings"> | string | null
   consultantName?: Prisma.StringNullableFilter<"Settings"> | string | null
   consultantEmail?: Prisma.StringNullableFilter<"Settings"> | string | null
+  issuerLogoId?: Prisma.StringNullableFilter<"Settings"> | string | null
   defaultReportTitle?: Prisma.StringNullableFilter<"Settings"> | string | null
   defaultSeverity?: Prisma.EnumSeverityFilter<"Settings"> | $Enums.Severity
   theme?: Prisma.EnumThemePreferenceFilter<"Settings"> | $Enums.ThemePreference
   dateFormat?: Prisma.StringFilter<"Settings"> | string
   reportFooterText?: Prisma.StringNullableFilter<"Settings"> | string | null
+  reportConfidentialityLabel?: Prisma.StringNullableFilter<"Settings"> | string | null
   methodology?: Prisma.StringNullableFilter<"Settings"> | string | null
   reportStyle?: Prisma.StringNullableFilter<"Settings"> | string | null
   includeEvidence?: Prisma.BoolNullableFilter<"Settings"> | boolean | null
   confidentialReports?: Prisma.BoolNullableFilter<"Settings"> | boolean | null
+  allowedBrandingModes?: Prisma.JsonNullableFilter<"Settings">
+  defaultBrandingMode?: Prisma.EnumReportBrandingModeNullableFilter<"Settings"> | $Enums.ReportBrandingMode | null
   createdAt?: Prisma.DateTimeFilter<"Settings"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Settings"> | Date | string
 }, "id">
@@ -308,15 +344,19 @@ export type SettingsOrderByWithAggregationInput = {
   organisationName?: Prisma.SortOrderInput | Prisma.SortOrder
   consultantName?: Prisma.SortOrderInput | Prisma.SortOrder
   consultantEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  issuerLogoId?: Prisma.SortOrderInput | Prisma.SortOrder
   defaultReportTitle?: Prisma.SortOrderInput | Prisma.SortOrder
   defaultSeverity?: Prisma.SortOrder
   theme?: Prisma.SortOrder
   dateFormat?: Prisma.SortOrder
   reportFooterText?: Prisma.SortOrderInput | Prisma.SortOrder
+  reportConfidentialityLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   methodology?: Prisma.SortOrderInput | Prisma.SortOrder
   reportStyle?: Prisma.SortOrderInput | Prisma.SortOrder
   includeEvidence?: Prisma.SortOrderInput | Prisma.SortOrder
   confidentialReports?: Prisma.SortOrderInput | Prisma.SortOrder
+  allowedBrandingModes?: Prisma.SortOrderInput | Prisma.SortOrder
+  defaultBrandingMode?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SettingsCountOrderByAggregateInput
@@ -332,15 +372,19 @@ export type SettingsScalarWhereWithAggregatesInput = {
   organisationName?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
   consultantName?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
   consultantEmail?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
+  issuerLogoId?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
   defaultReportTitle?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
   defaultSeverity?: Prisma.EnumSeverityWithAggregatesFilter<"Settings"> | $Enums.Severity
   theme?: Prisma.EnumThemePreferenceWithAggregatesFilter<"Settings"> | $Enums.ThemePreference
   dateFormat?: Prisma.StringWithAggregatesFilter<"Settings"> | string
   reportFooterText?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
+  reportConfidentialityLabel?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
   methodology?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
   reportStyle?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
   includeEvidence?: Prisma.BoolNullableWithAggregatesFilter<"Settings"> | boolean | null
   confidentialReports?: Prisma.BoolNullableWithAggregatesFilter<"Settings"> | boolean | null
+  allowedBrandingModes?: Prisma.JsonNullableWithAggregatesFilter<"Settings">
+  defaultBrandingMode?: Prisma.EnumReportBrandingModeNullableWithAggregatesFilter<"Settings"> | $Enums.ReportBrandingMode | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Settings"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Settings"> | Date | string
 }
@@ -350,15 +394,19 @@ export type SettingsCreateInput = {
   organisationName?: string | null
   consultantName?: string | null
   consultantEmail?: string | null
+  issuerLogoId?: string | null
   defaultReportTitle?: string | null
   defaultSeverity: $Enums.Severity
   theme: $Enums.ThemePreference
   dateFormat: string
   reportFooterText?: string | null
+  reportConfidentialityLabel?: string | null
   methodology?: string | null
   reportStyle?: string | null
   includeEvidence?: boolean | null
   confidentialReports?: boolean | null
+  allowedBrandingModes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultBrandingMode?: $Enums.ReportBrandingMode | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -368,15 +416,19 @@ export type SettingsUncheckedCreateInput = {
   organisationName?: string | null
   consultantName?: string | null
   consultantEmail?: string | null
+  issuerLogoId?: string | null
   defaultReportTitle?: string | null
   defaultSeverity: $Enums.Severity
   theme: $Enums.ThemePreference
   dateFormat: string
   reportFooterText?: string | null
+  reportConfidentialityLabel?: string | null
   methodology?: string | null
   reportStyle?: string | null
   includeEvidence?: boolean | null
   confidentialReports?: boolean | null
+  allowedBrandingModes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultBrandingMode?: $Enums.ReportBrandingMode | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -386,15 +438,19 @@ export type SettingsUpdateInput = {
   organisationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerLogoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultReportTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultSeverity?: Prisma.EnumSeverityFieldUpdateOperationsInput | $Enums.Severity
   theme?: Prisma.EnumThemePreferenceFieldUpdateOperationsInput | $Enums.ThemePreference
   dateFormat?: Prisma.StringFieldUpdateOperationsInput | string
   reportFooterText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reportConfidentialityLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   methodology?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reportStyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   includeEvidence?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   confidentialReports?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  allowedBrandingModes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultBrandingMode?: Prisma.NullableEnumReportBrandingModeFieldUpdateOperationsInput | $Enums.ReportBrandingMode | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -404,15 +460,19 @@ export type SettingsUncheckedUpdateInput = {
   organisationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerLogoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultReportTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultSeverity?: Prisma.EnumSeverityFieldUpdateOperationsInput | $Enums.Severity
   theme?: Prisma.EnumThemePreferenceFieldUpdateOperationsInput | $Enums.ThemePreference
   dateFormat?: Prisma.StringFieldUpdateOperationsInput | string
   reportFooterText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reportConfidentialityLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   methodology?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reportStyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   includeEvidence?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   confidentialReports?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  allowedBrandingModes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultBrandingMode?: Prisma.NullableEnumReportBrandingModeFieldUpdateOperationsInput | $Enums.ReportBrandingMode | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -422,15 +482,19 @@ export type SettingsCreateManyInput = {
   organisationName?: string | null
   consultantName?: string | null
   consultantEmail?: string | null
+  issuerLogoId?: string | null
   defaultReportTitle?: string | null
   defaultSeverity: $Enums.Severity
   theme: $Enums.ThemePreference
   dateFormat: string
   reportFooterText?: string | null
+  reportConfidentialityLabel?: string | null
   methodology?: string | null
   reportStyle?: string | null
   includeEvidence?: boolean | null
   confidentialReports?: boolean | null
+  allowedBrandingModes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultBrandingMode?: $Enums.ReportBrandingMode | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -440,15 +504,19 @@ export type SettingsUpdateManyMutationInput = {
   organisationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerLogoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultReportTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultSeverity?: Prisma.EnumSeverityFieldUpdateOperationsInput | $Enums.Severity
   theme?: Prisma.EnumThemePreferenceFieldUpdateOperationsInput | $Enums.ThemePreference
   dateFormat?: Prisma.StringFieldUpdateOperationsInput | string
   reportFooterText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reportConfidentialityLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   methodology?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reportStyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   includeEvidence?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   confidentialReports?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  allowedBrandingModes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultBrandingMode?: Prisma.NullableEnumReportBrandingModeFieldUpdateOperationsInput | $Enums.ReportBrandingMode | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -458,15 +526,19 @@ export type SettingsUncheckedUpdateManyInput = {
   organisationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerLogoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultReportTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultSeverity?: Prisma.EnumSeverityFieldUpdateOperationsInput | $Enums.Severity
   theme?: Prisma.EnumThemePreferenceFieldUpdateOperationsInput | $Enums.ThemePreference
   dateFormat?: Prisma.StringFieldUpdateOperationsInput | string
   reportFooterText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reportConfidentialityLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   methodology?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reportStyle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   includeEvidence?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   confidentialReports?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  allowedBrandingModes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultBrandingMode?: Prisma.NullableEnumReportBrandingModeFieldUpdateOperationsInput | $Enums.ReportBrandingMode | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -476,15 +548,19 @@ export type SettingsCountOrderByAggregateInput = {
   organisationName?: Prisma.SortOrder
   consultantName?: Prisma.SortOrder
   consultantEmail?: Prisma.SortOrder
+  issuerLogoId?: Prisma.SortOrder
   defaultReportTitle?: Prisma.SortOrder
   defaultSeverity?: Prisma.SortOrder
   theme?: Prisma.SortOrder
   dateFormat?: Prisma.SortOrder
   reportFooterText?: Prisma.SortOrder
+  reportConfidentialityLabel?: Prisma.SortOrder
   methodology?: Prisma.SortOrder
   reportStyle?: Prisma.SortOrder
   includeEvidence?: Prisma.SortOrder
   confidentialReports?: Prisma.SortOrder
+  allowedBrandingModes?: Prisma.SortOrder
+  defaultBrandingMode?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -494,15 +570,18 @@ export type SettingsMaxOrderByAggregateInput = {
   organisationName?: Prisma.SortOrder
   consultantName?: Prisma.SortOrder
   consultantEmail?: Prisma.SortOrder
+  issuerLogoId?: Prisma.SortOrder
   defaultReportTitle?: Prisma.SortOrder
   defaultSeverity?: Prisma.SortOrder
   theme?: Prisma.SortOrder
   dateFormat?: Prisma.SortOrder
   reportFooterText?: Prisma.SortOrder
+  reportConfidentialityLabel?: Prisma.SortOrder
   methodology?: Prisma.SortOrder
   reportStyle?: Prisma.SortOrder
   includeEvidence?: Prisma.SortOrder
   confidentialReports?: Prisma.SortOrder
+  defaultBrandingMode?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -512,15 +591,18 @@ export type SettingsMinOrderByAggregateInput = {
   organisationName?: Prisma.SortOrder
   consultantName?: Prisma.SortOrder
   consultantEmail?: Prisma.SortOrder
+  issuerLogoId?: Prisma.SortOrder
   defaultReportTitle?: Prisma.SortOrder
   defaultSeverity?: Prisma.SortOrder
   theme?: Prisma.SortOrder
   dateFormat?: Prisma.SortOrder
   reportFooterText?: Prisma.SortOrder
+  reportConfidentialityLabel?: Prisma.SortOrder
   methodology?: Prisma.SortOrder
   reportStyle?: Prisma.SortOrder
   includeEvidence?: Prisma.SortOrder
   confidentialReports?: Prisma.SortOrder
+  defaultBrandingMode?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -533,6 +615,10 @@ export type NullableBoolFieldUpdateOperationsInput = {
   set?: boolean | null
 }
 
+export type NullableEnumReportBrandingModeFieldUpdateOperationsInput = {
+  set?: $Enums.ReportBrandingMode | null
+}
+
 
 
 export type SettingsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -540,15 +626,19 @@ export type SettingsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   organisationName?: boolean
   consultantName?: boolean
   consultantEmail?: boolean
+  issuerLogoId?: boolean
   defaultReportTitle?: boolean
   defaultSeverity?: boolean
   theme?: boolean
   dateFormat?: boolean
   reportFooterText?: boolean
+  reportConfidentialityLabel?: boolean
   methodology?: boolean
   reportStyle?: boolean
   includeEvidence?: boolean
   confidentialReports?: boolean
+  allowedBrandingModes?: boolean
+  defaultBrandingMode?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["settings"]>
@@ -558,15 +648,19 @@ export type SettingsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   organisationName?: boolean
   consultantName?: boolean
   consultantEmail?: boolean
+  issuerLogoId?: boolean
   defaultReportTitle?: boolean
   defaultSeverity?: boolean
   theme?: boolean
   dateFormat?: boolean
   reportFooterText?: boolean
+  reportConfidentialityLabel?: boolean
   methodology?: boolean
   reportStyle?: boolean
   includeEvidence?: boolean
   confidentialReports?: boolean
+  allowedBrandingModes?: boolean
+  defaultBrandingMode?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["settings"]>
@@ -576,15 +670,19 @@ export type SettingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   organisationName?: boolean
   consultantName?: boolean
   consultantEmail?: boolean
+  issuerLogoId?: boolean
   defaultReportTitle?: boolean
   defaultSeverity?: boolean
   theme?: boolean
   dateFormat?: boolean
   reportFooterText?: boolean
+  reportConfidentialityLabel?: boolean
   methodology?: boolean
   reportStyle?: boolean
   includeEvidence?: boolean
   confidentialReports?: boolean
+  allowedBrandingModes?: boolean
+  defaultBrandingMode?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["settings"]>
@@ -594,20 +692,24 @@ export type SettingsSelectScalar = {
   organisationName?: boolean
   consultantName?: boolean
   consultantEmail?: boolean
+  issuerLogoId?: boolean
   defaultReportTitle?: boolean
   defaultSeverity?: boolean
   theme?: boolean
   dateFormat?: boolean
   reportFooterText?: boolean
+  reportConfidentialityLabel?: boolean
   methodology?: boolean
   reportStyle?: boolean
   includeEvidence?: boolean
   confidentialReports?: boolean
+  allowedBrandingModes?: boolean
+  defaultBrandingMode?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organisationName" | "consultantName" | "consultantEmail" | "defaultReportTitle" | "defaultSeverity" | "theme" | "dateFormat" | "reportFooterText" | "methodology" | "reportStyle" | "includeEvidence" | "confidentialReports" | "createdAt" | "updatedAt", ExtArgs["result"]["settings"]>
+export type SettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organisationName" | "consultantName" | "consultantEmail" | "issuerLogoId" | "defaultReportTitle" | "defaultSeverity" | "theme" | "dateFormat" | "reportFooterText" | "reportConfidentialityLabel" | "methodology" | "reportStyle" | "includeEvidence" | "confidentialReports" | "allowedBrandingModes" | "defaultBrandingMode" | "createdAt" | "updatedAt", ExtArgs["result"]["settings"]>
 
 export type $SettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Settings"
@@ -617,15 +719,19 @@ export type $SettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     organisationName: string | null
     consultantName: string | null
     consultantEmail: string | null
+    issuerLogoId: string | null
     defaultReportTitle: string | null
     defaultSeverity: $Enums.Severity
     theme: $Enums.ThemePreference
     dateFormat: string
     reportFooterText: string | null
+    reportConfidentialityLabel: string | null
     methodology: string | null
     reportStyle: string | null
     includeEvidence: boolean | null
     confidentialReports: boolean | null
+    allowedBrandingModes: runtime.JsonValue | null
+    defaultBrandingMode: $Enums.ReportBrandingMode | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["settings"]>
@@ -1055,15 +1161,19 @@ export interface SettingsFieldRefs {
   readonly organisationName: Prisma.FieldRef<"Settings", 'String'>
   readonly consultantName: Prisma.FieldRef<"Settings", 'String'>
   readonly consultantEmail: Prisma.FieldRef<"Settings", 'String'>
+  readonly issuerLogoId: Prisma.FieldRef<"Settings", 'String'>
   readonly defaultReportTitle: Prisma.FieldRef<"Settings", 'String'>
   readonly defaultSeverity: Prisma.FieldRef<"Settings", 'Severity'>
   readonly theme: Prisma.FieldRef<"Settings", 'ThemePreference'>
   readonly dateFormat: Prisma.FieldRef<"Settings", 'String'>
   readonly reportFooterText: Prisma.FieldRef<"Settings", 'String'>
+  readonly reportConfidentialityLabel: Prisma.FieldRef<"Settings", 'String'>
   readonly methodology: Prisma.FieldRef<"Settings", 'String'>
   readonly reportStyle: Prisma.FieldRef<"Settings", 'String'>
   readonly includeEvidence: Prisma.FieldRef<"Settings", 'Boolean'>
   readonly confidentialReports: Prisma.FieldRef<"Settings", 'Boolean'>
+  readonly allowedBrandingModes: Prisma.FieldRef<"Settings", 'Json'>
+  readonly defaultBrandingMode: Prisma.FieldRef<"Settings", 'ReportBrandingMode'>
   readonly createdAt: Prisma.FieldRef<"Settings", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Settings", 'DateTime'>
 }

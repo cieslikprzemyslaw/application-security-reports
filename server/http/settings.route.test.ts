@@ -57,16 +57,20 @@ const defaultSettings: Settings = {
   organisationName: 'Northstar Digital',
   consultantName: 'Alex Mercer',
   consultantEmail: 'alex.mercer@appsec.io',
+  issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
   defaultReportTitle: 'Application Security Assessment',
   defaultSeverity: 'medium',
   theme: 'system',
   dateFormat: 'YYYY-MM-DD',
   reportFooterText:
     '(c) 2026 Northstar Digital. Confidential - do not distribute.',
+  reportConfidentialityLabel: 'Confidential',
   methodology: 'OWASP ASVS / WSTG',
   reportStyle: 'Technical & structured',
   includeEvidence: true,
   confidentialReports: true,
+  allowedBrandingModes: ['issuer', 'client'],
+  defaultBrandingMode: 'issuer',
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-11T09:00:00.000Z',
 };
@@ -283,6 +287,72 @@ const createApp = (repository: SettingsRepository) =>
         (detail: { path: string; message: string }) =>
           detail.path === 'notifications' &&
           detail.message.includes('Unknown property'),
+      ),
+    );
+  } finally {
+    await server.close();
+  }
+}
+
+{
+  const { calls, repository } = createSettingsRepository();
+  const server = await startTestServer(createApp(repository));
+
+  try {
+    const response = await fetch(`${server.baseUrl}/api/settings`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        issuerLogoId: 'C:\\uploads\\issuer-logo.svg',
+      }),
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(calls.get, 0);
+    assert.equal(calls.upsert, 0);
+    const body = await readJson<ApiErrorBody>(response);
+    assert.equal(body.error.code, 'VALIDATION_ERROR');
+    assert.ok(
+      body.error.details.some(
+        (detail: { path: string; message: string }) =>
+          detail.path === 'issuerLogoId' &&
+          detail.message.includes('prefixed UUID'),
+      ),
+    );
+  } finally {
+    await server.close();
+  }
+}
+
+{
+  const { calls, repository } = createSettingsRepository({
+    get: async () => defaultSettings,
+  });
+  const server = await startTestServer(createApp(repository));
+
+  try {
+    const response = await fetch(`${server.baseUrl}/api/settings`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        allowedBrandingModes: ['client'],
+      }),
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(calls.get, 1);
+    assert.equal(calls.upsert, 0);
+    const body = await readJson<ApiErrorBody>(response);
+    assert.equal(body.error.code, 'VALIDATION_ERROR');
+    assert.ok(
+      body.error.details.some(
+        (detail: { path: string; message: string }) =>
+          detail.path === 'defaultBrandingMode' &&
+          detail.message.includes('Default branding mode must be allowed'),
       ),
     );
   } finally {

@@ -6,7 +6,11 @@ import {
 } from 'express';
 
 import type { Settings } from '../../src/domain/settings.js';
-import { updateSettingsRequestSchema } from '../../src/domain/schemas/index.js';
+import {
+  createSettingsRequestSchema,
+  updateSettingsRequestSchema,
+} from '../../src/domain/schemas/index.js';
+import { formatValidationErrors } from '../../src/validation/index.js';
 import { sendApiError } from '../http/api-errors.js';
 import { createRequestValidationMiddleware } from '../http/request-validation.js';
 import {
@@ -87,15 +91,19 @@ export const createSettingsRouter = (
         organisationName?: string;
         consultantName?: string;
         consultantEmail?: string;
+        issuerLogoId?: string;
         defaultReportTitle?: string;
         defaultSeverity?: Settings['defaultSeverity'];
         theme?: Settings['theme'];
         dateFormat?: Settings['dateFormat'];
         reportFooterText?: string;
+        reportConfidentialityLabel?: string;
         methodology?: string;
         reportStyle?: string;
         includeEvidence?: boolean;
         confidentialReports?: boolean;
+        allowedBrandingModes?: Settings['allowedBrandingModes'];
+        defaultBrandingMode?: Settings['defaultBrandingMode'];
       };
 
       try {
@@ -112,10 +120,22 @@ export const createSettingsRouter = (
           updatedAt: _updatedAt,
           ...existingInput
         } = existingSettings;
-        const settings = await settingsRepository.upsert({
+        const effectiveResult = createSettingsRequestSchema.safeParse({
           ...existingInput,
           ...body,
         });
+
+        if (!effectiveResult.success) {
+          sendApiError(
+            res,
+            400,
+            'VALIDATION_ERROR',
+            'Request validation failed',
+            formatValidationErrors(effectiveResult.error).fields,
+          );
+          return;
+        }
+        const settings = await settingsRepository.upsert(effectiveResult.data);
 
         sendSettingsResponse(res, 200, settings);
       } catch (error) {

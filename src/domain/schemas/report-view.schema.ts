@@ -5,8 +5,12 @@ import type { ReportView } from '../report-view.js';
 import { assessmentSchema } from './assessment.schema.js';
 import { companySchema } from './company.schema.js';
 import { evidenceSchema } from './evidence.schema.js';
-import { reportSchema } from './report.schema.js';
+import { reportSchema, reportSnapshotSchema } from './report.schema.js';
 import { threatSchema } from './threat.schema.js';
+import {
+  prefixedUuidSchema,
+  reportBrandingModeSchema,
+} from './common.schema.js';
 
 export const reportViewEvidenceSchema = evidenceSchema.omit({
   filePath: true,
@@ -33,8 +37,15 @@ export const reportViewBrandingSchema = z
     companyContactEmail: z.string().trim().email().optional(),
     companyLogoPath: z.string().trim().min(1).optional(),
     companyFooterText: z.string().trim().min(1).optional(),
+    issuerName: z.string().trim().min(1).optional(),
+    issuerContactName: z.string().trim().min(1).optional(),
+    issuerContactEmail: z.string().trim().email().optional(),
+    issuerLogoId: prefixedUuidSchema('logo_', 'Issuer logo').optional(),
     reportFooterText: z.string().trim().min(1).optional(),
+    reportConfidentialityLabel: z.string().trim().min(1).optional(),
     confidentialReports: z.boolean().optional(),
+    allowedBrandingModes: z.array(reportBrandingModeSchema).min(1).optional(),
+    defaultBrandingMode: reportBrandingModeSchema.optional(),
   })
   .strict();
 
@@ -53,6 +64,7 @@ export const reportViewSchema = z
     assessments: z.array(reportViewAssessmentSchema),
     branding: reportViewBrandingSchema,
     configuration: reportViewConfigurationSchema,
+    snapshot: reportSnapshotSchema,
   })
   .strict();
 

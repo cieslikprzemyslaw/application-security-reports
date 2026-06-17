@@ -41,6 +41,19 @@ const migrationPath = path.resolve(
 );
 const migrationSql = readFileSync(migrationPath, 'utf8');
 const schemaSql = migrationSql.slice(migrationSql.indexOf('-- CreateTable'));
+const settingsBrandingMigrationPath = path.resolve(
+  buildDir,
+  '..',
+  '..',
+  'prisma',
+  'migrations',
+  '20260617120000_extend_settings_branding',
+  'migration.sql',
+);
+const settingsBrandingMigrationSql = readFileSync(
+  settingsBrandingMigrationPath,
+  'utf8',
+);
 const threatMigrationPath = path.resolve(
   buildDir,
   '..',
@@ -75,6 +88,7 @@ const Database = require('better-sqlite3') as new (databasePath: string) => {
   const bootstrapDb = new Database(databasePath);
   try {
     bootstrapDb.exec(schemaSql);
+    bootstrapDb.exec(settingsBrandingMigrationSql);
     bootstrapDb.exec(threatMigrationSql);
     bootstrapDb.exec(evidenceMigrationSql);
   } finally {
@@ -181,20 +195,31 @@ try {
     organisationName: 'Northstar Digital',
     consultantName: 'Ada Lovelace',
     consultantEmail: 'ada@example.com',
+    issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
     defaultReportTitle: 'Security report',
     defaultSeverity: 'medium',
     theme: 'system',
     dateFormat: 'YYYY-MM-DD',
     reportFooterText: 'Confidential',
+    reportConfidentialityLabel: 'Confidential',
     methodology: 'OWASP',
     reportStyle: 'Narrative',
     includeEvidence: true,
     confidentialReports: false,
+    allowedBrandingModes: ['issuer', 'client'],
+    defaultBrandingMode: 'issuer',
   });
 
   assert.ok(evidence.threatIds.includes(threat.id));
   assert.ok(activity.id.startsWith('act_'));
-  assert.equal((await settingsRepo.get())?.id, settings.id);
+  const loadedSettings = await settingsRepo.get();
+  assert.equal(loadedSettings?.id, settings.id);
+  assert.equal(
+    loadedSettings?.issuerLogoId,
+    'logo_00000000-0000-0000-0000-000000000001',
+  );
+  assert.deepEqual(loadedSettings?.allowedBrandingModes, ['issuer', 'client']);
+  assert.equal(loadedSettings?.defaultBrandingMode, 'issuer');
 
   const loadedThreats = await threatRepo.findByAssessmentId(assessment.id);
   assert.equal(loadedThreats.length, 1);

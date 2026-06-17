@@ -39,6 +39,12 @@ enum ThemePreference {
   system
 }
 
+enum ReportBrandingMode {
+  issuer
+  client
+  none
+}
+
 enum ActivityEntityType {
   company
   assessment
@@ -217,19 +223,23 @@ model Activity {
 }
 
 model Settings {
-  id                  String          @id
-  organisationName    String?
-  consultantName      String?
-  consultantEmail     String?
-  defaultReportTitle  String?
-  defaultSeverity     Severity
-  theme               ThemePreference
-  dateFormat          String
-  reportFooterText    String?
-  methodology         String?
-  reportStyle         String?
-  includeEvidence     Boolean?
-  confidentialReports Boolean?
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
+  id                         String              @id
+  organisationName           String?
+  consultantName             String?
+  consultantEmail            String?
+  issuerLogoId               String?
+  defaultReportTitle         String?
+  defaultSeverity            Severity
+  theme                      ThemePreference
+  dateFormat                 String
+  reportFooterText           String?
+  reportConfidentialityLabel String?
+  methodology                String?
+  reportStyle                String?
+  includeEvidence            Boolean?
+  confidentialReports        Boolean?
+  allowedBrandingModes       Json?
+  defaultBrandingMode        ReportBrandingMode?
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime            @updatedAt
 }
