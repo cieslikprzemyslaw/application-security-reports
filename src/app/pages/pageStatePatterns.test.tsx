@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
+import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 
 import type { GlobalThreatRow } from '~/app/components/appsec/globalThreatTable';
@@ -82,12 +83,17 @@ const setupDom = (localStorageEntries?: Record<string, string>) => {
 const renderComponent = async (
   element: React.ReactNode,
   localStorageEntries?: Record<string, string>,
+  initialEntry = '/',
 ) => {
   const { container } = setupDom(localStorageEntries);
   const root = createRoot(container);
 
   await act(async () => {
-    root.render(<ThemeProvider theme={defaultTheme}>{element}</ThemeProvider>);
+    root.render(
+      <ThemeProvider theme={defaultTheme}>
+        <MemoryRouter initialEntries={[initialEntry]}>{element}</MemoryRouter>
+      </ThemeProvider>,
+    );
     await renderTick();
     await renderTick();
   });
@@ -598,7 +604,7 @@ await (async () => {
       />,
     );
 
-    assert.ok(textContent(container).includes('No findings yet'));
+    assert.ok(textContent(container).includes('No threats yet'));
 
     await act(async () => {
       root.unmount();
@@ -630,7 +636,7 @@ await (async () => {
 
     assert.ok(
       textContent(container).includes(
-        'No findings match your current search and filters',
+        'No threats match your current search and filters',
       ),
     );
     assert.ok(textContent(container).includes('Clear filters'));

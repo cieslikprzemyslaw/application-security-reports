@@ -1,10 +1,10 @@
 import type { AssessmentListItem } from '~/services';
 
 import type { AssessmentListSortKey } from '~/app/components/appsec/assessmentTable';
+import type { ListQueryField } from '~/app/hooks/useListQueryState';
 import type { ApiError } from '~/services/apiClient';
 
 export const PAGE_SIZE = 25;
-export const searchDebounceMs = 250;
 
 export const assessmentStatusOptions = [
   { label: 'All statuses', value: 'all' },
@@ -58,6 +58,56 @@ export const defaultQueryState: AssessmentsQueryState = {
   page: 1,
 };
 
+export const assessmentsQueryFields: ReadonlyArray<
+  ListQueryField<AssessmentsQueryState>
+> = [
+  {
+    key: 'search',
+    param: 'search',
+    defaultValue: defaultQueryState.search,
+    parse: value => value ?? defaultQueryState.search,
+  },
+  {
+    key: 'status',
+    param: 'status',
+    defaultValue: defaultQueryState.status,
+    parse: value =>
+      isAssessmentStatusFilter(value) ? value : defaultQueryState.status,
+  },
+  {
+    key: 'type',
+    param: 'type',
+    defaultValue: defaultQueryState.type,
+    parse: value =>
+      isAssessmentTypeFilter(value) ? value : defaultQueryState.type,
+  },
+  {
+    key: 'sortBy',
+    param: 'sort',
+    defaultValue: defaultQueryState.sortBy,
+    parse: value =>
+      isAssessmentSortKey(value) ? value : defaultQueryState.sortBy,
+  },
+  {
+    key: 'sortDirection',
+    param: 'direction',
+    defaultValue: defaultQueryState.sortDirection,
+    parse: value => (value === 'asc' ? 'asc' : defaultQueryState.sortDirection),
+  },
+  {
+    key: 'page',
+    param: 'page',
+    defaultValue: defaultQueryState.page,
+    parse: value => {
+      const pageValue = Number(value);
+
+      return Number.isInteger(pageValue) && pageValue > 0
+        ? pageValue
+        : defaultQueryState.page;
+    },
+  },
+];
+
 const assessmentStatusOrder: Record<string, number> = {
   draft: 0,
   'in-progress': 1,
@@ -84,25 +134,14 @@ export const isAssessmentSortKey = (
 export const readQueryState = (
   searchParams: URLSearchParams,
 ): AssessmentsQueryState => {
-  const pageValue = Number(searchParams.get('page'));
-  const statusParam = searchParams.get('status');
-  const typeParam = searchParams.get('type');
-  const sortParam = searchParams.get('sort');
+  return assessmentsQueryFields.reduce<Record<string, string | number>>(
+    (state, field) => {
+      state[String(field.key)] = field.parse(searchParams.get(field.param));
 
-  return {
-    search: searchParams.get('search') ?? '',
-    status: isAssessmentStatusFilter(statusParam)
-      ? statusParam
-      : defaultQueryState.status,
-    type: isAssessmentTypeFilter(typeParam)
-      ? typeParam
-      : defaultQueryState.type,
-    sortBy: isAssessmentSortKey(sortParam)
-      ? sortParam
-      : defaultQueryState.sortBy,
-    sortDirection: searchParams.get('direction') === 'asc' ? 'asc' : 'desc',
-    page: Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1,
-  };
+      return state;
+    },
+    {},
+  ) as AssessmentsQueryState;
 };
 
 export const isCustomType = (type: string) =>
