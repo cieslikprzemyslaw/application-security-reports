@@ -9,6 +9,7 @@ import {
   PAGE_SIZE,
   assessmentsQueryFields,
   filterAndSortAssessments,
+  nextSortDirection,
   type AssessmentSortDirection,
   type AssessmentStatusFilter,
   type AssessmentTypeFilter,
@@ -174,12 +175,9 @@ export const useAssessmentsController = ({
   };
 
   const handleSortChange = (nextSortBy: AssessmentListSortKey) => {
-    const nextDirection =
-      sortBy === nextSortBy && sortDirection === 'desc' ? 'asc' : 'desc';
-
     query.setControl({
       sortBy: nextSortBy,
-      sortDirection: nextDirection,
+      sortDirection: nextSortDirection(sortBy, nextSortBy, sortDirection),
     });
   };
 

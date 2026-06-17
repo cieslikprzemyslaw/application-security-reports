@@ -5,6 +5,7 @@ export { default as add } from './add.icon';
 export { default as archive } from './archive.icon';
 export { default as assessment } from './assessment.icon';
 export { default as chevronDown } from './chevronDown.icon';
+export { default as chevronUp } from './chevronUp.icon';
 export { default as close } from './close.icon';
 export { default as company } from './company.icon';
 export { default as dashboard } from './dashboard.icon';

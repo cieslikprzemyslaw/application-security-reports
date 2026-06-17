@@ -89,13 +89,23 @@ const StyledAssessmentTable = styled.div`
       cursor: pointer;
     }
 
+    .assessment-table__sort-button:hover {
+      background-color: ${colors.neutral.grey100};
+      color: ${colors.text.primary};
+    }
+
     .assessment-table__sort-button:focus-visible {
       outline: 2px solid ${colors.border.focus};
       outline-offset: -2px;
     }
 
-    .assessment-table__sort-indicator {
-      font-size: ${typography.body.small.size};
+    .assessment-table__sort-icon {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .assessment-table__sort-icon--inactive {
       color: ${colors.text.muted};
     }
 
