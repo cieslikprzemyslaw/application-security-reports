@@ -223,6 +223,13 @@ export const filterAndSortAssessments = (
   return sortedAssessments;
 };
 
+export const nextSortDirection = (
+  currentSortBy: AssessmentListSortKey,
+  nextSortBy: AssessmentListSortKey,
+  currentDirection: AssessmentSortDirection,
+): AssessmentSortDirection =>
+  currentSortBy === nextSortBy && currentDirection === 'asc' ? 'desc' : 'asc';
+
 export const createAssessmentValidationErrorMap = (
   details: ApiError['details'],
   valueType: 'preset' | 'custom',
