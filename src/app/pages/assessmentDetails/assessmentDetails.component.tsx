@@ -10,7 +10,9 @@ import AssessmentDetailsView from './assessmentDetails.view';
 import { useAssessmentOverview } from './hooks/useAssessmentOverview';
 import { useAssessmentActions } from './hooks/useAssessmentActions';
 import { useAssessmentFindings } from './hooks/useAssessmentFindings';
+import { useAssessmentEvidence } from './evidence/hooks/useAssessmentEvidence';
 import AssessmentFindingsSection from './components/assessmentFindingsSection.component';
+import AssessmentEvidenceSection from './evidence/section/EvidenceSection';
 
 import type { AssessmentDetailSection } from './assessmentDetails.type';
 
@@ -54,6 +56,11 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
     });
 
   const findingsController = useAssessmentFindings({
+    assessmentId,
+    assessmentStatus: assessmentView?.status,
+  });
+
+  const evidenceController = useAssessmentEvidence({
     assessmentId,
     assessmentStatus: assessmentView?.status,
   });
@@ -107,6 +114,13 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
         <AssessmentFindingsSection
           assessment={assessmentView}
           {...findingsController}
+        />
+      }
+      evidenceContent={
+        <AssessmentEvidenceSection
+          assessment={assessmentView}
+          threats={findingsController.threats}
+          controller={evidenceController}
         />
       }
       onSectionChange={handleSectionChange}

@@ -67,6 +67,9 @@ const renderView = async () => {
             findingsContent={
               <div data-testid="findings-content">Live findings</div>
             }
+            evidenceContent={
+              <div data-testid="evidence-content">Live evidence</div>
+            }
             onSectionChange={() => undefined}
             onBack={() => undefined}
             onAction={() => undefined}
@@ -124,6 +127,10 @@ await (async () => {
   assert.ok(
     container.querySelector('[data-testid="findings-content"]'),
     'Expected the findings content slot to render',
+  );
+  assert.ok(
+    container.querySelector('[data-testid="evidence-content"]'),
+    'Expected the evidence content slot to render',
   );
 
   await act(async () => {

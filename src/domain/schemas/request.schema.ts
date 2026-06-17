@@ -282,6 +282,13 @@ const validateEvidenceExchanges = (
   }
 
   if (value.type !== undefined && hasHttpExchanges) {
+    if (
+      options.allowExplicitEmptyHttpExchanges &&
+      value.httpExchanges?.length === 0
+    ) {
+      return;
+    }
+
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['httpExchanges'],

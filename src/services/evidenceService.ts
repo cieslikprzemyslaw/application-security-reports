@@ -1,16 +1,17 @@
+import { evidenceFileSchema, evidenceSchema } from '~/domain/schemas';
+import {
+  createEvidenceRequestSchema,
+  updateEvidenceRequestSchema,
+} from '~/domain/schemas/request.schema';
 import type { Evidence } from '~/domain';
+import type { z } from 'zod';
 
 import { apiRequest } from './apiClient.js';
 import { requestData, type ApiRequestFn } from './serviceHelpers.js';
 
-export type EvidenceCreateInput = Omit<
-  Evidence,
-  'id' | 'createdAt' | 'updatedAt' | 'filePath'
->;
+export type EvidenceCreateInput = z.output<typeof createEvidenceRequestSchema>;
 
-export type EvidenceUpdateInput = Partial<
-  Omit<EvidenceCreateInput, 'assessmentId'>
->;
+export type EvidenceUpdateInput = z.output<typeof updateEvidenceRequestSchema>;
 
 export interface EvidenceListFilters {
   assessmentId: string;
@@ -29,42 +30,57 @@ export const createEvidenceService = (
   request: ApiRequestFn = apiRequest,
 ): EvidenceService => ({
   async list(filters, signal) {
-    const evidence = await requestData<Evidence[]>(request, '/api/evidence', {
+    const evidence = await requestData<unknown>(request, '/api/evidence', {
       method: 'GET',
       query: {
         assessmentId: filters.assessmentId,
       },
       signal,
     });
+    const parsedEvidence = evidenceFileSchema.parse(evidence);
 
     const threatId = filters.threatId;
 
     if (threatId === undefined) {
-      return evidence;
+      return parsedEvidence;
     }
 
-    return evidence.filter(item => item.threatIds.includes(threatId));
+    return parsedEvidence.filter(item => item.threatIds.includes(threatId));
   },
 
   async getById(evidenceId, signal) {
-    return requestData<Evidence>(request, `/api/evidence/${evidenceId}`, {
-      method: 'GET',
-      signal,
-    });
+    const evidence = await requestData<unknown>(
+      request,
+      `/api/evidence/${evidenceId}`,
+      {
+        method: 'GET',
+        signal,
+      },
+    );
+
+    return evidenceSchema.parse(evidence);
   },
 
   async create(input) {
-    return requestData<Evidence>(request, '/api/evidence', {
+    const evidence = await requestData<unknown>(request, '/api/evidence', {
       body: input,
       method: 'POST',
     });
+
+    return evidenceSchema.parse(evidence);
   },
 
   async update(evidenceId, input) {
-    return requestData<Evidence>(request, `/api/evidence/${evidenceId}`, {
-      body: input,
-      method: 'PATCH',
-    });
+    const evidence = await requestData<unknown>(
+      request,
+      `/api/evidence/${evidenceId}`,
+      {
+        body: input,
+        method: 'PATCH',
+      },
+    );
+
+    return evidenceSchema.parse(evidence);
   },
 
   async remove(evidenceId) {

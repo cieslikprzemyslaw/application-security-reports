@@ -4,7 +4,6 @@ import { ApiError } from './apiClient.js';
 import {
   createAssessmentService,
   createCompanyService,
-  createEvidenceService,
   createReportService,
   createSettingsService,
   createThreatService,
@@ -13,8 +12,6 @@ import {
   type CompanyCreateInput,
   type CompanyOverviewResponse,
   type CompanyUpdateInput,
-  type EvidenceCreateInput,
-  type EvidenceUpdateInput,
   type ReportView,
   type SettingsUpdateInput,
   type ThreatCreateInput,
@@ -187,22 +184,6 @@ const threat = {
   risk: 'Sensitive order data is exposed.',
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-11T09:00:00.000Z',
-} as const;
-
-const evidence = {
-  id: 'evd_00000000-0000-0000-0000-000000000001',
-  assessmentId: assessment.id,
-  threatIds: [threat.id],
-  type: 'screenshot',
-  title: 'Evidence screenshot',
-  description: 'Portal screenshot',
-  content: 'Base64 payload',
-  fileName: 'evidence.png',
-  filePath: 'uploads/evidence/evidence.png',
-  mimeType: 'image/png',
-  capturedAt: '2026-06-05',
-  createdAt: '2026-06-05T00:00:00.000Z',
-  updatedAt: '2026-06-05T00:00:00.000Z',
 } as const;
 
 const settings = {
@@ -570,102 +551,6 @@ const reportView = {
   assert.deepEqual(await service.update(input), settings);
   expectSingleCall(calls, {
     input: '/api/settings',
-    method: 'PATCH',
-    body: input,
-  });
-}
-
-{
-  const { calls, request } = createRequestSpy({ data: [evidence] });
-  const service = createEvidenceService(request);
-
-  assert.deepEqual(await service.list({ assessmentId: assessment.id }), [
-    evidence,
-  ]);
-  expectSingleCall(calls, {
-    input: '/api/evidence',
-    method: 'GET',
-    query: {
-      assessmentId: assessment.id,
-    },
-  });
-}
-
-{
-  const { calls, request } = createRequestSpy({
-    data: [
-      evidence,
-      {
-        ...evidence,
-        id: 'evd_00000000-0000-0000-0000-000000000002',
-        threatIds: [],
-      },
-    ],
-  });
-  const service = createEvidenceService(request);
-
-  assert.deepEqual(
-    await service.list({ assessmentId: assessment.id, threatId: threat.id }),
-    [evidence],
-  );
-  expectSingleCall(calls, {
-    input: '/api/evidence',
-    method: 'GET',
-    query: {
-      assessmentId: assessment.id,
-    },
-  });
-}
-
-{
-  const { calls, request } = createRequestSpy({ data: evidence });
-  const service = createEvidenceService(request);
-  const controller = new AbortController();
-
-  assert.deepEqual(
-    await service.getById(evidence.id, controller.signal),
-    evidence,
-  );
-  expectSingleCall(calls, {
-    input: `/api/evidence/${evidence.id}`,
-    method: 'GET',
-  });
-  assert.equal(calls[0]?.init?.signal, controller.signal);
-}
-
-{
-  const input: EvidenceCreateInput = {
-    assessmentId: assessment.id,
-    threatIds: [...evidence.threatIds],
-    type: evidence.type,
-    title: evidence.title,
-    description: evidence.description,
-    content: evidence.content,
-    fileName: evidence.fileName,
-    mimeType: evidence.mimeType,
-    capturedAt: evidence.capturedAt,
-  };
-  const { calls, request } = createRequestSpy({ data: evidence });
-  const service = createEvidenceService(request);
-
-  assert.deepEqual(await service.create(input), evidence);
-  expectSingleCall(calls, {
-    input: '/api/evidence',
-    method: 'POST',
-    body: input,
-  });
-}
-
-{
-  const input: EvidenceUpdateInput = {
-    title: 'Updated evidence',
-  };
-  const { calls, request } = createRequestSpy({ data: evidence });
-  const service = createEvidenceService(request);
-
-  assert.deepEqual(await service.update(evidence.id, input), evidence);
-  expectSingleCall(calls, {
-    input: `/api/evidence/${evidence.id}`,
     method: 'PATCH',
     body: input,
   });

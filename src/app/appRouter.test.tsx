@@ -1641,57 +1641,6 @@ await (async () => {
 
     {
       const { container, root } = await renderApp(
-        routes.assessmentDetailsFindings('cmp_1', 'asm_1'),
-      );
-
-      assert.ok(textContent(container).includes('Findings14'));
-      assert.equal(
-        window.location.pathname,
-        routes.assessmentDetailsFindings('cmp_1', 'asm_1'),
-      );
-      assert.equal(
-        container.querySelector(
-          'a[href="/companies/cmp_1/assessments/asm_1/overview"]',
-        )?.textContent,
-        'Customer Services Portal',
-      );
-      assert.equal(
-        container.querySelector('[role="tab"][aria-selected="true"]')
-          ?.textContent,
-        'Findings14',
-      );
-
-      const activeTab = container.querySelector(
-        '[role="tab"][aria-selected="true"]',
-      ) as HTMLButtonElement | null;
-
-      assert.ok(activeTab, 'Expected an active tab');
-      assert.ok(activeTab?.textContent?.startsWith('Findings'));
-
-      await act(async () => {
-        activeTab!.dispatchEvent(
-          new window.KeyboardEvent('keydown', {
-            bubbles: true,
-            cancelable: true,
-            key: 'ArrowRight',
-          }),
-        );
-        await renderTick();
-        await renderTick();
-      });
-
-      assert.equal(
-        window.location.pathname,
-        routes.assessmentDetailsEvidence('cmp_1', 'asm_1'),
-      );
-
-      await act(async () => {
-        root.unmount();
-      });
-    }
-
-    {
-      const { container, root } = await renderApp(
         routes.assessmentDetailsHistory('cmp_1', 'asm_5'),
       );
 

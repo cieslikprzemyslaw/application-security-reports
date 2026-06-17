@@ -104,6 +104,7 @@ const AssessmentDetailsView = ({
   activeSection,
   overviewHref,
   findingsContent,
+  evidenceContent,
   onSectionChange,
   onBack,
   onAction,
@@ -316,7 +317,7 @@ const AssessmentDetailsView = ({
             id: 'evidence',
             label: 'Evidence',
             count: assessment.evidenceCount,
-            content: renderPlaceholderPanel('evidence'),
+            content: evidenceContent ?? renderPlaceholderPanel('evidence'),
           },
           {
             id: 'reports',
