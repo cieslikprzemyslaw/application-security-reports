@@ -2,6 +2,7 @@ import React from 'react';
 
 import Badge from '~/app/components/ui/badge';
 import Button from '~/app/components/ui/button';
+import IconSVG from '~/app/components/ui/iconSVG';
 
 import StyledAssessmentTable from './assessmentTable.styled';
 import type {
@@ -40,8 +41,19 @@ const SortIndicator = ({
   active: boolean;
   direction: 'asc' | 'desc';
 }) => (
-  <span className="assessment-table__sort-indicator" aria-hidden="true">
-    {active ? (direction === 'asc' ? '^' : 'v') : '-'}
+  <span
+    className={[
+      'assessment-table__sort-icon',
+      !active && 'assessment-table__sort-icon--inactive',
+    ]
+      .filter(Boolean)
+      .join(' ')}
+    aria-hidden="true"
+  >
+    <IconSVG
+      name={active && direction === 'asc' ? 'chevronUp' : 'chevronDown'}
+      size="small"
+    />
   </span>
 );
 
