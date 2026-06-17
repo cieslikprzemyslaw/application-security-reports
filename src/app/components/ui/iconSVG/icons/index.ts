@@ -17,6 +17,7 @@ export { default as file } from './file.icon';
 export { default as finding } from './finding.icon';
 export { default as image } from './image.icon';
 export { default as menu } from './menu.icon';
+export { default as more } from './more.icon';
 export { default as preview } from './preview.icon';
 export { default as print } from './print.icon';
 export { default as report } from './report.icon';
