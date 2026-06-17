@@ -3,7 +3,17 @@ import { styled, css } from 'styled-components';
 import type { CompanyLogoTone } from './companyTable.type';
 
 const StyledCompanyTable = styled.div`
-  ${({ theme: { colors, radii, spacing, transitions, typography } }) => css`
+  ${({
+    theme: {
+      colors,
+      radii,
+      shadows,
+      spacing,
+      transitions,
+      typography,
+      zIndices,
+    },
+  }) => css`
     width: 100%;
     overflow-x: auto;
 
@@ -57,6 +67,14 @@ const StyledCompanyTable = styled.div`
     .company-table__row--clickable:hover > td,
     .company-table__row--clickable:focus-within > td {
       background-color: ${colors.brand.wash};
+    }
+
+    .company-table__row--active > td {
+      background-color: ${colors.brand.wash};
+    }
+
+    .company-table__row--active > td:first-child {
+      box-shadow: inset 3px 0 0 ${colors.brand.primary};
     }
 
     .company-table__row:focus-visible {
@@ -167,21 +185,78 @@ const StyledCompanyTable = styled.div`
       background-color: ${colors.severity.high.background};
     }
 
-    .company-table__chevron {
+    .company-table__cell--actions {
+      width: 2.5rem;
+      padding-inline: ${spacing.xxs};
+    }
+
+    .company-table__menu-wrapper {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .company-table__menu-button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border: none;
+      border-radius: ${radii.sm};
+      background: transparent;
       color: ${colors.neutral.grey400};
-      font-size: 1.25rem;
+      cursor: pointer;
       transition:
-        transform ${transitions.fast},
+        background-color ${transitions.fast},
         color ${transitions.fast};
     }
 
-    .company-table__row--clickable:hover .company-table__chevron,
-    .company-table__row--clickable:focus-visible .company-table__chevron {
-      color: ${colors.brand.primary};
-      transform: translateX(0.1875rem);
+    .company-table__menu-button:hover {
+      background-color: ${colors.neutral.grey100};
+      color: ${colors.text.primary};
+    }
+
+    .company-table__menu-button:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: 2px;
+    }
+
+    .company-table__menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 0.25rem);
+      z-index: ${zIndices.dropdown};
+      min-width: 9rem;
+      padding: ${spacing.xxs} 0;
+      background-color: ${colors.surface.card};
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.md};
+      box-shadow: ${shadows.md};
+    }
+
+    .company-table__menu-item {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: ${spacing.xs} ${spacing.s};
+      border: none;
+      background: transparent;
+      color: ${colors.text.secondary};
+      cursor: pointer;
+      font-size: ${typography.body.small.size};
+      line-height: ${typography.body.small.lineHeight};
+      text-align: left;
+      transition: background-color ${transitions.fast};
+    }
+
+    .company-table__menu-item:hover {
+      background-color: ${colors.neutral.grey50};
+      color: ${colors.text.primary};
+    }
+
+    .company-table__menu-item:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: -2px;
     }
 
     .company-table__empty-cell {

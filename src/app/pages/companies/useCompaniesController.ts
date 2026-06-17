@@ -325,6 +325,10 @@ export const useCompaniesController = ({
   };
 
   const handleCompanyClick = (company: CompanyIdentity) => {
+    onActiveCompanyChange?.({ id: company.id, name: company.name });
+  };
+
+  const handleEditCompany = (company: CompanyIdentity) => {
     openEditDrawer(company.id);
   };
 
@@ -357,5 +361,6 @@ export const useCompaniesController = ({
     handleSearchChange,
     handlePageChange,
     handleCompanyClick,
+    handleEditCompany,
   };
 };

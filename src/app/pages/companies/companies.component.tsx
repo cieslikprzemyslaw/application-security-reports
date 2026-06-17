@@ -51,6 +51,7 @@ const Companies = ({
     handleSearchChange,
     handlePageChange,
     handleCompanyClick,
+    handleEditCompany,
   } = useCompaniesController({
     activeCompany,
     onCompaniesChange,
@@ -142,7 +143,9 @@ const Companies = ({
           <>
             <CompanyTable
               companies={pagedCompanies.map(companyToTableRow)}
+              activeCompanyId={activeCompany?.id}
               onCompanyClick={company => handleCompanyClick(company)}
+              onEditCompany={company => handleEditCompany(company)}
               emptyState={emptyState}
             />
 

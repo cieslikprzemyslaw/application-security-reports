@@ -25,6 +25,8 @@ export interface CompanyTableRow {
 
 export interface CompanyTableProps {
   companies: CompanyTableRow[];
+  activeCompanyId?: string;
   onCompanyClick?: (company: CompanyTableRow) => void;
+  onEditCompany?: (company: CompanyTableRow) => void;
   emptyState?: ReactNode;
 }
