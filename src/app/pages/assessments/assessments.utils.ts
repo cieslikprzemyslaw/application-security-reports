@@ -134,14 +134,26 @@ export const isAssessmentSortKey = (
 export const readQueryState = (
   searchParams: URLSearchParams,
 ): AssessmentsQueryState => {
-  return assessmentsQueryFields.reduce<Record<string, string | number>>(
-    (state, field) => {
-      state[String(field.key)] = field.parse(searchParams.get(field.param));
+  const status = searchParams.get('status');
+  const type = searchParams.get('type');
+  const sortBy = searchParams.get('sort');
+  const sortDirection = searchParams.get('direction');
+  const pageValue = Number(searchParams.get('page'));
 
-      return state;
-    },
-    {},
-  ) as AssessmentsQueryState;
+  return {
+    search: searchParams.get('search') ?? defaultQueryState.search,
+    status: isAssessmentStatusFilter(status)
+      ? status
+      : defaultQueryState.status,
+    type: isAssessmentTypeFilter(type) ? type : defaultQueryState.type,
+    sortBy: isAssessmentSortKey(sortBy) ? sortBy : defaultQueryState.sortBy,
+    sortDirection:
+      sortDirection === 'asc' ? 'asc' : defaultQueryState.sortDirection,
+    page:
+      Number.isInteger(pageValue) && pageValue > 0
+        ? pageValue
+        : defaultQueryState.page,
+  };
 };
 
 export const isCustomType = (type: string) =>

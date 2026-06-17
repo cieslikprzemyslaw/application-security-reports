@@ -4,6 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import PageContent from '~/app/layouts/pageContent';
 
 import Threats from './threats.component';
+import type { ThreatSeverityFilter, ThreatStatusFilter } from './threats.utils';
 
 const meta = {
   title: 'Pages/Threats',
@@ -28,8 +29,9 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: args => {
     const [searchValue, setSearchValue] = useState('');
-    const [severityFilter, setSeverityFilter] = useState('all');
-    const [statusFilter, setStatusFilter] = useState('all');
+    const [severityFilter, setSeverityFilter] =
+      useState<ThreatSeverityFilter>('all');
+    const [statusFilter, setStatusFilter] = useState<ThreatStatusFilter>('all');
     const [applicationFilter, setApplicationFilter] = useState('all');
 
     return (
