@@ -10,9 +10,9 @@ import AssessmentDetailsView from './assessmentDetails.view';
 import { useAssessmentOverview } from './hooks/useAssessmentOverview';
 import { useAssessmentActions } from './hooks/useAssessmentActions';
 import { useAssessmentFindings } from './hooks/useAssessmentFindings';
-import { useAssessmentEvidence } from './hooks/useAssessmentEvidence';
+import { useAssessmentEvidence } from './evidence/hooks/useAssessmentEvidence';
 import AssessmentFindingsSection from './components/assessmentFindingsSection.component';
-import AssessmentEvidenceSection from './assessmentEvidenceSection.component';
+import AssessmentEvidenceSection from './evidence/section/assessmentEvidenceSection.component';
 
 import type { AssessmentDetailSection } from './assessmentDetails.type';
 

@@ -10,8 +10,8 @@ import { evidenceService } from '~/services';
 import { defaultTheme } from '~/theme';
 
 import AssessmentEvidenceSection from './assessmentEvidenceSection.component';
-import { useAssessmentEvidence } from './hooks/useAssessmentEvidence';
-import type { AssessmentDetailsAssessment } from './assessmentDetails.type';
+import { useAssessmentEvidence } from '../hooks/useAssessmentEvidence';
+import type { AssessmentDetailsAssessment } from '../../assessmentDetails.type';
 
 export const renderTick = () =>
   new Promise<void>(resolve => setTimeout(resolve, 0));

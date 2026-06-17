@@ -10,9 +10,9 @@ import Modal from '~/app/components/ui/modal';
 import type { Evidence, Threat } from '~/domain';
 
 import StyledAssessmentEvidenceSection from './assessmentEvidenceSection.styled';
-import EvidenceForm from './assessmentEvidenceForm.component';
-import type { AssessmentDetailsAssessment } from './assessmentDetails.type';
-import type { AssessmentEvidenceController } from './hooks/useAssessmentEvidence';
+import EvidenceForm from '../form/assessmentEvidenceForm.component';
+import type { AssessmentDetailsAssessment } from '../../assessmentDetails.type';
+import type { AssessmentEvidenceController } from '../hooks/useAssessmentEvidence';
 
 const getEvidenceTypeLabel = (type: Evidence['type']) =>
   ({

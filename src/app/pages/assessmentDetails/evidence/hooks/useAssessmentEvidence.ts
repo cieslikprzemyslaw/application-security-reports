@@ -17,16 +17,16 @@ import {
   evidenceFormValueToUpdateInput,
   evidenceToFormValue,
   type EvidenceFormValue,
-} from '../assessmentEvidence.mapper';
+} from '../form/assessmentEvidence.mapper';
 import {
   createEmptyEvidenceFormErrors,
   createEvidenceValidationErrorMap,
-} from '../assessmentEvidence.validation';
+} from '../form/assessmentEvidence.validation';
 import type {
   EvidenceDrawerMode,
   EvidenceFormErrors,
-} from '../assessmentEvidence.types';
-import type { AssessmentDetailsAssessment } from '../assessmentDetails.type';
+} from '../form/assessmentEvidence.types';
+import type { AssessmentDetailsAssessment } from '../../assessmentDetails.type';
 
 export interface EvidenceThreatOption {
   id: string;
