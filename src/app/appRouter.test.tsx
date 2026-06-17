@@ -1237,6 +1237,122 @@ await (async () => {
       restoreFetch();
     }
   }
+
+  {
+    setFetch(async input => {
+      const path = String(input);
+
+      if (path === '/api/companies') {
+        return createJsonResponse({
+          data: [
+            {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              website: 'https://northwind.example',
+              contactEmail: 'security@northwind.example',
+              assessmentCount: 2,
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+            {
+              id: 'cmp_3',
+              name: 'Summit Health',
+              website: 'https://summit.example',
+              contactEmail: 'security@summit.example',
+              assessmentCount: 3,
+              createdAt: '2026-06-03T00:00:00.000Z',
+              updatedAt: '2026-06-12T00:00:00.000Z',
+            },
+          ],
+        });
+      }
+
+      if (path === '/api/companies/cmp_1/assessments') {
+        return createJsonResponse({ data: [] });
+      }
+
+      if (path === '/api/companies/cmp_3/overview') {
+        return createJsonResponse({
+          data: {
+            company: {
+              id: 'cmp_3',
+              name: 'Summit Health',
+              description: 'Healthcare security workspace',
+              website: 'https://summit.example',
+              contactName: 'C. Example',
+              contactEmail: 'security@summit.example',
+              logoPath: '/logos/summit.svg',
+              footerText: 'Confidential',
+              createdAt: '2026-06-03T00:00:00.000Z',
+              updatedAt: '2026-06-12T00:00:00.000Z',
+            },
+            assessmentCounts: {
+              total: 3,
+              draft: 1,
+              inProgress: 1,
+              completed: 1,
+            },
+            recentAssessments: [],
+          },
+        });
+      }
+
+      throw new Error(`Unexpected request: ${path}`);
+    });
+
+    try {
+      const { container, root } = await renderApp(
+        `${routes.companyWorkspaceAssessments('cmp_1')}?status=archived`,
+      );
+      const companySwitcher = container.querySelector(
+        '.sidebar-company-switcher',
+      ) as HTMLButtonElement | null;
+
+      assert.ok(companySwitcher, 'Expected the company switcher trigger');
+
+      await act(async () => {
+        companySwitcher.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
+
+      const summitButton = Array.from(
+        document.querySelectorAll('.company-switcher-item-button'),
+      ).find(button => button.textContent?.includes('Summit Health'));
+
+      assert.ok(summitButton, 'Expected a company option');
+
+      await act(async () => {
+        summitButton.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(
+        window.location.pathname,
+        routes.companyWorkspaceOverview('cmp_3'),
+      );
+      assert.equal(window.location.search, '');
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+
   {
     setFetch(async input => {
       assert.equal(String(input), '/api/companies');
@@ -1256,10 +1372,78 @@ await (async () => {
       restoreFetch();
     }
   }
-  await assertRouteRenders(
-    '/threats',
-    'Security findings across all active assessments.',
-  );
+  {
+    setFetch(async input => {
+      assert.equal(String(input), '/api/companies');
+      return createJsonResponse({ data: [] });
+    });
+
+    try {
+      const { container, root } = await renderApp(
+        '/threats?search=Missing&severity=critical&status=open&application=Customer%20Services%20Portal',
+      );
+
+      assert.equal(window.location.pathname, '/threats');
+      assert.equal(
+        new URLSearchParams(window.location.search).get('application'),
+        'Customer Services Portal',
+      );
+      assert.ok(
+        textContent(container).includes('Missing Server-Side Authorization'),
+      );
+
+      const searchInput = container.querySelector(
+        'input[placeholder="Search threats..."]',
+      ) as HTMLInputElement | null;
+
+      assert.equal(searchInput?.value, 'Missing');
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+  {
+    setFetch(async input => {
+      assert.equal(String(input), '/api/companies');
+      return createJsonResponse({ data: [] });
+    });
+
+    try {
+      const { root } = await renderApp(
+        '/threats?search=Missing&severity=invalid&status=invalid&application=Nope',
+      );
+
+      await act(async () => {
+        await renderTick();
+      });
+
+      assert.equal(window.location.search, '?search=Missing');
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  }
+  {
+    setFetch(async input => {
+      assert.equal(String(input), '/api/companies');
+      return createJsonResponse({ data: [] });
+    });
+
+    try {
+      await assertRouteRenders(
+        '/threats',
+        'Security threats across all active assessments.',
+      );
+    } finally {
+      restoreFetch();
+    }
+  }
   await assertRouteRenders('/reports', 'Report Preview');
   {
     const { container, root } = await renderApp('/settings');
@@ -1420,7 +1604,7 @@ await (async () => {
   try {
     {
       const { container, root } = await renderApp(
-        routes.companyWorkspaceAssessments('cmp_1'),
+        `${routes.companyWorkspaceAssessments('cmp_1')}?page=2`,
       );
 
       assert.ok(textContent(container).includes('Customer Services Portal'));
@@ -1484,6 +1668,111 @@ await (async () => {
         routes.assessmentDetailsFindings('cmp_1', 'asm_1'),
       );
       assert.ok(textContent(container).includes('Add finding'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    }
+
+    {
+      const { container, root } = await renderApp(
+        `${routes.companyWorkspaceAssessments(
+          'cmp_1',
+        )}?search=Data&status=archived&type=API&sort=name&direction=asc&page=2`,
+      );
+
+      assert.equal(
+        window.location.pathname,
+        routes.companyWorkspaceAssessments('cmp_1'),
+      );
+      assert.equal(
+        new URLSearchParams(window.location.search).get('search'),
+        'Data',
+      );
+      assert.ok(textContent(container).includes('Data Export Service'));
+      assert.ok(!textContent(container).includes('Customer Services Portal'));
+
+      const searchInput = container.querySelector(
+        'input[placeholder="Search assessments..."]',
+      ) as HTMLInputElement | null;
+
+      assert.equal(searchInput?.value, 'Data');
+
+      await act(async () => {
+        root.unmount();
+      });
+    }
+
+    {
+      const { container, root } = await renderApp(
+        `${routes.companyWorkspaceAssessments(
+          'cmp_1',
+        )}?search=Data&status=missing&type=missing&sort=bad&direction=sideways&page=-1`,
+      );
+
+      await act(async () => {
+        await renderTick();
+      });
+
+      assert.equal(
+        window.location.pathname,
+        routes.companyWorkspaceAssessments('cmp_1'),
+      );
+      assert.equal(window.location.search, '?search=Data');
+      assert.ok(textContent(container).includes('Data Export Service'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    }
+
+    {
+      const { container, root } = await renderApp(
+        `${routes.companyWorkspaceAssessments('cmp_1')}?page=2`,
+      );
+
+      const statusSelect = Array.from(
+        container.querySelectorAll('select'),
+      ).find(select =>
+        Array.from(select.options).some(option => option.value === 'archived'),
+      ) as HTMLSelectElement | undefined;
+
+      assert.ok(statusSelect, 'Expected the status filter');
+
+      await act(async () => {
+        statusSelect!.focus();
+        assert.equal(window.document.activeElement, statusSelect);
+        statusSelect!.value = 'archived';
+        statusSelect!.dispatchEvent(
+          new window.Event('change', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(
+        new URLSearchParams(window.location.search).get('status'),
+        'archived',
+      );
+      assert.equal(
+        new URLSearchParams(window.location.search).get('page'),
+        null,
+      );
+      assert.ok(textContent(container).includes('Data Export Service'));
+      assert.ok(!textContent(container).includes('Customer Services Portal'));
+
+      await act(async () => {
+        window.history.back();
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(window.location.search, '?page=2');
+      assert.ok(textContent(container).includes('Customer Services Portal'));
+      assert.ok(textContent(container).includes('Data Export Service'));
 
       await act(async () => {
         root.unmount();

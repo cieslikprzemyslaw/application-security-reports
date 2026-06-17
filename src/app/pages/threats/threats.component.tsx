@@ -10,6 +10,11 @@ import Select from '~/app/components/ui/select';
 import StyledThreats from './threats.styled';
 
 import type { ThreatsProps } from './threats.type';
+import {
+  getThreatApplications,
+  threatSeverityOptions,
+  threatStatusOptions,
+} from './threats.utils';
 
 const Threats = ({
   threats,
@@ -23,16 +28,14 @@ const Threats = ({
   onSeverityFilterChange,
   onStatusFilterChange,
   onApplicationFilterChange,
+  onClearControls,
   onThreatClick,
   onDrawerClose,
   onExport,
   onAddThreat,
 }: ThreatsProps) => {
   const query = searchValue.toLowerCase();
-
-  const applications = Array.from(
-    new Set(threats.map(threat => threat.applicationName)),
-  );
+  const applications = getThreatApplications(threats);
 
   const filteredThreats = threats.filter(threat => {
     const matchesSearch =
@@ -63,6 +66,11 @@ const Threats = ({
   const showNoResults = !showEmptyWorkspace && filteredThreats.length === 0;
 
   const clearFilters = () => {
+    if (onClearControls) {
+      onClearControls();
+      return;
+    }
+
     onSearchChange('');
     onSeverityFilterChange('all');
     onStatusFilterChange('all');
@@ -71,11 +79,11 @@ const Threats = ({
 
   const emptyState = showEmptyWorkspace ? (
     <EmptyState
-      title="No findings yet"
-      description="Add the first finding to start tracking security issues across assessments."
+      title="No threats yet"
+      description="Add the first threat to start tracking security issues across assessments."
       primaryAction={
         onAddThreat ? (
-          <Button title="Add finding" onClick={onAddThreat} />
+          <Button title="Add threat" onClick={onAddThreat} />
         ) : undefined
       }
     />
@@ -83,10 +91,10 @@ const Threats = ({
     <EmptyState
       title={
         hasFilters
-          ? 'No findings match your current search and filters'
-          : 'No findings found'
+          ? 'No threats match your current search and filters'
+          : 'No threats found'
       }
-      description="Clear the search and filters to show all findings again."
+      description="Clear the search and filters to show all threats again."
       primaryAction={
         <Button
           title="Clear filters"
@@ -101,10 +109,10 @@ const Threats = ({
     <StyledThreats>
       <header className="threats-header">
         <div>
-          <h1 className="threats-title">Findings</h1>
+          <h1 className="threats-title">Threats</h1>
 
           <p className="threats-subtitle">
-            Security findings across all active assessments.
+            Security threats across all active assessments.
           </p>
         </div>
 
@@ -113,7 +121,7 @@ const Threats = ({
             <Button title="Export" variant="secondary" onClick={onExport} />
           )}
 
-          {onAddThreat && <Button title="Add finding" onClick={onAddThreat} />}
+          {onAddThreat && <Button title="Add threat" onClick={onAddThreat} />}
         </div>
       </header>
 
@@ -122,7 +130,7 @@ const Threats = ({
           <div className="threats-search-wrap">
             <SearchInput
               value={searchValue}
-              placeholder="Search findings..."
+              placeholder="Search threats..."
               onChange={event => onSearchChange(event.target.value)}
               onClear={() => onSearchChange('')}
             />
@@ -133,29 +141,22 @@ const Threats = ({
               label="Severity"
               hideLabel
               value={severityFilter}
-              options={[
-                { label: 'All Severity', value: 'all' },
-                { label: 'Critical', value: 'critical' },
-                { label: 'High', value: 'high' },
-                { label: 'Medium', value: 'medium' },
-                { label: 'Low', value: 'low' },
-              ]}
-              onChange={event => onSeverityFilterChange(event.target.value)}
+              options={[...threatSeverityOptions]}
+              onChange={event =>
+                onSeverityFilterChange(
+                  event.target.value as typeof severityFilter,
+                )
+              }
             />
 
             <Select
               label="Status"
               hideLabel
               value={statusFilter}
-              options={[
-                { label: 'All Status', value: 'all' },
-                { label: 'Open', value: 'open' },
-                { label: 'In Review', value: 'in-review' },
-                { label: 'Mitigated', value: 'mitigated' },
-                { label: 'Accepted Risk', value: 'accepted-risk' },
-                { label: 'False Positive', value: 'false-positive' },
-              ]}
-              onChange={event => onStatusFilterChange(event.target.value)}
+              options={[...threatStatusOptions]}
+              onChange={event =>
+                onStatusFilterChange(event.target.value as typeof statusFilter)
+              }
             />
 
             <Select
@@ -163,7 +164,7 @@ const Threats = ({
               hideLabel
               value={applicationFilter}
               options={[
-                { label: 'All Applications', value: 'all' },
+                { label: 'All applications', value: 'all' },
                 ...applications.map(application => ({
                   label: application,
                   value: application,
@@ -174,7 +175,7 @@ const Threats = ({
           </div>
 
           <span className="threats-summary">
-            {filteredThreats.length} findings
+            {filteredThreats.length} threats
           </span>
         </div>
 
@@ -185,7 +186,7 @@ const Threats = ({
         />
 
         <div className="threats-footer">
-          <span>Showing {filteredThreats.length} findings</span>
+          <span>Showing {filteredThreats.length} threats</span>
           <span>Page 1 of 1</span>
         </div>
       </section>
