@@ -131,7 +131,7 @@ export const createSettingsRouter = (
             400,
             'VALIDATION_ERROR',
             'Request validation failed',
-            formatValidationErrors(effectiveResult.error),
+            formatValidationErrors(effectiveResult.error).fields,
           );
           return;
         }
