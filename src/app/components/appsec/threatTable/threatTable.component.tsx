@@ -28,6 +28,9 @@ const getThreatContext = (threat: ThreatTableRow) =>
           ? threat.affectedEndpoint.trim()
           : '';
 
+const getEndpointValue = (threat: ThreatTableRow) =>
+  threat.affectedEndpoint?.trim().length ? threat.affectedEndpoint.trim() : '—';
+
 const ThreatTable = ({
   threats,
   isLoading = false,
@@ -37,7 +40,7 @@ const ThreatTable = ({
 }: ThreatTableProps) => (
   <StyledThreatTable>
     <DataTable<ThreatTableRow>
-      caption="Findings"
+      caption="Threats"
       rows={threats}
       isLoading={isLoading}
       emptyState={emptyState}
@@ -97,6 +100,15 @@ const ThreatTable = ({
           ),
         },
         {
+          id: 'endpoint',
+          header: 'Endpoint',
+          cell: threat => (
+            <span className="threat-table-endpoint">
+              {getEndpointValue(threat)}
+            </span>
+          ),
+        },
+        {
           id: 'updated',
           header: 'Updated',
           cell: threat => (
@@ -111,7 +123,7 @@ const ThreatTable = ({
             <div className="threat-table-actions">
               {onEditThreatClick && (
                 <Button
-                  title="Edit finding"
+                  title="Edit threat"
                   size="small"
                   variant="secondary"
                   onClick={event => {

@@ -32,9 +32,9 @@ const ThreatDrawer = ({
   footer,
   onClose,
   onEdit,
-  closeLabel = 'Close finding details',
+  closeLabel = 'Close threat details',
 }: ThreatDrawerProps) => {
-  const drawerTitle = title ?? threat?.title ?? 'Finding details';
+  const drawerTitle = title ?? threat?.title ?? 'Threat details';
   const drawerDescription =
     typeof description === 'string' ? description : undefined;
   const showDetailView = children == null && Boolean(threat);
@@ -185,7 +185,7 @@ const ThreatDrawer = ({
 
             {onEdit && (
               <div className="threat-drawer-actions">
-                <Button title="Edit finding" onClick={onEdit} />
+                <Button title="Edit threat" onClick={onEdit} />
               </div>
             )}
           </div>

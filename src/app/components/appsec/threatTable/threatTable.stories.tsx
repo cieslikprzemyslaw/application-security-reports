@@ -14,7 +14,7 @@ const meta = {
       action: 'threat clicked',
     },
     onEditThreatClick: {
-      action: 'finding edited',
+      action: 'threat edited',
     },
   },
 } satisfies Meta<typeof ThreatTable>;
