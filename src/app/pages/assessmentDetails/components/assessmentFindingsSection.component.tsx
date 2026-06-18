@@ -54,22 +54,22 @@ const AssessmentFindingsSection = ({
   const tableEmptyState =
     !isLoading && threats.length === 0 ? (
       <EmptyState
-        title="No findings yet"
-        description="Add the first finding to start tracking security issues in this assessment."
+        title="No threats yet"
+        description="Add the first threat to start tracking security issues in this assessment."
       />
     ) : undefined;
 
   const drawerTitle =
     drawerMode === 'create'
-      ? 'Create finding'
+      ? 'Create threat'
       : drawerMode === 'edit'
-        ? 'Edit finding'
-        : 'Finding details';
+        ? 'Edit threat'
+        : 'Threat details';
   const drawerContent =
     drawerMode === 'create' || drawerMode === 'edit' ? (
       <>
         {formError && (
-          <Callout variant="error" title="Unable to save finding">
+          <Callout variant="error" title="Unable to save threat">
             <p>{formError}</p>
           </Callout>
         )}
@@ -79,7 +79,7 @@ const AssessmentFindingsSection = ({
           errors={fieldErrors}
           isSubmitting={isSubmitting}
           submitLabel={
-            drawerMode === 'create' ? 'Create finding' : 'Save finding'
+            drawerMode === 'create' ? 'Create threat' : 'Save threat'
           }
           onChange={handleFindingChange}
           onSubmit={handleFindingSave}
@@ -90,17 +90,17 @@ const AssessmentFindingsSection = ({
   return (
     <>
       <Card
-        title="Findings"
-        subtitle="Assessment-scoped findings and their current status."
+        title="Threats"
+        subtitle="Assessment-scoped threats and their current status."
         padding="large"
         actions={
           assessment.status === 'archived' ? undefined : (
-            <Button title="Add finding" onClick={openCreateFinding} />
+            <Button title="Add threat" onClick={openCreateFinding} />
           )
         }
       >
         {loadError ? (
-          <Callout variant="error" title="Unable to load findings">
+          <Callout variant="error" title="Unable to load threats">
             <p>{loadError}</p>
           </Callout>
         ) : (

@@ -190,7 +190,7 @@ await (async () => {
       item.textContent?.includes('Broken object-level authorization'),
     ) as HTMLTableRowElement | undefined;
 
-    assert.ok(row, 'Expected a clickable findings row');
+    assert.ok(row, 'Expected a clickable threats row');
 
     await act(async () => {
       row!.focus();
@@ -222,11 +222,11 @@ await (async () => {
     assert.ok(
       textContent(window.document.body).includes('Enforce object-level'),
     );
-    assert.ok(textContent(window.document.body).includes('Finding details'));
+    assert.ok(textContent(window.document.body).includes('Threat details'));
 
     const getCloseButton = () =>
       window.document.body.querySelector(
-        'button[aria-label="Close finding details"]',
+        'button[aria-label="Close threat details"]',
       ) as HTMLButtonElement | null;
 
     const closeButton = getCloseButton();
@@ -248,7 +248,7 @@ await (async () => {
 
     assert.equal(window.document.activeElement, row);
     assert.ok(
-      !textContent(window.document.body).includes('Finding details'),
+      !textContent(window.document.body).includes('Threat details'),
       'Expected the read-only drawer to close',
     );
 
@@ -314,7 +314,7 @@ await (async () => {
       await renderHarness('in-progress');
 
     const editButton = Array.from(container.querySelectorAll('button')).find(
-      button => button.textContent?.trim() === 'Edit finding',
+      button => button.textContent?.trim() === 'Edit threat',
     ) as HTMLButtonElement | undefined;
 
     assert.ok(editButton, 'Expected the row edit action');
@@ -333,15 +333,15 @@ await (async () => {
 
     assert.deepEqual(events, ['edit']);
     assert.ok(
-      !textContent(window.document.body).includes('Finding details'),
+      !textContent(window.document.body).includes('Threat details'),
       'Expected the edit action to open the editor instead of the details view',
     );
     assert.ok(
       window.document.body.querySelector('#threat-title'),
-      'Expected the editable finding form to render',
+      'Expected the editable threat form to render',
     );
     assert.ok(
-      textContent(window.document.body).includes('Save finding'),
+      textContent(window.document.body).includes('Save threat'),
       'Expected the drawer action to switch to the edit form',
     );
 
@@ -355,7 +355,7 @@ await (async () => {
 
     assert.equal(
       Array.from(container.querySelectorAll('button')).find(
-        button => button.textContent?.trim() === 'Edit finding',
+        button => button.textContent?.trim() === 'Edit threat',
       ) ?? null,
       null,
       'Expected archived assessments to hide the edit action',
@@ -367,7 +367,7 @@ await (async () => {
       item.textContent?.includes('Broken object-level authorization'),
     ) as HTMLTableRowElement | undefined;
 
-    assert.ok(row, 'Expected the archived finding row');
+    assert.ok(row, 'Expected the archived threat row');
 
     await act(async () => {
       row!.dispatchEvent(
@@ -385,14 +385,97 @@ await (async () => {
       textContent(window.document.body).includes(
         'Broken object-level authorization',
       ),
-      'Expected archived findings to still open the details drawer',
+      'Expected archived threats to still open the details drawer',
     );
     assert.equal(
       Array.from(window.document.body.querySelectorAll('button')).find(
-        button => button.textContent?.trim() === 'Edit finding',
+        button => button.textContent?.trim() === 'Edit threat',
       ) ?? null,
       null,
-      'Expected the drawer not to expose edit actions for archived findings',
+      'Expected the drawer not to expose edit actions for archived threats',
+    );
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
+  {
+    const { container, root } = await renderHarness('in-progress');
+
+    assert.ok(
+      textContent(container).includes('Threats'),
+      'Expected Threat terminology in the section heading',
+    );
+    assert.ok(
+      !textContent(container).includes('Findings'),
+      'Expected no Finding terminology in the section',
+    );
+
+    const editButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent?.trim() === 'Edit threat',
+    );
+
+    assert.ok(editButton, 'Expected Edit threat action label');
+    assert.ok(
+      !Array.from(container.querySelectorAll('button')).some(
+        button => button.textContent?.trim() === 'Edit finding',
+      ),
+      'Expected no Edit finding label',
+    );
+
+    assert.ok(
+      textContent(container).includes('/api/orders/{id}'),
+      'Expected the endpoint value to appear in the row',
+    );
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
+  {
+    const threatWithoutEndpoint: Threat = {
+      ...finding,
+      id: 'thr_2',
+      affectedEndpoint: undefined,
+    };
+
+    const { container } = setupDom();
+    assert.ok(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <ThemeProvider theme={defaultTheme}>
+          <AssessmentFindingsSection
+            assessment={{ ...assessmentBase, status: 'in-progress' }}
+            threats={[threatWithoutEndpoint]}
+            isLoading={false}
+            drawerMode={null}
+            selectedFinding={undefined}
+            draftValue={createEmptyThreatFormValue()}
+            fieldErrors={{}}
+            formError={undefined}
+            isSubmitting={false}
+            canEditFindings={true}
+            openCreateFinding={() => undefined}
+            openEditFinding={() => undefined}
+            openFindingDetails={() => undefined}
+            closeFindingDrawer={() => undefined}
+            handleFindingChange={() => undefined}
+            handleFindingSave={async event => {
+              event.preventDefault();
+            }}
+          />
+        </ThemeProvider>,
+      );
+      await renderTick();
+    });
+
+    assert.ok(
+      textContent(container).includes('—'),
+      'Expected em dash for absent endpoint',
     );
 
     await act(async () => {
