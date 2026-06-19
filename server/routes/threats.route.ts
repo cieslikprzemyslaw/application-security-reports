@@ -178,7 +178,7 @@ export const createThreatsRouter = (
 
         res.status(200).json({
           data: threats.map(threat =>
-            threatResponse(threat, assessment.owaspTaxonomyVersion),
+            threatResponse(threat, assessment.owaspTaxonomyVersion!),
           ),
         });
       } catch (error) {
@@ -217,7 +217,7 @@ export const createThreatsRouter = (
           return;
         }
 
-        sendThreatResponse(res, 200, threat, assessment.owaspTaxonomyVersion);
+        sendThreatResponse(res, 200, threat, assessment.owaspTaxonomyVersion!);
       } catch (error) {
         if (!handleThreatRepositoryError(error, res, 'retrieve')) {
           throw error;
@@ -254,7 +254,7 @@ export const createThreatsRouter = (
           response,
           201,
           threat,
-          assessment.owaspTaxonomyVersion,
+          assessment.owaspTaxonomyVersion!,
         );
       } catch (error) {
         if (!handleThreatRepositoryError(error, res, 'create')) {
@@ -300,7 +300,7 @@ export const createThreatsRouter = (
           res,
           200,
           updatedThreat,
-          assessment.owaspTaxonomyVersion,
+          assessment.owaspTaxonomyVersion!,
         );
       } catch (error) {
         if (!handleThreatRepositoryError(error, res, 'update')) {
