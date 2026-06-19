@@ -11,7 +11,7 @@ const StyledCompanySwitcher = styled.div.attrs({
     .company-switcher-status {
       padding: ${spacing.xs} 0;
 
-      color: ${colors.neutral.grey300};
+      color: ${colors.text.muted};
       font-size: ${typography.body.small.size};
       line-height: ${typography.body.small.lineHeight};
     }
@@ -39,11 +39,11 @@ const StyledCompanySwitcher = styled.div.attrs({
       width: 100%;
       padding: 0.75rem 0.875rem;
 
-      border: 1px solid rgb(255 255 255 / 10%);
+      border: 1px solid ${colors.border.subtle};
       border-radius: ${radii.md};
 
-      color: ${colors.neutral.grey300};
-      background-color: rgb(255 255 255 / 4%);
+      color: ${colors.text.primary};
+      background-color: ${colors.surface.subtle};
       text-align: left;
       transition:
         color ${transitions.fast},
@@ -52,9 +52,9 @@ const StyledCompanySwitcher = styled.div.attrs({
     }
 
     .company-switcher-item-button:hover {
-      border-color: rgb(255 255 255 / 18%);
-      color: ${colors.neutral.white};
-      background-color: rgb(255 255 255 / 8%);
+      border-color: ${colors.border.default};
+      color: ${colors.text.primary};
+      background-color: ${colors.brand.wash};
     }
 
     .company-switcher-item-button:focus-visible {
@@ -63,9 +63,9 @@ const StyledCompanySwitcher = styled.div.attrs({
     }
 
     .company-switcher-item-button--active {
-      border-color: rgb(255 255 255 / 20%);
-      color: ${colors.neutral.white};
-      background-color: rgb(255 255 255 / 12%);
+      border-color: ${colors.brand.primary};
+      color: ${colors.text.primary};
+      background-color: ${colors.brand.wash};
     }
 
     .company-switcher-item-icon {
@@ -78,8 +78,8 @@ const StyledCompanySwitcher = styled.div.attrs({
       height: 2rem;
 
       border-radius: ${radii.md};
-      color: ${colors.neutral.white};
-      background-color: rgb(255 255 255 / 10%);
+      color: ${colors.brand.primary};
+      background-color: ${colors.neutral.grey100};
     }
 
     .company-switcher-item-icon svg {
@@ -109,7 +109,7 @@ const StyledCompanySwitcher = styled.div.attrs({
       text-overflow: ellipsis;
       white-space: nowrap;
 
-      color: ${colors.neutral.grey400};
+      color: ${colors.text.muted};
       font-size: ${typography.body.small.size};
       line-height: ${typography.body.small.lineHeight};
     }
@@ -120,8 +120,8 @@ const StyledCompanySwitcher = styled.div.attrs({
 
       border-radius: ${radii.pill};
 
-      color: ${colors.neutral.white};
-      background-color: rgb(255 255 255 / 10%);
+      color: ${colors.brand.primary};
+      background-color: ${colors.brand.wash};
       font-size: ${typography.label.small.size};
       line-height: ${typography.label.small.lineHeight};
       font-weight: ${typography.label.small.weight};
@@ -134,6 +134,51 @@ const StyledCompanySwitcher = styled.div.attrs({
       gap: ${spacing.xs};
       justify-content: flex-end;
       flex-wrap: wrap;
+    }
+
+    .button.company-switcher-actions-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1 1 0;
+      min-width: 8rem;
+      min-height: 2.5rem;
+      padding: 0;
+
+      border: 0;
+      border-radius: 0;
+
+      color: ${colors.text.link};
+      background-color: transparent;
+      font-size: ${typography.body.medium.size};
+      line-height: ${typography.body.medium.lineHeight};
+      font-weight: ${typography.fontWeights.semibold};
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+      text-decoration-thickness: 0.08em;
+      transition:
+        color ${transitions.fast},
+        text-decoration-thickness ${transitions.fast};
+    }
+
+    .button.company-switcher-actions-link:hover {
+      color: ${colors.text.linkHover};
+      background-color: transparent;
+      border-color: transparent;
+      text-decoration-thickness: 0.11em;
+    }
+
+    .button.company-switcher-actions-link:active {
+      color: ${colors.text.linkHover};
+      background-color: transparent;
+      border-color: transparent;
+      text-decoration-thickness: 0.11em;
+    }
+
+    .button.company-switcher-actions-link:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: 2px;
+      box-shadow: none;
     }
 
     .company-switcher-actions > * {

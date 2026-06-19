@@ -2122,9 +2122,9 @@ await (async () => {
         await renderTick();
       });
 
-      const viewAllButton = Array.from(
-        document.querySelectorAll('button'),
-      ).find(button => button.textContent?.includes('View all'));
+      const viewAllButton = document.querySelector(
+        '.company-switcher-actions-link',
+      ) as HTMLButtonElement | null;
 
       assert.ok(viewAllButton, 'Expected a view all action');
 

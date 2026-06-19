@@ -191,10 +191,6 @@ const CompanySwitcher = ({
                             <span className="company-switcher-item-name">
                               {company.name}
                             </span>
-
-                            <span className="company-switcher-item-meta">
-                              {company.assessmentCount} assessments
-                            </span>
                           </span>
 
                           {isCurrentCompany && (
@@ -235,7 +231,8 @@ const CompanySwitcher = ({
                 <div className="company-switcher-actions">
                   <Button
                     title="View all"
-                    variant="secondary"
+                    variant="tertiary"
+                    className="company-switcher-actions-link"
                     onClick={handleViewAll}
                   />
 

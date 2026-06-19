@@ -169,7 +169,26 @@ const click = async (element: Element | null) => {
 
 await (async () => {
   {
-    const { container, root, window } = await renderComponent();
+    const companyList = JSON.parse(JSON.stringify(companies));
+
+    const meridianFinance = companyList.find(
+      (company: { id: string }) => company.id === 'cmp_2',
+    );
+    const summitHealth = companyList.find(
+      (company: { id: string }) => company.id === 'cmp_3',
+    );
+    const northstarDigital = companyList.find(
+      (company: { id: string }) => company.id === 'cmp_1',
+    );
+
+    assert.ok(meridianFinance, 'Expected Meridian Finance test fixture');
+    assert.ok(summitHealth, 'Expected Summit Health test fixture');
+    assert.ok(northstarDigital, 'Expected Northstar Digital test fixture');
+
+    const { container, root, window } = await renderComponent({
+      activeCompany: { id: 'cmp_2', name: 'Meridian Finance' },
+      companyList,
+    });
 
     const trigger = container.querySelector(
       '.sidebar-company-switcher',
@@ -187,6 +206,10 @@ await (async () => {
       window.document.body.textContent?.includes('Switch company'),
       'Expected the switcher dialog to open',
     );
+    assert.ok(
+      window.document.querySelector('input[placeholder="Search companies..."]'),
+      'Expected the search field to be visible in the open drawer',
+    );
 
     const closeButton = window.document.querySelector(
       'button[aria-label="Close company switcher"]',
@@ -200,12 +223,30 @@ await (async () => {
     ).map(element => element.textContent);
 
     assert.deepEqual(visibleNames.slice(0, 5), [
-      'Summit Health',
       'Meridian Finance',
+      'Summit Health',
       'Northstar Digital',
       'Blue River Labs',
       'Atlas Retail',
     ]);
+    assert.ok(
+      window.document.body.textContent?.includes('Current'),
+      'Expected the current company badge to remain visible',
+    );
+
+    const viewAllButton = window.document.querySelector(
+      '.company-switcher-actions-link',
+    ) as HTMLButtonElement | null;
+
+    assert.ok(viewAllButton, 'Expected the view all button');
+    assert.equal(viewAllButton?.tagName, 'BUTTON');
+    assert.equal(viewAllButton?.textContent?.trim(), 'View all');
+    assert.ok(
+      window.document.head.textContent?.includes(
+        '.company-switcher-actions-link',
+      ),
+      'Expected the view all button styles to be injected',
+    );
 
     const northstarButton = Array.from(
       window.document.querySelectorAll('.company-switcher-item-button'),
