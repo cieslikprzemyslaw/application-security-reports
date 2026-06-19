@@ -71,6 +71,14 @@ const defaultCompany = {
   updatedAt: '2026-06-11T09:00:00.000Z',
 };
 
+const defaultCompanyWithoutLogoPath = (({ logoPath: _logoPath, ...rest }) =>
+  rest)(defaultCompany);
+
+const defaultCompanyResponse = {
+  ...defaultCompanyWithoutLogoPath,
+  logoUrl: null,
+};
+
 const defaultOverview: CompanyOverview = {
   company: defaultCompany,
   assessmentCounts: { total: 2, draft: 1, inProgress: 1, completed: 0 },
@@ -86,6 +94,11 @@ const defaultOverview: CompanyOverview = {
     },
   ],
   recentReports: null,
+};
+
+const defaultOverviewResponse = {
+  ...defaultOverview,
+  company: defaultCompanyResponse,
 };
 
 type CompanyRepositoryOverrides = Partial<{
@@ -194,9 +207,9 @@ const createApp = (repository: CompanyRepository) =>
 
     assert.equal(response.status, 200);
     assert.deepEqual(
-      await readJson<{ data: Array<typeof defaultCompany> }>(response),
+      await readJson<{ data: Array<typeof defaultCompanyResponse> }>(response),
       {
-        data: [defaultCompany],
+        data: [defaultCompanyResponse],
       },
     );
     assert.equal(calls.findAll, 1);
@@ -237,9 +250,9 @@ const createApp = (repository: CompanyRepository) =>
 
     assert.equal(response.status, 200);
     assert.deepEqual(
-      await readJson<{ data: typeof defaultCompany }>(response),
+      await readJson<{ data: typeof defaultCompanyResponse }>(response),
       {
-        data: defaultCompany,
+        data: defaultCompanyResponse,
       },
     );
     assert.equal(calls.findById, 1);
@@ -344,7 +357,6 @@ const createApp = (repository: CompanyRepository) =>
         website: 'https://example.example',
         contactName: 'Ada Lovelace',
         contactEmail: 'ada@example.com',
-        logoPath: '/logos/example.svg',
         footerText: 'Confidential',
       }),
     });
@@ -353,9 +365,12 @@ const createApp = (repository: CompanyRepository) =>
     assert.ok(
       response.headers.get('location')?.startsWith('/api/companies/cmp_'),
     );
-    const body = await readJson<{ data: typeof defaultCompany }>(response);
+    const body = await readJson<{ data: typeof defaultCompanyResponse }>(
+      response,
+    );
     assert.equal(body.data.name, 'Example Security');
     assert.equal(body.data.id.startsWith('cmp_'), true);
+    assert.equal(body.data.logoUrl, defaultCompanyResponse.logoUrl);
     assert.equal(calls.create, 1);
     assert.equal(calls.createArgs?.input.name, 'Example Security');
   } finally {
@@ -546,9 +561,12 @@ const createApp = (repository: CompanyRepository) =>
     );
 
     assert.equal(response.status, 200);
-    const body = await readJson<{ data: typeof defaultCompany }>(response);
+    const body = await readJson<{ data: typeof defaultCompanyResponse }>(
+      response,
+    );
     assert.equal(body.data.name, 'Northstar Security');
     assert.equal(body.data.website, defaultCompany.website);
+    assert.equal(body.data.logoUrl, defaultCompanyResponse.logoUrl);
     assert.equal(calls.update, 1);
     assert.equal(calls.updateArgs?.id, defaultCompany.id);
     assert.equal(calls.updateArgs?.input.name, 'Northstar Security');
@@ -583,9 +601,12 @@ const createApp = (repository: CompanyRepository) =>
     );
 
     assert.equal(response.status, 200);
-    const body = await readJson<{ data: typeof defaultCompany }>(response);
+    const body = await readJson<{ data: typeof defaultCompanyResponse }>(
+      response,
+    );
     assert.equal(body.data.name, 'Northstar Security');
     assert.equal(body.data.contactEmail, 'security-team@example.com');
+    assert.equal(body.data.logoUrl, defaultCompanyResponse.logoUrl);
     assert.equal(calls.update, 1);
     assert.equal(calls.updateArgs?.input.name, 'Northstar Security');
     assert.equal(
@@ -687,6 +708,72 @@ const createApp = (repository: CompanyRepository) =>
       body.error.details.some(
         (detail: { path: string; message: string }) =>
           detail.path === 'createdAt' &&
+          detail.message.includes('Unknown property'),
+      ),
+    );
+  } finally {
+    await server.close();
+  }
+}
+
+{
+  const { calls, repository } = createCompanyRepository();
+  const server = await startTestServer(createApp(repository));
+
+  try {
+    const response = await fetch(`${server.baseUrl}/api/companies`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'Example Security',
+        logoPath: '/logos/example.svg',
+      }),
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(calls.create, 0);
+    const body = await readJson<ApiErrorBody>(response);
+    assert.equal(body.error.code, 'VALIDATION_ERROR');
+    assert.ok(
+      body.error.details.some(
+        (detail: { path: string; message: string }) =>
+          detail.path === 'logoPath' &&
+          detail.message.includes('Unknown property'),
+      ),
+    );
+  } finally {
+    await server.close();
+  }
+}
+
+{
+  const { calls, repository } = createCompanyRepository();
+  const server = await startTestServer(createApp(repository));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          logoUrl: 'https://example.example/logo.svg',
+        }),
+      },
+    );
+
+    assert.equal(response.status, 400);
+    assert.equal(calls.update, 0);
+    const body = await readJson<ApiErrorBody>(response);
+    assert.equal(body.error.code, 'VALIDATION_ERROR');
+    assert.ok(
+      body.error.details.some(
+        (detail: { path: string; message: string }) =>
+          detail.path === 'logoUrl' &&
           detail.message.includes('Unknown property'),
       ),
     );
@@ -908,9 +995,12 @@ const createApp = (repository: CompanyRepository) =>
     );
 
     assert.equal(response.status, 200);
-    assert.deepEqual(await readJson<{ data: CompanyOverview }>(response), {
-      data: defaultOverview,
-    });
+    assert.deepEqual(
+      await readJson<{ data: typeof defaultOverviewResponse }>(response),
+      {
+        data: defaultOverviewResponse,
+      },
+    );
     assert.equal(calls.findOverview, 1);
   } finally {
     await server.close();

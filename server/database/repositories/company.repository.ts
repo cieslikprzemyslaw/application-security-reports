@@ -201,7 +201,25 @@ export function createCompanyRepository(
       try {
         const company = await db.company.update({
           where: { id },
-          data: input,
+          data: {
+            ...(input.name !== undefined ? { name: input.name } : {}),
+            ...(input.description !== undefined
+              ? { description: input.description }
+              : {}),
+            ...(input.website !== undefined ? { website: input.website } : {}),
+            ...(input.contactName !== undefined
+              ? { contactName: input.contactName }
+              : {}),
+            ...(input.contactEmail !== undefined
+              ? { contactEmail: input.contactEmail }
+              : {}),
+            ...(input.logoPath !== undefined
+              ? { logoPath: input.logoPath }
+              : {}),
+            ...(input.footerText !== undefined
+              ? { footerText: input.footerText }
+              : {}),
+          },
           select: companySelect,
         });
 

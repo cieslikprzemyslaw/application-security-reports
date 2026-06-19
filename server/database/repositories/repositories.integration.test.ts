@@ -52,6 +52,16 @@ const assessmentMigrationPath = path.resolve(
   'migration.sql',
 );
 const assessmentMigrationSql = readFileSync(assessmentMigrationPath, 'utf8');
+const companyLogoMigrationPath = path.resolve(
+  buildDir,
+  '..',
+  '..',
+  'prisma',
+  'migrations',
+  '20260619130000_add_company_logo_url',
+  'migration.sql',
+);
+const companyLogoMigrationSql = readFileSync(companyLogoMigrationPath, 'utf8');
 const settingsBrandingMigrationPath = path.resolve(
   buildDir,
   '..',
@@ -99,6 +109,7 @@ const Database = require('better-sqlite3') as new (databasePath: string) => {
   const bootstrapDb = new Database(databasePath);
   try {
     bootstrapDb.exec(schemaSql);
+    bootstrapDb.exec(companyLogoMigrationSql);
     bootstrapDb.exec(assessmentMigrationSql);
     bootstrapDb.exec(settingsBrandingMigrationSql);
     bootstrapDb.exec(threatMigrationSql);
