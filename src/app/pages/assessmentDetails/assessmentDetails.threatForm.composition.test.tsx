@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 
+import { act } from 'react';
+
 import { routes } from '~/routes';
 import { OWASP_TOP_10_CURRENT_VERSION, OWASP_TOP_10_REGISTRY } from '~/domain';
 import {
