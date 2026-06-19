@@ -222,7 +222,9 @@ try {
       select: { id: true, owaspTaxonomyVersion: true },
     });
     assert.deepEqual(
-      seededAssessments.map(row => row.owaspTaxonomyVersion),
+      seededAssessments.map(
+        (row: { owaspTaxonomyVersion: string }) => row.owaspTaxonomyVersion,
+      ),
       Array.from(
         { length: seededAssessments.length },
         () => OWASP_TOP_10_CURRENT_VERSION,
@@ -239,7 +241,7 @@ try {
     for (const threat of seededThreats) {
       if (threat.owaspCategoryCode && threat.owaspCategoryCode !== 'custom') {
         const assessmentVersion = seededAssessments.find(
-          row => row.id === threat.assessmentId,
+          (row: { id: string }) => row.id === threat.assessmentId,
         )?.owaspTaxonomyVersion;
 
         assert.ok(

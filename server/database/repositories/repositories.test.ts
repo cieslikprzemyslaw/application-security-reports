@@ -539,7 +539,7 @@ const createSettingsDb = () => {
 {
   const { calls, db } = createThreatDb({
     ...assessmentRow,
-    owaspTaxonomyVersion: '2021',
+    owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   });
   const repository = createThreatRepository(db);
 
@@ -551,7 +551,7 @@ const createSettingsDb = () => {
       severity: 'high',
       strideCategories: ['spoofing'],
       status: 'open',
-      owaspCategoryCode: 'A09:2025',
+      owaspCategoryCode: 'A09:2021',
       affectedAsset: undefined,
       impact: undefined,
       recommendation: undefined,
@@ -581,7 +581,7 @@ const createSettingsDb = () => {
     repository.update('thr_123', {
       title: 'Threat',
       status: 'open',
-      owaspCategoryCode: 'A09:2021',
+      owaspCategoryCode: 'A09:2025',
     }),
     error => error instanceof Error && error.name === 'ValidationError',
   );
@@ -597,7 +597,7 @@ const createSettingsDb = () => {
 {
   const { calls, db } = createThreatDb(assessmentRow, {
     ...threatRow,
-    owaspCategoryCode: 'A09:2021',
+    owaspCategoryCode: 'A09:2025',
   });
   const repository = createThreatRepository(db);
 
