@@ -235,7 +235,8 @@ const CompanySwitcher = ({
                 <div className="company-switcher-actions">
                   <Button
                     title="View all"
-                    variant="secondary"
+                    variant="tertiary"
+                    className="company-switcher-actions-link"
                     onClick={handleViewAll}
                   />
 

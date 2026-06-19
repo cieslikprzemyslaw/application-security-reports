@@ -207,6 +207,20 @@ await (async () => {
       'Atlas Retail',
     ]);
 
+    const viewAllButton = window.document.querySelector(
+      '.company-switcher-actions-link',
+    ) as HTMLButtonElement | null;
+
+    assert.ok(viewAllButton, 'Expected the view all button');
+    assert.equal(viewAllButton?.tagName, 'BUTTON');
+    assert.equal(viewAllButton?.textContent?.trim(), 'View all');
+    assert.ok(
+      window.document.head.textContent?.includes(
+        '.company-switcher-actions-link',
+      ),
+      'Expected the view all button styles to be injected',
+    );
+
     const northstarButton = Array.from(
       window.document.querySelectorAll('.company-switcher-item-button'),
     ).find(button => button.textContent?.includes('Northstar Digital'));

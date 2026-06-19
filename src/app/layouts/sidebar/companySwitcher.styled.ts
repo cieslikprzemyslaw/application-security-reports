@@ -136,6 +136,53 @@ const StyledCompanySwitcher = styled.div.attrs({
       flex-wrap: wrap;
     }
 
+    .button.company-switcher-actions-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1 1 0;
+      min-width: 8rem;
+      min-height: 2.5rem;
+      padding: 0.5625rem 1rem;
+
+      border: 1px solid transparent;
+      border-radius: ${radii.md};
+
+      color: ${colors.text.inverse};
+      background-color: transparent;
+      font-size: ${typography.body.medium.size};
+      line-height: ${typography.body.medium.lineHeight};
+      font-weight: ${typography.fontWeights.semibold};
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+      text-decoration-thickness: 0.08em;
+      transition:
+        color ${transitions.fast},
+        background-color ${transitions.fast},
+        border-color ${transitions.fast},
+        text-decoration-thickness ${transitions.fast};
+    }
+
+    .button.company-switcher-actions-link:hover {
+      color: ${colors.text.inverse};
+      border-color: rgb(255 255 255 / 18%);
+      background-color: rgb(255 255 255 / 8%);
+      text-decoration-thickness: 0.11em;
+    }
+
+    .button.company-switcher-actions-link:active {
+      color: ${colors.text.inverse};
+      border-color: rgb(255 255 255 / 20%);
+      background-color: rgb(255 255 255 / 12%);
+      text-decoration-thickness: 0.11em;
+    }
+
+    .button.company-switcher-actions-link:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: 2px;
+      box-shadow: none;
+    }
+
     .company-switcher-actions > * {
       flex: 1 1 0;
       min-width: 8rem;
