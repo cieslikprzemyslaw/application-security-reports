@@ -40,6 +40,7 @@ export interface AssessmentDetailsAssessment {
   environment?: string;
   status: AssessmentStatus;
   overallRisk?: Severity;
+  owaspTaxonomyVersion?: string;
   recordVersion: number;
   findingsCount: number;
   evidenceCount: number;

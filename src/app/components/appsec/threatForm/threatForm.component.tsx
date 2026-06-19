@@ -4,26 +4,15 @@ import Button from '~/app/components/ui/button';
 import Input from '~/app/components/ui/input';
 import Select from '~/app/components/ui/select';
 import Textarea from '~/app/components/ui/textarea';
-import { OWASP_TOP_10_OPTIONS } from '~/domain';
 
 import StyledThreatForm from './threatForm.styled';
+import {
+  buildOwaspCategoryOptions,
+  fieldIdMap,
+  statusLabelMap,
+} from './threatForm.utils';
 
 import type { ThreatFormProps, ThreatFormValue } from './threatForm.type';
-
-const owaspCategoryOptions = [
-  ...OWASP_TOP_10_OPTIONS,
-  { label: 'Custom', value: 'custom' },
-];
-
-const statusLabelMap: Record<ThreatFormValue['status'], string> = {
-  draft: 'Draft',
-  open: 'Open',
-  resolved: 'Resolved',
-  'accepted-risk': 'Accepted Risk',
-  'in-review': 'In Review',
-  mitigated: 'Mitigated',
-  'false-positive': 'False Positive',
-};
 
 const updateField = <K extends keyof ThreatFormValue>(
   value: ThreatFormValue,
@@ -34,26 +23,9 @@ const updateField = <K extends keyof ThreatFormValue>(
   [field]: fieldValue,
 });
 
-const fieldIdMap: Record<keyof ThreatFormValue, string> = {
-  title: 'threat-title',
-  owaspCategoryCode: 'threat-owasp-category-code',
-  customCategory: 'threat-custom-category',
-  strideCategory: 'threat-stride-category',
-  severity: 'threat-severity',
-  status: 'threat-status',
-  affectedComponent: 'threat-affected-component',
-  affectedEndpoint: 'threat-affected-endpoint',
-  observation: 'threat-observation',
-  reproductionSteps: 'threat-reproduction-steps',
-  risk: 'threat-risk',
-  recommendation: 'threat-remediation',
-  references: 'threat-references',
-  resolutionNote: 'threat-resolution-note',
-  acceptedRiskJustification: 'threat-accepted-risk-justification',
-};
-
 const ThreatForm = ({
   value,
+  owaspTaxonomyVersion,
   errors = {},
   isSubmitting = false,
   submitLabel = 'Save finding',
@@ -66,6 +38,10 @@ const ThreatForm = ({
   const requiresOpenReadiness = value.status !== 'draft';
   const requiresResolutionNote = value.status === 'resolved';
   const requiresAcceptedRiskJustification = value.status === 'accepted-risk';
+  const owaspCategoryOptions = buildOwaspCategoryOptions(
+    owaspTaxonomyVersion,
+    owaspCategoryCode,
+  );
 
   const firstErrorFieldId = useMemo(() => {
     const orderedFields: Array<keyof ThreatFormValue> = [

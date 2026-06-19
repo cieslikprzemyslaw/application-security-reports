@@ -5,6 +5,7 @@ import EmptyState from '~/app/components/ui/emptyState';
 import ThreatDrawer from '~/app/components/appsec/threatDrawer';
 import ThreatForm from '~/app/components/appsec/threatForm';
 import ThreatTable from '~/app/components/appsec/threatTable';
+import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
 
 import { threatToTableRow } from '../assessmentDetails.mapper';
 import type { AssessmentDetailsAssessment } from '../assessmentDetails.type';
@@ -76,6 +77,9 @@ const AssessmentFindingsSection = ({
 
         <ThreatForm
           value={draftValue}
+          owaspTaxonomyVersion={
+            assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION
+          }
           errors={fieldErrors}
           isSubmitting={isSubmitting}
           submitLabel={

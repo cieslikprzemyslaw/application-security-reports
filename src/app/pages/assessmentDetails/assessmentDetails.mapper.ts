@@ -1,7 +1,7 @@
 import type { AssessmentWorkspaceOverview } from '~/services/assessmentService';
 import {
   OWASP_TOP_10_CURRENT_VERSION,
-  OWASP_TOP_10_REGISTRY,
+  getOwaspTop10CategoryOptions,
   type Threat,
 } from '~/domain';
 import type {
@@ -19,12 +19,14 @@ const normalizeOptionalText = (value?: string) => {
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
 };
 
-const defaultOwaspCategoryCode =
-  OWASP_TOP_10_REGISTRY[OWASP_TOP_10_CURRENT_VERSION].categories.A01.value;
+const getDefaultOwaspCategoryCode = (owaspTaxonomyVersion: string) =>
+  getOwaspTop10CategoryOptions(owaspTaxonomyVersion)[0]?.value ?? '';
 
-export const createEmptyThreatFormValue = (): ThreatFormValue => ({
+export const createEmptyThreatFormValue = (
+  owaspTaxonomyVersion: string = OWASP_TOP_10_CURRENT_VERSION,
+): ThreatFormValue => ({
   title: '',
-  owaspCategoryCode: defaultOwaspCategoryCode,
+  owaspCategoryCode: getDefaultOwaspCategoryCode(owaspTaxonomyVersion),
   customCategory: '',
   strideCategory: 'spoofing',
   severity: 'medium',
@@ -51,11 +53,16 @@ export const toAssessmentViewModel = (
     'Untitled assessment',
 });
 
-export const threatToFormValue = (threat: Threat): ThreatFormValue => ({
+export const threatToFormValue = (
+  threat: Threat,
+  owaspTaxonomyVersion: string = OWASP_TOP_10_CURRENT_VERSION,
+): ThreatFormValue => ({
   title: threat.title,
   owaspCategoryCode:
     threat.owaspCategoryCode ??
-    (threat.customCategory ? 'custom' : defaultOwaspCategoryCode),
+    (threat.customCategory
+      ? 'custom'
+      : getDefaultOwaspCategoryCode(owaspTaxonomyVersion)),
   customCategory:
     threat.owaspCategoryCode === 'custom' ? (threat.customCategory ?? '') : '',
   strideCategory: threat.strideCategories[0] ?? 'spoofing',

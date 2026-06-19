@@ -58,6 +58,7 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
   const findingsController = useAssessmentFindings({
     assessmentId,
     assessmentStatus: assessmentView?.status,
+    assessmentOwaspTaxonomyVersion: assessmentView?.owaspTaxonomyVersion,
   });
 
   const evidenceController = useAssessmentEvidence({
