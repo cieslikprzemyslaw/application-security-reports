@@ -185,10 +185,6 @@ await (async () => {
     assert.ok(summitHealth, 'Expected Summit Health test fixture');
     assert.ok(northstarDigital, 'Expected Northstar Digital test fixture');
 
-    meridianFinance.assessmentCount = 0;
-    summitHealth.assessmentCount = 1;
-    delete northstarDigital.assessmentCount;
-
     const { container, root, window } = await renderComponent({
       activeCompany: { id: 'cmp_2', name: 'Meridian Finance' },
       companyList,
@@ -233,30 +229,6 @@ await (async () => {
       'Blue River Labs',
       'Atlas Retail',
     ]);
-
-    assert.ok(
-      window.document.body.textContent?.includes('0 assessments'),
-      'Expected zero assessments to render explicitly',
-    );
-    assert.ok(
-      window.document.body.textContent?.includes('1 assessment'),
-      'Expected singular counts to preserve authoritative values',
-    );
-    assert.ok(
-      window.document.body.textContent?.includes('2 assessments'),
-      'Expected plural counts to preserve authoritative values',
-    );
-    assert.ok(
-      window.document.body.textContent?.includes(
-        'Assessment count unavailable',
-      ),
-      'Expected missing assessment counts to render a safe fallback',
-    );
-    assert.equal(
-      window.document.body.textContent?.includes('undefined assessment'),
-      false,
-      'Expected missing assessment counts never to render undefined',
-    );
     assert.ok(
       window.document.body.textContent?.includes('Current'),
       'Expected the current company badge to remain visible',
