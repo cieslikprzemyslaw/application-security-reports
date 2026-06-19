@@ -7,7 +7,8 @@ import { ThemeProvider } from 'styled-components';
 
 import {
   OWASP_TOP_10_CURRENT_VERSION,
-  OWASP_TOP_10_REGISTRY,
+  OWASP_TOP_10_OPTIONS,
+  getOwaspTop10CategoryOption,
   type Threat,
 } from '~/domain';
 import { defaultTheme } from '~/theme';
@@ -22,8 +23,8 @@ import type { AssessmentDetailsAssessment } from '../assessmentDetails.type';
 
 import AssessmentFindingsSection from './assessmentFindingsSection.component';
 
-const owaspTop10Categories =
-  OWASP_TOP_10_REGISTRY[OWASP_TOP_10_CURRENT_VERSION].categories;
+const owaspCategoryValue = (code: string) =>
+  getOwaspTop10CategoryOption(code)?.value ?? `${code}:2025`;
 
 const renderTick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
 
@@ -74,7 +75,7 @@ const finding: Threat = {
   severity: 'high',
   strideCategories: ['spoofing'],
   status: 'open',
-  owaspCategoryCode: owaspTop10Categories.A01.value,
+  owaspCategoryCode: owaspCategoryValue('A01'),
   customCategory: undefined,
   affectedComponent: 'Orders API',
   affectedEndpoint: '/api/orders/{id}',
@@ -213,6 +214,11 @@ await (async () => {
     const { container, root, window, events } =
       await renderHarness('in-progress');
 
+    assert.ok(
+      textContent(container).includes('A01:2025 - Broken Access Control'),
+      'Expected the threat table to render the registry-driven OWASP label',
+    );
+
     const row = Array.from(
       container.querySelectorAll('.data-table-row--clickable'),
     ).find(item =>
@@ -241,7 +247,11 @@ await (async () => {
       ),
     );
     assert.ok(textContent(window.document.body).includes('High'));
-    assert.ok(textContent(window.document.body).includes('A01:2025'));
+    assert.ok(
+      textContent(window.document.body).includes(
+        'A01:2025 - Broken Access Control',
+      ),
+    );
     assert.ok(textContent(window.document.body).includes('Orders API'));
     assert.ok(
       textContent(window.document.body).includes(
@@ -379,22 +389,14 @@ await (async () => {
     ) as HTMLSelectElement | null;
 
     assert.ok(owaspSelect, 'Expected the OWASP category select');
-    assert.equal(owaspSelect?.value, owaspTop10Categories.A01.value);
+    assert.equal(owaspSelect?.value, owaspCategoryValue('A01'));
     assert.deepEqual(
       Array.from(owaspSelect?.options ?? []).map(option => option.value),
-      [
-        ...Object.values(owaspTop10Categories).map(category => category.value),
-        'custom',
-      ],
+      [...OWASP_TOP_10_OPTIONS.map(option => option.value), 'custom'],
     );
     assert.deepEqual(
       Array.from(owaspSelect?.options ?? []).map(option => option.textContent),
-      [
-        ...Object.values(owaspTop10Categories).map(
-          category => `${category.value} - ${category.label}`,
-        ),
-        'Custom',
-      ],
+      [...OWASP_TOP_10_OPTIONS.map(option => option.label), 'Custom'],
     );
 
     await act(async () => {
@@ -428,7 +430,7 @@ await (async () => {
     ) as HTMLSelectElement | null;
 
     assert.ok(createSelect, 'Expected the create form OWASP select');
-    assert.equal(createSelect?.value, owaspTop10Categories.A01.value);
+    assert.equal(createSelect?.value, owaspCategoryValue('A01'));
 
     await act(async () => {
       root.unmount();

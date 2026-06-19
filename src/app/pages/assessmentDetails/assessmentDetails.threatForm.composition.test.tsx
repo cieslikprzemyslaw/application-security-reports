@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import { act } from 'react';
 
 import { routes } from '~/routes';
-import { OWASP_TOP_10_CURRENT_VERSION, OWASP_TOP_10_REGISTRY } from '~/domain';
+import {
+  OWASP_TOP_10_CURRENT_VERSION,
+  OWASP_TOP_10_OPTIONS,
+  getOwaspTop10CategoryOption,
+} from '~/domain';
 import {
   createJsonResponse,
   renderApp,
@@ -13,8 +17,8 @@ import {
   textContent,
 } from './assessmentDetails.threatForm.testUtils';
 
-const owaspTop10Categories =
-  OWASP_TOP_10_REGISTRY[OWASP_TOP_10_CURRENT_VERSION].categories;
+const owaspCategoryValue = (code: string) =>
+  getOwaspTop10CategoryOption(code)?.value ?? `${code}:2025`;
 
 await (async () => {
   try {
@@ -124,21 +128,16 @@ await (async () => {
       ) as HTMLSelectElement | null;
 
       assert.ok(createSelect, 'Expected the create form OWASP select');
-      assert.equal(createSelect?.value, owaspTop10Categories.A01.value);
+      assert.equal(createSelect?.value, owaspCategoryValue('A01'));
       assert.deepEqual(
         Array.from(createSelect?.options ?? []).map(
           option => option.textContent,
         ),
-        [
-          ...Object.values(owaspTop10Categories).map(
-            category => `${category.value} - ${category.label}`,
-          ),
-          'Custom',
-        ],
+        [...OWASP_TOP_10_OPTIONS.map(option => option.label), 'Custom'],
       );
 
       await act(async () => {
-        createSelect!.value = owaspTop10Categories.A05.value;
+        createSelect!.value = owaspCategoryValue('A05');
         createSelect!.dispatchEvent(
           new window.Event('change', { bubbles: true, cancelable: true }),
         );
@@ -168,9 +167,9 @@ await (async () => {
       assert.equal(
         (createRequestBody as { owaspCategoryCode?: string } | undefined)
           ?.owaspCategoryCode,
-        owaspTop10Categories.A05.value,
+        owaspCategoryValue('A05'),
       );
-      assert.equal(createSelect?.value, owaspTop10Categories.A05.value);
+      assert.equal(createSelect?.value, owaspCategoryValue('A05'));
       assert.ok(
         textContent(window.document.body).includes('Unable to save threat'),
       );

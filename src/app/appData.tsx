@@ -6,12 +6,12 @@ import type { GlobalThreatRow } from '~/app/components/appsec/globalThreatTable'
 import type { RecentAssessmentRow } from '~/app/components/appsec/recentAssessmentTable';
 import type { ReportCoverProps } from '~/app/components/appsec/reportCover';
 import type { SeverityDistributionItem } from '~/app/components/appsec/severityDistribution';
-import { OWASP_TOP_10_CURRENT_VERSION, OWASP_TOP_10_REGISTRY } from '~/domain';
+import { getOwaspTop10CategoryOption } from '~/domain';
 
 import type { DashboardStats } from './pages/dashboard';
 
-const owaspTop10Categories =
-  OWASP_TOP_10_REGISTRY[OWASP_TOP_10_CURRENT_VERSION].categories;
+const getOwaspCategoryValue = (code: string) =>
+  getOwaspTop10CategoryOption(code)?.value ?? `${code}:2025`;
 
 const ActivityIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
@@ -230,7 +230,7 @@ export const threats: GlobalThreatRow[] = [
     title: 'Missing Server-Side Authorization',
     applicationName: 'Customer Services Portal',
     companyName: 'Northstar Digital',
-    owaspCategoryCode: owaspTop10Categories.A01.value,
+    owaspCategoryCode: getOwaspCategoryValue('A01'),
     strideCategory: 'elevation-of-privilege',
     severity: 'critical',
     status: 'open',
@@ -242,7 +242,7 @@ export const threats: GlobalThreatRow[] = [
     title: 'Verbose Error Messages',
     applicationName: 'Customer Services Portal',
     companyName: 'Northstar Digital',
-    owaspCategoryCode: owaspTop10Categories.A05.value,
+    owaspCategoryCode: getOwaspCategoryValue('A05'),
     strideCategory: 'information-disclosure',
     severity: 'medium',
     status: 'mitigated',

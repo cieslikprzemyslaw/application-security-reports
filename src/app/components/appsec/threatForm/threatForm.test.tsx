@@ -5,7 +5,11 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from 'styled-components';
 
-import { OWASP_TOP_10_CURRENT_VERSION, OWASP_TOP_10_REGISTRY } from '~/domain';
+import {
+  OWASP_TOP_10_CURRENT_VERSION,
+  OWASP_TOP_10_OPTIONS,
+  getOwaspTop10CategoryOption,
+} from '~/domain';
 import { defaultTheme } from '~/theme';
 
 import ThreatForm from './threatForm.component';
@@ -54,12 +58,12 @@ const setupDom = () => {
   };
 };
 
-const owaspTop10Categories =
-  OWASP_TOP_10_REGISTRY[OWASP_TOP_10_CURRENT_VERSION].categories;
+const owaspCategoryValue = (code: string) =>
+  getOwaspTop10CategoryOption(code)?.value ?? `${code}:2025`;
 
 const initialValue: ThreatFormValue = {
   title: 'Missing Server-Side Authorization',
-  owaspCategoryCode: owaspTop10Categories.A01.value,
+  owaspCategoryCode: owaspCategoryValue('A01'),
   customCategory: '',
   strideCategory: 'elevation-of-privilege',
   severity: 'critical',
@@ -83,21 +87,13 @@ await (async () => {
       buildOwaspCategoryOptions(OWASP_TOP_10_CURRENT_VERSION).map(
         option => option.value,
       ),
-      [
-        ...Object.values(owaspTop10Categories).map(category => category.value),
-        'custom',
-      ],
+      [...OWASP_TOP_10_OPTIONS.map(option => option.value), 'custom'],
     );
     assert.deepEqual(
       buildOwaspCategoryOptions(OWASP_TOP_10_CURRENT_VERSION).map(
         option => option.label,
       ),
-      [
-        ...Object.values(owaspTop10Categories).map(
-          category => `${category.value} - ${category.label}`,
-        ),
-        'Custom',
-      ],
+      [...OWASP_TOP_10_OPTIONS.map(option => option.label), 'Custom'],
     );
   }
 
@@ -128,19 +124,14 @@ await (async () => {
     ) as HTMLSelectElement | null;
 
     assert.ok(select, 'Expected the OWASP category select');
-    assert.equal(select?.value, owaspTop10Categories.A01.value);
+    assert.equal(select?.value, owaspCategoryValue('A01'));
     assert.deepEqual(
       Array.from(select?.options ?? []).map(option => option.textContent),
-      [
-        ...Object.values(owaspTop10Categories).map(
-          category => `${category.value} - ${category.label}`,
-        ),
-        'Custom',
-      ],
+      [...OWASP_TOP_10_OPTIONS.map(option => option.label), 'Custom'],
     );
 
     await act(async () => {
-      select!.value = owaspTop10Categories.A05.value;
+      select!.value = owaspCategoryValue('A05');
       select!.dispatchEvent(
         new window.Event('change', { bubbles: true, cancelable: true }),
       );
@@ -149,7 +140,7 @@ await (async () => {
 
     assert.equal(
       changeEvents.at(-1)?.owaspCategoryCode,
-      owaspTop10Categories.A05.value,
+      owaspCategoryValue('A05'),
       'Expected the selected category code to be emitted',
     );
 

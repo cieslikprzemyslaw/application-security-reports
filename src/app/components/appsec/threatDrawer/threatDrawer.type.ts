@@ -30,6 +30,7 @@ export interface ThreatDrawerFinding {
 
 export interface ThreatDrawerProps {
   isOpen: boolean;
+  owaspTaxonomyVersion?: string;
   threat?: ThreatDrawerFinding | ThreatTableRow;
   title?: string;
   description?: ReactNode;
