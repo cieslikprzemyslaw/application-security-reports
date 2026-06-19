@@ -5,17 +5,13 @@ import Button from '~/app/components/ui/button';
 import DataTable from '~/app/components/common/dataTable';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
+import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
+
+import { getThreatOwaspCategoryLabel } from '../threatOwaspCategory.utils';
 
 import StyledThreatTable from './threatTable.styled';
 
 import type { ThreatTableProps, ThreatTableRow } from './threatTable.type';
-
-const getCategoryLabel = (threat: ThreatTableRow) =>
-  threat.customCategory?.trim().length
-    ? threat.customCategory.trim()
-    : threat.owaspCategoryCode?.trim().length
-      ? threat.owaspCategoryCode.trim()
-      : '—';
 
 const getThreatContext = (threat: ThreatTableRow) =>
   threat.affectedComponent?.trim().length
@@ -33,6 +29,7 @@ const getEndpointValue = (threat: ThreatTableRow) =>
 
 const ThreatTable = ({
   threats,
+  owaspTaxonomyVersion = OWASP_TOP_10_CURRENT_VERSION,
   isLoading = false,
   emptyState,
   onThreatClick,
@@ -83,7 +80,7 @@ const ThreatTable = ({
           header: 'OWASP category',
           cell: threat => (
             <Badge
-              label={getCategoryLabel(threat)}
+              label={getThreatOwaspCategoryLabel(threat, owaspTaxonomyVersion)}
               variant="neutral"
               size="small"
             />

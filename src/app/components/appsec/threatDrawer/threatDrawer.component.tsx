@@ -5,26 +5,20 @@ import Button from '~/app/components/ui/button';
 import Drawer from '~/app/components/ui/drawer';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
+import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
+
+import { getThreatOwaspCategoryLabel } from '../threatOwaspCategory.utils';
 
 import StyledThreatDrawer from './threatDrawer.styled';
 
-import type {
-  ThreatDrawerFinding,
-  ThreatDrawerProps,
-} from './threatDrawer.type';
-
-const getCategoryLabel = (threat?: ThreatDrawerFinding) =>
-  threat?.customCategory?.trim().length
-    ? threat.customCategory.trim()
-    : threat?.owaspCategoryCode?.trim().length
-      ? threat.owaspCategoryCode.trim()
-      : '—';
+import type { ThreatDrawerProps } from './threatDrawer.type';
 
 const getFieldValue = (value?: string) =>
   value?.trim().length ? value.trim() : '—';
 
 const ThreatDrawer = ({
   isOpen,
+  owaspTaxonomyVersion = OWASP_TOP_10_CURRENT_VERSION,
   threat,
   title,
   description,
@@ -59,7 +53,10 @@ const ThreatDrawer = ({
               <StatusBadge status={threat.status} size="small" />
 
               <Badge
-                label={getCategoryLabel(threat)}
+                label={getThreatOwaspCategoryLabel(
+                  threat,
+                  owaspTaxonomyVersion,
+                )}
                 variant="neutral"
                 size="small"
               />
@@ -86,7 +83,9 @@ const ThreatDrawer = ({
             <section className="threat-drawer-section">
               <h3 className="threat-drawer-section-title">OWASP category</h3>
 
-              <p className="threat-drawer-copy">{getCategoryLabel(threat)}</p>
+              <p className="threat-drawer-copy">
+                {getThreatOwaspCategoryLabel(threat, owaspTaxonomyVersion)}
+              </p>
             </section>
 
             <section className="threat-drawer-section">

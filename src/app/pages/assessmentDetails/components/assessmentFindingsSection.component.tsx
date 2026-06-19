@@ -52,6 +52,8 @@ const AssessmentFindingsSection = ({
   handleFindingChange,
   handleFindingSave,
 }: AssessmentFindingsSectionProps) => {
+  const owaspTaxonomyVersion =
+    assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION;
   const tableEmptyState =
     !isLoading && threats.length === 0 ? (
       <EmptyState
@@ -77,9 +79,7 @@ const AssessmentFindingsSection = ({
 
         <ThreatForm
           value={draftValue}
-          owaspTaxonomyVersion={
-            assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION
-          }
+          owaspTaxonomyVersion={owaspTaxonomyVersion}
           errors={fieldErrors}
           isSubmitting={isSubmitting}
           submitLabel={
@@ -110,6 +110,7 @@ const AssessmentFindingsSection = ({
         ) : (
           <ThreatTable
             threats={threats.map(threatToTableRow)}
+            owaspTaxonomyVersion={owaspTaxonomyVersion}
             isLoading={isLoading}
             emptyState={tableEmptyState}
             onThreatClick={openFindingDetails}
@@ -122,6 +123,7 @@ const AssessmentFindingsSection = ({
 
       <ThreatDrawer
         isOpen={drawerMode !== null}
+        owaspTaxonomyVersion={owaspTaxonomyVersion}
         title={drawerTitle}
         description={`${assessment.companyName} · ${assessment.applicationName}`}
         threat={

@@ -26,6 +26,7 @@ export interface ThreatTableRow {
 
 export interface ThreatTableProps {
   threats: ThreatTableRow[];
+  owaspTaxonomyVersion?: string;
   isLoading?: boolean;
   emptyState?: React.ReactNode;
   onThreatClick?: (threat: ThreatTableRow) => void;
