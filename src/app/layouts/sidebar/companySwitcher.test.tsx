@@ -169,7 +169,19 @@ const click = async (element: Element | null) => {
 
 await (async () => {
   {
-    const { container, root, window } = await renderComponent();
+    const companyList = companies.map(company =>
+      company.id === 'cmp_2'
+        ? {
+            ...company,
+            assessmentCount: undefined as unknown as number,
+          }
+        : company,
+    );
+
+    const { container, root, window } = await renderComponent({
+      activeCompany: { id: 'cmp_2', name: 'Meridian Finance' },
+      companyList,
+    });
 
     const trigger = container.querySelector(
       '.sidebar-company-switcher',
@@ -187,6 +199,10 @@ await (async () => {
       window.document.body.textContent?.includes('Switch company'),
       'Expected the switcher dialog to open',
     );
+    assert.ok(
+      window.document.querySelector('input[placeholder="Search companies..."]'),
+      'Expected the search field to be visible in the open drawer',
+    );
 
     const closeButton = window.document.querySelector(
       'button[aria-label="Close company switcher"]',
@@ -200,12 +216,21 @@ await (async () => {
     ).map(element => element.textContent);
 
     assert.deepEqual(visibleNames.slice(0, 5), [
-      'Summit Health',
       'Meridian Finance',
+      'Summit Health',
       'Northstar Digital',
       'Blue River Labs',
       'Atlas Retail',
     ]);
+
+    assert.ok(
+      window.document.body.textContent?.includes('0 assessments'),
+      'Expected missing counts to fall back to a safe value',
+    );
+    assert.ok(
+      window.document.body.textContent?.includes('Current'),
+      'Expected the current company badge to remain visible',
+    );
 
     const viewAllButton = window.document.querySelector(
       '.company-switcher-actions-link',
