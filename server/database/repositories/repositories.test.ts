@@ -5,6 +5,7 @@ import type {
   RepositoryClient,
   RepositoryTransactionClient,
 } from '../repository.types.js';
+import { OWASP_TOP_10_CURRENT_VERSION } from '../../../src/domain/owaspTop10.js';
 import { createActivityRepository } from './activity.repository.js';
 import { createAssessmentRepository } from './assessment.repository.js';
 import { createCompanyRepository } from './company.repository.js';
@@ -42,6 +43,7 @@ const assessmentRow = {
   environment: null,
   assessmentType: null,
   overallRisk: null,
+  owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   createdAt,
   updatedAt,
 };
@@ -459,6 +461,30 @@ const createSettingsDb = () => {
 
   assert.equal(assessments[0].id, assessmentRow.id);
   assert.equal(calls[0]?.method, 'findMany');
+}
+
+{
+  const { calls, db } = createAssessmentDb();
+  const repository = createAssessmentRepository(db);
+  const createdAssessment = await repository.create({
+    companyId: 'cmp_123',
+    title: 'Assessment',
+    description: undefined,
+    scope: undefined,
+    status: 'draft',
+    startedAt: undefined,
+    completedAt: undefined,
+    applicationName: undefined,
+    environment: undefined,
+    assessmentType: undefined,
+    overallRisk: undefined,
+  });
+
+  assert.equal(createdAssessment.owaspTaxonomyVersion, '2025');
+  const createArgs = calls.find(call => call.method === 'create')?.args as {
+    data?: { owaspTaxonomyVersion?: string };
+  };
+  assert.equal(createArgs?.data?.owaspTaxonomyVersion, '2025');
 }
 
 {

@@ -8,6 +8,7 @@ import {
 import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
 import type { Assessment } from '../../src/domain/assessment.js';
+import { OWASP_TOP_10_CURRENT_VERSION } from '../../src/domain/owaspTop10.js';
 import { loadServerConfig } from '../config.js';
 import { createApiApp } from './api-app.js';
 
@@ -82,6 +83,7 @@ const defaultAssessment: Assessment = {
   environment: 'Production',
   assessmentType: 'Web App',
   overallRisk: 'high',
+  owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-11T09:00:00.000Z',
 };
@@ -462,8 +464,14 @@ const createApp = (
     const body = await readJson<{ data: typeof defaultAssessment }>(response);
     assert.equal(body.data.id.startsWith('asm_'), true);
     assert.equal(body.data.title, 'Example Assessment');
+    assert.equal(body.data.owaspTaxonomyVersion, OWASP_TOP_10_CURRENT_VERSION);
     assert.equal(calls.create, 1);
     assert.equal(calls.createArgs?.input.companyId, defaultCompany.id);
+    assert.equal(
+      (calls.createArgs?.input as { owaspTaxonomyVersion?: string } | undefined)
+        ?.owaspTaxonomyVersion,
+      undefined,
+    );
   } finally {
     await server.close();
   }
@@ -685,9 +693,20 @@ const createApp = (
     const body = await readJson<{ data: typeof defaultAssessment }>(response);
     assert.equal(body.data.title, 'Updated Assessment');
     assert.equal(body.data.overallRisk, 'medium');
+    assert.equal(body.data.owaspTaxonomyVersion, OWASP_TOP_10_CURRENT_VERSION);
     assert.equal(calls.update, 1);
     assert.equal(calls.updateArgs?.id, defaultAssessment.id);
     assert.equal(calls.updateArgs?.input.title, 'Updated Assessment');
+    assert.equal(
+      (
+        calls.updateArgs?.input as
+          | {
+              owaspTaxonomyVersion?: string;
+            }
+          | undefined
+      )?.owaspTaxonomyVersion,
+      undefined,
+    );
   } finally {
     await server.close();
   }

@@ -20,11 +20,12 @@ export interface Assessment extends TimestampedEntity {
   environment?: string;
   assessmentType?: string;
   overallRisk?: Severity;
+  owaspTaxonomyVersion?: string;
 }
 
 export type CreateAssessmentInput = Omit<
   Assessment,
-  'id' | 'createdAt' | 'updatedAt'
+  'id' | 'createdAt' | 'updatedAt' | 'owaspTaxonomyVersion'
 >;
 
 export type UpdateAssessmentInput = Partial<CreateAssessmentInput>;

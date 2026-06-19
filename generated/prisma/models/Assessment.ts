@@ -37,6 +37,7 @@ export type AssessmentMinAggregateOutputType = {
   environment: string | null
   assessmentType: string | null
   overallRisk: $Enums.Severity | null
+  owaspTaxonomyVersion: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -54,6 +55,7 @@ export type AssessmentMaxAggregateOutputType = {
   environment: string | null
   assessmentType: string | null
   overallRisk: $Enums.Severity | null
+  owaspTaxonomyVersion: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -71,6 +73,7 @@ export type AssessmentCountAggregateOutputType = {
   environment: number
   assessmentType: number
   overallRisk: number
+  owaspTaxonomyVersion: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -90,6 +93,7 @@ export type AssessmentMinAggregateInputType = {
   environment?: true
   assessmentType?: true
   overallRisk?: true
+  owaspTaxonomyVersion?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -107,6 +111,7 @@ export type AssessmentMaxAggregateInputType = {
   environment?: true
   assessmentType?: true
   overallRisk?: true
+  owaspTaxonomyVersion?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -124,6 +129,7 @@ export type AssessmentCountAggregateInputType = {
   environment?: true
   assessmentType?: true
   overallRisk?: true
+  owaspTaxonomyVersion?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -214,6 +220,7 @@ export type AssessmentGroupByOutputType = {
   environment: string | null
   assessmentType: string | null
   overallRisk: $Enums.Severity | null
+  owaspTaxonomyVersion: string
   createdAt: Date
   updatedAt: Date
   _count: AssessmentCountAggregateOutputType | null
@@ -252,6 +259,7 @@ export type AssessmentWhereInput = {
   environment?: Prisma.StringNullableFilter<"Assessment"> | string | null
   assessmentType?: Prisma.StringNullableFilter<"Assessment"> | string | null
   overallRisk?: Prisma.EnumSeverityNullableFilter<"Assessment"> | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFilter<"Assessment"> | string
   createdAt?: Prisma.DateTimeFilter<"Assessment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Assessment"> | Date | string
   company?: Prisma.XOR<Prisma.CompanyScalarRelationFilter, Prisma.CompanyWhereInput>
@@ -273,6 +281,7 @@ export type AssessmentOrderByWithRelationInput = {
   environment?: Prisma.SortOrderInput | Prisma.SortOrder
   assessmentType?: Prisma.SortOrderInput | Prisma.SortOrder
   overallRisk?: Prisma.SortOrderInput | Prisma.SortOrder
+  owaspTaxonomyVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   company?: Prisma.CompanyOrderByWithRelationInput
@@ -297,6 +306,7 @@ export type AssessmentWhereUniqueInput = Prisma.AtLeast<{
   environment?: Prisma.StringNullableFilter<"Assessment"> | string | null
   assessmentType?: Prisma.StringNullableFilter<"Assessment"> | string | null
   overallRisk?: Prisma.EnumSeverityNullableFilter<"Assessment"> | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFilter<"Assessment"> | string
   createdAt?: Prisma.DateTimeFilter<"Assessment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Assessment"> | Date | string
   company?: Prisma.XOR<Prisma.CompanyScalarRelationFilter, Prisma.CompanyWhereInput>
@@ -318,6 +328,7 @@ export type AssessmentOrderByWithAggregationInput = {
   environment?: Prisma.SortOrderInput | Prisma.SortOrder
   assessmentType?: Prisma.SortOrderInput | Prisma.SortOrder
   overallRisk?: Prisma.SortOrderInput | Prisma.SortOrder
+  owaspTaxonomyVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.AssessmentCountOrderByAggregateInput
@@ -341,6 +352,7 @@ export type AssessmentScalarWhereWithAggregatesInput = {
   environment?: Prisma.StringNullableWithAggregatesFilter<"Assessment"> | string | null
   assessmentType?: Prisma.StringNullableWithAggregatesFilter<"Assessment"> | string | null
   overallRisk?: Prisma.EnumSeverityNullableWithAggregatesFilter<"Assessment"> | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringWithAggregatesFilter<"Assessment"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Assessment"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Assessment"> | Date | string
 }
@@ -357,6 +369,7 @@ export type AssessmentCreateInput = {
   environment?: string | null
   assessmentType?: string | null
   overallRisk?: $Enums.Severity | null
+  owaspTaxonomyVersion?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   company: Prisma.CompanyCreateNestedOneWithoutAssessmentsInput
@@ -378,6 +391,7 @@ export type AssessmentUncheckedCreateInput = {
   environment?: string | null
   assessmentType?: string | null
   overallRisk?: $Enums.Severity | null
+  owaspTaxonomyVersion?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   threats?: Prisma.ThreatUncheckedCreateNestedManyWithoutAssessmentInput
@@ -397,6 +411,7 @@ export type AssessmentUpdateInput = {
   environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assessmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRisk?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   company?: Prisma.CompanyUpdateOneRequiredWithoutAssessmentsNestedInput
@@ -418,6 +433,7 @@ export type AssessmentUncheckedUpdateInput = {
   environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assessmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRisk?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   threats?: Prisma.ThreatUncheckedUpdateManyWithoutAssessmentNestedInput
@@ -438,6 +454,7 @@ export type AssessmentCreateManyInput = {
   environment?: string | null
   assessmentType?: string | null
   overallRisk?: $Enums.Severity | null
+  owaspTaxonomyVersion?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -454,6 +471,7 @@ export type AssessmentUpdateManyMutationInput = {
   environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assessmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRisk?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -471,6 +489,7 @@ export type AssessmentUncheckedUpdateManyInput = {
   environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assessmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRisk?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -498,6 +517,7 @@ export type AssessmentCountOrderByAggregateInput = {
   environment?: Prisma.SortOrder
   assessmentType?: Prisma.SortOrder
   overallRisk?: Prisma.SortOrder
+  owaspTaxonomyVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -515,6 +535,7 @@ export type AssessmentMaxOrderByAggregateInput = {
   environment?: Prisma.SortOrder
   assessmentType?: Prisma.SortOrder
   overallRisk?: Prisma.SortOrder
+  owaspTaxonomyVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -532,6 +553,7 @@ export type AssessmentMinOrderByAggregateInput = {
   environment?: Prisma.SortOrder
   assessmentType?: Prisma.SortOrder
   overallRisk?: Prisma.SortOrder
+  owaspTaxonomyVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -641,6 +663,7 @@ export type AssessmentCreateWithoutCompanyInput = {
   environment?: string | null
   assessmentType?: string | null
   overallRisk?: $Enums.Severity | null
+  owaspTaxonomyVersion?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   threats?: Prisma.ThreatCreateNestedManyWithoutAssessmentInput
@@ -660,6 +683,7 @@ export type AssessmentUncheckedCreateWithoutCompanyInput = {
   environment?: string | null
   assessmentType?: string | null
   overallRisk?: $Enums.Severity | null
+  owaspTaxonomyVersion?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   threats?: Prisma.ThreatUncheckedCreateNestedManyWithoutAssessmentInput
@@ -708,6 +732,7 @@ export type AssessmentScalarWhereInput = {
   environment?: Prisma.StringNullableFilter<"Assessment"> | string | null
   assessmentType?: Prisma.StringNullableFilter<"Assessment"> | string | null
   overallRisk?: Prisma.EnumSeverityNullableFilter<"Assessment"> | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFilter<"Assessment"> | string
   createdAt?: Prisma.DateTimeFilter<"Assessment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Assessment"> | Date | string
 }
@@ -724,6 +749,7 @@ export type AssessmentCreateWithoutThreatsInput = {
   environment?: string | null
   assessmentType?: string | null
   overallRisk?: $Enums.Severity | null
+  owaspTaxonomyVersion?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   company: Prisma.CompanyCreateNestedOneWithoutAssessmentsInput
@@ -744,6 +770,7 @@ export type AssessmentUncheckedCreateWithoutThreatsInput = {
   environment?: string | null
   assessmentType?: string | null
   overallRisk?: $Enums.Severity | null
+  owaspTaxonomyVersion?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   evidence?: Prisma.EvidenceUncheckedCreateNestedManyWithoutAssessmentInput
@@ -778,6 +805,7 @@ export type AssessmentUpdateWithoutThreatsInput = {
   environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assessmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRisk?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   company?: Prisma.CompanyUpdateOneRequiredWithoutAssessmentsNestedInput
@@ -798,6 +826,7 @@ export type AssessmentUncheckedUpdateWithoutThreatsInput = {
   environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assessmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRisk?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evidence?: Prisma.EvidenceUncheckedUpdateManyWithoutAssessmentNestedInput
@@ -816,6 +845,7 @@ export type AssessmentCreateWithoutEvidenceInput = {
   environment?: string | null
   assessmentType?: string | null
   overallRisk?: $Enums.Severity | null
+  owaspTaxonomyVersion?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   company: Prisma.CompanyCreateNestedOneWithoutAssessmentsInput
@@ -836,6 +866,7 @@ export type AssessmentUncheckedCreateWithoutEvidenceInput = {
   environment?: string | null
   assessmentType?: string | null
   overallRisk?: $Enums.Severity | null
+  owaspTaxonomyVersion?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   threats?: Prisma.ThreatUncheckedCreateNestedManyWithoutAssessmentInput
@@ -870,6 +901,7 @@ export type AssessmentUpdateWithoutEvidenceInput = {
   environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assessmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRisk?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   company?: Prisma.CompanyUpdateOneRequiredWithoutAssessmentsNestedInput
@@ -890,6 +922,7 @@ export type AssessmentUncheckedUpdateWithoutEvidenceInput = {
   environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assessmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRisk?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   threats?: Prisma.ThreatUncheckedUpdateManyWithoutAssessmentNestedInput
@@ -908,6 +941,7 @@ export type AssessmentCreateWithoutReportsInput = {
   environment?: string | null
   assessmentType?: string | null
   overallRisk?: $Enums.Severity | null
+  owaspTaxonomyVersion?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   company: Prisma.CompanyCreateNestedOneWithoutAssessmentsInput
@@ -928,6 +962,7 @@ export type AssessmentUncheckedCreateWithoutReportsInput = {
   environment?: string | null
   assessmentType?: string | null
   overallRisk?: $Enums.Severity | null
+  owaspTaxonomyVersion?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   threats?: Prisma.ThreatUncheckedCreateNestedManyWithoutAssessmentInput
@@ -962,6 +997,7 @@ export type AssessmentUpdateWithoutReportsInput = {
   environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assessmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRisk?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   company?: Prisma.CompanyUpdateOneRequiredWithoutAssessmentsNestedInput
@@ -982,6 +1018,7 @@ export type AssessmentUncheckedUpdateWithoutReportsInput = {
   environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assessmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRisk?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   threats?: Prisma.ThreatUncheckedUpdateManyWithoutAssessmentNestedInput
@@ -1000,6 +1037,7 @@ export type AssessmentCreateManyCompanyInput = {
   environment?: string | null
   assessmentType?: string | null
   overallRisk?: $Enums.Severity | null
+  owaspTaxonomyVersion?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1016,6 +1054,7 @@ export type AssessmentUpdateWithoutCompanyInput = {
   environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assessmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRisk?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   threats?: Prisma.ThreatUpdateManyWithoutAssessmentNestedInput
@@ -1035,6 +1074,7 @@ export type AssessmentUncheckedUpdateWithoutCompanyInput = {
   environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assessmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRisk?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   threats?: Prisma.ThreatUncheckedUpdateManyWithoutAssessmentNestedInput
@@ -1054,6 +1094,7 @@ export type AssessmentUncheckedUpdateManyWithoutCompanyInput = {
   environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assessmentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   overallRisk?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  owaspTaxonomyVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1120,6 +1161,7 @@ export type AssessmentSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   environment?: boolean
   assessmentType?: boolean
   overallRisk?: boolean
+  owaspTaxonomyVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
@@ -1142,6 +1184,7 @@ export type AssessmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   environment?: boolean
   assessmentType?: boolean
   overallRisk?: boolean
+  owaspTaxonomyVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
@@ -1160,6 +1203,7 @@ export type AssessmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   environment?: boolean
   assessmentType?: boolean
   overallRisk?: boolean
+  owaspTaxonomyVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
@@ -1178,11 +1222,12 @@ export type AssessmentSelectScalar = {
   environment?: boolean
   assessmentType?: boolean
   overallRisk?: boolean
+  owaspTaxonomyVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type AssessmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "title" | "description" | "scope" | "status" | "startedAt" | "completedAt" | "applicationName" | "environment" | "assessmentType" | "overallRisk" | "createdAt" | "updatedAt", ExtArgs["result"]["assessment"]>
+export type AssessmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyId" | "title" | "description" | "scope" | "status" | "startedAt" | "completedAt" | "applicationName" | "environment" | "assessmentType" | "overallRisk" | "owaspTaxonomyVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["assessment"]>
 export type AssessmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   company?: boolean | Prisma.CompanyDefaultArgs<ExtArgs>
   threats?: boolean | Prisma.Assessment$threatsArgs<ExtArgs>
@@ -1218,6 +1263,7 @@ export type $AssessmentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     environment: string | null
     assessmentType: string | null
     overallRisk: $Enums.Severity | null
+    owaspTaxonomyVersion: string
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["assessment"]>
@@ -1659,6 +1705,7 @@ export interface AssessmentFieldRefs {
   readonly environment: Prisma.FieldRef<"Assessment", 'String'>
   readonly assessmentType: Prisma.FieldRef<"Assessment", 'String'>
   readonly overallRisk: Prisma.FieldRef<"Assessment", 'Severity'>
+  readonly owaspTaxonomyVersion: Prisma.FieldRef<"Assessment", 'String'>
   readonly createdAt: Prisma.FieldRef<"Assessment", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Assessment", 'DateTime'>
 }

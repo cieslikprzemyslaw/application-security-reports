@@ -3,8 +3,12 @@ import type {
   CreateAssessmentInput,
   UpdateAssessmentInput,
 } from '../../../src/domain/assessment.js';
+import {
+  OWASP_TOP_10_CURRENT_VERSION,
+  isOwaspTop10Version,
+} from '../../../src/domain/owaspTop10.js';
 import { generateId } from '../../utils/id.js';
-import { mapPrismaError } from '../errors.js';
+import { mapPrismaError, RepositoryError } from '../errors.js';
 import type { RepositoryClient } from '../repository.types.js';
 import { toIsoString, toOptionalText } from './repository.helpers.js';
 
@@ -32,6 +36,7 @@ type AssessmentRow = {
   environment: string | null;
   assessmentType: string | null;
   overallRisk: string | null;
+  owaspTaxonomyVersion: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -49,6 +54,7 @@ const assessmentSelect = {
   environment: true,
   assessmentType: true,
   overallRisk: true,
+  owaspTaxonomyVersion: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -66,6 +72,13 @@ const toAssessment = (row: AssessmentRow): Assessment => ({
   environment: toOptionalText(row.environment),
   assessmentType: toOptionalText(row.assessmentType),
   overallRisk: toOptionalText(row.overallRisk) as Assessment['overallRisk'],
+  owaspTaxonomyVersion: isOwaspTop10Version(row.owaspTaxonomyVersion)
+    ? row.owaspTaxonomyVersion
+    : (() => {
+        throw new RepositoryError(
+          `Unsupported OWASP taxonomy version: ${row.owaspTaxonomyVersion}`,
+        );
+      })(),
   createdAt: toIsoString(row.createdAt),
   updatedAt: toIsoString(row.updatedAt),
 });
@@ -118,6 +131,7 @@ export function createAssessmentRepository(
             environment: input.environment,
             assessmentType: input.assessmentType,
             overallRisk: input.overallRisk,
+            owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
           },
           select: assessmentSelect,
         });
