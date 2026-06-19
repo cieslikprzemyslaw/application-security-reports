@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
 import { threatService } from '~/services';
 import { ApiError } from '~/services/apiClient';
 import type { Threat } from '~/domain';
@@ -46,9 +47,11 @@ export interface AssessmentFindingsController {
 export const useAssessmentFindings = ({
   assessmentId,
   assessmentStatus,
+  assessmentOwaspTaxonomyVersion = OWASP_TOP_10_CURRENT_VERSION,
 }: {
   assessmentId?: string;
   assessmentStatus?: AssessmentDetailsAssessment['status'];
+  assessmentOwaspTaxonomyVersion?: string;
 }): AssessmentFindingsController => {
   const [threats, setThreats] = useState<Threat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,7 +59,9 @@ export const useAssessmentFindings = ({
   const [reloadKey, setReloadKey] = useState(0);
   const [drawerMode, setDrawerMode] = useState<FindingDrawerMode>(null);
   const [selectedFindingId, setSelectedFindingId] = useState<string>();
-  const [draftValue, setDraftValue] = useState(createEmptyThreatFormValue());
+  const [draftValue, setDraftValue] = useState(
+    createEmptyThreatFormValue(assessmentOwaspTaxonomyVersion),
+  );
   const [baselineValue, setBaselineValue] = useState(draftValue);
   const [fieldErrors, setFieldErrors] = useState<ThreatFormErrors>({});
   const [formError, setFormError] = useState<string | undefined>();
@@ -144,8 +149,10 @@ export const useAssessmentFindings = ({
   const resetDrawerState = () => {
     setDrawerMode(null);
     setSelectedFindingId(undefined);
-    setDraftValue(createEmptyThreatFormValue());
-    setBaselineValue(createEmptyThreatFormValue());
+    const value = createEmptyThreatFormValue(assessmentOwaspTaxonomyVersion);
+
+    setDraftValue(value);
+    setBaselineValue(value);
     setFieldErrors({});
     setFormError(undefined);
     setIsSubmitting(false);
@@ -168,7 +175,7 @@ export const useAssessmentFindings = ({
       return;
     }
 
-    const value = createEmptyThreatFormValue();
+    const value = createEmptyThreatFormValue(assessmentOwaspTaxonomyVersion);
 
     setSelectedFindingId(undefined);
     setDrawerMode('create');
@@ -192,7 +199,7 @@ export const useAssessmentFindings = ({
       return;
     }
 
-    const value = threatToFormValue(finding);
+    const value = threatToFormValue(finding, assessmentOwaspTaxonomyVersion);
 
     setSelectedFindingId(finding.id);
     setDrawerMode('view');
@@ -218,7 +225,7 @@ export const useAssessmentFindings = ({
       return;
     }
 
-    const value = threatToFormValue(finding);
+    const value = threatToFormValue(finding, assessmentOwaspTaxonomyVersion);
 
     setSelectedFindingId(finding.id);
     setDrawerMode('edit');

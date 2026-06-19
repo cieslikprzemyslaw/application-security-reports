@@ -95,6 +95,7 @@ const assessmentBase: AssessmentDetailsAssessment = {
   companyId: 'cmp_1',
   companyName: 'Northstar Digital',
   applicationName: 'Customer Services Portal',
+  owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   status: 'in-progress',
   recordVersion: 3,
   findingsCount: 1,
@@ -124,7 +125,7 @@ const renderHarness = async (
     >(null);
     const [selectedFinding, setSelectedFinding] = React.useState<Threat>();
     const [draftValue, setDraftValue] = React.useState(
-      createEmptyThreatFormValue(),
+      createEmptyThreatFormValue(assessmentBase.owaspTaxonomyVersion),
     );
 
     const openFindingDetails = (threat: Threat | ThreatTableRow) => {
@@ -132,7 +133,12 @@ const renderHarness = async (
 
       events.push('view');
       setSelectedFinding(nextFinding);
-      setDraftValue(threatToFormValue(nextFinding));
+      setDraftValue(
+        threatToFormValue(
+          nextFinding,
+          assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION,
+        ),
+      );
       setDrawerMode('view');
     };
 
@@ -143,8 +149,24 @@ const renderHarness = async (
       events.push('edit');
 
       setSelectedFinding(nextFinding);
-      setDraftValue(threatToFormValue(nextFinding));
+      setDraftValue(
+        threatToFormValue(
+          nextFinding,
+          assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION,
+        ),
+      );
       setDrawerMode('edit');
+    };
+
+    const openCreateFinding = () => {
+      const value = createEmptyThreatFormValue(
+        assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION,
+      );
+
+      events.push('create');
+      setSelectedFinding(undefined);
+      setDraftValue(value);
+      setDrawerMode('create');
     };
 
     return (
@@ -159,7 +181,7 @@ const renderHarness = async (
         formError={undefined}
         isSubmitting={false}
         canEditFindings={assessment.status !== 'archived'}
-        openCreateFinding={() => undefined}
+        openCreateFinding={openCreateFinding}
         openEditFinding={openEditFinding}
         openFindingDetails={openFindingDetails}
         closeFindingDrawer={() => {
@@ -352,6 +374,62 @@ await (async () => {
       'Expected the drawer action to switch to the edit form',
     );
 
+    const owaspSelect = window.document.body.querySelector(
+      '#threat-owasp-category-code',
+    ) as HTMLSelectElement | null;
+
+    assert.ok(owaspSelect, 'Expected the OWASP category select');
+    assert.equal(owaspSelect?.value, owaspTop10Categories.A01.value);
+    assert.deepEqual(
+      Array.from(owaspSelect?.options ?? []).map(option => option.value),
+      [
+        ...Object.values(owaspTop10Categories).map(category => category.value),
+        'custom',
+      ],
+    );
+    assert.deepEqual(
+      Array.from(owaspSelect?.options ?? []).map(option => option.textContent),
+      [
+        ...Object.values(owaspTop10Categories).map(
+          category => `${category.value} - ${category.label}`,
+        ),
+        'Custom',
+      ],
+    );
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
+
+  {
+    const { container, root, window } = await renderHarness('in-progress');
+
+    const addButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent?.trim() === 'Add threat',
+    ) as HTMLButtonElement | undefined;
+
+    assert.ok(addButton, 'Expected the create action');
+
+    await act(async () => {
+      addButton!.dispatchEvent(
+        new window.MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+        }),
+      );
+      await renderTick();
+      await renderTick();
+    });
+
+    const createSelect = window.document.body.querySelector(
+      '#threat-owasp-category-code',
+    ) as HTMLSelectElement | null;
+
+    assert.ok(createSelect, 'Expected the create form OWASP select');
+    assert.equal(createSelect?.value, owaspTop10Categories.A01.value);
+
     await act(async () => {
       root.unmount();
     });
@@ -461,7 +539,9 @@ await (async () => {
             isLoading={false}
             drawerMode={null}
             selectedFinding={undefined}
-            draftValue={createEmptyThreatFormValue()}
+            draftValue={createEmptyThreatFormValue(
+              assessmentBase.owaspTaxonomyVersion,
+            )}
             fieldErrors={{}}
             formError={undefined}
             isSubmitting={false}

@@ -46,6 +46,7 @@ type Story = StoryObj<typeof meta>;
 export const Interactive: Story = {
   args: {
     value: initialValue,
+    owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
     onChange: () => undefined,
     onSubmit: event => event.preventDefault(),
   },
@@ -56,6 +57,7 @@ export const Interactive: Story = {
       <ThreatForm
         {...args}
         value={value}
+        owaspTaxonomyVersion={OWASP_TOP_10_CURRENT_VERSION}
         onChange={setValue}
         onSubmit={event => {
           event.preventDefault();

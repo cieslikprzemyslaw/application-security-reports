@@ -24,6 +24,7 @@ export interface ThreatFormValue {
 
 export interface ThreatFormProps {
   value: ThreatFormValue;
+  owaspTaxonomyVersion: string;
   errors?: Partial<Record<keyof ThreatFormValue, string>>;
   isSubmitting?: boolean;
   submitLabel?: string;
