@@ -145,7 +145,7 @@ try {
       readFile,
       rename,
       rm: async (filePath, options) => {
-        if (filePath.endsWith('cleanup-previous.png')) {
+        if (String(filePath).endsWith('cleanup-previous.png')) {
           throw new Error('cleanup failed');
         }
 
