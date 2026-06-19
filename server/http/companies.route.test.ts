@@ -65,19 +65,13 @@ const defaultCompany = {
   website: 'https://northstar.example',
   contactName: 'Alex Mercer',
   contactEmail: 'security@northstar.example',
-  logoPath: '/logos/northstar.svg',
+  logoUrl: null,
   footerText: 'Confidential - do not distribute.',
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-11T09:00:00.000Z',
 };
 
-const defaultCompanyWithoutLogoPath = (({ logoPath: _logoPath, ...rest }) =>
-  rest)(defaultCompany);
-
-const defaultCompanyResponse = {
-  ...defaultCompanyWithoutLogoPath,
-  logoUrl: null,
-};
+const defaultCompanyResponse = { ...defaultCompany };
 
 const defaultOverview: CompanyOverview = {
   company: defaultCompany,

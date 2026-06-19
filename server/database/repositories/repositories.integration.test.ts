@@ -148,7 +148,6 @@ try {
     website: 'https://northstar.example',
     contactName: 'Ada Lovelace',
     contactEmail: 'ada@example.com',
-    logoPath: undefined,
     footerText: undefined,
   });
 

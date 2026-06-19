@@ -65,15 +65,6 @@ type CompanyResponse = {
   updatedAt: string;
 };
 
-const isAbsoluteUrl = (value: string): boolean => {
-  try {
-    new URL(value);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
 const companyResponse = (company: Company): CompanyResponse =>
   companyPublicSchema.parse({
     id: company.id,
@@ -82,10 +73,7 @@ const companyResponse = (company: Company): CompanyResponse =>
     website: company.website,
     contactName: company.contactName,
     contactEmail: company.contactEmail,
-    logoUrl:
-      company.logoPath && isAbsoluteUrl(company.logoPath)
-        ? company.logoPath
-        : null,
+    logoUrl: company.logoUrl ?? null,
     footerText: company.footerText,
     createdAt: company.createdAt,
     updatedAt: company.updatedAt,
@@ -337,7 +325,6 @@ export const createCompaniesRouter = (
         website?: string;
         contactName?: string;
         contactEmail?: string;
-        logoPath?: string;
         footerText?: string;
       };
 
@@ -370,7 +357,6 @@ export const createCompaniesRouter = (
         website?: string;
         contactName?: string;
         contactEmail?: string;
-        logoPath?: string;
         footerText?: string;
       };
 
@@ -387,7 +373,6 @@ export const createCompaniesRouter = (
           ...(body.contactEmail !== undefined
             ? { contactEmail: body.contactEmail }
             : {}),
-          ...(body.logoPath !== undefined ? { logoPath: body.logoPath } : {}),
           ...(body.footerText !== undefined
             ? { footerText: body.footerText }
             : {}),

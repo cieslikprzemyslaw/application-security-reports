@@ -21,6 +21,7 @@ export const companyObjectSchema = z
     contactName: optionalTrimmedTextSchema,
     contactEmail: optionalEmailSchema,
     logoPath: optionalTrimmedTextSchema,
+    logoUrl: urlSchema.nullable().optional(),
     footerText: optionalTrimmedTextSchema,
     createdAt: timestampSchema,
     updatedAt: timestampSchema,

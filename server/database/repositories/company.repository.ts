@@ -50,7 +50,7 @@ type CompanyRow = {
   website: string | null;
   contactName: string | null;
   contactEmail: string | null;
-  logoPath: string | null;
+  logoUrl: string | null;
   footerText: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -63,7 +63,7 @@ const companySelect = {
   website: true,
   contactName: true,
   contactEmail: true,
-  logoPath: true,
+  logoUrl: true,
   footerText: true,
   createdAt: true,
   updatedAt: true,
@@ -76,7 +76,7 @@ const toCompany = (row: CompanyRow): Company => ({
   website: toOptionalText(row.website),
   contactName: toOptionalText(row.contactName),
   contactEmail: toOptionalText(row.contactEmail),
-  logoPath: toOptionalText(row.logoPath),
+  logoUrl: row.logoUrl,
   footerText: toOptionalText(row.footerText),
   createdAt: toIsoString(row.createdAt),
   updatedAt: toIsoString(row.updatedAt),
@@ -185,7 +185,6 @@ export function createCompanyRepository(
             website: input.website,
             contactName: input.contactName,
             contactEmail: input.contactEmail,
-            logoPath: input.logoPath,
             footerText: input.footerText,
           },
           select: companySelect,
@@ -212,9 +211,6 @@ export function createCompanyRepository(
               : {}),
             ...(input.contactEmail !== undefined
               ? { contactEmail: input.contactEmail }
-              : {}),
-            ...(input.logoPath !== undefined
-              ? { logoPath: input.logoPath }
               : {}),
             ...(input.footerText !== undefined
               ? { footerText: input.footerText }

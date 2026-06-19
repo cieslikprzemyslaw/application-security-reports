@@ -240,7 +240,6 @@ try {
       website: undefined,
       contactName: undefined,
       contactEmail: undefined,
-      logoPath: undefined,
       footerText: undefined,
     });
 
@@ -326,7 +325,6 @@ try {
         website: undefined,
         contactName: undefined,
         contactEmail: undefined,
-        logoPath: undefined,
         footerText: undefined,
       });
 
@@ -474,7 +472,6 @@ try {
         website: undefined,
         contactName: undefined,
         contactEmail: undefined,
-        logoPath: undefined,
         footerText: undefined,
       });
 
