@@ -4,39 +4,16 @@ import Button from '~/app/components/ui/button';
 import Input from '~/app/components/ui/input';
 import Select from '~/app/components/ui/select';
 import Textarea from '~/app/components/ui/textarea';
+import { OWASP_TOP_10_OPTIONS } from '~/domain';
 
 import StyledThreatForm from './threatForm.styled';
 
 import type { ThreatFormProps, ThreatFormValue } from './threatForm.type';
 
 const owaspCategoryOptions = [
-  { label: 'A01:2021 - Broken Access Control', value: 'A01:2021' },
-  { label: 'A02:2021 - Cryptographic Failures', value: 'A02:2021' },
-  { label: 'A03:2021 - Injection', value: 'A03:2021' },
-  { label: 'A04:2021 - Insecure Design', value: 'A04:2021' },
-  { label: 'A05:2021 - Security Misconfiguration', value: 'A05:2021' },
-  {
-    label: 'A06:2021 - Vulnerable and Outdated Components',
-    value: 'A06:2021',
-  },
-  {
-    label: 'A07:2021 - Identification and Authentication Failures',
-    value: 'A07:2021',
-  },
-  {
-    label: 'A08:2021 - Software and Data Integrity Failures',
-    value: 'A08:2021',
-  },
-  {
-    label: 'A09:2021 - Security Logging and Monitoring Failures',
-    value: 'A09:2021',
-  },
-  {
-    label: 'A10:2021 - Server-Side Request Forgery',
-    value: 'A10:2021',
-  },
+  ...OWASP_TOP_10_OPTIONS,
   { label: 'Custom', value: 'custom' },
-] as const;
+];
 
 const statusLabelMap: Record<ThreatFormValue['status'], string> = {
   draft: 'Draft',
@@ -147,10 +124,7 @@ const ThreatForm = ({
           value={owaspCategoryCode}
           error={errors.owaspCategoryCode}
           required
-          options={owaspCategoryOptions.map(option => ({
-            label: option.label,
-            value: option.value,
-          }))}
+          options={owaspCategoryOptions}
           onChange={event =>
             onChange({
               ...value,

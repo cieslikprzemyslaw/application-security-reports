@@ -1,5 +1,9 @@
 import type { AssessmentWorkspaceOverview } from '~/services/assessmentService';
-import type { Threat } from '~/domain';
+import {
+  OWASP_TOP_10_CURRENT_VERSION,
+  OWASP_TOP_10_REGISTRY,
+  type Threat,
+} from '~/domain';
 import type {
   ThreatCreateInput,
   ThreatUpdateInput,
@@ -15,9 +19,12 @@ const normalizeOptionalText = (value?: string) => {
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
 };
 
+const defaultOwaspCategoryCode =
+  OWASP_TOP_10_REGISTRY[OWASP_TOP_10_CURRENT_VERSION].categories.A01.value;
+
 export const createEmptyThreatFormValue = (): ThreatFormValue => ({
   title: '',
-  owaspCategoryCode: 'A01:2021',
+  owaspCategoryCode: defaultOwaspCategoryCode,
   customCategory: '',
   strideCategory: 'spoofing',
   severity: 'medium',
@@ -47,7 +54,8 @@ export const toAssessmentViewModel = (
 export const threatToFormValue = (threat: Threat): ThreatFormValue => ({
   title: threat.title,
   owaspCategoryCode:
-    threat.owaspCategoryCode ?? (threat.customCategory ? 'custom' : 'A01:2021'),
+    threat.owaspCategoryCode ??
+    (threat.customCategory ? 'custom' : defaultOwaspCategoryCode),
   customCategory:
     threat.owaspCategoryCode === 'custom' ? (threat.customCategory ?? '') : '',
   strideCategory: threat.strideCategories[0] ?? 'spoofing',

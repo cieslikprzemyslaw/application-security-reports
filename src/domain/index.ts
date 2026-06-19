@@ -1,6 +1,7 @@
 export * from './common.js';
 export * from './company.js';
 export * from './assessment.js';
+export * from './owaspTop10.js';
 export * from './threat.js';
 export * from './evidence.js';
 export * from './report.js';

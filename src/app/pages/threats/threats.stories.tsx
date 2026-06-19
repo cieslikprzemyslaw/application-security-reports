@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 
 import PageContent from '~/app/layouts/pageContent';
+import { OWASP_TOP_10_CURRENT_VERSION, OWASP_TOP_10_REGISTRY } from '~/domain';
 
 import Threats from './threats.component';
 import type { ThreatSeverityFilter, ThreatStatusFilter } from './threats.utils';
+
+const owaspTop10Categories =
+  OWASP_TOP_10_REGISTRY[OWASP_TOP_10_CURRENT_VERSION].categories;
 
 const meta = {
   title: 'Pages/Threats',
@@ -66,7 +70,7 @@ export const Default: Story = {
         title: 'Missing Server-Side Authorization',
         applicationName: 'Orders API',
         companyName: 'Northstar Digital',
-        owaspCategoryCode: 'A01:2021',
+        owaspCategoryCode: owaspTop10Categories.A01.value,
         strideCategory: 'elevation-of-privilege',
         severity: 'critical',
         status: 'open',
