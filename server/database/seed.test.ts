@@ -8,6 +8,10 @@ import { pathToFileURL } from 'node:url';
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 
 import { SeedInputError, seedDatabase } from '../../prisma/seed.js';
+import {
+  OWASP_TOP_10_CURRENT_VERSION,
+  getOwaspTop10CategoryByValue,
+} from '../../src/domain/index.js';
 
 const buildDir = process.env.APPSEC_BUILD_DIR;
 const databaseUrl = process.env.DATABASE_URL;
@@ -212,6 +216,41 @@ try {
     await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
 
     await seedDatabase(prisma, { seedDir: sourceSeedDir });
+
+    const seededAssessments = await prisma.assessment.findMany({
+      orderBy: { id: 'asc' },
+      select: { id: true, owaspTaxonomyVersion: true },
+    });
+    assert.deepEqual(
+      seededAssessments.map(row => row.owaspTaxonomyVersion),
+      Array.from(
+        { length: seededAssessments.length },
+        () => OWASP_TOP_10_CURRENT_VERSION,
+      ),
+    );
+
+    const seededThreats = await prisma.threat.findMany({
+      orderBy: { id: 'asc' },
+      select: {
+        assessmentId: true,
+        owaspCategoryCode: true,
+      },
+    });
+    for (const threat of seededThreats) {
+      if (threat.owaspCategoryCode && threat.owaspCategoryCode !== 'custom') {
+        const assessmentVersion = seededAssessments.find(
+          row => row.id === threat.assessmentId,
+        )?.owaspTaxonomyVersion;
+
+        assert.ok(
+          getOwaspTop10CategoryByValue(
+            threat.owaspCategoryCode,
+            assessmentVersion ?? OWASP_TOP_10_CURRENT_VERSION,
+          ),
+          `Unexpected OWASP category code ${threat.owaspCategoryCode}`,
+        );
+      }
+    }
 
     const initialSnapshot = await getSnapshot(prisma);
 
