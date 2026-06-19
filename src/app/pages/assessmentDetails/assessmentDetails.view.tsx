@@ -135,11 +135,6 @@ const AssessmentDetailsView = ({
       value: assessment.scope ?? '—',
       icon: <IconSVG name="finding" />,
     },
-    {
-      label: 'Assessment ID',
-      value: assessment.id,
-      icon: <IconSVG name="assessment" />,
-    },
   ];
 
   const renderOverviewPanel = () => (

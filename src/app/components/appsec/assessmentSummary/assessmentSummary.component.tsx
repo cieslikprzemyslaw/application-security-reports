@@ -44,10 +44,6 @@ const AssessmentSummary = ({
       label: 'Tester',
       value: testerName,
     },
-    {
-      label: 'Assessment ID',
-      value: assessmentId,
-    },
   ];
 
   const allMetadata: AssessmentMetadataItemType[] = [
