@@ -84,6 +84,7 @@ model Assessment {
   environment     String?
   assessmentType  String?
   overallRisk     Severity?
+  owaspTaxonomyVersion String @default("2025")
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 

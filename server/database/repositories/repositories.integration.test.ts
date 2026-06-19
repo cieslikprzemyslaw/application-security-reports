@@ -41,6 +41,16 @@ const migrationPath = path.resolve(
 );
 const migrationSql = readFileSync(migrationPath, 'utf8');
 const schemaSql = migrationSql.slice(migrationSql.indexOf('-- CreateTable'));
+const assessmentMigrationPath = path.resolve(
+  buildDir,
+  '..',
+  '..',
+  'prisma',
+  'migrations',
+  '20260619120000_add_owasp_taxonomy_version_to_assessment',
+  'migration.sql',
+);
+const assessmentMigrationSql = readFileSync(assessmentMigrationPath, 'utf8');
 const settingsBrandingMigrationPath = path.resolve(
   buildDir,
   '..',
@@ -88,6 +98,7 @@ const Database = require('better-sqlite3') as new (databasePath: string) => {
   const bootstrapDb = new Database(databasePath);
   try {
     bootstrapDb.exec(schemaSql);
+    bootstrapDb.exec(assessmentMigrationSql);
     bootstrapDb.exec(settingsBrandingMigrationSql);
     bootstrapDb.exec(threatMigrationSql);
     bootstrapDb.exec(evidenceMigrationSql);
@@ -145,6 +156,17 @@ try {
     assessmentType: 'web',
     overallRisk: 'medium',
   });
+  assert.equal(assessment.owaspTaxonomyVersion, '2025');
+
+  const updatedAssessment = await assessmentRepo.update(assessment.id, {
+    title: 'API review - updated',
+  });
+  assert.equal(updatedAssessment.owaspTaxonomyVersion, '2025');
+  const storedAssessment = await prisma.assessment.findUnique({
+    where: { id: assessment.id },
+    select: { owaspTaxonomyVersion: true },
+  });
+  assert.equal(storedAssessment?.owaspTaxonomyVersion, '2025');
 
   const threat = await threatRepo.create({
     assessmentId: assessment.id,

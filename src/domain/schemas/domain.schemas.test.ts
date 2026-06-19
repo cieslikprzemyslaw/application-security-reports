@@ -10,6 +10,7 @@ import {
   THREAT_STATUSES,
 } from '../common.js';
 import { DATE_FORMATS, THEME_PREFERENCES } from '../settings.js';
+import { OWASP_TOP_10_CURRENT_VERSION } from '../owaspTop10.js';
 
 import {
   assessmentSchema,
@@ -119,6 +120,7 @@ const validAssessment = {
   environment: 'Production',
   assessmentType: 'Web App',
   overallRisk: 'high',
+  owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   createdAt: '2026-06-01T00:00:00.000Z',
   updatedAt: '2026-06-10T00:00:00.000Z',
 };
@@ -455,6 +457,14 @@ expectField(
   'completedAt',
   'Invalid ISO date string',
 );
+expectField(
+  getFieldErrors(assessmentSchema, {
+    ...validAssessment,
+    owaspTaxonomyVersion: '2024',
+  }),
+  'owaspTaxonomyVersion',
+  'Unsupported OWASP taxonomy version',
+);
 
 assertValid(
   threatSchema.safeParse(validThreat).success,
@@ -730,6 +740,16 @@ assertValid(
   }).success,
   'Create assessment request should pass',
 );
+expectField(
+  getFieldErrors(createAssessmentRequestSchema, {
+    companyId: validCompany.id,
+    title: 'Example',
+    status: 'draft',
+    owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+  }),
+  'owaspTaxonomyVersion',
+  'Unknown property',
+);
 assertValid(
   createThreatRequestSchema.safeParse({
     assessmentId: validAssessment.id,
@@ -878,6 +898,13 @@ expectField(
     companyId: validCompany.id,
   }),
   'companyId',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(updateAssessmentRequestSchema, {
+    owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+  }),
+  'owaspTaxonomyVersion',
   'Unknown property',
 );
 expectField(

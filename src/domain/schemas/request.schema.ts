@@ -75,6 +75,7 @@ const createAssessmentBaseSchema = assessmentObjectSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  owaspTaxonomyVersion: true,
 });
 
 export const assessmentRouteParamsSchema = z

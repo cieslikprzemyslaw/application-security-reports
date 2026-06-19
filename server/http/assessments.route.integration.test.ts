@@ -13,6 +13,7 @@ import { loadServerConfig } from '../config.js';
 import { createAssessmentRepository } from '../database/repositories/assessment.repository.js';
 import { createCompanyRepository } from '../database/repositories/company.repository.js';
 import { createApiApp } from './api-app.js';
+import { OWASP_TOP_10_CURRENT_VERSION } from '../../src/domain/index.js';
 
 const repoRoot = path.resolve(process.cwd());
 const migrationPath = path.resolve(
@@ -24,6 +25,14 @@ const migrationPath = path.resolve(
 );
 const migrationSql = readFileSync(migrationPath, 'utf8');
 const schemaSql = migrationSql.slice(migrationSql.indexOf('-- CreateTable'));
+const assessmentMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260619120000_add_owasp_taxonomy_version_to_assessment',
+  'migration.sql',
+);
+const assessmentMigrationSql = readFileSync(assessmentMigrationPath, 'utf8');
 const threatMigrationPath = path.resolve(
   repoRoot,
   'prisma',
@@ -95,6 +104,7 @@ const bootstrapDb = new Database(databasePath);
 
 try {
   bootstrapDb.exec(schemaSql);
+  bootstrapDb.exec(assessmentMigrationSql);
   bootstrapDb.exec(threatMigrationSql);
   bootstrapDb.exec(evidenceMigrationSql);
 } finally {
@@ -162,11 +172,16 @@ try {
         companyId: string;
         title: string;
         overallRisk?: string;
+        owaspTaxonomyVersion?: string;
       };
     };
     assert.equal(createJson.data.id.startsWith('asm_'), true);
     assert.equal(createJson.data.companyId, company.id);
     assert.equal(createJson.data.title, 'Customer Services Portal');
+    assert.equal(
+      createJson.data.owaspTaxonomyVersion,
+      OWASP_TOP_10_CURRENT_VERSION,
+    );
 
     const assessmentId = createJson.data.id;
 
@@ -213,11 +228,29 @@ try {
     );
     assert.equal(patchResponse.status, 200);
     const patchJson = (await patchResponse.json()) as {
-      data: { id: string; title: string; overallRisk?: string };
+      data: {
+        id: string;
+        title: string;
+        overallRisk?: string;
+        owaspTaxonomyVersion?: string;
+      };
     };
     assert.equal(patchJson.data.id, assessmentId);
     assert.equal(patchJson.data.title, 'Customer Services Portal - Updated');
     assert.equal(patchJson.data.overallRisk, 'medium');
+    assert.equal(
+      patchJson.data.owaspTaxonomyVersion,
+      OWASP_TOP_10_CURRENT_VERSION,
+    );
+
+    const storedAssessment = await prisma.assessment.findUnique({
+      where: { id: assessmentId },
+      select: { owaspTaxonomyVersion: true },
+    });
+    assert.equal(
+      storedAssessment?.owaspTaxonomyVersion,
+      OWASP_TOP_10_CURRENT_VERSION,
+    );
 
     await prisma.threat.create({
       data: {

@@ -61,7 +61,7 @@ export const OWASP_TOP_10_REGISTRY = {
 } as const;
 
 type OwaspTop10Registry = typeof OWASP_TOP_10_REGISTRY;
-type OwaspTop10Version = keyof OwaspTop10Registry;
+export type OwaspTop10Version = keyof OwaspTop10Registry;
 type OwaspTop10Record = OwaspTop10Registry[OwaspTop10Version];
 type OwaspTop10Category =
   OwaspTop10Record['categories'][keyof OwaspTop10Record['categories']];
@@ -77,6 +77,10 @@ const getOwaspTop10Record = (
   version in OWASP_TOP_10_REGISTRY
     ? OWASP_TOP_10_REGISTRY[version as OwaspTop10Version]
     : undefined;
+
+export const isOwaspTop10Version = (
+  version: string,
+): version is OwaspTop10Version => version in OWASP_TOP_10_REGISTRY;
 
 const toOption = (category: OwaspTop10Category): OwaspTop10Option => ({
   label: `${category.value} - ${category.label}`,

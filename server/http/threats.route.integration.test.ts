@@ -32,6 +32,14 @@ const migrationPath = path.resolve(
 );
 const migrationSql = readFileSync(migrationPath, 'utf8');
 const schemaSql = migrationSql.slice(migrationSql.indexOf('-- CreateTable'));
+const assessmentMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260619120000_add_owasp_taxonomy_version_to_assessment',
+  'migration.sql',
+);
+const assessmentMigrationSql = readFileSync(assessmentMigrationPath, 'utf8');
 const threatMigrationPath = path.resolve(
   repoRoot,
   'prisma',
@@ -106,6 +114,7 @@ const bootstrapDb = new Database(databasePath);
 
 try {
   bootstrapDb.exec(schemaSql);
+  bootstrapDb.exec(assessmentMigrationSql);
   bootstrapDb.exec(threatMigrationSql);
   bootstrapDb.exec(evidenceMigrationSql);
 } finally {

@@ -8,6 +8,7 @@ import {
   getOwaspTop10CategoryByValue,
   getOwaspTop10CategoryOption,
   getOwaspTop10CategoryOptions,
+  isOwaspTop10Version,
 } from './index.js';
 
 const currentRegistry = OWASP_TOP_10_REGISTRY[OWASP_TOP_10_CURRENT_VERSION];
@@ -41,6 +42,8 @@ const expectedCategoryLabels = [
 
 assert.equal(OWASP_TOP_10_CURRENT_VERSION, '2025');
 assert.equal(currentRegistry.version, '2025');
+assert.equal(isOwaspTop10Version('2025'), true);
+assert.equal(isOwaspTop10Version('2024'), false);
 assert.equal(Object.keys(currentRegistry.categories).length, 10);
 assert.deepEqual(
   Object.keys(currentRegistry.categories),

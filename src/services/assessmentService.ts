@@ -5,7 +5,7 @@ import { requestData, type ApiRequestFn } from './serviceHelpers.js';
 
 export type AssessmentCreateInput = Omit<
   Assessment,
-  'id' | 'createdAt' | 'updatedAt'
+  'id' | 'createdAt' | 'updatedAt' | 'owaspTaxonomyVersion'
 >;
 
 export type AssessmentUpdateInput = Partial<

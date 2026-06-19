@@ -1218,6 +1218,7 @@ export const AssessmentScalarFieldEnum = {
   environment: 'environment',
   assessmentType: 'assessmentType',
   overallRisk: 'overallRisk',
+  owaspTaxonomyVersion: 'owaspTaxonomyVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { Assessment } from '../assessment.js';
+import { isOwaspTop10Version } from '../owaspTop10.js';
 
 import {
   assessmentStatusSchema,
@@ -26,6 +27,9 @@ export const assessmentObjectSchema = z
     environment: optionalTrimmedTextSchema,
     assessmentType: optionalTrimmedTextSchema,
     overallRisk: severitySchema.optional(),
+    owaspTaxonomyVersion: z
+      .string()
+      .refine(isOwaspTop10Version, 'Unsupported OWASP taxonomy version'),
     createdAt: timestampSchema,
     updatedAt: timestampSchema,
   })
