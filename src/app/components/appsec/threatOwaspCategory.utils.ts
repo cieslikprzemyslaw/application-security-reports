@@ -1,6 +1,6 @@
 import {
   OWASP_TOP_10_CURRENT_VERSION,
-  getOwaspTop10CategoryOption,
+  getOwaspTop10CategoryByValue,
 } from '~/domain';
 
 interface ThreatOwaspCategorySource {
@@ -24,8 +24,10 @@ export const getThreatOwaspCategoryLabel = (
     return '—';
   }
 
-  return (
-    getOwaspTop10CategoryOption(categoryCode, owaspTaxonomyVersion)?.label ??
-    categoryCode
+  const category = getOwaspTop10CategoryByValue(
+    categoryCode,
+    owaspTaxonomyVersion,
   );
+
+  return category ? `${category.value} - ${category.label}` : categoryCode;
 };
