@@ -32,6 +32,16 @@ type ThreatResponse = Threat & {
   assessmentOwaspTaxonomyVersion: string;
 };
 
+type ThreatValidatedRequest = {
+  body?: CreateThreatInput | UpdateThreatInput;
+  params?: {
+    id: string;
+  };
+  query?: {
+    assessmentId: string;
+  };
+};
+
 const threatResponse = (
   threat: Threat,
   assessmentVersion: string,
@@ -146,22 +156,25 @@ export const createThreatsRouter = (
       query: threatListQuerySchema,
     }),
     asyncRoute(async (_req, res) => {
-      const { assessmentId } = res.locals.validatedRequest?.query as {
-        assessmentId: string;
-      };
+      const validatedRequest = res.locals
+        .validatedRequest as ThreatValidatedRequest;
+      const { assessmentId: validatedAssessmentId } =
+        validatedRequest.query as { assessmentId: string };
+
+      const assessment = await ensureAssessmentExists(
+        assessmentRepository,
+        validatedAssessmentId,
+        res,
+      );
+
+      if (!assessment) {
+        return;
+      }
 
       try {
-        const assessment = await ensureAssessmentExists(
-          assessmentRepository,
-          assessmentId,
-          res,
+        const threats = await threatRepository.findByAssessmentId(
+          validatedAssessmentId,
         );
-
-        if (!assessment) {
-          return;
-        }
-
-        const threats = await threatRepository.findByAssessmentId(assessmentId);
 
         res.status(200).json({
           data: threats.map(threat =>
@@ -182,9 +195,9 @@ export const createThreatsRouter = (
       params: threatRouteParamsSchema,
     }),
     asyncRoute(async (_req, res) => {
-      const { id } = res.locals.validatedRequest?.params as {
-        id: string;
-      };
+      const validatedRequest = res.locals
+        .validatedRequest as ThreatValidatedRequest;
+      const { id } = validatedRequest.params as { id: string };
 
       try {
         const threat = await threatRepository.findById(id);
@@ -219,7 +232,9 @@ export const createThreatsRouter = (
       body: createThreatRequestSchema,
     }),
     asyncRoute(async (_req, res) => {
-      const body = res.locals.validatedRequest?.body as CreateThreatInput;
+      const validatedRequest = res.locals
+        .validatedRequest as ThreatValidatedRequest;
+      const body = validatedRequest.body as CreateThreatInput;
 
       try {
         const assessment = await ensureAssessmentExists(
@@ -256,10 +271,10 @@ export const createThreatsRouter = (
       body: updateThreatRequestSchema,
     }),
     asyncRoute(async (_req, res) => {
-      const { id } = res.locals.validatedRequest?.params as {
-        id: string;
-      };
-      const body = res.locals.validatedRequest?.body as UpdateThreatInput;
+      const validatedRequest = res.locals
+        .validatedRequest as ThreatValidatedRequest;
+      const { id } = validatedRequest.params as { id: string };
+      const body = validatedRequest.body as UpdateThreatInput;
 
       try {
         const existingThreat = await threatRepository.findById(id);
@@ -301,9 +316,9 @@ export const createThreatsRouter = (
       params: threatRouteParamsSchema,
     }),
     asyncRoute(async (_req, res) => {
-      const { id } = res.locals.validatedRequest?.params as {
-        id: string;
-      };
+      const validatedRequest = res.locals
+        .validatedRequest as ThreatValidatedRequest;
+      const { id } = validatedRequest.params as { id: string };
 
       try {
         await threatRepository.delete(id);
