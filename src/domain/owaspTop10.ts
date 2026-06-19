@@ -8,47 +8,47 @@ const OWASP_TOP_10_2025_CATEGORIES = {
   },
   A02: {
     code: 'A02',
-    label: 'Cryptographic Failures',
+    label: 'Security Misconfiguration',
     value: 'A02:2025',
   },
   A03: {
     code: 'A03',
-    label: 'Injection',
+    label: 'Software Supply Chain Failures',
     value: 'A03:2025',
   },
   A04: {
     code: 'A04',
-    label: 'Insecure Design',
+    label: 'Cryptographic Failures',
     value: 'A04:2025',
   },
   A05: {
     code: 'A05',
-    label: 'Security Misconfiguration',
+    label: 'Injection',
     value: 'A05:2025',
   },
   A06: {
     code: 'A06',
-    label: 'Vulnerable and Outdated Components',
+    label: 'Insecure Design',
     value: 'A06:2025',
   },
   A07: {
     code: 'A07',
-    label: 'Identification and Authentication Failures',
+    label: 'Authentication Failures',
     value: 'A07:2025',
   },
   A08: {
     code: 'A08',
-    label: 'Software and Data Integrity Failures',
+    label: 'Software or Data Integrity Failures',
     value: 'A08:2025',
   },
   A09: {
     code: 'A09',
-    label: 'Security Logging and Monitoring Failures',
+    label: 'Security Logging & Alerting Failures',
     value: 'A09:2025',
   },
   A10: {
     code: 'A10',
-    label: 'Server-Side Request Forgery',
+    label: 'Mishandling of Exceptional Conditions',
     value: 'A10:2025',
   },
 } as const;

@@ -28,15 +28,15 @@ const expectedCategoryValues = expectedCategoryCodes.map(
 );
 const expectedCategoryLabels = [
   'A01:2025 - Broken Access Control',
-  'A02:2025 - Cryptographic Failures',
-  'A03:2025 - Injection',
-  'A04:2025 - Insecure Design',
-  'A05:2025 - Security Misconfiguration',
-  'A06:2025 - Vulnerable and Outdated Components',
-  'A07:2025 - Identification and Authentication Failures',
-  'A08:2025 - Software and Data Integrity Failures',
-  'A09:2025 - Security Logging and Monitoring Failures',
-  'A10:2025 - Server-Side Request Forgery',
+  'A02:2025 - Security Misconfiguration',
+  'A03:2025 - Software Supply Chain Failures',
+  'A04:2025 - Cryptographic Failures',
+  'A05:2025 - Injection',
+  'A06:2025 - Insecure Design',
+  'A07:2025 - Authentication Failures',
+  'A08:2025 - Software or Data Integrity Failures',
+  'A09:2025 - Security Logging & Alerting Failures',
+  'A10:2025 - Mishandling of Exceptional Conditions',
 ] as const;
 
 assert.equal(OWASP_TOP_10_CURRENT_VERSION, '2025');
@@ -67,7 +67,7 @@ assert.equal(getOwaspTop10CategoryByCode('A01', '2021'), undefined);
 
 assert.equal(
   getOwaspTop10CategoryByCode('A10')?.label,
-  'Server-Side Request Forgery',
+  'Mishandling of Exceptional Conditions',
 );
 assert.equal(getOwaspTop10CategoryByValue('A09:2025')?.code, 'A09');
 assert.equal(getOwaspTop10CategoryByValue('A09:2021'), undefined);
