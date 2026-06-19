@@ -216,6 +216,7 @@ try {
       data: {
         id: string;
         assessmentId: string;
+        assessmentOwaspTaxonomyVersion: string;
         severity: string;
         owaspCategoryCode?: string;
         customCategory?: string;
@@ -223,6 +224,10 @@ try {
     };
     assert.equal(createdJson.data.id.startsWith('thr_'), true);
     assert.equal(createdJson.data.assessmentId, primaryAssessment.id);
+    assert.equal(
+      createdJson.data.assessmentOwaspTaxonomyVersion,
+      OWASP_TOP_10_CURRENT_VERSION,
+    );
     assert.equal(createdJson.data.severity, 'critical');
     assert.equal(createdJson.data.owaspCategoryCode, 'A09:2025');
     assert.equal(createdJson.data.customCategory, undefined);
@@ -296,11 +301,16 @@ try {
     const customGetJson = (await customGetResponse.json()) as {
       data: {
         id: string;
+        assessmentOwaspTaxonomyVersion: string;
         owaspCategoryCode?: string;
         customCategory?: string;
       };
     };
     assert.equal(customGetJson.data.id, secondaryThreat.id);
+    assert.equal(
+      customGetJson.data.assessmentOwaspTaxonomyVersion,
+      OWASP_TOP_10_CURRENT_VERSION,
+    );
     assert.equal(customGetJson.data.owaspCategoryCode, 'custom');
     assert.equal(customGetJson.data.customCategory, 'Information exposure');
 
@@ -309,10 +319,18 @@ try {
     );
     assert.equal(listResponse.status, 200);
     const listJson = (await listResponse.json()) as {
-      data: Array<{ id: string; owaspCategoryCode?: string }>;
+      data: Array<{
+        id: string;
+        assessmentOwaspTaxonomyVersion: string;
+        owaspCategoryCode?: string;
+      }>;
     };
     assert.equal(listJson.data.length, 1);
     assert.equal(listJson.data[0]?.id, primaryThreatId);
+    assert.equal(
+      listJson.data[0]?.assessmentOwaspTaxonomyVersion,
+      OWASP_TOP_10_CURRENT_VERSION,
+    );
     assert.equal(listJson.data[0]?.owaspCategoryCode, 'A09:2025');
 
     const getResponse = await fetch(
@@ -324,11 +342,16 @@ try {
         id: string;
         assessmentId: string;
         title: string;
+        assessmentOwaspTaxonomyVersion: string;
         owaspCategoryCode?: string;
       };
     };
     assert.equal(getJson.data.id, primaryThreatId);
     assert.equal(getJson.data.assessmentId, primaryAssessment.id);
+    assert.equal(
+      getJson.data.assessmentOwaspTaxonomyVersion,
+      OWASP_TOP_10_CURRENT_VERSION,
+    );
     assert.equal(getJson.data.owaspCategoryCode, 'A09:2025');
 
     const patchResponse = await fetch(
@@ -352,12 +375,17 @@ try {
         title: string;
         status: string;
         risk?: string;
+        assessmentOwaspTaxonomyVersion: string;
         owaspCategoryCode?: string;
       };
     };
     assert.equal(patchJson.data.id, primaryThreatId);
     assert.equal(patchJson.data.title, 'Missing server-side authorization');
     assert.equal(patchJson.data.status, 'mitigated');
+    assert.equal(
+      patchJson.data.assessmentOwaspTaxonomyVersion,
+      OWASP_TOP_10_CURRENT_VERSION,
+    );
     assert.equal(patchJson.data.risk, 'Risk reduced after remediation');
     assert.equal(patchJson.data.owaspCategoryCode, 'A09:2025');
 
@@ -397,6 +425,7 @@ try {
       data: {
         id: string;
         title: string;
+        assessmentOwaspTaxonomyVersion: string;
         owaspCategoryCode?: string;
       };
     };
@@ -404,6 +433,10 @@ try {
     assert.equal(
       postPatchGetJson.data.title,
       'Missing server-side authorization',
+    );
+    assert.equal(
+      postPatchGetJson.data.assessmentOwaspTaxonomyVersion,
+      OWASP_TOP_10_CURRENT_VERSION,
     );
     assert.equal(postPatchGetJson.data.owaspCategoryCode, 'A09:2025');
 

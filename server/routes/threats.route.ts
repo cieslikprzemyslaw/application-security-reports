@@ -13,6 +13,7 @@ import {
   RepositoryError,
   RepositoryNotFoundError,
 } from '../database/errors.js';
+import type { Assessment } from '../../src/domain/assessment.js';
 import type {
   CreateThreatInput,
   Threat,
@@ -27,15 +28,36 @@ import {
 import { sendApiError } from '../http/api-errors.js';
 import { createRequestValidationMiddleware } from '../http/request-validation.js';
 
-const threatResponse = (threat: Threat): Threat => ({ ...threat });
+type ThreatResponse = Threat & {
+  assessmentOwaspTaxonomyVersion: string;
+};
+
+type ThreatValidatedRequest = {
+  body?: CreateThreatInput | UpdateThreatInput;
+  params?: {
+    id: string;
+  };
+  query?: {
+    assessmentId: string;
+  };
+};
+
+const threatResponse = (
+  threat: Threat,
+  assessmentVersion: string,
+): ThreatResponse => ({
+  ...threat,
+  assessmentOwaspTaxonomyVersion: assessmentVersion,
+});
 
 const sendThreatResponse = (
   res: Response,
   statusCode: number,
   threat: Threat,
+  assessmentVersion: string,
 ): Response =>
   res.status(statusCode).json({
-    data: threatResponse(threat),
+    data: threatResponse(threat, assessmentVersion),
   });
 
 type ThreatRepositoryOperation =
@@ -111,15 +133,15 @@ const ensureAssessmentExists = async (
   assessmentRepository: AssessmentRepository,
   assessmentId: string,
   res: Response,
-): Promise<boolean> => {
+): Promise<Assessment | null> => {
   const assessment = await assessmentRepository.findById(assessmentId);
 
   if (!assessment) {
     sendApiError(res, 404, 'ASSESSMENT_NOT_FOUND', 'Assessment not found');
-    return false;
+    return null;
   }
 
-  return true;
+  return assessment;
 };
 
 export const createThreatsRouter = (
@@ -134,25 +156,30 @@ export const createThreatsRouter = (
       query: threatListQuerySchema,
     }),
     asyncRoute(async (_req, res) => {
-      const { assessmentId } = res.locals.validatedRequest?.query as {
-        assessmentId: string;
-      };
+      const validatedRequest = res.locals
+        .validatedRequest as ThreatValidatedRequest;
+      const { assessmentId: validatedAssessmentId } =
+        validatedRequest.query as { assessmentId: string };
+
+      const assessment = await ensureAssessmentExists(
+        assessmentRepository,
+        validatedAssessmentId,
+        res,
+      );
+
+      if (!assessment) {
+        return;
+      }
 
       try {
-        if (
-          !(await ensureAssessmentExists(
-            assessmentRepository,
-            assessmentId,
-            res,
-          ))
-        ) {
-          return;
-        }
-
-        const threats = await threatRepository.findByAssessmentId(assessmentId);
+        const threats = await threatRepository.findByAssessmentId(
+          validatedAssessmentId,
+        );
 
         res.status(200).json({
-          data: threats.map(threatResponse),
+          data: threats.map(threat =>
+            threatResponse(threat, assessment.owaspTaxonomyVersion!),
+          ),
         });
       } catch (error) {
         if (!handleThreatRepositoryError(error, res, 'list')) {
@@ -168,9 +195,9 @@ export const createThreatsRouter = (
       params: threatRouteParamsSchema,
     }),
     asyncRoute(async (_req, res) => {
-      const { id } = res.locals.validatedRequest?.params as {
-        id: string;
-      };
+      const validatedRequest = res.locals
+        .validatedRequest as ThreatValidatedRequest;
+      const { id } = validatedRequest.params as { id: string };
 
       try {
         const threat = await threatRepository.findById(id);
@@ -180,7 +207,17 @@ export const createThreatsRouter = (
           return;
         }
 
-        sendThreatResponse(res, 200, threat);
+        const assessment = await ensureAssessmentExists(
+          assessmentRepository,
+          threat.assessmentId,
+          res,
+        );
+
+        if (!assessment) {
+          return;
+        }
+
+        sendThreatResponse(res, 200, threat, assessment.owaspTaxonomyVersion!);
       } catch (error) {
         if (!handleThreatRepositoryError(error, res, 'retrieve')) {
           throw error;
@@ -195,23 +232,30 @@ export const createThreatsRouter = (
       body: createThreatRequestSchema,
     }),
     asyncRoute(async (_req, res) => {
-      const body = res.locals.validatedRequest?.body as CreateThreatInput;
+      const validatedRequest = res.locals
+        .validatedRequest as ThreatValidatedRequest;
+      const body = validatedRequest.body as CreateThreatInput;
 
       try {
-        if (
-          !(await ensureAssessmentExists(
-            assessmentRepository,
-            body.assessmentId,
-            res,
-          ))
-        ) {
+        const assessment = await ensureAssessmentExists(
+          assessmentRepository,
+          body.assessmentId,
+          res,
+        );
+
+        if (!assessment) {
           return;
         }
 
         const threat = await threatRepository.create(body);
         const response = res.location(`/api/threats/${threat.id}`);
 
-        sendThreatResponse(response, 201, threat);
+        sendThreatResponse(
+          response,
+          201,
+          threat,
+          assessment.owaspTaxonomyVersion!,
+        );
       } catch (error) {
         if (!handleThreatRepositoryError(error, res, 'create')) {
           throw error;
@@ -227,15 +271,37 @@ export const createThreatsRouter = (
       body: updateThreatRequestSchema,
     }),
     asyncRoute(async (_req, res) => {
-      const { id } = res.locals.validatedRequest?.params as {
-        id: string;
-      };
-      const body = res.locals.validatedRequest?.body as UpdateThreatInput;
+      const validatedRequest = res.locals
+        .validatedRequest as ThreatValidatedRequest;
+      const { id } = validatedRequest.params as { id: string };
+      const body = validatedRequest.body as UpdateThreatInput;
 
       try {
+        const existingThreat = await threatRepository.findById(id);
+
+        if (!existingThreat) {
+          sendApiError(res, 404, 'THREAT_NOT_FOUND', 'Threat not found');
+          return;
+        }
+
+        const assessment = await ensureAssessmentExists(
+          assessmentRepository,
+          existingThreat.assessmentId,
+          res,
+        );
+
+        if (!assessment) {
+          return;
+        }
+
         const updatedThreat = await threatRepository.update(id, body);
 
-        sendThreatResponse(res, 200, updatedThreat);
+        sendThreatResponse(
+          res,
+          200,
+          updatedThreat,
+          assessment.owaspTaxonomyVersion!,
+        );
       } catch (error) {
         if (!handleThreatRepositoryError(error, res, 'update')) {
           throw error;
@@ -250,9 +316,9 @@ export const createThreatsRouter = (
       params: threatRouteParamsSchema,
     }),
     asyncRoute(async (_req, res) => {
-      const { id } = res.locals.validatedRequest?.params as {
-        id: string;
-      };
+      const validatedRequest = res.locals
+        .validatedRequest as ThreatValidatedRequest;
+      const { id } = validatedRequest.params as { id: string };
 
       try {
         await threatRepository.delete(id);

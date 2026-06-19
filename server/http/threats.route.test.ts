@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 
 import type { Assessment } from '../../src/domain/assessment.js';
 import type { Threat } from '../../src/domain/threat.js';
+import { OWASP_TOP_10_CURRENT_VERSION } from '../../src/domain/owaspTop10.js';
 import { loadServerConfig } from '../config.js';
 import {
   RepositoryConstraintError,
@@ -70,11 +71,14 @@ const defaultAssessment: Assessment = {
   environment: 'Production',
   assessmentType: 'Web App',
   overallRisk: 'high',
+  owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-11T09:00:00.000Z',
 };
 
-const defaultThreat: Threat = {
+const defaultThreat: Threat & {
+  assessmentOwaspTaxonomyVersion: string;
+} = {
   id: 'thr_00000000-0000-0000-0000-000000000001',
   assessmentId: defaultAssessment.id,
   title: 'Missing Server-Side Authorization',
@@ -82,6 +86,7 @@ const defaultThreat: Threat = {
   severity: 'critical',
   strideCategories: ['spoofing', 'tampering'],
   status: 'accepted-risk',
+  assessmentOwaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   affectedAsset: '/api/v1/orders/{id}',
   impact: 'Unauthorised access to customer order data',
   recommendation: 'Apply object-level authorization on every request.',
@@ -406,10 +411,11 @@ const createApp = (
 }
 
 {
+  const { calls: assessmentCalls, repository: assessmentRepository } =
+    createAssessmentRepository();
   const { calls, repository } = createThreatRepository({
     findById: async () => defaultThreat,
   });
-  const { repository: assessmentRepository } = createAssessmentRepository();
   const server = await startTestServer(
     createApp(assessmentRepository, repository),
   );
@@ -424,6 +430,7 @@ const createApp = (
       data: defaultThreat,
     });
     assert.equal(calls.findById, 1);
+    assert.equal(assessmentCalls.findById, 1);
   } finally {
     await server.close();
   }
@@ -716,13 +723,14 @@ for (const [body, path, messageIncludes] of [
 }
 
 {
+  const { calls: assessmentCalls, repository: assessmentRepository } =
+    createAssessmentRepository();
   const { calls, repository } = createThreatRepository({
     update: async (_id, input) => ({
       ...defaultThreat,
       ...input,
     }),
   });
-  const { repository: assessmentRepository } = createAssessmentRepository();
   const server = await startTestServer(
     createApp(assessmentRepository, repository),
   );
@@ -749,6 +757,7 @@ for (const [body, path, messageIncludes] of [
       calls.updateArgs?.input.title,
       'Missing server-side authorization',
     );
+    assert.equal(assessmentCalls.findById, 1);
   } finally {
     await server.close();
   }
