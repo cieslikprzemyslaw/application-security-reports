@@ -17,8 +17,15 @@ import {
   writeRecentCompanyIds,
 } from './companySwitcher.utils';
 
-const formatAssessmentCount = (assessmentCount: number) =>
-  `${assessmentCount} ${assessmentCount === 1 ? 'assessment' : 'assessments'}`;
+const formatAssessmentCount = (assessmentCount?: number) => {
+  if (typeof assessmentCount !== 'number') {
+    return 'Assessment count unavailable';
+  }
+
+  return `${assessmentCount} ${
+    assessmentCount === 1 ? 'assessment' : 'assessments'
+  }`;
+};
 
 export interface CompanySwitcherProps {
   activeCompany?: {
