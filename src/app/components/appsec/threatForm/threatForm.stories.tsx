@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { OWASP_TOP_10_CURRENT_VERSION, OWASP_TOP_10_REGISTRY } from '~/domain';
+
 import ThreatForm from './threatForm.component';
 
 import type { ThreatFormValue } from './threatForm.type';
 
+const owaspTop10Categories =
+  OWASP_TOP_10_REGISTRY[OWASP_TOP_10_CURRENT_VERSION].categories;
+
 const initialValue: ThreatFormValue = {
   title: 'Missing Server-Side Authorization',
-  owaspCategoryCode: 'A01:2021',
+  owaspCategoryCode: owaspTop10Categories.A01.value,
   customCategory: '',
   strideCategory: 'elevation-of-privilege',
   severity: 'critical',

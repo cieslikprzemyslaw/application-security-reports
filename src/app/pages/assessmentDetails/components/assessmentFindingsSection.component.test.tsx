@@ -5,7 +5,11 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from 'styled-components';
 
-import type { Threat } from '~/domain';
+import {
+  OWASP_TOP_10_CURRENT_VERSION,
+  OWASP_TOP_10_REGISTRY,
+  type Threat,
+} from '~/domain';
 import { defaultTheme } from '~/theme';
 
 import type { ThreatTableRow } from '~/app/components/appsec/threatTable';
@@ -17,6 +21,9 @@ import {
 import type { AssessmentDetailsAssessment } from '../assessmentDetails.type';
 
 import AssessmentFindingsSection from './assessmentFindingsSection.component';
+
+const owaspTop10Categories =
+  OWASP_TOP_10_REGISTRY[OWASP_TOP_10_CURRENT_VERSION].categories;
 
 const renderTick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
 
@@ -67,7 +74,7 @@ const finding: Threat = {
   severity: 'high',
   strideCategories: ['spoofing'],
   status: 'open',
-  owaspCategoryCode: 'A01:2021',
+  owaspCategoryCode: owaspTop10Categories.A01.value,
   customCategory: undefined,
   affectedComponent: 'Orders API',
   affectedEndpoint: '/api/orders/{id}',
@@ -212,7 +219,7 @@ await (async () => {
       ),
     );
     assert.ok(textContent(window.document.body).includes('High'));
-    assert.ok(textContent(window.document.body).includes('A01:2021'));
+    assert.ok(textContent(window.document.body).includes('A01:2025'));
     assert.ok(textContent(window.document.body).includes('Orders API'));
     assert.ok(
       textContent(window.document.body).includes(

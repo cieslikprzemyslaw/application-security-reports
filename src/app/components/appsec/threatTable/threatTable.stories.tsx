@@ -1,6 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { OWASP_TOP_10_CURRENT_VERSION, OWASP_TOP_10_REGISTRY } from '~/domain';
+
 import ThreatTable from './threatTable.component';
+
+const owaspTop10Categories =
+  OWASP_TOP_10_REGISTRY[OWASP_TOP_10_CURRENT_VERSION].categories;
 
 const meta = {
   title: 'AppSec/ThreatTable',
@@ -30,7 +35,7 @@ export const Default: Story = {
       {
         id: 'thr_1',
         title: 'Missing Server-Side Authorization',
-        owaspCategoryCode: 'A01:2021',
+        owaspCategoryCode: owaspTop10Categories.A01.value,
         severity: 'critical',
         status: 'open',
         evidenceCount: 3,

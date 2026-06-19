@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 
+import { OWASP_TOP_10_CURRENT_VERSION, OWASP_TOP_10_REGISTRY } from '~/domain';
+
 import {
   threatFormValueToCreateInput,
   threatFormValueToUpdateInput,
@@ -36,6 +38,9 @@ const mapped = createThreatValidationErrorMap([
   { path: '', message: 'At least one threat field is required' },
 ]);
 
+const owaspTop10Categories =
+  OWASP_TOP_10_REGISTRY[OWASP_TOP_10_CURRENT_VERSION].categories;
+
 assert.equal(mapped.fieldErrors.owaspCategoryCode, 'Required');
 assert.equal(mapped.fieldErrors.observation, 'Description is required');
 assert.deepEqual(mapped.generalErrors, [
@@ -44,7 +49,7 @@ assert.deepEqual(mapped.generalErrors, [
 
 const formValue = {
   title: '  Missing Server-Side Authorization  ',
-  owaspCategoryCode: 'A09:2021',
+  owaspCategoryCode: owaspTop10Categories.A09.value,
   customCategory: '',
   strideCategory: 'spoofing',
   severity: 'critical',

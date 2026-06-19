@@ -17,6 +17,10 @@ import { createEvidenceRepository } from '../database/repositories/evidence.repo
 import { createReportRepository } from '../database/repositories/report.repository.js';
 import { createThreatRepository } from '../database/repositories/threat.repository.js';
 import { createApiApp } from './api-app.js';
+import {
+  OWASP_TOP_10_CURRENT_VERSION,
+  OWASP_TOP_10_REGISTRY,
+} from '../../src/domain/index.js';
 
 const repoRoot = path.resolve(process.cwd());
 const migrationPath = path.resolve(
@@ -86,6 +90,9 @@ const startTestServer = async (app: ReturnType<typeof createApiApp>) => {
       }),
   };
 };
+
+const owaspTop10Categories =
+  OWASP_TOP_10_REGISTRY[OWASP_TOP_10_CURRENT_VERSION].categories;
 
 const tempDir = await mkdtemp(path.join(os.tmpdir(), 'appsec-threats-'));
 const databasePath = path.join(tempDir, 'threats.sqlite');
@@ -176,7 +183,7 @@ try {
         severity: 'critical',
         strideCategories: ['spoofing', 'tampering'],
         status: 'accepted-risk',
-        owaspCategoryCode: 'A09:2021',
+        owaspCategoryCode: owaspTop10Categories.A09.value,
         affectedAsset: '/api/v1/orders/{id}',
         impact: 'Unauthorised access to customer order data',
         recommendation: 'Apply object-level authorization on every request.',
@@ -208,7 +215,7 @@ try {
     assert.equal(createdJson.data.id.startsWith('thr_'), true);
     assert.equal(createdJson.data.assessmentId, primaryAssessment.id);
     assert.equal(createdJson.data.severity, 'critical');
-    assert.equal(createdJson.data.owaspCategoryCode, 'A09:2021');
+    assert.equal(createdJson.data.owaspCategoryCode, 'A09:2025');
     assert.equal(createdJson.data.customCategory, undefined);
 
     const primaryThreatId = createdJson.data.id;
@@ -259,7 +266,7 @@ try {
     };
     assert.equal(listJson.data.length, 1);
     assert.equal(listJson.data[0]?.id, primaryThreatId);
-    assert.equal(listJson.data[0]?.owaspCategoryCode, 'A09:2021');
+    assert.equal(listJson.data[0]?.owaspCategoryCode, 'A09:2025');
 
     const getResponse = await fetch(
       `${server.baseUrl}/api/threats/${primaryThreatId}`,
@@ -275,7 +282,7 @@ try {
     };
     assert.equal(getJson.data.id, primaryThreatId);
     assert.equal(getJson.data.assessmentId, primaryAssessment.id);
-    assert.equal(getJson.data.owaspCategoryCode, 'A09:2021');
+    assert.equal(getJson.data.owaspCategoryCode, 'A09:2025');
 
     const patchResponse = await fetch(
       `${server.baseUrl}/api/threats/${primaryThreatId}`,
@@ -305,7 +312,7 @@ try {
     assert.equal(patchJson.data.title, 'Missing server-side authorization');
     assert.equal(patchJson.data.status, 'mitigated');
     assert.equal(patchJson.data.risk, 'Risk reduced after remediation');
-    assert.equal(patchJson.data.owaspCategoryCode, 'A09:2021');
+    assert.equal(patchJson.data.owaspCategoryCode, 'A09:2025');
 
     const deleteSecondaryResponse = await fetch(
       `${server.baseUrl}/api/threats/${secondaryThreat.id}`,
