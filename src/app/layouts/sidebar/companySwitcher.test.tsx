@@ -173,9 +173,14 @@ await (async () => {
       company.id === 'cmp_2'
         ? {
             ...company,
-            assessmentCount: undefined as unknown as number,
+            assessmentCount: 0,
           }
-        : company,
+        : company.id === 'cmp_3'
+          ? {
+              ...company,
+              assessmentCount: 1,
+            }
+          : company,
     );
 
     const { container, root, window } = await renderComponent({
@@ -225,7 +230,11 @@ await (async () => {
 
     assert.ok(
       window.document.body.textContent?.includes('0 assessments'),
-      'Expected missing counts to fall back to a safe value',
+      'Expected zero assessments to render explicitly',
+    );
+    assert.ok(
+      window.document.body.textContent?.includes('1 assessment'),
+      'Expected singular counts to preserve authoritative values',
     );
     assert.ok(
       window.document.body.textContent?.includes('Current'),
