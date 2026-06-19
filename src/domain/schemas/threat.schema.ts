@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { Threat } from '../threat.js';
+import { getOwaspTop10CategoryByValue } from '../owaspTop10.js';
 
 import {
   nonEmptyIdSchema,
@@ -43,6 +44,19 @@ export const threatObjectSchema = z
   .strict();
 
 export const threatSchema = threatObjectSchema;
+
+export const createThreatOwaspCategoryCodeSchema = (
+  assessmentVersion: string,
+) =>
+  z
+    .string()
+    .trim()
+    .refine(
+      value =>
+        value === 'custom' ||
+        getOwaspTop10CategoryByValue(value, assessmentVersion) !== undefined,
+      `Unsupported OWASP category code for assessment taxonomy version ${assessmentVersion}`,
+    );
 
 type ThreatSchemaOutput = Required<z.output<typeof threatSchema>>;
 const threatSchemaCompatibilityCheck: ThreatSchemaOutput extends Threat

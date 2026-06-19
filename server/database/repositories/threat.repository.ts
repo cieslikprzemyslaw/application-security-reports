@@ -3,10 +3,16 @@ import type {
   CreateThreatInput,
   UpdateThreatInput,
 } from '../../../src/domain/threat.js';
+import { createThreatOwaspCategoryCodeSchema } from '../../../src/domain/schemas/threat.schema.js';
+import {
+  ValidationError,
+  formatValidationErrors,
+} from '../../../src/validation/index.js';
 import { generateId } from '../../utils/id.js';
-import { mapPrismaError } from '../errors.js';
+import { mapPrismaError, RepositoryNotFoundError } from '../errors.js';
 import type { RepositoryClient } from '../repository.types.js';
 import { toIsoString, toOptionalText } from './repository.helpers.js';
+import { z } from 'zod';
 
 export interface ThreatRepository {
   findById(id: string): Promise<Threat | null>;
@@ -16,7 +22,7 @@ export interface ThreatRepository {
   delete(id: string): Promise<void>;
 }
 
-type ThreatRepositoryDb = Pick<RepositoryClient, 'threat'>;
+type ThreatRepositoryDb = Pick<RepositoryClient, 'assessment' | 'threat'>;
 
 type ThreatRow = {
   id: string;
@@ -66,6 +72,55 @@ const threatSelect = {
   updatedAt: true,
 } as const;
 
+const assessmentTaxonomySelect = {
+  owaspTaxonomyVersion: true,
+} as const;
+
+const threatCategoryCodeSchema = (assessmentVersion: string) =>
+  z
+    .object({
+      owaspCategoryCode: createThreatOwaspCategoryCodeSchema(assessmentVersion),
+    })
+    .strict();
+
+const loadAssessmentTaxonomyVersion = async (
+  db: ThreatRepositoryDb,
+  assessmentId: string,
+) => {
+  const assessment = await db.assessment.findUnique({
+    where: { id: assessmentId },
+    select: assessmentTaxonomySelect,
+  });
+
+  return assessment?.owaspTaxonomyVersion;
+};
+
+const loadThreatById = async (db: ThreatRepositoryDb, id: string) => {
+  const threat = await db.threat.findUnique({
+    where: { id },
+    select: threatSelect,
+  });
+
+  return threat ? toThreat(threat) : null;
+};
+
+const validateThreatCategoryCodeForAssessment = (
+  owaspCategoryCode: string | undefined,
+  assessmentVersion: string,
+) => {
+  if (!owaspCategoryCode || owaspCategoryCode === 'custom') {
+    return;
+  }
+
+  const result = threatCategoryCodeSchema(assessmentVersion).safeParse({
+    owaspCategoryCode,
+  });
+
+  if (!result.success) {
+    throw new ValidationError(formatValidationErrors(result.error));
+  }
+};
+
 const normalizeCustomCategoryForRead = (
   owaspCategoryCode?: string | null,
   customCategory?: string | null,
@@ -81,8 +136,10 @@ const normalizeCustomCategoryForWrite = (
     : null;
 
 const toThreatWriteData = (input: CreateThreatInput | UpdateThreatInput) => {
+  const { owaspTaxonomyVersion: _owaspTaxonomyVersion, ...sanitizedInput } =
+    input as CreateThreatInput & { owaspTaxonomyVersion?: unknown };
   const data: Record<string, unknown> = {
-    ...input,
+    ...sanitizedInput,
   };
 
   if ('owaspCategoryCode' in input) {
@@ -166,12 +223,7 @@ export function createThreatRepository(
 
   return {
     async findById(id) {
-      const threat = await threatDb.findUnique({
-        where: { id },
-        select: threatSelect,
-      });
-
-      return threat ? toThreat(threat) : null;
+      return loadThreatById(db, id);
     },
 
     async findByAssessmentId(assessmentId) {
@@ -186,6 +238,20 @@ export function createThreatRepository(
 
     async create(input) {
       try {
+        const assessmentVersion = await loadAssessmentTaxonomyVersion(
+          db,
+          input.assessmentId,
+        );
+
+        if (!assessmentVersion) {
+          throw new RepositoryNotFoundError('Assessment not found.');
+        }
+
+        validateThreatCategoryCodeForAssessment(
+          input.owaspCategoryCode,
+          assessmentVersion,
+        );
+
         const threat = await threatDb.create({
           data: {
             id: generateId('threat'),
@@ -196,12 +262,36 @@ export function createThreatRepository(
 
         return toThreat(threat);
       } catch (error) {
+        if (error instanceof ValidationError) {
+          throw error;
+        }
+
         throw mapPrismaError(error);
       }
     },
 
     async update(id, input) {
       try {
+        const existingThreat = await loadThreatById(db, id);
+
+        if (!existingThreat) {
+          throw new RepositoryNotFoundError('Threat not found.');
+        }
+
+        const assessmentVersion = await loadAssessmentTaxonomyVersion(
+          db,
+          existingThreat.assessmentId,
+        );
+
+        if (!assessmentVersion) {
+          throw new RepositoryNotFoundError('Assessment not found.');
+        }
+
+        validateThreatCategoryCodeForAssessment(
+          input.owaspCategoryCode ?? existingThreat.owaspCategoryCode,
+          assessmentVersion,
+        );
+
         const threat = await threatDb.update({
           where: { id },
           data: toThreatWriteData(input),
@@ -210,6 +300,10 @@ export function createThreatRepository(
 
         return toThreat(threat);
       } catch (error) {
+        if (error instanceof ValidationError) {
+          throw error;
+        }
+
         throw mapPrismaError(error);
       }
     },

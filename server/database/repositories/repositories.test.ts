@@ -202,24 +202,29 @@ const createAssessmentDb = () => {
   };
 };
 
-const createThreatDb = () => {
+const createThreatDb = (
+  assessment = assessmentRow,
+  row: typeof threatRow & {
+    owaspCategoryCode?: string;
+  } = threatRow as typeof threatRow & { owaspCategoryCode?: string },
+) => {
   const calls: Array<{ method: string; args?: unknown }> = [];
   const threat = {
     async findUnique(args: unknown) {
       calls.push({ method: 'findUnique', args });
-      return threatRow;
+      return row;
     },
     async findMany(args: unknown) {
       calls.push({ method: 'findMany', args });
-      return [threatRow];
+      return [row];
     },
     async create(args: unknown) {
       calls.push({ method: 'create', args });
-      return threatRow;
+      return row;
     },
     async update(args: unknown) {
       calls.push({ method: 'update', args });
-      return threatRow;
+      return row;
     },
     async delete(args: unknown) {
       calls.push({ method: 'delete', args });
@@ -227,9 +232,16 @@ const createThreatDb = () => {
     },
   } as RepositoryClient['threat'];
 
+  const assessmentDb = {
+    async findUnique(args: unknown) {
+      calls.push({ method: 'assessment.findUnique', args });
+      return assessment;
+    },
+  } as RepositoryClient['assessment'];
+
   return {
     calls,
-    db: { threat },
+    db: { threat, assessment: assessmentDb },
   };
 };
 
@@ -494,6 +506,115 @@ const createSettingsDb = () => {
 
   assert.equal(threats[0].id, threatRow.id);
   assert.equal(calls[0]?.method, 'findMany');
+}
+
+{
+  const { calls, db } = createThreatDb();
+  const repository = createThreatRepository(db);
+  const createdThreat = await repository.create({
+    assessmentId: assessmentRow.id,
+    title: 'Threat',
+    description: 'A test threat',
+    severity: 'high',
+    strideCategories: ['spoofing'],
+    status: 'open',
+    owaspCategoryCode: 'A09:2025',
+    affectedAsset: undefined,
+    impact: undefined,
+    recommendation: undefined,
+    remediation: undefined,
+    observation: undefined,
+    reproductionSteps: undefined,
+    affectedComponent: undefined,
+    affectedEndpoint: undefined,
+    risk: undefined,
+    references: undefined,
+  });
+
+  assert.equal(createdThreat.id, threatRow.id);
+  assert.equal(calls[0]?.method, 'assessment.findUnique');
+  assert.equal(calls[1]?.method, 'create');
+}
+
+{
+  const { calls, db } = createThreatDb({
+    ...assessmentRow,
+    owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+  });
+  const repository = createThreatRepository(db);
+
+  await assert.rejects(
+    repository.create({
+      assessmentId: assessmentRow.id,
+      title: 'Threat',
+      description: 'A test threat',
+      severity: 'high',
+      strideCategories: ['spoofing'],
+      status: 'open',
+      owaspCategoryCode: 'A09:2021',
+      affectedAsset: undefined,
+      impact: undefined,
+      recommendation: undefined,
+      remediation: undefined,
+      observation: undefined,
+      reproductionSteps: undefined,
+      affectedComponent: undefined,
+      affectedEndpoint: undefined,
+      risk: undefined,
+      references: undefined,
+    }),
+    error => error instanceof Error && error.name === 'ValidationError',
+  );
+
+  assert.equal(calls[0]?.method, 'assessment.findUnique');
+  assert.equal(
+    calls.some(call => call.method === 'create'),
+    false,
+  );
+}
+
+{
+  const { calls, db } = createThreatDb();
+  const repository = createThreatRepository(db);
+
+  await assert.rejects(
+    repository.update('thr_123', {
+      title: 'Threat',
+      status: 'open',
+      owaspCategoryCode: 'A09:2025',
+    }),
+    error => error instanceof Error && error.name === 'ValidationError',
+  );
+
+  assert.equal(calls[0]?.method, 'findUnique');
+  assert.equal(calls[1]?.method, 'assessment.findUnique');
+  assert.equal(
+    calls.some(call => call.method === 'update'),
+    false,
+  );
+}
+
+{
+  const { calls, db } = createThreatDb(assessmentRow, {
+    ...threatRow,
+    owaspCategoryCode: 'A09:2025',
+  });
+  const repository = createThreatRepository(db);
+
+  await assert.rejects(
+    repository.update('thr_123', {
+      title: 'Threat',
+      status: 'open',
+    }),
+    error => error instanceof Error && error.name === 'ValidationError',
+  );
+
+  assert.equal(calls[0]?.method, 'findUnique');
+  assert.equal(calls[1]?.method, 'assessment.findUnique');
+  assert.equal(
+    calls.some(call => call.method === 'update'),
+    false,
+  );
 }
 
 {

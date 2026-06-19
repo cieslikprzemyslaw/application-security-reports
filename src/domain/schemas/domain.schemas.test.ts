@@ -40,6 +40,7 @@ import {
   severitySchema,
   strideCategorySchema,
   threatSchema,
+  createThreatOwaspCategoryCodeSchema,
   threatListQuerySchema,
   threatRouteParamsSchema,
   threatStatusSchema,
@@ -469,6 +470,32 @@ expectField(
 assertValid(
   threatSchema.safeParse(validThreat).success,
   'Valid threat should pass',
+);
+assertValid(
+  z
+    .object({
+      owaspCategoryCode: createThreatOwaspCategoryCodeSchema('2025'),
+    })
+    .safeParse({ owaspCategoryCode: 'A09:2025' }).success,
+  '2025 OWASP category code should pass for the 2025 taxonomy',
+);
+assertValid(
+  z
+    .object({
+      owaspCategoryCode: createThreatOwaspCategoryCodeSchema('2025'),
+    })
+    .safeParse({ owaspCategoryCode: 'custom' }).success,
+  'Custom OWASP category code should pass',
+);
+expectField(
+  getFieldErrors(
+    z.object({
+      owaspCategoryCode: createThreatOwaspCategoryCodeSchema('2025'),
+    }),
+    { owaspCategoryCode: 'A09:2021' },
+  ),
+  'owaspCategoryCode',
+  'Unsupported OWASP category code for assessment taxonomy version 2025',
 );
 assertValid(
   threatSchema.safeParse({ ...validThreat, strideCategories: ['spoofing'] })

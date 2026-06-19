@@ -227,6 +227,44 @@ try {
     assert.equal(createdJson.data.owaspCategoryCode, 'A09:2025');
     assert.equal(createdJson.data.customCategory, undefined);
 
+    const invalidCreateResponse = await fetch(`${server.baseUrl}/api/threats`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        assessmentId: primaryAssessment.id,
+        title: 'Missing Server-Side Authorization',
+        description: 'The endpoint returns another customer order.',
+        severity: 'critical',
+        strideCategories: ['spoofing', 'tampering'],
+        status: 'accepted-risk',
+        owaspCategoryCode: 'A09:2021',
+        affectedAsset: '/api/v1/orders/{id}',
+        impact: 'Unauthorised access to customer order data',
+        recommendation: 'Apply object-level authorization on every request.',
+        observation: 'An authenticated user can access another customer order.',
+        affectedComponent: 'Orders API',
+        affectedEndpoint: '/api/v1/orders/{id}',
+        risk: 'Sensitive order data is exposed.',
+      }),
+    });
+
+    assert.equal(invalidCreateResponse.status, 400);
+    const invalidCreateJson = (await invalidCreateResponse.json()) as {
+      error: {
+        code: string;
+        details: Array<{ path: string }>;
+      };
+    };
+    assert.equal(invalidCreateJson.error.code, 'VALIDATION_ERROR');
+    assert.equal(
+      invalidCreateJson.error.details.some(
+        detail => detail.path === 'owaspCategoryCode',
+      ),
+      true,
+    );
+
     const primaryThreatId = createdJson.data.id;
 
     const secondaryThreat = await threatRepository.create({
@@ -322,6 +360,52 @@ try {
     assert.equal(patchJson.data.status, 'mitigated');
     assert.equal(patchJson.data.risk, 'Risk reduced after remediation');
     assert.equal(patchJson.data.owaspCategoryCode, 'A09:2025');
+
+    const invalidPatchResponse = await fetch(
+      `${server.baseUrl}/api/threats/${primaryThreatId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: 'Missing server-side authorization',
+          owaspCategoryCode: 'A09:2021',
+        }),
+      },
+    );
+    assert.equal(invalidPatchResponse.status, 400);
+    const invalidPatchJson = (await invalidPatchResponse.json()) as {
+      error: {
+        code: string;
+        details: Array<{ path: string }>;
+      };
+    };
+    assert.equal(invalidPatchJson.error.code, 'VALIDATION_ERROR');
+    assert.equal(
+      invalidPatchJson.error.details.some(
+        detail => detail.path === 'owaspCategoryCode',
+      ),
+      true,
+    );
+
+    const postPatchGetResponse = await fetch(
+      `${server.baseUrl}/api/threats/${primaryThreatId}`,
+    );
+    assert.equal(postPatchGetResponse.status, 200);
+    const postPatchGetJson = (await postPatchGetResponse.json()) as {
+      data: {
+        id: string;
+        title: string;
+        owaspCategoryCode?: string;
+      };
+    };
+    assert.equal(postPatchGetJson.data.id, primaryThreatId);
+    assert.equal(
+      postPatchGetJson.data.title,
+      'Missing server-side authorization',
+    );
+    assert.equal(postPatchGetJson.data.owaspCategoryCode, 'A09:2025');
 
     const deleteSecondaryResponse = await fetch(
       `${server.baseUrl}/api/threats/${secondaryThreat.id}`,

@@ -5,6 +5,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { ValidationError } from '../../../src/validation/index.js';
 import { RepositoryConstraintError } from '../errors.js';
 import { createActivityRepository } from './activity.repository.js';
 import { createAssessmentRepository } from './assessment.repository.js';
@@ -168,6 +169,52 @@ try {
   });
   assert.equal(storedAssessment?.owaspTaxonomyVersion, '2025');
 
+  const legacyAssessment = await assessmentRepo.create({
+    companyId: company.id,
+    title: 'Legacy review',
+    description: 'Historical taxonomy data',
+    scope: 'Backend API',
+    status: 'draft',
+    startedAt: '2026-06-03',
+    completedAt: undefined,
+    applicationName: 'AppSec Report Builder',
+    environment: 'local',
+    assessmentType: 'web',
+    overallRisk: 'medium',
+  });
+  await prisma.assessment.update({
+    where: { id: legacyAssessment.id },
+    data: { owaspTaxonomyVersion: '2021' },
+  });
+
+  await assert.rejects(
+    threatRepo.create({
+      assessmentId: legacyAssessment.id,
+      title: 'Injection risk',
+      description: 'Test threat',
+      severity: 'high',
+      strideCategories: ['tampering', 'spoofing'],
+      status: 'open',
+      owaspCategoryCode: 'A09:2025',
+      affectedAsset: 'API',
+      impact: undefined,
+      recommendation: 'Use parameterized queries',
+      remediation: undefined,
+      observation: undefined,
+      reproductionSteps: undefined,
+      affectedComponent: undefined,
+      affectedEndpoint: undefined,
+      risk: undefined,
+      references: undefined,
+    }),
+    error => error instanceof ValidationError,
+  );
+
+  const legacyThreats = await threatRepo.findByAssessmentId(
+    legacyAssessment.id,
+  );
+  assert.equal(legacyThreats.length, 0);
+
   const threat = await threatRepo.create({
     assessmentId: assessment.id,
     title: 'Injection risk',
@@ -175,6 +222,7 @@ try {
     severity: 'high',
     strideCategories: ['tampering', 'spoofing'],
     status: 'open',
+    owaspCategoryCode: 'A09:2025',
     affectedAsset: 'API',
     impact: undefined,
     recommendation: 'Use parameterized queries',
@@ -183,6 +231,23 @@ try {
     affectedEndpoint: undefined,
     risk: undefined,
   });
+
+  const originalThreat = await threatRepo.findById(threat.id);
+
+  await assert.rejects(
+    threatRepo.update(threat.id, {
+      title: 'Injection risk - updated',
+      owaspCategoryCode: 'A09:2021',
+    }),
+    error => error instanceof ValidationError,
+  );
+
+  const preservedThreat = await threatRepo.findById(threat.id);
+  assert.equal(preservedThreat?.title, originalThreat?.title);
+  assert.equal(
+    preservedThreat?.owaspCategoryCode,
+    originalThreat?.owaspCategoryCode,
+  );
 
   const evidence = await evidenceRepo.create({
     assessmentId: assessment.id,
