@@ -47,6 +47,19 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
     setOverview,
   } = useAssessmentOverview({ companyId, assessmentId });
 
+  const handleFindingsCountChange = (delta: number) => {
+    setOverview(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        assessment: {
+          ...prev.assessment,
+          findingsCount: Math.max(0, prev.assessment.findingsCount + delta),
+        },
+      };
+    });
+  };
+
   const { pendingAction, actionError, conflictError, handleAction } =
     useAssessmentActions({
       companyId,
@@ -59,6 +72,7 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
     assessmentId,
     assessmentStatus: assessmentView?.status,
     assessmentOwaspTaxonomyVersion: assessmentView?.owaspTaxonomyVersion,
+    onMutationSuccess: handleFindingsCountChange,
   });
 
   const evidenceController = useAssessmentEvidence({

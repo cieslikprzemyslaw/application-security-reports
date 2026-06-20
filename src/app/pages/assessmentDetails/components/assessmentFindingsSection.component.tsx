@@ -22,6 +22,8 @@ interface AssessmentFindingsSectionProps extends Pick<
   | 'fieldErrors'
   | 'formError'
   | 'isSubmitting'
+  | 'isDeleting'
+  | 'deleteError'
   | 'canEditFindings'
   | 'openCreateFinding'
   | 'openEditFinding'
@@ -29,6 +31,7 @@ interface AssessmentFindingsSectionProps extends Pick<
   | 'closeFindingDrawer'
   | 'handleFindingChange'
   | 'handleFindingSave'
+  | 'handleFindingDelete'
 > {
   assessment: AssessmentDetailsAssessment;
 }
@@ -44,6 +47,8 @@ const AssessmentFindingsSection = ({
   fieldErrors,
   formError,
   isSubmitting,
+  isDeleting,
+  deleteError,
   canEditFindings,
   openCreateFinding,
   openEditFinding,
@@ -51,6 +56,7 @@ const AssessmentFindingsSection = ({
   closeFindingDrawer,
   handleFindingChange,
   handleFindingSave,
+  handleFindingDelete,
 }: AssessmentFindingsSectionProps) => {
   const owaspTaxonomyVersion =
     assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION;
@@ -135,10 +141,25 @@ const AssessmentFindingsSection = ({
               }
             : undefined
         }
+        footer={
+          deleteError ? (
+            <Callout variant="error" title="Unable to delete threat">
+              <p>{deleteError}</p>
+            </Callout>
+          ) : undefined
+        }
         onClose={closeFindingDrawer}
         onEdit={
           drawerMode === 'view' && selectedFinding && canEditFindings
             ? () => openEditFinding(selectedFinding)
+            : undefined
+        }
+        onDelete={
+          drawerMode === 'view' &&
+          selectedFinding &&
+          canEditFindings &&
+          !isDeleting
+            ? handleFindingDelete
             : undefined
         }
         children={drawerContent}
