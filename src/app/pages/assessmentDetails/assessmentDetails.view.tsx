@@ -53,7 +53,7 @@ const defaultActionOrder: AssessmentDetailAction[] = [
 const getAssessmentName = (assessment: AssessmentDetailsAssessment) =>
   assessment.applicationName.trim().length > 0
     ? assessment.applicationName
-    : 'Untitled assessment';
+    : '—';
 
 const formatDate = (value?: string) => {
   if (!value) {
