@@ -120,6 +120,8 @@ const createStagedStorageKey = (
   randomSuffix: string,
 ): string => `${storageKey}.staged-${randomSuffix}`;
 
+export type CompanyLogoStorage = ReturnType<typeof createCompanyLogoStorage>;
+
 export const createCompanyLogoStorage = (
   dependencies: CompanyLogoStorageDependencies = {},
 ) => {
@@ -138,15 +140,18 @@ export const createCompanyLogoStorage = (
       );
     }
 
-    if (input.sizeBytes !== actualSizeBytes) {
+    if (
+      input.sizeBytes > companyLogoMaxSizeBytes ||
+      actualSizeBytes > companyLogoMaxSizeBytes
+    ) {
       throw new CompanyLogoValidationError(
-        'Company logo file size does not match the supplied metadata',
+        'Company logo file must be 5 MB or smaller',
       );
     }
 
-    if (actualSizeBytes > companyLogoMaxSizeBytes) {
+    if (input.sizeBytes !== actualSizeBytes) {
       throw new CompanyLogoValidationError(
-        'Company logo file must be 5 MB or smaller',
+        'Company logo file size does not match the supplied metadata',
       );
     }
 

@@ -20,6 +20,7 @@ const Tabs = <TTabId extends string>({
     }
 
     tabButtonRefs.current[activeItem.id]?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeItem?.id]);
 
   if (!activeItem) {

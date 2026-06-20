@@ -9,6 +9,7 @@ import type { ReportRepository } from '../database/repositories/report.repositor
 import type { SettingsRepository } from '../database/repositories/settings.repository.js';
 import type { ThreatRepository } from '../database/repositories/threat.repository.js';
 import type { ServerConfig } from '../config.js';
+import type { CompanyLogoStorage } from '../services/companyLogoStorage.js';
 import { sendApiError } from './api-errors.js';
 import { createApiRouter } from './api-router.js';
 import { createEvidenceStaticRouter } from './evidence-static.js';
@@ -18,6 +19,7 @@ export interface ApiAppOptions {
   assessmentRepository?: AssessmentRepository;
   companyRepository?: CompanyRepository;
   evidenceRepository?: EvidenceRepository;
+  logoStorage?: CompanyLogoStorage;
   reportRepository?: ReportRepository;
   settingsRepository?: SettingsRepository;
   threatRepository?: ThreatRepository;
@@ -27,6 +29,8 @@ export interface ApiAppOptions {
 const jsonBodyLimit = '1mb';
 const allowedCorsMethods = ['GET', 'POST', 'PATCH', 'DELETE'];
 const allowedCorsHeaders = ['Content-Type'];
+const logoUploadPath = /^\/api\/companies\/[^/]+\/logo$/;
+const logoUploadMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
 const applySecurityHeaders: RequestHandler = (_req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -43,6 +47,21 @@ const requireJsonMutationContentType: RequestHandler = (req, res, next) => {
 
   if (!req.path.startsWith('/api/')) {
     next();
+    return;
+  }
+
+  if (req.method === 'PUT' && logoUploadPath.test(req.path)) {
+    if (logoUploadMimeTypes.some(type => req.is(type))) {
+      next();
+      return;
+    }
+
+    sendApiError(
+      res,
+      415,
+      'UNSUPPORTED_MEDIA_TYPE',
+      'Content-Type must be image/jpeg, image/png, or image/webp',
+    );
     return;
   }
 

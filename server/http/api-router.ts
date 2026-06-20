@@ -6,6 +6,10 @@ import type { EvidenceRepository } from '../database/repositories/evidence.repos
 import type { ReportRepository } from '../database/repositories/report.repository.js';
 import type { SettingsRepository } from '../database/repositories/settings.repository.js';
 import type { ThreatRepository } from '../database/repositories/threat.repository.js';
+import {
+  createCompanyLogoStorage,
+  type CompanyLogoStorage,
+} from '../services/companyLogoStorage.js';
 import { createAssessmentsRouter } from '../routes/assessments.route.js';
 import { createEvidenceRouter } from '../routes/evidence.route.js';
 import { registerHealthRoute } from '../routes/health.route.js';
@@ -18,6 +22,7 @@ export interface RegisterApiRoutesOptions {
   assessmentRepository?: AssessmentRepository;
   companyRepository?: CompanyRepository;
   evidenceRepository?: EvidenceRepository;
+  logoStorage?: CompanyLogoStorage;
   reportRepository?: ReportRepository;
   settingsRepository?: SettingsRepository;
   threatRepository?: ThreatRepository;
@@ -28,6 +33,7 @@ export const createApiRouter = (
   options: RegisterApiRoutesOptions = {},
 ): Router => {
   const router = Router();
+  const logoStorage = options.logoStorage ?? createCompanyLogoStorage();
 
   registerHealthRoute(router);
   if (options.assessmentRepository && options.threatRepository) {
@@ -56,6 +62,7 @@ export const createApiRouter = (
         threatRepository: options.threatRepository,
         evidenceRepository: options.evidenceRepository,
         reportRepository: options.reportRepository,
+        logoStorage,
       }),
     );
   }

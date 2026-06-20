@@ -19,3 +19,4 @@ docs
 .github/pull_request_template.md
 .github/ISSUE_TEMPLATE/*
 prototype/
+CLAUDE.md
