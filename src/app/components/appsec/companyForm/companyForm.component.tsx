@@ -1,12 +1,20 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import Callout from '~/app/components/ui/callout';
 import Button from '~/app/components/ui/button';
+import Dropzone from '~/app/components/ui/dropzone';
 import Input from '~/app/components/ui/input';
 import Textarea from '~/app/components/ui/textarea';
 
 import StyledCompanyForm from './companyForm.styled';
 import type { CompanyFormProps, CompanyFormValue } from './companyForm.type';
+
+const LOGO_ACCEPTED_TYPES = 'image/jpeg,image/png,image/webp';
+const LOGO_ALLOWED_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+]);
 
 const updateField = <K extends keyof CompanyFormValue>(
   value: CompanyFormValue,
@@ -28,6 +36,17 @@ const CompanyForm = ({
   onCancel,
 }: CompanyFormProps) => {
   const formRef = useRef<HTMLFormElement | null>(null);
+  const replaceInputRef = useRef<HTMLInputElement | null>(null);
+  const [logoSelectionError, setLogoSelectionError] = useState<
+    string | undefined
+  >();
+  const previewUrl = useMemo(() => {
+    if (!value.logoFile) {
+      return null;
+    }
+
+    return URL.createObjectURL(value.logoFile);
+  }, [value.logoFile]);
 
   const firstErrorFieldId = useMemo(() => {
     const errorField = Object.keys(errors).find(field =>
@@ -43,6 +62,43 @@ const CompanyForm = ({
 
     field?.focus();
   }, [firstErrorFieldId]);
+
+  useEffect(() => {
+    if (!previewUrl) {
+      return undefined;
+    }
+
+    return () => {
+      URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const handleLogoFiles = (files: File[]) => {
+    const file = files[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!LOGO_ALLOWED_MIME_TYPES.has(file.type)) {
+      setLogoSelectionError(
+        'The selected file type is not supported. Use JPEG, PNG, or WebP.',
+      );
+      return;
+    }
+
+    setLogoSelectionError(undefined);
+    onChange(updateField(value, 'logoFile', file));
+
+    if (replaceInputRef.current) {
+      replaceInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoSelectionError(undefined);
+    onChange(updateField(value, 'logoFile', null));
+  };
 
   const errorSummary = Object.entries(errors).filter(([, error]) =>
     Boolean(error),
@@ -138,6 +194,60 @@ const CompanyForm = ({
               onChange(updateField(value, 'footerText', event.target.value))
             }
           />
+        </div>
+
+        <div className="company-form-full-width">
+          {previewUrl ? (
+            <div className="company-logo-preview">
+              <span className="company-logo-preview-label">Company logo</span>
+              <img
+                className="company-logo-preview-img"
+                src={previewUrl}
+                alt="Company logo preview"
+              />
+              <div className="company-logo-preview-actions">
+                <input
+                  ref={replaceInputRef}
+                  id="company-logo-replace"
+                  type="file"
+                  accept={LOGO_ACCEPTED_TYPES}
+                  className="company-logo-replace-input"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  onChange={event =>
+                    handleLogoFiles(Array.from(event.target.files ?? []))
+                  }
+                />
+                <Button
+                  type="button"
+                  title="Replace logo"
+                  variant="secondary"
+                  size="small"
+                  disabled={isSubmitting}
+                  onClick={() => replaceInputRef.current?.click()}
+                />
+                <Button
+                  type="button"
+                  title="Remove logo"
+                  variant="secondary"
+                  size="small"
+                  disabled={isSubmitting}
+                  onClick={handleRemoveLogo}
+                />
+              </div>
+            </div>
+          ) : (
+            <Dropzone
+              id="company-logo"
+              label="Company logo"
+              description="Accepted: JPEG, PNG, WebP. SVG is not supported."
+              acceptedTypes={LOGO_ACCEPTED_TYPES}
+              error={logoSelectionError}
+              multiple={false}
+              disabled={isSubmitting}
+              onFilesSelected={handleLogoFiles}
+            />
+          )}
         </div>
       </div>
 

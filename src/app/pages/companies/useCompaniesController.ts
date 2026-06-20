@@ -68,7 +68,9 @@ export const useCompaniesController = ({
   >();
   const [draftValue, setDraftValue] = useState(createEmptyCompanyFormValue());
   const [baselineValue, setBaselineValue] = useState(draftValue);
-  const [fieldErrors, setFieldErrors] = useState<Partial<CompanyFormValue>>({});
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof CompanyFormValue, string>>
+  >({});
   const [formErrorMessage, setFormErrorMessage] = useState<
     string | undefined
   >();
