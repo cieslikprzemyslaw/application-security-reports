@@ -396,7 +396,7 @@ await (async () => {
       });
 
       const companyTitles = Array.from(
-        container.querySelectorAll('.card-title'),
+        container.querySelectorAll('.dashboard-company-name'),
       ).map(node => node.textContent);
 
       assert.deepEqual(companyTitles.slice(0, 3), [
@@ -406,16 +406,15 @@ await (async () => {
       ]);
       assert.ok(textContent(container).includes('Last opened'));
 
-      const openCompanyButton = Array.from(
-        container.querySelectorAll('button'),
-      ).find(button => button.textContent?.includes('Open company')) as
-        | HTMLButtonElement
-        | undefined;
+      const companyRows = Array.from(
+        container.querySelectorAll('.dashboard-recent-company-row'),
+      ) as HTMLButtonElement[];
 
-      assert.ok(openCompanyButton, 'Expected an open company action');
+      assert.equal(companyRows.length, 3, 'Expected three recent company rows');
+      assert.equal(companyRows[0]?.tagName, 'BUTTON');
 
       await act(async () => {
-        openCompanyButton.dispatchEvent(
+        companyRows[0]?.dispatchEvent(
           new window.MouseEvent('click', {
             bubbles: true,
             cancelable: true,

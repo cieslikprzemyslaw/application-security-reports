@@ -2,7 +2,6 @@ import React from 'react';
 
 import Badge from '~/app/components/ui/badge';
 import Button from '~/app/components/ui/button';
-import Card from '~/app/components/ui/card';
 import EmptyState from '~/app/components/ui/emptyState';
 import IconSVG from '~/app/components/ui/iconSVG';
 
@@ -94,25 +93,19 @@ const Dashboard = ({
       </header>
 
       <section className="dashboard-recent-companies-card">
-        <div className="dashboard-recent-companies-list">
+        <ul className="dashboard-recent-companies-list">
           {recentCompanies.map(company => {
             const latestAssessmentLabel = getAssessmentSummary(company);
+            const companyRow = (
+              <>
+                <div className="dashboard-company-summary">
+                  <span className="dashboard-company-name">{company.name}</span>
 
-            return (
-              <Card
-                key={company.id}
-                title={company.name}
-                subtitle={`Last opened ${formatRelativeTime(company.lastOpenedAt)}`}
-                actions={
-                  onOpenCompany ? (
-                    <Button
-                      title="Open company"
-                      variant="secondary"
-                      onClick={() => onOpenCompany(company)}
-                    />
-                  ) : undefined
-                }
-              >
+                  <span className="dashboard-company-last-opened">
+                    Last opened {formatRelativeTime(company.lastOpenedAt)}
+                  </span>
+                </div>
+
                 <dl className="dashboard-company-details">
                   <div className="dashboard-company-detail">
                     <dt className="dashboard-company-detail-label">
@@ -128,7 +121,9 @@ const Dashboard = ({
                       Latest assessment
                     </dt>
                     <dd className="dashboard-company-detail-value">
-                      {latestAssessmentLabel}
+                      <span className="dashboard-company-assessment-name">
+                        {latestAssessmentLabel}
+                      </span>
 
                       {company.latestAssessment?.status && (
                         <Badge
@@ -144,10 +139,28 @@ const Dashboard = ({
                     </dd>
                   </div>
                 </dl>
-              </Card>
+              </>
+            );
+
+            return (
+              <li key={company.id} className="dashboard-recent-company-item">
+                {onOpenCompany ? (
+                  <button
+                    type="button"
+                    className="dashboard-recent-company-row dashboard-recent-company-row--interactive"
+                    onClick={() => onOpenCompany(company)}
+                  >
+                    {companyRow}
+                  </button>
+                ) : (
+                  <div className="dashboard-recent-company-row dashboard-recent-company-row--static">
+                    {companyRow}
+                  </div>
+                )}
+              </li>
             );
           })}
-        </div>
+        </ul>
       </section>
     </StyledDashboard>
   );
