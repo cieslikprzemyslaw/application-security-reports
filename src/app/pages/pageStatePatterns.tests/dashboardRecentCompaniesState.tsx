@@ -1,8 +1,6 @@
 import {
   act,
   assert,
-  Assessments,
-  Companies,
   Dashboard,
   renderComponent,
   renderTick,
