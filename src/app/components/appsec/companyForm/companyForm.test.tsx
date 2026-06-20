@@ -78,7 +78,6 @@ await (async () => {
     const { container, window } = setupDom();
     assert.ok(container, 'Expected root container to exist');
     const root = createRoot(container);
-
     await act(async () => {
       root.render(
         <ThemeProvider theme={defaultTheme}>
@@ -103,7 +102,6 @@ await (async () => {
       !previewImg,
       'Expected no preview image when no file is selected',
     );
-
     await act(async () => root.unmount());
   }
 
@@ -113,7 +111,6 @@ await (async () => {
     assert.ok(container, 'Expected root container to exist');
     const root = createRoot(container);
     const changeEvents: CompanyFormValue[] = [];
-
     await act(async () => {
       root.render(
         <ThemeProvider theme={defaultTheme}>
@@ -136,7 +133,6 @@ await (async () => {
     const svgFile = new window.File(['<svg/>'], 'logo.svg', {
       type: 'image/svg+xml',
     });
-
     await act(async () => {
       Object.defineProperty(input, 'files', {
         value: { 0: svgFile, length: 1, item: () => svgFile },
@@ -157,7 +153,6 @@ await (async () => {
       0,
       'Expected onChange not to be called for an invalid file',
     );
-
     await act(async () => root.unmount());
   }
 
@@ -167,7 +162,6 @@ await (async () => {
     assert.ok(container, 'Expected root container to exist');
     const root = createRoot(container);
     const changeEvents: CompanyFormValue[] = [];
-
     await act(async () => {
       root.render(
         <ThemeProvider theme={defaultTheme}>
@@ -188,7 +182,6 @@ await (async () => {
     assert.ok(input, 'Expected logo dropzone input');
 
     const unknownFile = new window.File(['data'], 'logo.bmp', { type: '' });
-
     await act(async () => {
       Object.defineProperty(input, 'files', {
         value: { 0: unknownFile, length: 1, item: () => unknownFile },
@@ -203,7 +196,6 @@ await (async () => {
       0,
       'Expected onChange not to be called for an unknown MIME type',
     );
-
     await act(async () => root.unmount());
   }
 
@@ -213,7 +205,6 @@ await (async () => {
     assert.ok(container, 'Expected root container to exist');
     const root = createRoot(container);
     const changeEvents: CompanyFormValue[] = [];
-
     await act(async () => {
       root.render(
         <ThemeProvider theme={defaultTheme}>
@@ -236,7 +227,6 @@ await (async () => {
     const jpegFile = new window.File(['fake-jpeg'], 'logo.jpg', {
       type: 'image/jpeg',
     });
-
     await act(async () => {
       Object.defineProperty(input, 'files', {
         value: { 0: jpegFile, length: 1, item: () => jpegFile },
@@ -252,7 +242,6 @@ await (async () => {
       jpegFile,
       'Expected logoFile to be set to the selected file',
     );
-
     await act(async () => root.unmount());
   }
 
@@ -262,7 +251,6 @@ await (async () => {
     assert.ok(container, 'Expected root container to exist');
     const root = createRoot(container);
     const changeEvents: CompanyFormValue[] = [];
-
     await act(async () => {
       root.render(
         <ThemeProvider theme={defaultTheme}>
@@ -285,7 +273,6 @@ await (async () => {
     const pngFile = new window.File(['fake-png'], 'logo.png', {
       type: 'image/png',
     });
-
     await act(async () => {
       Object.defineProperty(input, 'files', {
         value: { 0: pngFile, length: 1, item: () => pngFile },
@@ -300,7 +287,6 @@ await (async () => {
       pngFile,
       'Expected logoFile to be set for PNG',
     );
-
     await act(async () => root.unmount());
   }
 
@@ -318,7 +304,6 @@ await (async () => {
       ...emptyValue,
       logoFile: pngFile,
     };
-
     await act(async () => {
       root.render(
         <ThemeProvider theme={defaultTheme}>
@@ -347,7 +332,6 @@ await (async () => {
       window.document.querySelectorAll<HTMLButtonElement>('button'),
     ).find(btn => btn.textContent?.includes('Remove logo'));
     assert.ok(removeButton, 'Expected a Remove logo button in the preview');
-
     await act(async () => {
       removeButton.dispatchEvent(
         new window.MouseEvent('click', { bubbles: true }),
@@ -365,7 +349,6 @@ await (async () => {
       null,
       'Expected logoFile to be null after remove',
     );
-
     await act(async () => root.unmount());
   }
 
@@ -382,7 +365,6 @@ await (async () => {
       ...emptyValue,
       logoFile: webpFile,
     };
-
     await act(async () => {
       root.render(
         <ThemeProvider theme={defaultTheme}>
@@ -401,7 +383,6 @@ await (async () => {
       window.document.querySelectorAll<HTMLButtonElement>('button'),
     ).find(btn => btn.textContent?.includes('Replace logo'));
     assert.ok(replaceButton, 'Expected a Replace logo button in the preview');
-
     await act(async () => root.unmount());
   }
 })();
