@@ -352,6 +352,40 @@ const reportView = {
 }
 
 {
+  const file = new File(['fake-png'], 'logo.png', { type: 'image/png' });
+  const companyWithLogo = {
+    ...company,
+    logoUrl: `http://localhost/api/companies/${company.id}/logo`,
+  };
+  const { calls, request } = createRequestSpy({ data: companyWithLogo });
+  const service = createCompanyService(request);
+
+  assert.deepEqual(await service.uploadLogo(company.id, file), companyWithLogo);
+  assert.equal(calls.length, 1);
+  const call = calls[0];
+  assert.ok(call);
+  assert.equal(String(call.input), `/api/companies/${company.id}/logo`);
+  assert.equal(call.init?.method, 'PUT');
+  assert.equal(call.init?.rawBody, file);
+  assert.equal(call.init?.body, undefined);
+  const headers = new Headers(call.init?.headers);
+  assert.equal(headers.get('Content-Type'), 'image/png');
+  assert.equal(headers.get('X-File-Name'), 'logo.png');
+}
+
+{
+  const { calls, request } = createRequestSpy(undefined);
+  const service = createCompanyService(request);
+
+  await service.removeLogo(company.id);
+  assert.equal(calls.length, 1);
+  const call = calls[0];
+  assert.ok(call);
+  assert.equal(String(call.input), `/api/companies/${company.id}/logo`);
+  assert.equal(call.init?.method, 'DELETE');
+}
+
+{
   const { calls, request } = createRequestSpy({ data: [assessmentSummary] });
   const service = createAssessmentService(request);
 

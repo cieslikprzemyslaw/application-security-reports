@@ -59,6 +59,8 @@ export interface CompanyService {
   create(input: CompanyCreateInput): Promise<Company>;
   update(companyId: string, input: CompanyUpdateInput): Promise<Company>;
   remove(companyId: string): Promise<void>;
+  uploadLogo(companyId: string, file: File): Promise<Company>;
+  removeLogo(companyId: string): Promise<void>;
 }
 
 export const createCompanyService = (
@@ -105,6 +107,23 @@ export const createCompanyService = (
 
   async remove(companyId) {
     await request(`/api/companies/${companyId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async uploadLogo(companyId, file) {
+    return requestData<Company>(request, `/api/companies/${companyId}/logo`, {
+      method: 'PUT',
+      rawBody: file,
+      headers: {
+        'Content-Type': file.type,
+        'X-File-Name': file.name,
+      },
+    });
+  },
+
+  async removeLogo(companyId) {
+    await request(`/api/companies/${companyId}/logo`, {
       method: 'DELETE',
     });
   },

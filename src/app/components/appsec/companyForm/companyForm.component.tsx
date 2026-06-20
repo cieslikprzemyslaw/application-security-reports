@@ -31,6 +31,7 @@ const CompanyForm = ({
   errorMessage,
   isSubmitting = false,
   submitLabel = 'Save company',
+  existingLogoUrl,
   onChange,
   onSubmit,
   onCancel,
@@ -97,7 +98,7 @@ const CompanyForm = ({
 
   const handleRemoveLogo = () => {
     setLogoSelectionError(undefined);
-    onChange(updateField(value, 'logoFile', null));
+    onChange({ ...value, logoFile: null, hasExistingLogo: false });
   };
 
   const errorSummary = Object.entries(errors).filter(([, error]) =>
@@ -197,12 +198,12 @@ const CompanyForm = ({
         </div>
 
         <div className="company-form-full-width">
-          {previewUrl ? (
+          {previewUrl || (value.hasExistingLogo && existingLogoUrl) ? (
             <div className="company-logo-preview">
               <span className="company-logo-preview-label">Company logo</span>
               <img
                 className="company-logo-preview-img"
-                src={previewUrl}
+                src={previewUrl ?? existingLogoUrl ?? undefined}
                 alt="Company logo preview"
               />
               <div className="company-logo-preview-actions">

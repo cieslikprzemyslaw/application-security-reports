@@ -213,7 +213,7 @@ export const useCompaniesController = ({
 
     try {
       const updated = await companyService.update(selectedCompanyId, payload);
-      const nextCompanies = companies.map(company =>
+      let nextCompanies = companies.map(company =>
         company.id === updated.id
           ? {
               ...company,
@@ -227,6 +227,43 @@ export const useCompaniesController = ({
 
       if (activeCompanyId === updated.id) {
         onActiveCompanyChange?.({ id: updated.id, name: updated.name });
+      }
+
+      if (draftValue.logoFile !== null) {
+        try {
+          const updatedWithLogo = await companyService.uploadLogo(
+            selectedCompanyId,
+            draftValue.logoFile,
+          );
+          nextCompanies = nextCompanies.map(c =>
+            c.id === updatedWithLogo.id ? { ...c, ...updatedWithLogo } : c,
+          );
+          setCompanies(nextCompanies);
+          onCompaniesChange?.(nextCompanies);
+        } catch (logoError) {
+          setFormErrorMessage(
+            logoError instanceof Error
+              ? logoError.message
+              : 'Unable to upload logo.',
+          );
+          return;
+        }
+      } else if (baselineValue.hasExistingLogo && !draftValue.hasExistingLogo) {
+        try {
+          await companyService.removeLogo(selectedCompanyId);
+          nextCompanies = nextCompanies.map(c =>
+            c.id === selectedCompanyId ? { ...c, logoUrl: null } : c,
+          );
+          setCompanies(nextCompanies);
+          onCompaniesChange?.(nextCompanies);
+        } catch (logoError) {
+          setFormErrorMessage(
+            logoError instanceof Error
+              ? logoError.message
+              : 'Unable to remove logo.',
+          );
+          return;
+        }
       }
 
       setReloadKey(key => key + 1);
@@ -305,6 +342,9 @@ export const useCompaniesController = ({
     setReloadKey(key => key + 1);
   };
 
+  const selectedCompany = companies.find(c => c.id === selectedCompanyId);
+  const selectedCompanyLogoUrl = selectedCompany?.logoUrl ?? null;
+
   return {
     companies,
     filteredCompanies,
@@ -320,6 +360,7 @@ export const useCompaniesController = ({
     fieldErrors,
     formErrorMessage,
     isSubmitting,
+    selectedCompanyLogoUrl,
     showEmptyWorkspace,
     showNoResults,
     setDraftValue,

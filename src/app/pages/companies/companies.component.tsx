@@ -43,6 +43,7 @@ const Companies = ({
     fieldErrors,
     formErrorMessage,
     isSubmitting,
+    selectedCompanyLogoUrl,
     showEmptyWorkspace,
     showNoResults,
     setDraftValue,
@@ -177,6 +178,7 @@ const Companies = ({
           errorMessage={formErrorMessage}
           isSubmitting={isSubmitting}
           submitLabel="Save changes"
+          existingLogoUrl={selectedCompanyLogoUrl}
           onChange={setDraftValue}
           onSubmit={handleSave}
           onCancel={requestCloseDrawer}

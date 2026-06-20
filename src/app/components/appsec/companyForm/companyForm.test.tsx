@@ -70,6 +70,7 @@ const emptyValue: CompanyFormValue = {
   contactEmail: '',
   footerText: '',
   logoFile: null,
+  hasExistingLogo: false,
 };
 
 await (async () => {
@@ -349,6 +350,11 @@ await (async () => {
       null,
       'Expected logoFile to be null after remove',
     );
+    assert.equal(
+      changeEvents[0].hasExistingLogo,
+      false,
+      'Expected hasExistingLogo to be false after remove',
+    );
     await act(async () => root.unmount());
   }
 
@@ -383,6 +389,134 @@ await (async () => {
       window.document.querySelectorAll<HTMLButtonElement>('button'),
     ).find(btn => btn.textContent?.includes('Replace logo'));
     assert.ok(replaceButton, 'Expected a Replace logo button in the preview');
+    await act(async () => root.unmount());
+  }
+
+  // Existing logo preview renders when hasExistingLogo is true
+  {
+    const { container, window } = setupDom();
+    assert.ok(container, 'Expected root container to exist');
+    const root = createRoot(container);
+    const existingLogoValue: CompanyFormValue = {
+      ...emptyValue,
+      hasExistingLogo: true,
+    };
+    await act(async () => {
+      root.render(
+        <ThemeProvider theme={defaultTheme}>
+          <CompanyForm
+            value={existingLogoValue}
+            existingLogoUrl="http://localhost/api/companies/cmp_00000000-0000-0000-0000-000000000001/logo"
+            onChange={() => undefined}
+            onSubmit={event => event.preventDefault()}
+            onCancel={() => undefined}
+          />
+        </ThemeProvider>,
+      );
+      await renderTick();
+    });
+
+    const previewImg = window.document.querySelector(
+      '.company-logo-preview-img',
+    ) as HTMLImageElement | null;
+    assert.ok(
+      previewImg,
+      'Expected preview image to render when hasExistingLogo is true',
+    );
+    assert.ok(
+      previewImg.src.includes('/api/companies/'),
+      'Expected preview src to use the existing logo URL',
+    );
+
+    const logoInput = window.document.querySelector('#company-logo');
+    assert.ok(
+      !logoInput,
+      'Expected dropzone to be hidden when existing logo is shown',
+    );
+    await act(async () => root.unmount());
+  }
+
+  // Remove button on existing logo sets hasExistingLogo to false
+  {
+    const { container, window } = setupDom();
+    assert.ok(container, 'Expected root container to exist');
+    const root = createRoot(container);
+    const changeEvents: CompanyFormValue[] = [];
+    const existingLogoValue: CompanyFormValue = {
+      ...emptyValue,
+      hasExistingLogo: true,
+    };
+    await act(async () => {
+      root.render(
+        <ThemeProvider theme={defaultTheme}>
+          <CompanyForm
+            value={existingLogoValue}
+            existingLogoUrl="http://localhost/api/companies/cmp_00000000-0000-0000-0000-000000000001/logo"
+            onChange={v => changeEvents.push(v)}
+            onSubmit={event => event.preventDefault()}
+            onCancel={() => undefined}
+          />
+        </ThemeProvider>,
+      );
+      await renderTick();
+    });
+
+    const removeButton = Array.from(
+      window.document.querySelectorAll<HTMLButtonElement>('button'),
+    ).find(btn => btn.textContent?.includes('Remove logo'));
+    assert.ok(
+      removeButton,
+      'Expected a Remove logo button when showing existing logo',
+    );
+    await act(async () => {
+      removeButton.dispatchEvent(
+        new window.MouseEvent('click', { bubbles: true }),
+      );
+      await renderTick();
+    });
+
+    assert.equal(changeEvents.length, 1, 'Expected one onChange event');
+    assert.equal(
+      changeEvents[0].hasExistingLogo,
+      false,
+      'Expected hasExistingLogo to be false after removing existing logo',
+    );
+    assert.equal(
+      changeEvents[0].logoFile,
+      null,
+      'Expected logoFile to be null after removing existing logo',
+    );
+    await act(async () => root.unmount());
+  }
+
+  // Without existingLogoUrl, hasExistingLogo=true still shows dropzone
+  {
+    const { container, window } = setupDom();
+    assert.ok(container, 'Expected root container to exist');
+    const root = createRoot(container);
+    const existingLogoValue: CompanyFormValue = {
+      ...emptyValue,
+      hasExistingLogo: true,
+    };
+    await act(async () => {
+      root.render(
+        <ThemeProvider theme={defaultTheme}>
+          <CompanyForm
+            value={existingLogoValue}
+            onChange={() => undefined}
+            onSubmit={event => event.preventDefault()}
+            onCancel={() => undefined}
+          />
+        </ThemeProvider>,
+      );
+      await renderTick();
+    });
+
+    const logoInput = window.document.querySelector('#company-logo');
+    assert.ok(
+      logoInput,
+      'Expected dropzone when hasExistingLogo is true but no existingLogoUrl provided',
+    );
     await act(async () => root.unmount());
   }
 })();
