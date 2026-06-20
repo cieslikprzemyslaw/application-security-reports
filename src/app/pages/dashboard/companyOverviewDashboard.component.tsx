@@ -195,14 +195,46 @@ const CompanyOverviewDashboard = ({
     setFormErrorMessage(undefined);
 
     try {
-      const updatedCompany = await companyService.update(
+      let updatedCompany = await companyService.update(
         overview.company.id,
         formValueToCompanyInput(draftValue),
       );
 
+      if (draftValue.logoFile !== null) {
+        try {
+          updatedCompany = await companyService.uploadLogo(
+            overview.company.id,
+            draftValue.logoFile,
+          );
+        } catch (logoError) {
+          setFormErrorMessage(
+            logoError instanceof Error
+              ? logoError.message
+              : 'Unable to upload logo.',
+          );
+          return;
+        }
+      } else if (baselineValue.hasExistingLogo && !draftValue.hasExistingLogo) {
+        try {
+          await companyService.removeLogo(overview.company.id);
+          updatedCompany = {
+            ...updatedCompany,
+            logoUrl: null,
+          };
+        } catch (logoError) {
+          setFormErrorMessage(
+            logoError instanceof Error
+              ? logoError.message
+              : 'Unable to remove logo.',
+          );
+          return;
+        }
+      }
+
       setOverview(current =>
         current ? { ...current, company: updatedCompany } : current,
       );
+      setReloadKey(key => key + 1);
       resetDrawerState();
     } catch (error) {
       if (error instanceof ApiError && error.status === 400) {
@@ -274,6 +306,7 @@ const CompanyOverviewDashboard = ({
           errorMessage={formErrorMessage}
           isSubmitting={isSubmitting}
           submitLabel="Save changes"
+          existingLogoUrl={overview.company.logoUrl}
           onChange={setDraftValue}
           onSubmit={handleEditSubmit}
           onCancel={requestCloseDrawer}
