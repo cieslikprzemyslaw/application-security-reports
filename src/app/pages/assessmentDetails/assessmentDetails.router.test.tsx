@@ -137,6 +137,7 @@ const baseAssessment = {
 const createAssessmentOverviewResponse = (
   assessmentId: string,
   evidenceCount: number,
+  applicationName: string | null = baseAssessment.assessment.applicationName,
 ) => ({
   data: {
     ...baseAssessment,
@@ -144,6 +145,7 @@ const createAssessmentOverviewResponse = (
       ...baseAssessment.assessment,
       id: assessmentId,
       evidenceCount,
+      applicationName,
     },
   },
 });
@@ -230,6 +232,43 @@ await (async () => {
       });
 
       assert.ok(textContent(container).includes('Evidence screenshot'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    }
+
+    {
+      setFetch(async input => {
+        const path = String(input);
+
+        if (path === '/api/companies') {
+          return createJsonResponse(companyResponse);
+        }
+
+        if (path === '/api/companies/cmp_1/assessments/asm_null/overview') {
+          return createJsonResponse(
+            createAssessmentOverviewResponse('asm_null', 1, null),
+          );
+        }
+
+        if (path === '/api/evidence?assessmentId=asm_null') {
+          return createJsonResponse(createEvidenceResponse('evd_null'));
+        }
+
+        throw new Error(`Unexpected request: ${path}`);
+      });
+
+      const { container, root } = await renderApp(
+        routes.assessmentDetailsOverview('cmp_1', 'asm_null'),
+      );
+
+      assert.equal(
+        container
+          .querySelector('.assessment-summary-application-name')
+          ?.textContent?.trim(),
+        '—',
+      );
 
       await act(async () => {
         root.unmount();

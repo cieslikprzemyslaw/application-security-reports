@@ -15,6 +15,9 @@ const assessmentStatusLabelMap: Record<string, string> = {
   archived: 'Archived',
 };
 
+const formatApplicationName = (applicationName: string) =>
+  applicationName.trim().length > 0 ? applicationName : '—';
+
 const RecentAssessmentTable = ({
   assessments,
   onAssessmentClick,
@@ -60,7 +63,7 @@ const RecentAssessmentTable = ({
           >
             <td className="recent-assessment-table-cell">
               <strong className="recent-assessment-table-name">
-                {assessment.applicationName}
+                {formatApplicationName(assessment.applicationName)}
               </strong>
 
               <span className="recent-assessment-table-company">

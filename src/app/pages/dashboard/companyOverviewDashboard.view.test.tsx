@@ -76,7 +76,17 @@ const renderView = async () => {
                 inProgress: 1,
                 completed: 1,
               },
-              recentAssessments: [],
+              recentAssessments: [
+                {
+                  id: 'asm_1',
+                  applicationName: '',
+                  companyName: 'Northstar Digital',
+                  assessmentType: 'Web App',
+                  severity: 'high',
+                  findingsCount: 7,
+                  status: 'in-progress',
+                },
+              ],
               recentReports: [],
             }}
             onEditCompany={() => undefined}
@@ -100,6 +110,12 @@ await (async () => {
   assert.ok(
     textContent(container).includes('Overview'),
     'Expected the current section breadcrumb',
+  );
+  assert.ok(
+    container
+      .querySelector('.recent-assessment-table-name')
+      ?.textContent?.trim() === '—',
+    'Expected historical null application names to render as an em dash',
   );
   assert.equal(
     container

@@ -815,6 +815,12 @@ await (async () => {
       assert.ok(textContent(container).includes('Northwind Labs'));
       assert.ok(textContent(container).includes('Quick actions'));
       assert.ok(textContent(container).includes('Recent assessments'));
+      assert.ok(
+        container
+          .querySelector('.recent-assessment-table-name')
+          ?.textContent?.trim() === 'Customer Services Portal',
+        'Expected the recent assessments table to show the assessment application name',
+      );
       assert.equal(
         window.location.pathname,
         routes.companyWorkspaceOverview('cmp_1'),

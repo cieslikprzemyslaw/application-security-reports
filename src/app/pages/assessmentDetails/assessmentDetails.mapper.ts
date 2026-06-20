@@ -47,10 +47,7 @@ export const toAssessmentViewModel = (
 ): AssessmentDetailsAssessment => ({
   ...overview.assessment,
   companyName: overview.company.name,
-  applicationName:
-    overview.assessment.applicationName?.trim() ||
-    overview.assessment.title?.trim() ||
-    'Untitled assessment',
+  applicationName: overview.assessment.applicationName?.trim() || '—',
 });
 
 export const threatToFormValue = (
