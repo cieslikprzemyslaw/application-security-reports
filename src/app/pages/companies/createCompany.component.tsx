@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {
+  unstable_usePrompt,
+  useBeforeUnload,
+  useNavigate,
+} from 'react-router-dom';
 
 import CompanyForm from '~/app/components/appsec/companyForm';
 import type { CompanyFormValue } from '~/app/components/appsec/companyForm';
+import Button from '~/app/components/ui/button';
 import { PageHeader } from '~/app/components/common';
 import PageContent from '~/app/layouts/pageContent';
-import type { CompanyListItem } from '~/domain';
+import type { Company, CompanyListItem } from '~/domain';
 import { ApiError } from '~/services/apiClient';
 import { companyService } from '~/services';
 import { routes } from '~/routes';
@@ -13,6 +18,7 @@ import { routes } from '~/routes';
 import type { CompanyIdentity } from './companies.type';
 import {
   areCompanyFormValuesEqual,
+  companyToFormValue,
   createEmptyCompanyFormValue,
   formValueToCompanyInput,
 } from './companies.utils';
@@ -54,6 +60,28 @@ export interface CreateCompanyProps {
   onActiveCompanyChange: (company: CompanyIdentity) => void;
 }
 
+interface CreatedCompanyState {
+  company: Company;
+  isFirstCompany: boolean;
+}
+
+const upsertCompany = (
+  companies: CompanyListItem[],
+  company: Company,
+): CompanyListItem[] => {
+  const existingCompany = companies.find(item => item.id === company.id);
+  const nextCompany: CompanyListItem = {
+    ...existingCompany,
+    ...company,
+    assessmentCount: existingCompany?.assessmentCount ?? 0,
+  };
+
+  return [
+    nextCompany,
+    ...companies.filter(existing => existing.id !== company.id),
+  ];
+};
+
 const CreateCompany = ({
   companies,
   onCompaniesChange,
@@ -63,7 +91,7 @@ const CreateCompany = ({
   const [draftValue, setDraftValue] = useState<CompanyFormValue>(
     createEmptyCompanyFormValue,
   );
-  const [baselineValue] = useState<CompanyFormValue>(
+  const [baselineValue, setBaselineValue] = useState<CompanyFormValue>(
     createEmptyCompanyFormValue,
   );
   const [fieldErrors, setFieldErrors] = useState<
@@ -73,57 +101,145 @@ const CreateCompany = ({
     string | undefined
   >();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdCompany, setCreatedCompany] = useState<
+    CreatedCompanyState | undefined
+  >();
+  const [completedCompany, setCompletedCompany] = useState<
+    CreatedCompanyState | undefined
+  >();
+  const [logoUploadErrorMessage, setLogoUploadErrorMessage] = useState<
+    string | undefined
+  >();
 
   const isDirty = !areCompanyFormValuesEqual(draftValue, baselineValue);
 
-  useEffect(() => {
-    if (!isDirty) {
-      return undefined;
-    }
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [isDirty]);
-
-  const handleCancel = () => {
-    if (isDirty && !window.confirm('Discard unsaved company changes?')) {
+  useBeforeUnload(event => {
+    if (!isDirty || isSubmitting) {
       return;
     }
 
+    event.preventDefault();
+    event.returnValue = '';
+  });
+
+  unstable_usePrompt({
+    when: isDirty && !isSubmitting,
+    message: 'Discard unsaved company changes?',
+  });
+
+  useEffect(() => {
+    if (!completedCompany) {
+      return;
+    }
+
+    if (completedCompany.isFirstCompany) {
+      onActiveCompanyChange({
+        id: completedCompany.company.id,
+        name: completedCompany.company.name,
+      });
+    } else {
+      navigate(routes.companies);
+    }
+  }, [completedCompany, navigate, onActiveCompanyChange]);
+
+  const handleCompaniesUpdate = (company: Company) => {
+    onCompaniesChange(upsertCompany(companies, company));
+  };
+
+  const completeCreateFlow = (company: Company, isFirstCompany: boolean) => {
+    const resolvedValue = companyToFormValue(company);
+
+    setDraftValue(resolvedValue);
+    setBaselineValue(resolvedValue);
+    setCreatedCompany(undefined);
+    setFormErrorMessage(undefined);
+    setLogoUploadErrorMessage(undefined);
+    setCompletedCompany({ company, isFirstCompany });
+  };
+
+  const uploadPendingLogo = async (
+    company: Company,
+    isFirstCompany: boolean,
+    file: File,
+  ) => {
+    const updated = await companyService.uploadLogo(company.id, file);
+
+    handleCompaniesUpdate(updated);
+    completeCreateFlow(updated, isFirstCompany);
+  };
+
+  const handleCancel = () => {
     navigate(routes.companies);
+  };
+
+  const handleDeferLogo = () => {
+    if (!createdCompany) {
+      return;
+    }
+    completeCreateFlow(createdCompany.company, createdCompany.isFirstCompany);
+  };
+
+  const handleDraftChange = (nextValue: CompanyFormValue) => {
+    setDraftValue(nextValue);
+    setFieldErrors({});
+    setFormErrorMessage(undefined);
+
+    if (createdCompany) {
+      setLogoUploadErrorMessage(undefined);
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const payload = formValueToCompanyInput(draftValue);
-    const isFirstCompany = companies.length === 0;
-
     setIsSubmitting(true);
     setFieldErrors({});
     setFormErrorMessage(undefined);
+    setLogoUploadErrorMessage(undefined);
 
     try {
+      if (createdCompany) {
+        if (!draftValue.logoFile) {
+          handleDeferLogo();
+          return;
+        }
+
+        await uploadPendingLogo(
+          createdCompany.company,
+          createdCompany.isFirstCompany,
+          draftValue.logoFile,
+        );
+
+        return;
+      }
+
+      const payload = formValueToCompanyInput(draftValue);
+      const isFirstCompany = companies.length === 0;
       const created = await companyService.create(payload);
-      const nextCompanies: CompanyListItem[] = [
-        { ...created, assessmentCount: 0 },
-        ...companies,
-      ];
+      const selectedLogoFile = draftValue.logoFile;
 
-      onCompaniesChange(nextCompanies);
+      handleCompaniesUpdate(created);
 
-      if (isFirstCompany) {
-        onActiveCompanyChange({ id: created.id, name: created.name });
-      } else {
-        navigate(routes.companies);
+      if (!selectedLogoFile) {
+        completeCreateFlow(created, isFirstCompany);
+        return;
+      }
+
+      setDraftValue({
+        ...companyToFormValue(created),
+        logoFile: selectedLogoFile,
+      });
+      setBaselineValue(companyToFormValue(created));
+      setCreatedCompany({ company: created, isFirstCompany });
+
+      try {
+        await uploadPendingLogo(created, isFirstCompany, selectedLogoFile);
+      } catch (logoError) {
+        setLogoUploadErrorMessage(
+          logoError instanceof Error
+            ? logoError.message
+            : 'Unable to upload logo.',
+        );
       }
     } catch (error) {
       if (error instanceof ApiError && error.status === 400) {
@@ -157,10 +273,50 @@ const CreateCompany = ({
       <CompanyForm
         value={draftValue}
         errors={fieldErrors}
+        notice={
+          createdCompany
+            ? {
+                title: 'Company created. Logo upload still pending.',
+                variant: 'warning',
+                actions: (
+                  <>
+                    <Button
+                      type="submit"
+                      title="Retry logo upload"
+                      size="small"
+                      disabled={isSubmitting || draftValue.logoFile === null}
+                    />
+                    <Button
+                      type="button"
+                      title="Continue without logo"
+                      variant="secondary"
+                      size="small"
+                      disabled={isSubmitting}
+                      onClick={handleDeferLogo}
+                    />
+                  </>
+                ),
+                children: (
+                  <p>
+                    {logoUploadErrorMessage
+                      ? `The company was created, but the logo upload failed: ${logoUploadErrorMessage} Retry the upload or continue without a logo.`
+                      : 'The company was created, but the logo upload did not complete. Retry the upload or continue without a logo.'}
+                  </p>
+                ),
+              }
+            : undefined
+        }
         errorMessage={formErrorMessage}
         isSubmitting={isSubmitting}
-        submitLabel="Create company"
-        onChange={setDraftValue}
+        isLogoOnlyMode={createdCompany !== undefined}
+        submitLabel={
+          createdCompany
+            ? draftValue.logoFile
+              ? 'Retry logo upload'
+              : 'Continue without logo'
+            : 'Create company'
+        }
+        onChange={handleDraftChange}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
       />

@@ -28,8 +28,10 @@ const updateField = <K extends keyof CompanyFormValue>(
 const CompanyForm = ({
   value,
   errors = {},
+  notice,
   errorMessage,
   isSubmitting = false,
+  isLogoOnlyMode = false,
   submitLabel = 'Save company',
   existingLogoUrl,
   onChange,
@@ -58,11 +60,15 @@ const CompanyForm = ({
   }, [errors]);
 
   useEffect(() => {
+    if (isLogoOnlyMode) {
+      return;
+    }
+
     const fieldId = firstErrorFieldId ?? 'company-name';
     const field = formRef.current?.querySelector<HTMLElement>(`#${fieldId}`);
 
     field?.focus();
-  }, [firstErrorFieldId]);
+  }, [firstErrorFieldId, isLogoOnlyMode]);
 
   useEffect(() => {
     if (!previewUrl) {
@@ -107,6 +113,17 @@ const CompanyForm = ({
 
   return (
     <StyledCompanyForm ref={formRef} onSubmit={onSubmit} noValidate>
+      {notice && (
+        <Callout
+          className="company-form-alert"
+          variant={notice.variant ?? 'info'}
+          title={notice.title}
+          actions={notice.actions}
+        >
+          {notice.children}
+        </Callout>
+      )}
+
       {(errorMessage || errorSummary.length > 0) && (
         <Callout
           className="company-form-alert"
@@ -132,6 +149,7 @@ const CompanyForm = ({
             label="Company name"
             value={value.name}
             error={errors.name}
+            disabled={isLogoOnlyMode || isSubmitting}
             required
             onChange={event =>
               onChange(updateField(value, 'name', event.target.value))
@@ -145,6 +163,7 @@ const CompanyForm = ({
             label="Description"
             value={value.description}
             error={errors.description}
+            disabled={isLogoOnlyMode || isSubmitting}
             description="Used to help the team recognise the company in longer lists."
             onChange={event =>
               onChange(updateField(value, 'description', event.target.value))
@@ -157,6 +176,7 @@ const CompanyForm = ({
           label="Website"
           value={value.website}
           error={errors.website}
+          disabled={isLogoOnlyMode || isSubmitting}
           description="Use a full URL. A scheme will be added automatically if missing."
           onChange={event =>
             onChange(updateField(value, 'website', event.target.value))
@@ -168,6 +188,7 @@ const CompanyForm = ({
           label="Primary contact name"
           value={value.contactName}
           error={errors.contactName}
+          disabled={isLogoOnlyMode || isSubmitting}
           onChange={event =>
             onChange(updateField(value, 'contactName', event.target.value))
           }
@@ -179,6 +200,7 @@ const CompanyForm = ({
           value={value.contactEmail}
           error={errors.contactEmail}
           type="email"
+          disabled={isLogoOnlyMode || isSubmitting}
           onChange={event =>
             onChange(updateField(value, 'contactEmail', event.target.value))
           }
@@ -190,6 +212,7 @@ const CompanyForm = ({
             label="Report footer text"
             value={value.footerText}
             error={errors.footerText}
+            disabled={isLogoOnlyMode || isSubmitting}
             description="Applied to report footers for this company."
             onChange={event =>
               onChange(updateField(value, 'footerText', event.target.value))

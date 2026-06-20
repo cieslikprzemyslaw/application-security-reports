@@ -1,4 +1,13 @@
-import type { FormEvent } from 'react';
+import type { FormEvent, ReactNode } from 'react';
+
+import type { CalloutVariant } from '~/app/components/ui/callout';
+
+export interface CompanyFormNotice {
+  title: string;
+  children: ReactNode;
+  actions?: ReactNode;
+  variant?: CalloutVariant;
+}
 
 export interface CompanyFormValue {
   name: string;
@@ -14,8 +23,10 @@ export interface CompanyFormValue {
 export interface CompanyFormProps {
   value: CompanyFormValue;
   errors?: Partial<Record<keyof CompanyFormValue, string>>;
+  notice?: CompanyFormNotice;
   errorMessage?: string;
   isSubmitting?: boolean;
+  isLogoOnlyMode?: boolean;
   submitLabel?: string;
   existingLogoUrl?: string | null;
   onChange: (value: CompanyFormValue) => void;
