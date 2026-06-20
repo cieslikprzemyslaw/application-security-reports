@@ -60,26 +60,13 @@ const companiesData = [
   },
 ];
 
-const setTitleInputValue = (
-  window: { HTMLInputElement: typeof HTMLInputElement; Event: typeof Event },
-  input: HTMLInputElement,
-  value: string,
-) => {
-  const nativeSetter = Object.getOwnPropertyDescriptor(
-    window.HTMLInputElement.prototype,
-    'value',
-  )?.set;
-  nativeSetter?.call(input, value);
-  input.dispatchEvent(new window.Event('input', { bubbles: true }));
-};
-
 const findingsTabCount = (window: { document: Document }): string | null =>
   window.document.querySelector('#findings-tab .tabs-tab-count')?.textContent ??
   null;
 
 await (async () => {
   try {
-    // Create success — Findings tab count increments
+    // Delete success — Findings tab count decrements
     {
       let threatsCallCount = 0;
 
@@ -100,18 +87,102 @@ await (async () => {
             data:
               threatsCallCount === 1
                 ? [makeThreat('thr_1'), makeThreat('thr_2')]
-                : [
-                    makeThreat('thr_1'),
-                    makeThreat('thr_2'),
-                    makeThreat('thr_3'),
-                  ],
+                : [makeThreat('thr_2')],
           });
         }
 
-        if (path === '/api/threats' && init?.method === 'POST') {
+        if (path === '/api/threats/thr_1' && init?.method === 'DELETE') {
+          return new Response(null, { status: 204 });
+        }
+
+        throw new Error(`Unexpected request: ${path} ${init?.method ?? 'GET'}`);
+      });
+
+      const { root, window } = await renderApp(
+        routes.assessmentDetailsFindings('cmp_1', 'asm_1'),
+      );
+
+      assert.equal(
+        findingsTabCount(window),
+        '2',
+        'Expected initial Findings tab count 2',
+      );
+
+      Object.defineProperty(window, 'confirm', {
+        value: () => true,
+        configurable: true,
+        writable: true,
+      });
+
+      const firstRow = window.document.querySelector(
+        '.data-table-row--clickable',
+      ) as HTMLElement | null;
+      assert.ok(firstRow, 'Expected a clickable table row');
+
+      await act(async () => {
+        firstRow!.dispatchEvent(
+          new window.MouseEvent('click', { bubbles: true, cancelable: true }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      const deleteButton = Array.from(
+        window.document.querySelectorAll('button'),
+      ).find(b => b.textContent?.trim() === 'Delete threat') as
+        | HTMLButtonElement
+        | undefined;
+      assert.ok(
+        deleteButton,
+        'Expected a Delete threat button in the view drawer',
+      );
+
+      await act(async () => {
+        deleteButton!.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      assert.equal(
+        findingsTabCount(window),
+        '1',
+        'Expected Findings tab count to decrement to 1 after successful delete',
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    }
+
+    // Delete failure — Findings tab count unchanged
+    {
+      setFetch(async (input, init) => {
+        const path = String(input);
+
+        if (path === '/api/companies') {
+          return createJsonResponse({ data: companiesData });
+        }
+
+        if (path === '/api/companies/cmp_1/assessments/asm_1/overview') {
+          return createJsonResponse({ data: makeOverview(2) });
+        }
+
+        if (path === '/api/threats?assessmentId=asm_1') {
+          return createJsonResponse({
+            data: [makeThreat('thr_1'), makeThreat('thr_2')],
+          });
+        }
+
+        if (path === '/api/threats/thr_1' && init?.method === 'DELETE') {
           return createJsonResponse(
-            { data: makeThreat('thr_3') },
-            { status: 201 },
+            { error: { code: 'INTERNAL_ERROR', message: 'Server error' } },
+            { status: 500 },
           );
         }
 
@@ -128,44 +199,37 @@ await (async () => {
         'Expected initial Findings tab count 2',
       );
 
-      const addButton = Array.from(
-        window.document.querySelectorAll('button'),
-      ).find(b => b.textContent?.trim() === 'Add threat') as
-        | HTMLButtonElement
-        | undefined;
-      assert.ok(addButton, 'Expected the Add threat button');
+      Object.defineProperty(window, 'confirm', {
+        value: () => true,
+        configurable: true,
+        writable: true,
+      });
+
+      const firstRow = window.document.querySelector(
+        '.data-table-row--clickable',
+      ) as HTMLElement | null;
+      assert.ok(firstRow, 'Expected a clickable table row');
 
       await act(async () => {
-        addButton!.dispatchEvent(
-          new window.MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            button: 0,
-          }),
+        firstRow!.dispatchEvent(
+          new window.MouseEvent('click', { bubbles: true, cancelable: true }),
         );
         await renderTick();
         await renderTick();
       });
 
-      const titleInput = window.document.querySelector(
-        '#threat-title',
-      ) as HTMLInputElement | null;
-      assert.ok(titleInput, 'Expected threat title input');
-
-      await act(async () => {
-        setTitleInputValue(window, titleInput!, 'New threat');
-        await renderTick();
-      });
-
-      const createButton = Array.from(
+      const deleteButton = Array.from(
         window.document.querySelectorAll('button'),
-      ).find(b => b.textContent?.trim() === 'Create threat') as
+      ).find(b => b.textContent?.trim() === 'Delete threat') as
         | HTMLButtonElement
         | undefined;
-      assert.ok(createButton, 'Expected the Create threat submit button');
+      assert.ok(
+        deleteButton,
+        'Expected a Delete threat button in the view drawer',
+      );
 
       await act(async () => {
-        createButton!.dispatchEvent(
+        deleteButton!.dispatchEvent(
           new window.MouseEvent('click', {
             bubbles: true,
             cancelable: true,
@@ -178,8 +242,8 @@ await (async () => {
 
       assert.equal(
         findingsTabCount(window),
-        '3',
-        'Expected Findings tab count to increment to 3 after successful create',
+        '2',
+        'Expected Findings tab count to remain 2 after failed delete',
       );
 
       await act(async () => {
@@ -187,109 +251,7 @@ await (async () => {
       });
     }
 
-    // Create failure — Findings tab count unchanged
-    {
-      setFetch(async (input, init) => {
-        const path = String(input);
-
-        if (path === '/api/companies') {
-          return createJsonResponse({ data: companiesData });
-        }
-
-        if (path === '/api/companies/cmp_1/assessments/asm_1/overview') {
-          return createJsonResponse({ data: makeOverview(1) });
-        }
-
-        if (path === '/api/threats?assessmentId=asm_1') {
-          return createJsonResponse({ data: [makeThreat('thr_1')] });
-        }
-
-        if (path === '/api/threats' && init?.method === 'POST') {
-          return createJsonResponse(
-            {
-              error: {
-                code: 'VALIDATION_ERROR',
-                message: 'Validation error',
-                details: [{ path: 'title', message: 'Title is required.' }],
-              },
-            },
-            { status: 400 },
-          );
-        }
-
-        throw new Error(`Unexpected request: ${path} ${init?.method ?? 'GET'}`);
-      });
-
-      const { root, window } = await renderApp(
-        routes.assessmentDetailsFindings('cmp_1', 'asm_1'),
-      );
-
-      assert.equal(
-        findingsTabCount(window),
-        '1',
-        'Expected initial Findings tab count 1',
-      );
-
-      const addButton = Array.from(
-        window.document.querySelectorAll('button'),
-      ).find(b => b.textContent?.trim() === 'Add threat') as
-        | HTMLButtonElement
-        | undefined;
-      assert.ok(addButton, 'Expected the Add threat button');
-
-      await act(async () => {
-        addButton!.dispatchEvent(
-          new window.MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            button: 0,
-          }),
-        );
-        await renderTick();
-        await renderTick();
-      });
-
-      const titleInput = window.document.querySelector(
-        '#threat-title',
-      ) as HTMLInputElement | null;
-      assert.ok(titleInput, 'Expected threat title input');
-
-      await act(async () => {
-        setTitleInputValue(window, titleInput!, 'New threat');
-        await renderTick();
-      });
-
-      const createButton = Array.from(
-        window.document.querySelectorAll('button'),
-      ).find(b => b.textContent?.trim() === 'Create threat') as
-        | HTMLButtonElement
-        | undefined;
-      assert.ok(createButton, 'Expected the Create threat submit button');
-
-      await act(async () => {
-        createButton!.dispatchEvent(
-          new window.MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            button: 0,
-          }),
-        );
-        await renderTick();
-        await renderTick();
-      });
-
-      assert.equal(
-        findingsTabCount(window),
-        '1',
-        'Expected Findings tab count to remain 1 after failed create',
-      );
-
-      await act(async () => {
-        root.unmount();
-      });
-    }
-
-    console.log('assessmentDetails.tabCount create tests passed');
+    console.log('assessmentDetails.tabCount delete tests passed');
   } finally {
     restoreFetch();
   }
