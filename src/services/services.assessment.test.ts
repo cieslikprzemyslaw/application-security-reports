@@ -106,6 +106,7 @@ const assessmentSummary = {
   id: assessment.id,
   companyId: assessment.companyId,
   name: assessment.title,
+  applicationName: assessment.applicationName,
   type: assessment.assessmentType,
   status: assessment.status,
   findingsCount: 7,
@@ -185,6 +186,7 @@ const assessmentSummary = {
 {
   const input: AssessmentUpdateInput = {
     title: 'Updated assessment',
+    applicationName: 'Customer Services Portal Public Site',
   };
   const { calls, request } = createRequestSpy({ data: assessment });
   const service = createAssessmentService(request);

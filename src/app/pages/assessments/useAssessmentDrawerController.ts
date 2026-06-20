@@ -7,6 +7,7 @@ import {
   assessmentToFormValue,
   areAssessmentFormValuesEqual,
   createEmptyAssessmentFormValue,
+  type AssessmentFormFieldName,
   validateAssessmentFormValue,
 } from '~/app/components/appsec/assessmentForm';
 import type { AssessmentListItem } from '~/services';
@@ -20,7 +21,7 @@ type AssessmentFormValue = ReturnType<typeof createEmptyAssessmentFormValue>;
 export interface AssessmentDrawerController {
   drawerMode: 'create' | 'edit' | null;
   draftValue: AssessmentFormValue;
-  fieldErrors: Partial<Record<string, string>>;
+  fieldErrors: Partial<Record<AssessmentFormFieldName, string>>;
   formErrorMessage?: string;
   isSubmitting: boolean;
   setDraftValue: Dispatch<SetStateAction<AssessmentFormValue>>;
@@ -46,7 +47,7 @@ export const useAssessmentDrawerController = ({
   );
   const [baselineValue, setBaselineValue] = useState(draftValue);
   const [fieldErrors, setFieldErrors] = useState<
-    Partial<Record<string, string>>
+    Partial<Record<AssessmentFormFieldName, string>>
   >({});
   const [formErrorMessage, setFormErrorMessage] = useState<
     string | undefined
@@ -113,6 +114,7 @@ export const useAssessmentDrawerController = ({
 
     const value = assessmentToFormValue({
       title: assessment.name,
+      applicationName: assessment.applicationName,
       assessmentType: assessment.type,
       description: assessment.description,
       scope: assessment.scope,

@@ -9,6 +9,7 @@ import { assessmentPresetTypes } from './assessmentForm.type';
 
 export const createEmptyAssessmentFormValue = (): AssessmentFormValue => ({
   name: '',
+  applicationName: '',
   typeMode: 'preset',
   presetType: assessmentPresetTypes[0],
   customType: '',
@@ -27,6 +28,7 @@ const resolveAssessmentType = (value: AssessmentFormValue) =>
 type AssessmentFormSource = {
   name?: string;
   title?: string;
+  applicationName?: string | null;
   type?: string;
   assessmentType?: string;
   description?: string;
@@ -48,6 +50,7 @@ export const assessmentToFormValue = (
 
   return {
     name: normalize(assessment.name ?? assessment.title),
+    applicationName: normalize(assessment.applicationName),
     typeMode: assessmentPresetTypes.includes(
       assessmentType as AssessmentPresetType,
     )
@@ -70,6 +73,7 @@ export const areAssessmentFormValuesEqual = (
   second: AssessmentFormValue,
 ) =>
   first.name.trim() === second.name.trim() &&
+  first.applicationName.trim() === second.applicationName.trim() &&
   first.typeMode === second.typeMode &&
   first.presetType === second.presetType &&
   first.customType.trim() === second.customType.trim() &&
@@ -83,7 +87,7 @@ export const assessmentFormValueToCreateInput = (
 ): AssessmentCreateInput => ({
   companyId,
   title: normalize(value.name),
-  applicationName: normalize(value.name),
+  applicationName: normalize(value.applicationName),
   description: normalize(value.description) || undefined,
   scope: normalize(value.scope) || undefined,
   status: 'draft',
@@ -94,6 +98,7 @@ export const assessmentFormValueToUpdateInput = (
   value: AssessmentFormValue,
 ): AssessmentUpdateInput => ({
   title: normalize(value.name),
+  applicationName: normalize(value.applicationName),
   description: normalize(value.description) || undefined,
   scope: normalize(value.scope) || undefined,
   status: value.status,
@@ -108,6 +113,10 @@ export const validateAssessmentFormValue = (
 
   if (normalize(value.name).length === 0) {
     errors.name = 'Assessment name is required.';
+  }
+
+  if (normalize(value.applicationName).length === 0) {
+    errors.applicationName = 'Application or website is required.';
   }
 
   if (value.typeMode === 'custom' && normalize(value.customType).length === 0) {

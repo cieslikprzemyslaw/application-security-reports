@@ -222,8 +222,8 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
         title={drawerMode === 'edit' ? 'Edit assessment' : 'Create assessment'}
         description={
           drawerMode === 'edit'
-            ? 'Update the assessment name, type, description, scope, and status.'
-            : 'Create a new assessment for the active company.'
+            ? 'Update the assessment name, application or website, type, description, scope, and status.'
+            : 'Create a new assessment for the active company and record the application or website it covers.'
         }
         onClose={requestCloseDrawer}
         size="large"
