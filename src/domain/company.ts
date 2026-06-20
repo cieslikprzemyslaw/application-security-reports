@@ -7,8 +7,6 @@ export interface Company extends TimestampedEntity {
   website?: string;
   contactName?: string;
   contactEmail?: string;
-  /** @deprecated No longer populated by the repository. Use logoUrl. */
-  logoPath?: string;
   logoUrl?: string | null;
   footerText?: string;
 }
@@ -19,7 +17,7 @@ export type CompanyListItem = Company & {
 
 export type CreateCompanyInput = Omit<
   Company,
-  'id' | 'createdAt' | 'updatedAt' | 'logoUrl' | 'logoPath'
+  'id' | 'createdAt' | 'updatedAt' | 'logoUrl'
 >;
 
 export type UpdateCompanyInput = Partial<CreateCompanyInput>;

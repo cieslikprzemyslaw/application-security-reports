@@ -17,7 +17,7 @@ CREATE TABLE "Company" (
     "website" TEXT,
     "contactName" TEXT,
     "contactEmail" TEXT,
-    "logoPath" TEXT,
+    "logoUrl" TEXT,
     "footerText" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL

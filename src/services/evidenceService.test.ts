@@ -72,7 +72,7 @@ const company = {
   website: 'https://northstar.example',
   contactName: 'Alex Mercer',
   contactEmail: 'security@northstar.example',
-  logoPath: '/logos/northstar.svg',
+  logoUrl: null,
   footerText: 'Confidential - do not distribute.',
   assessmentCount: 6,
   createdAt: '2026-06-01T09:00:00.000Z',

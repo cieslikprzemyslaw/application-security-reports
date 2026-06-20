@@ -158,7 +158,7 @@ try {
       website: 'https://northstar.example',
       contactName: 'Alex Mercer',
       contactEmail: 'security@northstar.example',
-      logoPath: '/logos/northstar.svg',
+      logoUrl: null,
       footerText: 'Confidential - do not distribute.',
     },
   });

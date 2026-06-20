@@ -103,14 +103,13 @@ const validCompany = {
   website: 'https://northstar.example',
   contactName: 'Alex Mercer',
   contactEmail: 'security@northstar.example',
-  logoPath: '/logos/northstar.svg',
   logoUrl: null,
   footerText: 'Confidential',
   createdAt: '2026-06-01T00:00:00.000Z',
   updatedAt: '2026-06-10T00:00:00.000Z',
 };
 
-const { logoPath: _validCompanyLogoPath, ...validCompanyPublic } = validCompany;
+const { logoUrl: _validCompanyLogoUrl, ...validCompanyPublic } = validCompany;
 
 const validAssessment = {
   id: 'asm_00000000-0000-0000-0000-000000000001',
@@ -435,9 +434,9 @@ expectField(
 expectField(
   getFieldErrors(companyPublicSchema, {
     ...validCompanyPublic,
-    logoPath: '/logos/northstar.svg',
+    unknownField: '/logos/northstar.svg',
   }),
-  'logoPath',
+  'unknownField',
   'Unknown property',
 );
 expectField(
@@ -786,9 +785,9 @@ assertValid(
 expectField(
   getFieldErrors(createCompanyRequestSchema, {
     name: 'Example Ltd',
-    logoPath: '/logos/example.svg',
+    logoUrl: '/logos/example.svg',
   }),
-  'logoPath',
+  'logoUrl',
   'Unknown property',
 );
 expectField(
@@ -953,9 +952,9 @@ assertValid(
 expectField(
   getFieldErrors(updateCompanyRequestSchema, {
     name: 'Updated name',
-    logoPath: '/logos/example.svg',
+    logoUrl: '/logos/example.svg',
   }),
-  'logoPath',
+  'logoUrl',
   'Unknown property',
 );
 expectField(

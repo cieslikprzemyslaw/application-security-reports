@@ -24,7 +24,6 @@ export const createEmptyCompanyFormValue = (): CompanyFormValue => ({
   website: '',
   contactName: '',
   contactEmail: '',
-  logoPath: '',
   footerText: '',
 });
 
@@ -36,7 +35,6 @@ export const companyToFormValue = (
   website: company?.website ?? '',
   contactName: company?.contactName ?? '',
   contactEmail: company?.contactEmail ?? '',
-  logoPath: company?.logoPath ?? '',
   footerText: company?.footerText ?? '',
 });
 
@@ -58,7 +56,6 @@ export const formValueToCompanyInput = (value: CompanyFormValue) => {
   const normalizedDescription = normalizeText(value.description);
   const normalizedContactName = normalizeText(value.contactName);
   const normalizedContactEmail = normalizeText(value.contactEmail);
-  const normalizedLogoPath = normalizeText(value.logoPath);
   const normalizedFooterText = normalizeText(value.footerText);
 
   return {
@@ -70,7 +67,6 @@ export const formValueToCompanyInput = (value: CompanyFormValue) => {
       normalizedContactName.length > 0 ? normalizedContactName : undefined,
     contactEmail:
       normalizedContactEmail.length > 0 ? normalizedContactEmail : undefined,
-    logoPath: normalizedLogoPath.length > 0 ? normalizedLogoPath : undefined,
     footerText:
       normalizedFooterText.length > 0 ? normalizedFooterText : undefined,
   };
@@ -129,5 +125,4 @@ export const areCompanyFormValuesEqual = (
   left.website === right.website &&
   left.contactName === right.contactName &&
   left.contactEmail === right.contactEmail &&
-  left.logoPath === right.logoPath &&
   left.footerText === right.footerText;

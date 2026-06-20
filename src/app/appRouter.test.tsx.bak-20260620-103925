@@ -306,71 +306,22 @@ await (async () => {
   }
 
   {
-    setFetch(async input => {
-      const path = String(input);
-
-      if (path === '/api/companies') {
-        return createJsonResponse({
-          data: [
-            {
-              id: 'cmp_2',
-              name: 'Meridian Finance',
-              website: 'https://meridian.example',
-              contactEmail: 'security@meridian.example',
-              assessmentCount: 1,
-              createdAt: '2026-06-02T00:00:00.000Z',
-              updatedAt: '2026-06-11T00:00:00.000Z',
-            },
-            {
-              id: 'cmp_1',
-              name: 'Northwind Labs',
-              website: 'https://northwind.example',
-              contactEmail: 'security@northwind.example',
-              assessmentCount: 2,
-              createdAt: '2026-06-01T00:00:00.000Z',
-              updatedAt: '2026-06-10T00:00:00.000Z',
-            },
-            {
-              id: 'cmp_3',
-              name: 'Summit Health',
-              website: 'https://summit.example',
-              contactEmail: 'security@summit.example',
-              assessmentCount: 3,
-              createdAt: '2026-06-03T00:00:00.000Z',
-              updatedAt: '2026-06-12T00:00:00.000Z',
-            },
-          ],
-        });
-      }
-
-      if (path === '/api/companies/cmp_2/overview') {
-        return createJsonResponse({
-          data: {
-            company: {
-              id: 'cmp_2',
-              name: 'Meridian Finance',
-              description: 'Financial services workspace',
-              website: 'https://meridian.example',
-              contactName: 'B. Example',
-              contactEmail: 'security@meridian.example',
-              logoUrl: null,
-              footerText: 'Confidential',
-              createdAt: '2026-06-02T00:00:00.000Z',
-              updatedAt: '2026-06-11T00:00:00.000Z',
-            },
-            assessmentCounts: {
-              total: 1,
-              draft: 0,
-              inProgress: 1,
-              completed: 0,
-            },
-            recentAssessments: [],
+    setFetch(async () =>
+      createJsonResponse({
+        data: [
+          {
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
           },
-        });
-      }
+        ],
+      }),
+    );
 
-      throw new Error(`Unexpected request: ${path}`);
-    });
     try {
       const { container, root } = await renderApp('/dashboard', true, {
         'appsec-company-switcher-recents': JSON.stringify(['cmp_2', 'cmp_1']),

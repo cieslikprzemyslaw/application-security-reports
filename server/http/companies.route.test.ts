@@ -722,7 +722,7 @@ const createApp = (repository: CompanyRepository) =>
       },
       body: JSON.stringify({
         name: 'Example Security',
-        logoPath: '/logos/example.svg',
+        unknownField: '/logos/example.svg',
       }),
     });
 
@@ -733,7 +733,7 @@ const createApp = (repository: CompanyRepository) =>
     assert.ok(
       body.error.details.some(
         (detail: { path: string; message: string }) =>
-          detail.path === 'logoPath' &&
+          detail.path === 'unknownField' &&
           detail.message.includes('Unknown property'),
       ),
     );

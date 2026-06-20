@@ -156,7 +156,7 @@ await (async () => {
             website: 'https://northwind.example',
             contactName: 'A. Example',
             contactEmail: 'security@northwind.example',
-            logoPath: '/logos/northwind.svg',
+            logoUrl: null,
             footerText: 'Confidential',
             assessmentCount: 2,
             createdAt: '2026-06-01T00:00:00.000Z',
