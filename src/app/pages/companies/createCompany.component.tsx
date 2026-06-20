@@ -66,7 +66,9 @@ const CreateCompany = ({
   const [baselineValue] = useState<CompanyFormValue>(
     createEmptyCompanyFormValue,
   );
-  const [fieldErrors, setFieldErrors] = useState<Partial<CompanyFormValue>>({});
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof CompanyFormValue, string>>
+  >({});
   const [formErrorMessage, setFormErrorMessage] = useState<
     string | undefined
   >();

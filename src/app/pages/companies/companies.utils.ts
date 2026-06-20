@@ -25,6 +25,7 @@ export const createEmptyCompanyFormValue = (): CompanyFormValue => ({
   contactName: '',
   contactEmail: '',
   footerText: '',
+  logoFile: null,
 });
 
 export const companyToFormValue = (
@@ -36,6 +37,7 @@ export const companyToFormValue = (
   contactName: company?.contactName ?? '',
   contactEmail: company?.contactEmail ?? '',
   footerText: company?.footerText ?? '',
+  logoFile: null,
 });
 
 export const normalizeCompanyWebsite = (value: string) => {
@@ -125,4 +127,5 @@ export const areCompanyFormValuesEqual = (
   left.website === right.website &&
   left.contactName === right.contactName &&
   left.contactEmail === right.contactEmail &&
-  left.footerText === right.footerText;
+  left.footerText === right.footerText &&
+  left.logoFile === right.logoFile;

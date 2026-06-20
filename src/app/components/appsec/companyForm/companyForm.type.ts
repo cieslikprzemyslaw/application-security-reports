@@ -7,6 +7,7 @@ export interface CompanyFormValue {
   contactName: string;
   contactEmail: string;
   footerText: string;
+  logoFile: File | null;
 }
 
 export interface CompanyFormProps {
