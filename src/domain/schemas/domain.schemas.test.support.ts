@@ -15,6 +15,7 @@ import { OWASP_TOP_10_CURRENT_VERSION } from '../owaspTop10.js';
 import {
   activityFileSchema,
   activitySchema,
+  assessmentCommandRequestSchema,
   assessmentListQuerySchema,
   assessmentRouteParamsSchema,
   assessmentsFileSchema,
@@ -108,6 +109,7 @@ export {
   THREAT_STATUSES,
   activityFileSchema,
   activitySchema,
+  assessmentCommandRequestSchema,
   assessmentListQuerySchema,
   assessmentRouteParamsSchema,
   assessmentsFileSchema,

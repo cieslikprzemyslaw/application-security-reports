@@ -77,7 +77,9 @@ import {
     );
 
     assert.equal(response.status, 200);
-    const body = await readJson<{ data: typeof defaultAssessment }>(response);
+    const body = await readJson<{
+      data: typeof defaultAssessment & { availableActions: string[] };
+    }>(response);
     assert.equal(body.data.title, 'Updated Assessment');
     assert.equal(
       body.data.applicationName,

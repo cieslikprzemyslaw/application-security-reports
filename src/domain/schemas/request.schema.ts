@@ -23,7 +23,11 @@ import {
   validateEvidenceExchanges,
   validateEvidenceFileMetadata,
 } from './evidence-request.schema.js';
-import { nonEmptyTextSchema, prefixedUuidSchema } from './common.schema.js';
+import {
+  nonEmptyTextSchema,
+  nonNegativeIntegerSchema,
+  prefixedUuidSchema,
+} from './common.schema.js';
 
 const requireAtLeastOneField = <T extends z.ZodRawShape>(
   schema: z.ZodObject<T>,
@@ -121,6 +125,12 @@ export const evidenceListQuerySchema = z
 export const reportRouteParamsSchema = z
   .object({
     id: prefixedUuidSchema('rpt_', 'Report'),
+  })
+  .strict();
+
+export const assessmentCommandRequestSchema = z
+  .object({
+    recordVersion: nonNegativeIntegerSchema,
   })
   .strict();
 

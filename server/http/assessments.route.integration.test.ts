@@ -13,6 +13,7 @@ import { loadServerConfig } from '../config.js';
 import { createAssessmentRepository } from '../database/repositories/assessment.repository.js';
 import { createCompanyRepository } from '../database/repositories/company.repository.js';
 import { createApiApp } from './api-app.js';
+import { runAssessmentCompleteIntegrationCases } from './assessments.route.integration.complete.cases.js';
 import { OWASP_TOP_10_CURRENT_VERSION } from '../../src/domain/index.js';
 
 const repoRoot = path.resolve(process.cwd());
@@ -181,6 +182,7 @@ try {
         title: string;
         overallRisk?: string;
         owaspTaxonomyVersion?: string;
+        updatedAt: string;
       };
     };
     assert.equal(createJson.data.id.startsWith('asm_'), true);
@@ -243,6 +245,7 @@ try {
         applicationName: string | null;
         overallRisk?: string;
         owaspTaxonomyVersion?: string;
+        updatedAt: string;
       };
     };
     assert.equal(patchJson.data.id, assessmentId);
@@ -265,6 +268,14 @@ try {
       storedAssessment?.owaspTaxonomyVersion,
       OWASP_TOP_10_CURRENT_VERSION,
     );
+    await runAssessmentCompleteIntegrationCases({
+      baseUrl: server.baseUrl,
+      companyId: company.id,
+      assessmentId,
+      assessmentRepository,
+      prisma,
+      recordVersion: patchJson.data.updatedAt,
+    });
 
     await prisma.threat.create({
       data: {
