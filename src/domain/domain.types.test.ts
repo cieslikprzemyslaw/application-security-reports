@@ -20,6 +20,7 @@ const assessment: Assessment = {
   status: 'in-progress',
   startedAt: '2026-06-01',
   completedAt: '2026-06-10',
+  applicationName: 'Customer Services Portal',
   createdAt: '2026-06-01',
   updatedAt: '2026-06-10',
 };

@@ -22,6 +22,7 @@ import {
 import { threatObjectSchema } from './threat.schema.js';
 import {
   nonNegativeIntegerSchema,
+  nonEmptyTextSchema,
   optionalTrimmedTextSchema,
   prefixedUuidSchema,
 } from './common.schema.js';
@@ -72,12 +73,16 @@ const _updateCompanyRequestSchemaCompatibilityCheck: UpdateCompanyRequestSchemaO
   ? true
   : never = true;
 
-const createAssessmentBaseSchema = assessmentObjectSchema.omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  owaspTaxonomyVersion: true,
-});
+const createAssessmentBaseSchema = assessmentObjectSchema
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    owaspTaxonomyVersion: true,
+  })
+  .extend({
+    applicationName: nonEmptyTextSchema,
+  });
 
 export const assessmentRouteParamsSchema = z
   .object({

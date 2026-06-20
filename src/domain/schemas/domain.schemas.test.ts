@@ -452,6 +452,13 @@ assertValid(
   assessmentSchema.safeParse(validAssessment).success,
   'Valid assessment should pass',
 );
+assertValid(
+  assessmentSchema.safeParse({
+    ...validAssessment,
+    applicationName: null,
+  }).success,
+  'Historical assessment with null application name should pass',
+);
 expectField(
   getFieldErrors(assessmentSchema, { ...validAssessment, companyId: '' }),
   'companyId',
@@ -803,6 +810,7 @@ assertValid(
     companyId: validCompany.id,
     title: 'Example',
     status: 'draft',
+    applicationName: 'Customer Services Portal',
   }).success,
   'Create assessment request should pass',
 );
@@ -811,6 +819,26 @@ expectField(
     companyId: validCompany.id,
     title: 'Example',
     status: 'draft',
+  }),
+  'applicationName',
+  'Required',
+);
+expectField(
+  getFieldErrors(createAssessmentRequestSchema, {
+    companyId: validCompany.id,
+    title: 'Example',
+    status: 'draft',
+    applicationName: '   ',
+  }),
+  'applicationName',
+  'Text is required',
+);
+expectField(
+  getFieldErrors(createAssessmentRequestSchema, {
+    companyId: validCompany.id,
+    title: 'Example',
+    status: 'draft',
+    applicationName: 'Customer Services Portal',
     owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   }),
   'owaspTaxonomyVersion',
@@ -988,6 +1016,13 @@ expectField(
   }),
   'owaspTaxonomyVersion',
   'Unknown property',
+);
+expectField(
+  getFieldErrors(updateAssessmentRequestSchema, {
+    applicationName: '   ',
+  }),
+  'applicationName',
+  'Text is required',
 );
 expectField(
   getFieldErrors(updateThreatRequestSchema, {}),

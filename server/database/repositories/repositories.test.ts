@@ -493,6 +493,7 @@ const createSettingsDb = () => {
   const assessments = await repository.findByCompanyId('cmp_123');
 
   assert.equal(assessments[0].id, assessmentRow.id);
+  assert.equal(assessments[0].applicationName, null);
   assert.equal(calls[0]?.method, 'findMany');
 }
 
@@ -507,7 +508,7 @@ const createSettingsDb = () => {
     status: 'draft',
     startedAt: undefined,
     completedAt: undefined,
-    applicationName: undefined,
+    applicationName: 'Customer Services Portal',
     environment: undefined,
     assessmentType: undefined,
     overallRisk: undefined,
@@ -515,8 +516,9 @@ const createSettingsDb = () => {
 
   assert.equal(createdAssessment.owaspTaxonomyVersion, '2025');
   const createArgs = calls.find(call => call.method === 'create')?.args as {
-    data?: { owaspTaxonomyVersion?: string };
+    data?: { applicationName?: string; owaspTaxonomyVersion?: string };
   };
+  assert.equal(createArgs?.data?.applicationName, 'Customer Services Portal');
   assert.equal(createArgs?.data?.owaspTaxonomyVersion, '2025');
 }
 

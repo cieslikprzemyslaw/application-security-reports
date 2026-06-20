@@ -83,6 +83,7 @@ export const assessmentFormValueToCreateInput = (
 ): AssessmentCreateInput => ({
   companyId,
   title: normalize(value.name),
+  applicationName: normalize(value.name),
   description: normalize(value.description) || undefined,
   scope: normalize(value.scope) || undefined,
   status: 'draft',

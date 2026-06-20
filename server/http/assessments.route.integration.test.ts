@@ -230,6 +230,7 @@ try {
         },
         body: JSON.stringify({
           title: 'Customer Services Portal - Updated',
+          applicationName: ' Customer Services Portal Public Site ',
           overallRisk: 'medium',
         }),
       },
@@ -239,12 +240,17 @@ try {
       data: {
         id: string;
         title: string;
+        applicationName: string | null;
         overallRisk?: string;
         owaspTaxonomyVersion?: string;
       };
     };
     assert.equal(patchJson.data.id, assessmentId);
     assert.equal(patchJson.data.title, 'Customer Services Portal - Updated');
+    assert.equal(
+      patchJson.data.applicationName,
+      'Customer Services Portal Public Site',
+    );
     assert.equal(patchJson.data.overallRisk, 'medium');
     assert.equal(
       patchJson.data.owaspTaxonomyVersion,
@@ -311,11 +317,25 @@ try {
       status: 'draft',
       startedAt: undefined,
       completedAt: undefined,
-      applicationName: undefined,
+      applicationName: 'Historical Portal',
       environment: undefined,
       assessmentType: undefined,
       overallRisk: undefined,
     });
+
+    await prisma.assessment.update({
+      where: { id: blockedAssessment.id },
+      data: { applicationName: null },
+    });
+
+    const blockedAssessmentResponse = await fetch(
+      `${server.baseUrl}/api/assessments/${blockedAssessment.id}`,
+    );
+    assert.equal(blockedAssessmentResponse.status, 200);
+    const blockedAssessmentJson = (await blockedAssessmentResponse.json()) as {
+      data: { applicationName: string | null };
+    };
+    assert.equal(blockedAssessmentJson.data.applicationName, null);
 
     await prisma.report.create({
       data: {

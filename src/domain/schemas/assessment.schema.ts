@@ -23,7 +23,7 @@ export const assessmentObjectSchema = z
     status: assessmentStatusSchema,
     startedAt: isoDateStringSchema.optional(),
     completedAt: isoDateStringSchema.optional(),
-    applicationName: optionalTrimmedTextSchema,
+    applicationName: optionalTrimmedTextSchema.nullable(),
     environment: optionalTrimmedTextSchema,
     assessmentType: optionalTrimmedTextSchema,
     overallRisk: severitySchema.optional(),
