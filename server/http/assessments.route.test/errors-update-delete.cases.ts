@@ -35,6 +35,7 @@ import {
         companyId: defaultCompany.id,
         title: 'Example Assessment',
         status: 'draft',
+        applicationName: 'Customer Services Portal',
       }),
     });
 
@@ -69,6 +70,7 @@ import {
         },
         body: JSON.stringify({
           title: 'Updated Assessment',
+          applicationName: ' Customer Services Portal Public Site ',
           overallRisk: 'medium',
         }),
       },
@@ -77,11 +79,19 @@ import {
     assert.equal(response.status, 200);
     const body = await readJson<{ data: typeof defaultAssessment }>(response);
     assert.equal(body.data.title, 'Updated Assessment');
+    assert.equal(
+      body.data.applicationName,
+      'Customer Services Portal Public Site',
+    );
     assert.equal(body.data.overallRisk, 'medium');
     assert.equal(body.data.owaspTaxonomyVersion, OWASP_TOP_10_CURRENT_VERSION);
     assert.equal(calls.update, 1);
     assert.equal(calls.updateArgs?.id, defaultAssessment.id);
     assert.equal(calls.updateArgs?.input.title, 'Updated Assessment');
+    assert.equal(
+      calls.updateArgs?.input.applicationName,
+      'Customer Services Portal Public Site',
+    );
     assert.equal(
       (
         calls.updateArgs?.input as
@@ -102,6 +112,7 @@ for (const [field, body] of [
   ['companyId', { companyId: defaultCompany.id }],
   ['createdAt', { createdAt: '2026-06-12T00:00:00.000Z' }],
   ['updatedAt', { updatedAt: '2026-06-12T00:00:00.000Z' }],
+  ['applicationName', { applicationName: '   ' }],
 ] as const) {
   const { calls, repository } = createAssessmentRepository();
   const { repository: companyRepository } = createCompanyRepository();
@@ -128,7 +139,12 @@ for (const [field, body] of [
     assert.ok(
       responseBody.error.details.some(
         detail =>
-          detail.path === field && detail.message.includes('Unknown property'),
+          detail.path === field &&
+          detail.message.includes(
+            field === 'applicationName'
+              ? 'Text is required'
+              : 'Unknown property',
+          ),
       ),
     );
   } finally {

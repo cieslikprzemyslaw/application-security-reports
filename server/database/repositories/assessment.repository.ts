@@ -68,7 +68,7 @@ const toAssessment = (row: AssessmentRow): Assessment => ({
   status: row.status as Assessment['status'],
   startedAt: toOptionalText(row.startedAt) as Assessment['startedAt'],
   completedAt: toOptionalText(row.completedAt) as Assessment['completedAt'],
-  applicationName: toOptionalText(row.applicationName),
+  applicationName: row.applicationName,
   environment: toOptionalText(row.environment),
   assessmentType: toOptionalText(row.assessmentType),
   overallRisk: toOptionalText(row.overallRisk) as Assessment['overallRisk'],

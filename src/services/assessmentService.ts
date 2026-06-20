@@ -1,16 +1,39 @@
-import type { Assessment, AssessmentStatus } from '~/domain';
+import type {
+  Assessment,
+  AssessmentStatus,
+  ISODateString,
+  Severity,
+} from '~/domain';
 
 import { apiRequest } from './apiClient.js';
 import { requestData, type ApiRequestFn } from './serviceHelpers.js';
 
-export type AssessmentCreateInput = Omit<
-  Assessment,
-  'id' | 'createdAt' | 'updatedAt' | 'owaspTaxonomyVersion'
->;
+export interface AssessmentCreateInput {
+  companyId: string;
+  title: string;
+  description?: string;
+  scope?: string;
+  status: AssessmentStatus;
+  startedAt?: ISODateString;
+  completedAt?: ISODateString;
+  applicationName: string;
+  environment?: string;
+  assessmentType?: string;
+  overallRisk?: Severity;
+}
 
-export type AssessmentUpdateInput = Partial<
-  Omit<AssessmentCreateInput, 'companyId'>
->;
+export interface AssessmentUpdateInput {
+  title?: string;
+  description?: string;
+  scope?: string;
+  status?: AssessmentStatus;
+  startedAt?: ISODateString;
+  completedAt?: ISODateString;
+  applicationName?: string;
+  environment?: string;
+  assessmentType?: string;
+  overallRisk?: Severity;
+}
 
 export interface AssessmentWorkspaceCompany {
   id: string;

@@ -16,16 +16,36 @@ export interface Assessment extends TimestampedEntity {
   status: AssessmentStatus;
   startedAt?: ISODateString;
   completedAt?: ISODateString;
-  applicationName?: string;
+  applicationName: string | null;
   environment?: string;
   assessmentType?: string;
   overallRisk?: Severity;
   owaspTaxonomyVersion?: string;
 }
 
-export type CreateAssessmentInput = Omit<
-  Assessment,
-  'id' | 'createdAt' | 'updatedAt' | 'owaspTaxonomyVersion'
->;
+export interface CreateAssessmentInput {
+  companyId: CompanyId;
+  title: string;
+  description?: string;
+  scope?: string;
+  status: AssessmentStatus;
+  startedAt?: ISODateString;
+  completedAt?: ISODateString;
+  applicationName: string;
+  environment?: string;
+  assessmentType?: string;
+  overallRisk?: Severity;
+}
 
-export type UpdateAssessmentInput = Partial<CreateAssessmentInput>;
+export interface UpdateAssessmentInput {
+  title?: string;
+  description?: string;
+  scope?: string;
+  status?: AssessmentStatus;
+  startedAt?: ISODateString;
+  completedAt?: ISODateString;
+  applicationName?: string;
+  environment?: string;
+  assessmentType?: string;
+  overallRisk?: Severity;
+}

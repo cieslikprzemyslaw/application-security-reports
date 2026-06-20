@@ -94,6 +94,34 @@ import {
 
 {
   const { calls, repository } = createAssessmentRepository({
+    findById: async () => ({
+      ...defaultAssessment,
+      applicationName: null,
+    }),
+  });
+  const { repository: companyRepository } = createCompanyRepository();
+  const server = await startTestServer(
+    createApp(repository, companyRepository),
+  );
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/assessments/${defaultAssessment.id}`,
+    );
+
+    assert.equal(response.status, 200);
+    const body = await readJson<{
+      data: typeof defaultAssessment & { applicationName: string | null };
+    }>(response);
+    assert.equal(body.data.applicationName, null);
+    assert.equal(calls.findById, 1);
+  } finally {
+    await server.close();
+  }
+}
+
+{
+  const { calls, repository } = createAssessmentRepository({
     findById: async () => null,
   });
   const { repository: companyRepository } = createCompanyRepository();
@@ -115,6 +143,89 @@ import {
         details: [],
       },
     });
+  } finally {
+    await server.close();
+  }
+}
+
+{
+  const { calls, repository } = createAssessmentRepository({
+    create: async input => ({
+      ...defaultAssessment,
+      ...input,
+    }),
+  });
+  const { calls: companyCalls, repository: companyRepository } =
+    createCompanyRepository();
+  const server = await startTestServer(
+    createApp(repository, companyRepository),
+  );
+
+  try {
+    const response = await fetch(`${server.baseUrl}/api/assessments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        companyId: defaultCompany.id,
+        title: 'Example Assessment',
+        status: 'draft',
+        applicationName: ' Customer Website ',
+      }),
+    });
+
+    assert.equal(response.status, 201);
+    assert.equal(
+      response.headers.get('location'),
+      `/api/assessments/${defaultAssessment.id}`,
+    );
+    const body = await readJson<{ data: typeof defaultAssessment }>(response);
+    assert.equal(body.data.applicationName, 'Customer Website');
+    assert.equal(calls.create, 1);
+    assert.equal(companyCalls.findById, 1);
+    assert.equal(calls.createArgs?.input.applicationName, 'Customer Website');
+  } finally {
+    await server.close();
+  }
+}
+
+for (const applicationName of [undefined, '   '] as const) {
+  const { calls, repository } = createAssessmentRepository();
+  const { calls: companyCalls, repository: companyRepository } =
+    createCompanyRepository();
+  const server = await startTestServer(
+    createApp(repository, companyRepository),
+  );
+
+  try {
+    const response = await fetch(`${server.baseUrl}/api/assessments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        companyId: defaultCompany.id,
+        title: 'Example Assessment',
+        status: 'draft',
+        applicationName,
+      }),
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(calls.create, 0);
+    assert.equal(companyCalls.findById, 0);
+    const body = await readJson<ApiErrorBody>(response);
+    assert.equal(body.error.code, 'VALIDATION_ERROR');
+    assert.ok(
+      body.error.details.some(
+        detail =>
+          detail.path === 'applicationName' &&
+          detail.message.includes(
+            applicationName === undefined ? 'Required' : 'Text is required',
+          ),
+      ),
+    );
   } finally {
     await server.close();
   }
