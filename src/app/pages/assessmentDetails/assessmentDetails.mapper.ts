@@ -19,7 +19,7 @@ const normalizeOptionalText = (value?: string | null) => {
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
 };
 
-const normalizeDisplayText = (value?: string) =>
+const normalizeDisplayText = (value?: string | null) =>
   normalizeOptionalText(value) ?? '—';
 
 const getDefaultOwaspCategoryCode = (owaspTaxonomyVersion: string) =>

@@ -262,8 +262,8 @@ await (async () => {
         if (path === '/api/companies/cmp_1/assessments/asm_null/overview') {
           return createJsonResponse(
             createAssessmentOverviewResponse('asm_null', 1, null, {
-              environment: '   ',
-              testerName: '   ',
+              environment: null,
+              testerName: null,
             }),
           );
         }
