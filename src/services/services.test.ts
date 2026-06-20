@@ -315,7 +315,6 @@ const reportView = {
     website: company.website,
     contactName: company.contactName,
     contactEmail: company.contactEmail,
-    logoUrl: company.logoUrl ?? null,
     footerText: company.footerText,
   };
   const { calls, request } = createRequestSpy({ data: company });
