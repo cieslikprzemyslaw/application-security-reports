@@ -13,7 +13,7 @@ import type { AssessmentDetailsAssessment } from './assessmentDetails.type';
 import type { ThreatFormValue } from '~/app/components/appsec/threatForm';
 import type { ThreatTableRow } from '~/app/components/appsec/threatTable';
 
-const normalizeOptionalText = (value?: string) => {
+const normalizeOptionalText = (value?: string | null) => {
   const trimmed = value?.trim();
 
   return trimmed && trimmed.length > 0 ? trimmed : undefined;

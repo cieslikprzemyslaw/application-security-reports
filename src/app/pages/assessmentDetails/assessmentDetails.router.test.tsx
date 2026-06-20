@@ -10,7 +10,6 @@ import { routes } from '~/routes';
 import { defaultTheme } from '~/theme';
 
 const renderTick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
-
 const originalFetch = globalThis.fetch;
 
 const setFetch = (value: typeof fetch) => {
@@ -21,16 +20,12 @@ const setFetch = (value: typeof fetch) => {
   });
 };
 
-const restoreFetch = () => {
-  setFetch(originalFetch);
-};
-
+const restoreFetch = () => setFetch(originalFetch);
 const createJsonResponse = (body: unknown, init: ResponseInit = {}): Response =>
   new Response(JSON.stringify(body), {
     headers: { 'Content-Type': 'application/json', ...init.headers },
     ...init,
   });
-
 const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
   Object.defineProperty(globalThis, key, {
     value,
@@ -64,9 +59,7 @@ const setupDom = (pathname: string) => {
   );
   setGlobal('IS_REACT_ACT_ENVIRONMENT', true);
 
-  return {
-    container: window.document.getElementById('root'),
-  };
+  return { container: window.document.getElementById('root') };
 };
 
 const renderApp = async (pathname: string) => {
@@ -90,7 +83,6 @@ const renderApp = async (pathname: string) => {
 };
 
 const textContent = (container: HTMLElement) => container.textContent ?? '';
-
 const companyResponse = {
   data: [
     {
