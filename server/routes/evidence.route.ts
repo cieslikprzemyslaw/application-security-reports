@@ -14,10 +14,6 @@ import type {
   UpdateEvidenceInput,
 } from '../../src/domain/evidence.js';
 import {
-  isEvidenceFileNameCompatibleWithMimeType,
-  type SupportedEvidenceMimeType,
-} from '../../src/domain/schemas/request.schema.js';
-import {
   evidenceListQuerySchema,
   evidenceRouteParamsSchema,
   createEvidenceRequestSchema,
@@ -30,6 +26,10 @@ import {
   RepositoryNotFoundError,
 } from '../database/errors.js';
 import type { ValidationFieldError } from '../../src/validation/index.js';
+import {
+  isEvidenceFileNameCompatibleWithMimeType,
+  SupportedEvidenceMimeType,
+} from '../../src/domain/schemas/evidence-request.schema.js';
 
 type CreateEvidenceRequestBody = Omit<
   CreateEvidenceInput,
