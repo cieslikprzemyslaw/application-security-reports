@@ -83,7 +83,7 @@ export const CompanyScalarFieldEnum = {
   website: 'website',
   contactName: 'contactName',
   contactEmail: 'contactEmail',
-  logoPath: 'logoPath',
+  logoUrl: 'logoUrl',
   footerText: 'footerText',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

@@ -10,7 +10,6 @@ const emptyValue: CompanyFormValue = {
   website: '',
   contactName: '',
   contactEmail: '',
-  logoPath: '',
   footerText: '',
 };
 

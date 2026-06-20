@@ -26,7 +26,6 @@ const companyFormFieldNames: (keyof CompanyFormValue)[] = [
   'website',
   'contactName',
   'contactEmail',
-  'logoPath',
   'footerText',
 ];
 

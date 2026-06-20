@@ -127,17 +127,6 @@ const CompanyForm = ({
           }
         />
 
-        <Input
-          id="company-logo-path"
-          label="Client logo"
-          value={value.logoPath}
-          error={errors.logoPath}
-          description="Store the backend logo path or public asset URL."
-          onChange={event =>
-            onChange(updateField(value, 'logoPath', event.target.value))
-          }
-        />
-
         <div className="company-form-full-width">
           <Textarea
             id="company-footer-text"

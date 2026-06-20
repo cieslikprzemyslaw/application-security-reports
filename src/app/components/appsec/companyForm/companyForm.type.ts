@@ -6,7 +6,6 @@ export interface CompanyFormValue {
   website: string;
   contactName: string;
   contactEmail: string;
-  logoPath: string;
   footerText: string;
 }
 

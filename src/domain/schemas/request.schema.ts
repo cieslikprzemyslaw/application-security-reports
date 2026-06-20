@@ -44,6 +44,7 @@ const createCompanyBaseSchema = companyObjectSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  logoUrl: true,
 });
 
 export const companyRouteParamsSchema = z

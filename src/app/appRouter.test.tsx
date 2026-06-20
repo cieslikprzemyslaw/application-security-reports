@@ -8,7 +8,7 @@ import { ThemeProvider } from 'styled-components';
 
 import { AppLayout } from '~/app/layouts';
 import { routes } from '~/routes';
-import { defaultTheme } from '~/theme';
+import { AppThemeProvider, defaultTheme } from '~/theme';
 
 import AppRouter from './appRouter';
 
@@ -57,6 +57,19 @@ const setupDom = (
   setGlobal('document', window.document);
   setGlobal('navigator', window.navigator);
   setGlobal('HTMLElement', window.HTMLElement);
+
+  // React's legacy input change polyfill can call attachEvent/detachEvent on
+  // the active element, which JSDOM does not implement. Provide no-op shims so
+  // focus-driven interactions do not throw in this test environment.
+  const htmlElementPrototype = window.HTMLElement
+    .prototype as typeof window.HTMLElement.prototype & {
+    attachEvent?: () => void;
+    detachEvent?: () => void;
+  };
+
+  htmlElementPrototype.attachEvent ??= () => undefined;
+  htmlElementPrototype.detachEvent ??= () => undefined;
+
   setGlobal('Node', window.Node);
   setGlobal(
     'requestAnimationFrame',
@@ -94,9 +107,11 @@ const renderApp = async (
 
   await act(async () => {
     root.render(
-      <ThemeProvider theme={defaultTheme}>
-        <AppRouter />
-      </ThemeProvider>,
+      <AppThemeProvider>
+        <ThemeProvider theme={defaultTheme}>
+          <AppRouter />
+        </ThemeProvider>
+      </AppThemeProvider>,
     );
     if (settle) {
       await renderTick();
@@ -232,6 +247,15 @@ await (async () => {
         return createJsonResponse({
           data: [
             {
+              id: 'cmp_2',
+              name: 'Meridian Finance',
+              website: 'https://meridian.example',
+              contactEmail: 'security@meridian.example',
+              assessmentCount: 1,
+              createdAt: '2026-06-02T00:00:00.000Z',
+              updatedAt: '2026-06-11T00:00:00.000Z',
+            },
+            {
               id: 'cmp_1',
               name: 'Northwind Labs',
               website: 'https://northwind.example',
@@ -239,6 +263,15 @@ await (async () => {
               assessmentCount: 2,
               createdAt: '2026-06-01T00:00:00.000Z',
               updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+            {
+              id: 'cmp_3',
+              name: 'Summit Health',
+              website: 'https://summit.example',
+              contactEmail: 'security@summit.example',
+              assessmentCount: 3,
+              createdAt: '2026-06-03T00:00:00.000Z',
+              updatedAt: '2026-06-12T00:00:00.000Z',
             },
           ],
         });
@@ -254,7 +287,7 @@ await (async () => {
               website: 'https://meridian.example',
               contactName: 'B. Example',
               contactEmail: 'security@meridian.example',
-              logoPath: '/logos/meridian.svg',
+              logoUrl: null,
               footerText: 'Confidential',
               createdAt: '2026-06-02T00:00:00.000Z',
               updatedAt: '2026-06-11T00:00:00.000Z',
@@ -288,22 +321,71 @@ await (async () => {
   }
 
   {
-    setFetch(async () =>
-      createJsonResponse({
-        data: [
-          {
-            id: 'cmp_1',
-            name: 'Northwind Labs',
-            website: 'https://northwind.example',
-            contactEmail: 'security@northwind.example',
-            assessmentCount: 2,
-            createdAt: '2026-06-01T00:00:00.000Z',
-            updatedAt: '2026-06-10T00:00:00.000Z',
-          },
-        ],
-      }),
-    );
+    setFetch(async input => {
+      const path = String(input);
 
+      if (path === '/api/companies') {
+        return createJsonResponse({
+          data: [
+            {
+              id: 'cmp_2',
+              name: 'Meridian Finance',
+              website: 'https://meridian.example',
+              contactEmail: 'security@meridian.example',
+              assessmentCount: 1,
+              createdAt: '2026-06-02T00:00:00.000Z',
+              updatedAt: '2026-06-11T00:00:00.000Z',
+            },
+            {
+              id: 'cmp_1',
+              name: 'Northwind Labs',
+              website: 'https://northwind.example',
+              contactEmail: 'security@northwind.example',
+              assessmentCount: 2,
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-10T00:00:00.000Z',
+            },
+            {
+              id: 'cmp_3',
+              name: 'Summit Health',
+              website: 'https://summit.example',
+              contactEmail: 'security@summit.example',
+              assessmentCount: 3,
+              createdAt: '2026-06-03T00:00:00.000Z',
+              updatedAt: '2026-06-12T00:00:00.000Z',
+            },
+          ],
+        });
+      }
+
+      if (path === '/api/companies/cmp_2/overview') {
+        return createJsonResponse({
+          data: {
+            company: {
+              id: 'cmp_2',
+              name: 'Meridian Finance',
+              description: 'Financial services workspace',
+              website: 'https://meridian.example',
+              contactName: 'B. Example',
+              contactEmail: 'security@meridian.example',
+              logoUrl: null,
+              footerText: 'Confidential',
+              createdAt: '2026-06-02T00:00:00.000Z',
+              updatedAt: '2026-06-11T00:00:00.000Z',
+            },
+            assessmentCounts: {
+              total: 1,
+              draft: 0,
+              inProgress: 1,
+              completed: 0,
+            },
+            recentAssessments: [],
+          },
+        });
+      }
+
+      throw new Error(`Unexpected request: ${path}`);
+    });
     try {
       const { container, root } = await renderApp('/dashboard', true, {
         'appsec-company-switcher-recents': JSON.stringify(['cmp_2', 'cmp_1']),
@@ -534,7 +616,7 @@ await (async () => {
               website: 'https://northwind.example',
               contactName: 'A. Example',
               contactEmail: 'security@northwind.example',
-              logoPath: '/logos/northwind.svg',
+              logoUrl: null,
               footerText: 'Confidential',
               createdAt: '2026-06-01T00:00:00.000Z',
               updatedAt: '2026-06-10T00:00:00.000Z',
@@ -679,7 +761,7 @@ await (async () => {
               website: 'https://northwind.example',
               contactName: 'A. Example',
               contactEmail: 'security@northwind.example',
-              logoPath: '/logos/northwind.svg',
+              logoUrl: null,
               footerText: 'Confidential',
               createdAt: '2026-06-01T00:00:00.000Z',
               updatedAt: '2026-06-10T00:00:00.000Z',
@@ -789,7 +871,7 @@ await (async () => {
               website: 'https://northwind.example',
               contactName: 'A. Example',
               contactEmail: 'security@northwind.example',
-              logoPath: '/logos/northwind.svg',
+              logoUrl: null,
               footerText: 'Confidential',
               createdAt: '2026-06-01T00:00:00.000Z',
               updatedAt: '2026-06-10T00:00:00.000Z',
@@ -872,7 +954,7 @@ await (async () => {
               website: 'https://northwind.example',
               contactName: 'A. Example',
               contactEmail: 'security@northwind.example',
-              logoPath: '/logos/northwind.svg',
+              logoUrl: null,
               footerText: 'Confidential',
               createdAt: '2026-06-01T00:00:00.000Z',
               updatedAt: '2026-06-10T00:00:00.000Z',
@@ -940,7 +1022,7 @@ await (async () => {
               website: 'https://northwind.example',
               contactName: 'A. Example',
               contactEmail: 'security@northwind.example',
-              logoPath: '/logos/northwind.svg',
+              logoUrl: null,
               footerText: 'Confidential',
               createdAt: '2026-06-01T00:00:00.000Z',
               updatedAt: '2026-06-10T00:00:00.000Z',
@@ -1041,7 +1123,7 @@ await (async () => {
               website: 'https://northwind.example',
               contactName: 'A. Example',
               contactEmail: 'security@northwind.example',
-              logoPath: '/logos/northwind.svg',
+              logoUrl: null,
               footerText: 'Confidential',
               createdAt: '2026-06-01T00:00:00.000Z',
               updatedAt: '2026-06-10T00:00:00.000Z',
@@ -1172,7 +1254,7 @@ await (async () => {
               website: 'https://summit.example',
               contactName: 'C. Example',
               contactEmail: 'security@summit.example',
-              logoPath: '/logos/summit.svg',
+              logoUrl: null,
               footerText: 'Confidential',
               createdAt: '2026-06-03T00:00:00.000Z',
               updatedAt: '2026-06-12T00:00:00.000Z',
@@ -1284,7 +1366,7 @@ await (async () => {
               website: 'https://summit.example',
               contactName: 'C. Example',
               contactEmail: 'security@summit.example',
-              logoPath: '/logos/summit.svg',
+              logoUrl: null,
               footerText: 'Confidential',
               createdAt: '2026-06-03T00:00:00.000Z',
               updatedAt: '2026-06-12T00:00:00.000Z',
@@ -1449,22 +1531,55 @@ await (async () => {
   }
   await assertRouteRenders('/reports', 'Report Preview');
   {
-    const { container, root } = await renderApp('/settings');
+    setFetch(async input => {
+      assert.equal(String(input), '/api/settings');
 
-    assert.ok(
-      textContent(container).includes(
-        'Manage organisation details, report branding, defaults, and user preferences.',
-      ),
-    );
-    assert.ok(
-      !textContent(container).includes('Something went wrong'),
-      'Expected the settings route to avoid the route error boundary',
-    );
-    assert.ok(container.querySelector('.settings-form'));
-
-    await act(async () => {
-      root.unmount();
+      return createJsonResponse({
+        data: {
+          id: 'set_00000000-0000-0000-0000-000000000001',
+          organisationName: 'Northstar Digital',
+          consultantName: 'Alex Mercer',
+          consultantEmail: 'alex.mercer@appsec.io',
+          issuerLogoId: null,
+          defaultReportTitle: 'Application Security Assessment',
+          defaultSeverity: 'medium',
+          theme: 'system',
+          dateFormat: 'YYYY-MM-DD',
+          reportFooterText:
+            '(c) 2026 Northstar Digital. Confidential - do not distribute.',
+          reportConfidentialityLabel: 'Confidential',
+          methodology: 'OWASP ASVS / WSTG',
+          reportStyle: 'Technical & structured',
+          includeEvidence: true,
+          confidentialReports: true,
+          allowedBrandingModes: ['issuer', 'client'],
+          defaultBrandingMode: 'issuer',
+          createdAt: '2026-06-01T09:00:00.000Z',
+          updatedAt: '2026-06-11T09:00:00.000Z',
+        },
+      });
     });
+
+    try {
+      const { container, root } = await renderApp('/settings');
+
+      assert.ok(
+        textContent(container).includes(
+          'Manage organisation details, report branding, defaults, and user preferences.',
+        ),
+      );
+      assert.ok(
+        !textContent(container).includes('Something went wrong'),
+        'Expected the settings route to avoid the route error boundary',
+      );
+      assert.ok(container.querySelector('.settings-form'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
   }
 
   setFetch(async input => {

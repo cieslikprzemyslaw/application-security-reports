@@ -83,7 +83,7 @@ const company = {
   website: 'https://northstar.example',
   contactName: 'Alex Mercer',
   contactEmail: 'security@northstar.example',
-  logoPath: '/logos/northstar.svg',
+  logoUrl: null,
   footerText: 'Confidential - do not distribute.',
   assessmentCount: 6,
   createdAt: '2026-06-01T09:00:00.000Z',
@@ -228,7 +228,7 @@ const reportView = {
     companyName: 'Northstar Digital',
     companyWebsite: 'https://northstar.example',
     companyContactEmail: 'security@northstar.example',
-    companyLogoPath: '/logos/northstar.svg',
+    companyLogoUrl: '/logos/northstar.svg',
     companyFooterText: 'Confidential - do not distribute.',
     issuerName: 'Northstar Digital',
     issuerContactName: 'Alex Mercer',
@@ -315,7 +315,6 @@ const reportView = {
     website: company.website,
     contactName: company.contactName,
     contactEmail: company.contactEmail,
-    logoPath: company.logoPath,
     footerText: company.footerText,
   };
   const { calls, request } = createRequestSpy({ data: company });

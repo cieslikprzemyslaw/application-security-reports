@@ -24,7 +24,7 @@ const companyRow = {
   website: null,
   contactName: 'Ada Lovelace',
   contactEmail: 'ada@example.com',
-  logoPath: null,
+  logoUrl: null,
   footerText: null,
   createdAt,
   updatedAt,
@@ -462,8 +462,29 @@ const createSettingsDb = () => {
   const missingCompany = await repository.findById('cmp_missing');
 
   assert.equal(companies[0].id, companyRow.id);
+  assert.equal(companies[0].logoUrl, null);
   assert.equal(calls[0]?.method, 'findMany');
   assert.equal(missingCompany, null);
+}
+
+{
+  const { calls, db } = createCompanyDb();
+  const repository = createCompanyRepository(db);
+
+  await repository.create({
+    name: 'Example Security',
+    description: undefined,
+    website: undefined,
+    contactName: undefined,
+    contactEmail: undefined,
+    footerText: undefined,
+  });
+
+  const createArgs = calls.find(call => call.method === 'create')?.args as {
+    data?: { logoUrl?: string | null };
+  };
+
+  assert.equal(createArgs?.data?.logoUrl, undefined);
 }
 
 {

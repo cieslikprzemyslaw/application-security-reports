@@ -35,6 +35,14 @@ const assessmentMigrationPath = path.resolve(
   'migration.sql',
 );
 const assessmentMigrationSql = readFileSync(assessmentMigrationPath, 'utf8');
+const companyLogoMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260619130000_add_company_logo_url',
+  'migration.sql',
+);
+const companyLogoMigrationSql = readFileSync(companyLogoMigrationPath, 'utf8');
 const threatMigrationPath = path.resolve(
   repoRoot,
   'prisma',
@@ -106,6 +114,7 @@ const bootstrapDb = new Database(databasePath);
 
 try {
   bootstrapDb.exec(schemaSql);
+  bootstrapDb.exec(companyLogoMigrationSql);
   bootstrapDb.exec(assessmentMigrationSql);
   bootstrapDb.exec(threatMigrationSql);
   bootstrapDb.exec(evidenceMigrationSql);
@@ -140,7 +149,6 @@ try {
         website: 'https://northstar.example',
         contactName: 'Alex Mercer',
         contactEmail: 'security@northstar.example',
-        logoPath: '/logos/northstar.svg',
         footerText: 'Confidential - do not distribute.',
       }),
     });
@@ -150,12 +158,14 @@ try {
       data: {
         id: string;
         name: string;
+        logoUrl: string | null;
         createdAt: string;
         updatedAt: string;
       };
     };
     assert.equal(createdJson.data.id.startsWith('cmp_'), true);
     assert.equal(createdJson.data.name, 'Northstar Digital');
+    assert.equal(createdJson.data.logoUrl, null);
 
     const companyId = createdJson.data.id;
 
@@ -172,10 +182,16 @@ try {
     );
     assert.equal(getResponse.status, 200);
     const getJson = (await getResponse.json()) as {
-      data: { id: string; name: string; website?: string };
+      data: {
+        id: string;
+        name: string;
+        website?: string;
+        logoUrl: string | null;
+      };
     };
     assert.equal(getJson.data.id, companyId);
     assert.equal(getJson.data.website, 'https://northstar.example');
+    assert.equal(getJson.data.logoUrl, null);
 
     const patchResponse = await fetch(
       `${server.baseUrl}/api/companies/${companyId}`,
@@ -192,11 +208,17 @@ try {
     );
     assert.equal(patchResponse.status, 200);
     const patchJson = (await patchResponse.json()) as {
-      data: { id: string; name: string; footerText?: string };
+      data: {
+        id: string;
+        name: string;
+        footerText?: string;
+        logoUrl: string | null;
+      };
     };
     assert.equal(patchJson.data.id, companyId);
     assert.equal(patchJson.data.name, 'Northstar Security');
     assert.equal(patchJson.data.footerText, 'Confidential - updated.');
+    assert.equal(patchJson.data.logoUrl, null);
 
     const deleteResponse = await fetch(
       `${server.baseUrl}/api/companies/${companyId}`,
@@ -218,7 +240,6 @@ try {
       website: undefined,
       contactName: undefined,
       contactEmail: undefined,
-      logoPath: undefined,
       footerText: undefined,
     });
 
@@ -267,6 +288,7 @@ try {
 
   try {
     overviewBootstrap.exec(schemaSql);
+    overviewBootstrap.exec(companyLogoMigrationSql);
     overviewBootstrap.exec(assessmentMigrationSql);
     overviewBootstrap.exec(evidenceMigrationSql);
   } finally {
@@ -303,7 +325,6 @@ try {
         website: undefined,
         contactName: undefined,
         contactEmail: undefined,
-        logoPath: undefined,
         footerText: undefined,
       });
 
@@ -451,7 +472,6 @@ try {
         website: undefined,
         contactName: undefined,
         contactEmail: undefined,
-        logoPath: undefined,
         footerText: undefined,
       });
 

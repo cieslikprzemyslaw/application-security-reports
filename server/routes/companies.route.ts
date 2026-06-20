@@ -11,6 +11,7 @@ import type { Assessment } from '../../src/domain/assessment.js';
 import {
   companyRouteParamsSchema,
   createCompanyRequestSchema,
+  companyPublicSchema,
   updateCompanyRequestSchema,
 } from '../../src/domain/schemas/index.js';
 import { prefixedUuidSchema } from '../../src/domain/schemas/common.schema.js';
@@ -51,7 +52,32 @@ type AssessmentWorkspaceOverview = {
   };
 };
 
-const companyResponse = (company: Company): Company => ({ ...company });
+type CompanyResponse = {
+  id: string;
+  name: string;
+  description?: string;
+  website?: string;
+  contactName?: string;
+  contactEmail?: string;
+  logoUrl: string | null;
+  footerText?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+const companyResponse = (company: Company): CompanyResponse =>
+  companyPublicSchema.parse({
+    id: company.id,
+    name: company.name,
+    description: company.description,
+    website: company.website,
+    contactName: company.contactName,
+    contactEmail: company.contactEmail,
+    logoUrl: company.logoUrl ?? null,
+    footerText: company.footerText,
+    createdAt: company.createdAt,
+    updatedAt: company.updatedAt,
+  });
 
 const sendCompanyResponse = (
   res: Response,
@@ -161,7 +187,12 @@ export const createCompaniesRouter = (
           return;
         }
 
-        res.status(200).json({ data: overview });
+        res.status(200).json({
+          data: {
+            ...overview,
+            company: companyResponse(overview.company),
+          },
+        });
       } catch (error) {
         if (!handleCompanyRepositoryError(error, res, 'overview')) {
           throw error;
@@ -294,7 +325,6 @@ export const createCompaniesRouter = (
         website?: string;
         contactName?: string;
         contactEmail?: string;
-        logoPath?: string;
         footerText?: string;
       };
 
@@ -327,7 +357,6 @@ export const createCompaniesRouter = (
         website?: string;
         contactName?: string;
         contactEmail?: string;
-        logoPath?: string;
         footerText?: string;
       };
 
@@ -344,7 +373,6 @@ export const createCompaniesRouter = (
           ...(body.contactEmail !== undefined
             ? { contactEmail: body.contactEmail }
             : {}),
-          ...(body.logoPath !== undefined ? { logoPath: body.logoPath } : {}),
           ...(body.footerText !== undefined
             ? { footerText: body.footerText }
             : {}),

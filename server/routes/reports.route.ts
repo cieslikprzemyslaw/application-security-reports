@@ -305,7 +305,7 @@ export const createReportsRouter = (
             companyName: company.name,
             companyWebsite: company.website,
             companyContactEmail: company.contactEmail,
-            companyLogoPath: company.logoPath,
+            companyLogoUrl: company.logoUrl ?? null,
             companyFooterText: company.footerText,
             issuerName: settings.organisationName,
             issuerContactName: settings.consultantName,

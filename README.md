@@ -202,7 +202,6 @@ use ISO-8601 timestamps and the `cmp_` prefixed UUID format.
   "website": "https://northstar.example",
   "contactName": "Alex Mercer",
   "contactEmail": "security@northstar.example",
-  "logoPath": "/logos/northstar.svg",
   "footerText": "Confidential - do not distribute."
 }
 ```
@@ -218,7 +217,6 @@ Response:
     "website": "https://northstar.example",
     "contactName": "Alex Mercer",
     "contactEmail": "security@northstar.example",
-    "logoPath": "/logos/northstar.svg",
     "footerText": "Confidential - do not distribute.",
     "createdAt": "2026-06-01T09:00:00.000Z",
     "updatedAt": "2026-06-11T09:00:00.000Z"

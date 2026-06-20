@@ -10,7 +10,7 @@ import { requestData, type ApiRequestFn } from './serviceHelpers.js';
 
 export type CompanyCreateInput = Omit<
   Company,
-  'id' | 'createdAt' | 'updatedAt'
+  'id' | 'createdAt' | 'updatedAt' | 'logoUrl'
 >;
 
 export type CompanyUpdateInput = Partial<CompanyCreateInput>;

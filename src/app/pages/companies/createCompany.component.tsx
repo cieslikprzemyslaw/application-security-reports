@@ -34,7 +34,6 @@ const createCompanyValidationErrorMap = (details: ApiError['details']) => {
         'website',
         'contactName',
         'contactEmail',
-        'logoPath',
         'footerText',
       ].includes(path) &&
       !fieldErrors[path]

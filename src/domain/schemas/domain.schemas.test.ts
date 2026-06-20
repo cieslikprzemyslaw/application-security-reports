@@ -20,6 +20,7 @@ import {
   assessmentRouteParamsSchema,
   activitySchema,
   companySchema,
+  companyPublicSchema,
   companiesFileSchema,
   createAssessmentRequestSchema,
   createCompanyRequestSchema,
@@ -102,11 +103,13 @@ const validCompany = {
   website: 'https://northstar.example',
   contactName: 'Alex Mercer',
   contactEmail: 'security@northstar.example',
-  logoPath: '/logos/northstar.svg',
+  logoUrl: null,
   footerText: 'Confidential',
   createdAt: '2026-06-01T00:00:00.000Z',
   updatedAt: '2026-06-10T00:00:00.000Z',
 };
+
+const { logoUrl: _validCompanyLogoUrl, ...validCompanyPublic } = validCompany;
 
 const validAssessment = {
   id: 'asm_00000000-0000-0000-0000-000000000001',
@@ -404,6 +407,10 @@ assertValid(
   companySchema.safeParse(validCompany).success,
   'Valid company should pass',
 );
+assertValid(
+  companyPublicSchema.safeParse(validCompanyPublic).success,
+  'Valid public company should pass',
+);
 expectField(
   getFieldErrors(companySchema, { ...validCompany, isAdmin: true }),
   'isAdmin',
@@ -422,6 +429,22 @@ expectField(
 expectField(
   getFieldErrors(companySchema, { ...validCompany, website: 'not-a-url' }),
   'website',
+  'Invalid url',
+);
+expectField(
+  getFieldErrors(companyPublicSchema, {
+    ...validCompanyPublic,
+    unknownField: '/logos/northstar.svg',
+  }),
+  'unknownField',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(companyPublicSchema, {
+    ...validCompanyPublic,
+    logoUrl: '/logos/northstar.svg',
+  }),
+  'logoUrl',
   'Invalid url',
 );
 
@@ -759,6 +782,22 @@ assertValid(
   createCompanyRequestSchema.safeParse({ name: 'Example Ltd' }).success,
   'Create company request should pass',
 );
+expectField(
+  getFieldErrors(createCompanyRequestSchema, {
+    name: 'Example Ltd',
+    logoUrl: '/logos/example.svg',
+  }),
+  'logoUrl',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(createCompanyRequestSchema, {
+    name: 'Example Ltd',
+    logoUrl: 'https://example.example/logo.svg',
+  }),
+  'logoUrl',
+  'Unknown property',
+);
 assertValid(
   createAssessmentRequestSchema.safeParse({
     companyId: validCompany.id,
@@ -909,6 +948,22 @@ expectField(
 assertValid(
   updateCompanyRequestSchema.safeParse({ name: 'Updated name' }).success,
   'Partial company update should pass',
+);
+expectField(
+  getFieldErrors(updateCompanyRequestSchema, {
+    name: 'Updated name',
+    logoUrl: '/logos/example.svg',
+  }),
+  'logoUrl',
+  'Unknown property',
+);
+expectField(
+  getFieldErrors(updateCompanyRequestSchema, {
+    name: 'Updated name',
+    logoUrl: 'https://example.example/logo.svg',
+  }),
+  'logoUrl',
+  'Unknown property',
 );
 expectField(
   getFieldErrors(updateCompanyRequestSchema, {}),

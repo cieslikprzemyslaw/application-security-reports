@@ -61,7 +61,7 @@ model Company {
   website      String?
   contactName  String?
   contactEmail String?
-  logoPath     String?
+  logoUrl      String?
   footerText   String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

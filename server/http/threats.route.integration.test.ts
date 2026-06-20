@@ -56,6 +56,14 @@ const evidenceMigrationPath = path.resolve(
   'migration.sql',
 );
 const evidenceMigrationSql = readFileSync(evidenceMigrationPath, 'utf8');
+const companyLogoMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260619130000_add_company_logo_url',
+  'migration.sql',
+);
+const companyLogoMigrationSql = readFileSync(companyLogoMigrationPath, 'utf8');
 const allowedOrigin = 'http://localhost:5173';
 const config = loadServerConfig({
   FRONTEND_ORIGIN: allowedOrigin,
@@ -114,6 +122,7 @@ const bootstrapDb = new Database(databasePath);
 
 try {
   bootstrapDb.exec(schemaSql);
+  bootstrapDb.exec(companyLogoMigrationSql);
   bootstrapDb.exec(assessmentMigrationSql);
   bootstrapDb.exec(threatMigrationSql);
   bootstrapDb.exec(evidenceMigrationSql);
@@ -148,7 +157,6 @@ try {
       website: 'https://northstar.example',
       contactName: 'Alex Mercer',
       contactEmail: 'security@northstar.example',
-      logoPath: '/logos/northstar.svg',
       footerText: 'Confidential - do not distribute.',
     });
 

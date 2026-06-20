@@ -21,7 +21,7 @@ export interface ReportViewBranding {
   companyName: string;
   companyWebsite?: string;
   companyContactEmail?: string;
-  companyLogoPath?: string;
+  companyLogoUrl?: string | null;
   companyFooterText?: string;
   issuerName?: string;
   issuerContactName?: string;

@@ -35,7 +35,7 @@ export const reportViewBrandingSchema = z
     companyName: z.string().trim().min(1),
     companyWebsite: z.string().trim().url().optional(),
     companyContactEmail: z.string().trim().email().optional(),
-    companyLogoPath: z.string().trim().min(1).optional(),
+    companyLogoUrl: z.string().trim().min(1).nullable().optional(),
     companyFooterText: z.string().trim().min(1).optional(),
     issuerName: z.string().trim().min(1).optional(),
     issuerContactName: z.string().trim().min(1).optional(),
