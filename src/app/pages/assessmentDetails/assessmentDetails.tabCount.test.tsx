@@ -61,7 +61,7 @@ const companiesData = [
 ];
 
 const setTitleInputValue = (
-  window: Window & typeof globalThis,
+  window: { HTMLInputElement: typeof HTMLInputElement; Event: typeof Event },
   input: HTMLInputElement,
   value: string,
 ) => {
@@ -73,7 +73,7 @@ const setTitleInputValue = (
   input.dispatchEvent(new window.Event('input', { bubbles: true }));
 };
 
-const findingsTabCount = (window: Window & typeof globalThis): string | null =>
+const findingsTabCount = (window: { document: Document }): string | null =>
   window.document.querySelector('#findings-tab .tabs-tab-count')?.textContent ??
   null;
 

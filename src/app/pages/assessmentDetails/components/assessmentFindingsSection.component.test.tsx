@@ -559,6 +559,8 @@ await (async () => {
             handleFindingSave={async event => {
               event.preventDefault();
             }}
+            isDeleting={false}
+            handleFindingDelete={async () => {}}
           />
         </ThemeProvider>,
       );
