@@ -4,7 +4,7 @@ import Dropzone from '~/app/components/ui/dropzone';
 import {
   isEvidenceFileNameCompatibleWithMimeType,
   type SupportedEvidenceMimeType,
-} from '~/domain/schemas/request.schema';
+} from '~/domain/schemas/evidence-request.schema';
 
 import {
   attachmentAcceptedTypes,
