@@ -75,9 +75,23 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
     onMutationSuccess: handleFindingsCountChange,
   });
 
+  const handleEvidenceCountChange = (delta: number) => {
+    setOverview(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        assessment: {
+          ...prev.assessment,
+          evidenceCount: Math.max(0, prev.assessment.evidenceCount + delta),
+        },
+      };
+    });
+  };
+
   const evidenceController = useAssessmentEvidence({
     assessmentId,
     assessmentStatus: assessmentView?.status,
+    onMutationSuccess: handleEvidenceCountChange,
   });
 
   const handleSectionChange = (section: AssessmentDetailSection) => {
