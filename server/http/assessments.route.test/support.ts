@@ -6,6 +6,9 @@ import {
 } from '../../database/errors.js';
 import type { AssessmentRepository } from '../../database/repositories/assessment.repository.js';
 import type { CompanyRepository } from '../../database/repositories/company.repository.js';
+import type { EvidenceRepository } from '../../database/repositories/evidence.repository.js';
+import type { ReportRepository } from '../../database/repositories/report.repository.js';
+import type { ThreatRepository } from '../../database/repositories/threat.repository.js';
 import type { Assessment } from '../../../src/domain/assessment.js';
 import { OWASP_TOP_10_CURRENT_VERSION } from '../../../src/domain/owaspTop10.js';
 import { loadServerConfig } from '../../config.js';
@@ -230,6 +233,113 @@ const createCompanyRepository = (
   return { calls, repository };
 };
 
+const createThreatRepository = (): ThreatRepository => ({
+  async findById() {
+    return null;
+  },
+
+  async findByAssessmentId() {
+    return [];
+  },
+
+  async create() {
+    throw new Error(
+      'Threat repository stub should not be called in assessment route tests.',
+    );
+  },
+
+  async update() {
+    throw new Error(
+      'Threat repository stub should not be called in assessment route tests.',
+    );
+  },
+
+  async delete() {
+    throw new Error(
+      'Threat repository stub should not be called in assessment route tests.',
+    );
+  },
+});
+
+const createEvidenceRepository = (): EvidenceRepository => ({
+  async findById() {
+    return null;
+  },
+
+  async findByAssessmentId() {
+    return [];
+  },
+
+  async create() {
+    throw new Error(
+      'Evidence repository stub should not be called in assessment route tests.',
+    );
+  },
+
+  async update() {
+    throw new Error(
+      'Evidence repository stub should not be called in assessment route tests.',
+    );
+  },
+
+  async delete() {
+    throw new Error(
+      'Evidence repository stub should not be called in assessment route tests.',
+    );
+  },
+
+  async attachToThreat() {
+    throw new Error(
+      'Evidence repository stub should not be called in assessment route tests.',
+    );
+  },
+
+  async detachFromThreat() {
+    throw new Error(
+      'Evidence repository stub should not be called in assessment route tests.',
+    );
+  },
+});
+
+const createReportRepository = (): ReportRepository => ({
+  async findById() {
+    return null;
+  },
+
+  async findByAssessmentId() {
+    return [];
+  },
+
+  async create() {
+    throw new Error(
+      'Report repository stub should not be called in assessment route tests.',
+    );
+  },
+
+  async update() {
+    throw new Error(
+      'Report repository stub should not be called in assessment route tests.',
+    );
+  },
+
+  async delete() {
+    throw new Error(
+      'Report repository stub should not be called in assessment route tests.',
+    );
+  },
+
+  async attachThreat() {
+    throw new Error(
+      'Report repository stub should not be called in assessment route tests.',
+    );
+  },
+
+  async detachThreat() {
+    throw new Error(
+      'Report repository stub should not be called in assessment route tests.',
+    );
+  },
+});
 const createApp = (
   assessmentRepository: AssessmentRepository,
   companyRepository: CompanyRepository,
@@ -237,6 +347,9 @@ const createApp = (
   createApiApp(config, {
     assessmentRepository,
     companyRepository,
+    threatRepository: createThreatRepository(),
+    evidenceRepository: createEvidenceRepository(),
+    reportRepository: createReportRepository(),
   });
 
 export {
