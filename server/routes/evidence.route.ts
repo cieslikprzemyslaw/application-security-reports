@@ -27,9 +27,10 @@ import {
 } from '../database/errors.js';
 import type { ValidationFieldError } from '../../src/validation/index.js';
 import {
-  isEvidenceFileNameCompatibleWithMimeType,
-  SupportedEvidenceMimeType,
-} from '../../src/domain/schemas/evidence-request.schema.js';
+  sendValidationError,
+  validateEvidenceExchangeUpdate,
+  validateEvidenceFileMetadataUpdate,
+} from './helpers.js';
 
 type CreateEvidenceRequestBody = Omit<
   CreateEvidenceInput,
@@ -50,110 +51,6 @@ const sendEvidenceResponse = (
   res.status(statusCode).json({
     data: evidenceResponse(evidence),
   });
-
-const sendValidationError = (
-  res: Response,
-  details: ValidationFieldError[],
-): void => {
-  sendApiError(
-    res,
-    400,
-    'VALIDATION_ERROR',
-    'Request validation failed',
-    details,
-  );
-};
-
-const validateEvidenceFileMetadataUpdate = (
-  existingEvidence: Evidence,
-  body: UpdateEvidenceRequestBody,
-  res: Response,
-): boolean => {
-  if (body.fileName === undefined && body.mimeType === undefined) {
-    return true;
-  }
-
-  const fileName = body.fileName ?? existingEvidence.fileName;
-  const mimeType = body.mimeType ?? existingEvidence.mimeType;
-
-  if (
-    fileName &&
-    mimeType &&
-    !isEvidenceFileNameCompatibleWithMimeType(
-      fileName,
-      mimeType as SupportedEvidenceMimeType,
-    )
-  ) {
-    sendValidationError(res, [
-      {
-        path: 'fileName',
-        message:
-          'Evidence file name extension must match the supplied mime type',
-        code: 'custom',
-      },
-    ]);
-    return false;
-  }
-
-  return true;
-};
-
-const validateEvidenceExchangeUpdate = (
-  existingEvidence: Evidence,
-  body: UpdateEvidenceRequestBody,
-  res: Response,
-): boolean => {
-  const resultingType = body.type ?? existingEvidence.type;
-  const hasExplicitHttpExchanges = body.httpExchanges !== undefined;
-  const resultingHttpExchanges = hasExplicitHttpExchanges
-    ? body.httpExchanges
-    : existingEvidence.httpExchanges;
-
-  if (resultingType === 'http') {
-    if (!resultingHttpExchanges || resultingHttpExchanges.length === 0) {
-      sendValidationError(res, [
-        {
-          path: 'httpExchanges',
-          message: 'HTTP evidence must include at least one exchange',
-          code: 'custom',
-        },
-      ]);
-      return false;
-    }
-
-    return true;
-  }
-
-  if (!resultingHttpExchanges || resultingHttpExchanges.length === 0) {
-    return true;
-  }
-
-  if (
-    existingEvidence.type === 'http' &&
-    body.type !== undefined &&
-    body.type !== 'http' &&
-    !hasExplicitHttpExchanges
-  ) {
-    sendValidationError(res, [
-      {
-        path: 'httpExchanges',
-        message:
-          'HTTP evidence exchanges must be cleared when changing evidence to a non-HTTP type',
-        code: 'custom',
-      },
-    ]);
-    return false;
-  }
-
-  sendValidationError(res, [
-    {
-      path: 'httpExchanges',
-      message: 'Only HTTP evidence can include exchanges',
-      code: 'custom',
-    },
-  ]);
-  return false;
-};
 
 const handleEvidenceRepositoryError = (
   error: unknown,
@@ -311,7 +208,6 @@ export const createEvidenceRouter = (
           sendApiError(res, 404, 'EVIDENCE_NOT_FOUND', 'Evidence not found');
           return;
         }
-
         sendEvidenceResponse(res, 200, evidence);
       } catch (error) {
         if (!handleEvidenceRepositoryError(error, res)) {
@@ -340,7 +236,6 @@ export const createEvidenceRouter = (
         ) {
           return;
         }
-
         if (
           !(await validateEvidenceThreatLinks(
             threatRepository,
@@ -376,15 +271,12 @@ export const createEvidenceRouter = (
       };
       const body = res.locals.validatedRequest
         ?.body as UpdateEvidenceRequestBody;
-
       try {
         const existingEvidence = await evidenceRepository.findById(id);
-
         if (!existingEvidence) {
           sendApiError(res, 404, 'EVIDENCE_NOT_FOUND', 'Evidence not found');
           return;
         }
-
         if (
           !(await validateAssessmentExists(
             assessmentRepository,
@@ -394,14 +286,12 @@ export const createEvidenceRouter = (
         ) {
           return;
         }
-
         if (
           !validateEvidenceFileMetadataUpdate(existingEvidence, body, res) ||
           !validateEvidenceExchangeUpdate(existingEvidence, body, res)
         ) {
           return;
         }
-
         if (
           body.threatIds &&
           !(await validateEvidenceThreatLinks(
@@ -415,7 +305,6 @@ export const createEvidenceRouter = (
         }
 
         const updatedEvidence = await evidenceRepository.update(id, body);
-
         sendEvidenceResponse(res, 200, updatedEvidence);
       } catch (error) {
         if (!handleEvidenceRepositoryError(error, res)) {
