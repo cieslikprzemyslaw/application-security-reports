@@ -1,8 +1,6 @@
 import assert from 'node:assert/strict';
 
 import {
-  RepositoryConstraintError,
-  RepositoryNotFoundError,
   startTestServer,
   readJson,
   defaultCompany,

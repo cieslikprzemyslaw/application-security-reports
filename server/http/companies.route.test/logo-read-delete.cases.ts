@@ -1,17 +1,10 @@
 import assert from 'node:assert/strict';
 
 import {
-  RepositoryConflictError,
-  RepositoryConstraintError,
-  RepositoryNotFoundError,
-  CompanyLogoValidationError,
   CompanyLogoStorageError,
   startTestServer,
   readJson,
   defaultCompany,
-  defaultCompanyResponse,
-  defaultOverview,
-  defaultOverviewResponse,
   createCompanyRepository,
   createMockLogoStorage,
   defaultStorageKey,

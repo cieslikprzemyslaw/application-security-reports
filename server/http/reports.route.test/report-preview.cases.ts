@@ -2,21 +2,12 @@ import assert from 'node:assert/strict';
 import type { Assessment } from '../../../src/domain/assessment.js';
 import type { Threat } from '../../../src/domain/threat.js';
 
+import { startTestServer, readJson, createApp } from './support.js';
 import {
-  startTestServer,
-  readJson,
-  createApp,
-  type ApiErrorBody,
-} from './support.js';
-import {
-  defaultAssessment,
-  defaultCompany,
   evidenceEarly,
   evidenceForThreatA,
   evidenceLate,
-  foreignThreat,
   report,
-  settings,
   threatA,
   threatB,
 } from './fixtures.js';

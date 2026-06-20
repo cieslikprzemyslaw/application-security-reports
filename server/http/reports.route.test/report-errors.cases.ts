@@ -6,18 +6,7 @@ import {
   createApp,
   type ApiErrorBody,
 } from './support.js';
-import {
-  defaultAssessment,
-  defaultCompany,
-  evidenceEarly,
-  evidenceForThreatA,
-  evidenceLate,
-  foreignThreat,
-  report,
-  settings,
-  threatA,
-  threatB,
-} from './fixtures.js';
+import { foreignThreat, report, threatA, threatB } from './fixtures.js';
 import {
   createReportRepository,
   createAssessmentRepository,
