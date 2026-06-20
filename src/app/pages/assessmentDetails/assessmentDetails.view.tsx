@@ -55,6 +55,12 @@ const getAssessmentName = (assessment: AssessmentDetailsAssessment) =>
     ? assessment.applicationName
     : '—';
 
+const formatAssessmentMetaValue = (value?: string) => {
+  const trimmed = value?.trim();
+
+  return trimmed && trimmed.length > 0 ? trimmed : '—';
+};
+
 const formatDate = (value?: string) => {
   if (!value) {
     return '—';
@@ -265,12 +271,12 @@ const AssessmentDetailsView = ({
         companyName={assessment.companyName}
         applicationName={assessmentName}
         assessmentId={assessment.id}
-        environment={assessment.environment ?? '—'}
+        environment={formatAssessmentMetaValue(assessment.environment)}
         dateRange={formatDateRange(
           assessment.startedAt,
           assessment.completedAt,
         )}
-        testerName={assessment.testerName ?? '—'}
+        testerName={formatAssessmentMetaValue(assessment.testerName)}
         overallRisk={assessment.overallRisk ?? 'informational'}
         status={assessment.status}
         metadata={summaryMetadata}

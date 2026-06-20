@@ -19,6 +19,9 @@ const normalizeOptionalText = (value?: string) => {
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
 };
 
+const normalizeDisplayText = (value?: string) =>
+  normalizeOptionalText(value) ?? '—';
+
 const getDefaultOwaspCategoryCode = (owaspTaxonomyVersion: string) =>
   getOwaspTop10CategoryOptions(owaspTaxonomyVersion)[0]?.value ?? '';
 
@@ -47,7 +50,9 @@ export const toAssessmentViewModel = (
 ): AssessmentDetailsAssessment => ({
   ...overview.assessment,
   companyName: overview.company.name,
-  applicationName: overview.assessment.applicationName?.trim() || '—',
+  applicationName: normalizeDisplayText(overview.assessment.applicationName),
+  environment: normalizeDisplayText(overview.assessment.environment),
+  testerName: normalizeDisplayText(overview.assessment.testerName),
 });
 
 export const threatToFormValue = (

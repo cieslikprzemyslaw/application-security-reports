@@ -138,6 +138,10 @@ const createAssessmentOverviewResponse = (
   assessmentId: string,
   evidenceCount: number,
   applicationName: string | null = baseAssessment.assessment.applicationName,
+  overrides: Partial<{
+    environment: string | null;
+    testerName: string | null;
+  }> = {},
 ) => ({
   data: {
     ...baseAssessment,
@@ -146,6 +150,7 @@ const createAssessmentOverviewResponse = (
       id: assessmentId,
       evidenceCount,
       applicationName,
+      ...overrides,
     },
   },
 });
@@ -216,6 +221,22 @@ await (async () => {
       assert.ok(textContent(container).includes('Customer Services Portal'));
       assert.ok(textContent(container).includes('Assessment ID'));
       assert.ok(textContent(container).includes('Evidence'));
+      assert.equal(
+        container
+          .querySelector(
+            '.assessment-summary-metadata-item:nth-child(1) .assessment-summary-metadata-value',
+          )
+          ?.textContent?.trim(),
+        'Production',
+      );
+      assert.equal(
+        container
+          .querySelector(
+            '.assessment-summary-metadata-item:nth-child(3) .assessment-summary-metadata-value',
+          )
+          ?.textContent?.trim(),
+        'Alex Mercer',
+      );
 
       const evidenceTab = Array.from(
         container.querySelectorAll('[role="tab"]'),
@@ -248,7 +269,10 @@ await (async () => {
 
         if (path === '/api/companies/cmp_1/assessments/asm_null/overview') {
           return createJsonResponse(
-            createAssessmentOverviewResponse('asm_null', 1, null),
+            createAssessmentOverviewResponse('asm_null', 1, null, {
+              environment: '   ',
+              testerName: '   ',
+            }),
           );
         }
 
@@ -266,6 +290,22 @@ await (async () => {
       assert.equal(
         container
           .querySelector('.assessment-summary-application-name')
+          ?.textContent?.trim(),
+        '—',
+      );
+      assert.equal(
+        container
+          .querySelector(
+            '.assessment-summary-metadata-item:nth-child(1) .assessment-summary-metadata-value',
+          )
+          ?.textContent?.trim(),
+        '—',
+      );
+      assert.equal(
+        container
+          .querySelector(
+            '.assessment-summary-metadata-item:nth-child(3) .assessment-summary-metadata-value',
+          )
           ?.textContent?.trim(),
         '—',
       );
