@@ -12,6 +12,7 @@ const emptyValue: CompanyFormValue = {
   contactEmail: '',
   footerText: '',
   logoFile: null,
+  hasExistingLogo: false,
 };
 
 const meta = {

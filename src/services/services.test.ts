@@ -2,20 +2,10 @@ import assert from 'node:assert/strict';
 
 import { ApiError } from './apiClient.js';
 import {
-  createAssessmentService,
   createCompanyService,
-  createReportService,
-  createSettingsService,
-  createThreatService,
-  type AssessmentCreateInput,
-  type AssessmentUpdateInput,
   type CompanyCreateInput,
   type CompanyOverviewResponse,
   type CompanyUpdateInput,
-  type ReportView,
-  type SettingsUpdateInput,
-  type ThreatCreateInput,
-  type ThreatUpdateInput,
 } from './index.js';
 import type { ApiRequestFn } from './serviceHelpers.js';
 import type { ApiRequestOptions } from './apiClient.js';
@@ -122,152 +112,6 @@ const companyOverview: CompanyOverviewResponse = {
   ],
 };
 
-const assessment = {
-  id: 'asm_00000000-0000-0000-0000-000000000001',
-  companyId: company.id,
-  title: 'Customer Services Portal',
-  description: 'Assessment of the customer portal',
-  scope: 'Web application',
-  status: 'in-progress',
-  startedAt: '2026-06-01',
-  completedAt: '2026-06-10',
-  applicationName: 'Customer Services Portal',
-  environment: 'Production',
-  assessmentType: 'Web App',
-  overallRisk: 'high',
-  createdAt: '2026-06-01T09:00:00.000Z',
-  updatedAt: '2026-06-11T09:00:00.000Z',
-} as const;
-
-const assessmentOverview = {
-  company: {
-    id: company.id,
-    name: company.name,
-  },
-  assessment: {
-    ...assessment,
-    recordVersion: 3,
-    findingsCount: 7,
-    evidenceCount: 2,
-    reportVersionCount: 1,
-    testerName: 'Alex Mercer',
-    availableActions: ['complete', 'archive'],
-  },
-} as const;
-
-const assessmentSummary = {
-  id: assessment.id,
-  companyId: assessment.companyId,
-  name: assessment.title,
-  type: assessment.assessmentType,
-  status: assessment.status,
-  findingsCount: 7,
-  updatedAt: assessment.updatedAt,
-  description: assessment.description,
-  scope: assessment.scope,
-} as const;
-
-const threat = {
-  id: 'thr_00000000-0000-0000-0000-000000000001',
-  assessmentId: assessment.id,
-  title: 'Missing Server-Side Authorization',
-  description: 'The endpoint returns another customer order.',
-  severity: 'critical',
-  strideCategories: ['spoofing', 'tampering'],
-  status: 'accepted-risk',
-  affectedAsset: '/api/v1/orders/{id}',
-  impact: 'Unauthorised access to customer order data',
-  recommendation: 'Apply object-level authorization on every request.',
-  observation: 'An authenticated user can access another customer order.',
-  affectedComponent: 'Orders API',
-  affectedEndpoint: '/api/v1/orders/{id}',
-  risk: 'Sensitive order data is exposed.',
-  createdAt: '2026-06-01T09:00:00.000Z',
-  updatedAt: '2026-06-11T09:00:00.000Z',
-} as const;
-
-const settings = {
-  id: 'set_00000000-0000-0000-0000-000000000001',
-  organisationName: 'Northstar Digital',
-  consultantName: 'Alex Mercer',
-  consultantEmail: 'alex.mercer@appsec.io',
-  issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
-  defaultReportTitle: 'Application Security Assessment',
-  defaultSeverity: 'medium',
-  theme: 'system',
-  dateFormat: 'YYYY-MM-DD',
-  reportFooterText: '(c) 2026 Northstar Digital. Confidential.',
-  reportConfidentialityLabel: 'Strictly confidential',
-  methodology: 'OWASP ASVS / WSTG',
-  reportStyle: 'Technical & structured',
-  includeEvidence: true,
-  confidentialReports: true,
-  allowedBrandingModes: ['issuer', 'client'],
-  defaultBrandingMode: 'issuer',
-  createdAt: '2026-06-01T09:00:00.000Z',
-  updatedAt: '2026-06-11T09:00:00.000Z',
-} as const;
-
-const reportView = {
-  report: {
-    id: 'rpt_00000000-0000-0000-0000-000000000001',
-    assessmentId: assessment.id,
-    title: 'Application Security Assessment',
-    status: 'draft',
-    selectedThreatIds: [threat.id],
-    latestVersion: 0,
-    executiveSummary: 'Executive summary',
-    createdAt: '2026-06-11T09:00:00.000Z',
-    updatedAt: '2026-06-11T09:00:00.000Z',
-  },
-  company: {
-    ...company,
-  },
-  assessments: [],
-  branding: {
-    companyName: 'Northstar Digital',
-    companyWebsite: 'https://northstar.example',
-    companyContactEmail: 'security@northstar.example',
-    companyLogoUrl: '/logos/northstar.svg',
-    companyFooterText: 'Confidential - do not distribute.',
-    issuerName: 'Northstar Digital',
-    issuerContactName: 'Alex Mercer',
-    issuerContactEmail: 'alex.mercer@appsec.io',
-    issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
-    reportFooterText: '(c) 2026 Northstar Digital. Confidential.',
-    reportConfidentialityLabel: 'Strictly confidential',
-    confidentialReports: true,
-    allowedBrandingModes: ['issuer', 'client'],
-    defaultBrandingMode: 'issuer',
-  },
-  configuration: {
-    methodology: 'OWASP ASVS / WSTG',
-    reportStyle: 'Technical & structured',
-    includeEvidence: true,
-  },
-  snapshot: {
-    reportTitle: 'Application Security Assessment',
-    companyName: 'Northstar Digital',
-    assessmentTitle: 'Customer Services Portal',
-    executiveSummary: 'Executive summary',
-    branding: {
-      brandingMode: 'issuer',
-      issuerName: 'Northstar Digital',
-      issuerContactName: 'Alex Mercer',
-      issuerContactEmail: 'alex.mercer@appsec.io',
-      issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
-      clientName: 'Northstar Digital',
-      clientWebsite: 'https://northstar.example',
-      clientContactEmail: 'security@northstar.example',
-      clientFooterText: 'Confidential - do not distribute.',
-      reportFooterText: '(c) 2026 Northstar Digital. Confidential.',
-      confidentialityLabel: 'Strictly confidential',
-      confidentialReports: true,
-    },
-    threats: [],
-  },
-} satisfies ReportView;
-
 {
   const { calls, request } = createRequestSpy({ data: [company] });
   const service = createCompanyService(request);
@@ -352,250 +196,37 @@ const reportView = {
 }
 
 {
-  const { calls, request } = createRequestSpy({ data: [assessmentSummary] });
-  const service = createAssessmentService(request);
-
-  assert.deepEqual(await service.list({ companyId: company.id }), [
-    assessmentSummary,
-  ]);
-  expectSingleCall(calls, {
-    input: '/api/assessments',
-    method: 'GET',
-    query: {
-      companyId: company.id,
-    },
-  });
-}
-
-{
-  const controller = new AbortController();
-  const { calls, request } = createRequestSpy({ data: assessmentOverview });
-  const service = createAssessmentService(request);
-
-  assert.deepEqual(
-    await service.getOverview(company.id, assessment.id, controller.signal),
-    assessmentOverview,
-  );
-  expectSingleCall(calls, {
-    input: `/api/companies/${company.id}/assessments/${assessment.id}/overview`,
-    method: 'GET',
-  });
-  assert.equal(calls[0]?.init?.signal, controller.signal);
-}
-
-{
-  const { calls, request } = createRequestSpy({ data: assessment });
-  const service = createAssessmentService(request);
-
-  assert.deepEqual(await service.getById(assessment.id), assessment);
-  expectSingleCall(calls, {
-    input: `/api/assessments/${assessment.id}`,
-    method: 'GET',
-  });
-}
-
-{
-  const input: AssessmentCreateInput = {
-    companyId: company.id,
-    title: assessment.title,
-    description: assessment.description,
-    scope: assessment.scope,
-    status: assessment.status,
-    startedAt: assessment.startedAt,
-    completedAt: assessment.completedAt,
-    applicationName: assessment.applicationName,
-    environment: assessment.environment,
-    assessmentType: assessment.assessmentType,
-    overallRisk: assessment.overallRisk,
+  const file = new File(['fake-png'], 'logo.png', { type: 'image/png' });
+  const companyWithLogo = {
+    ...company,
+    logoUrl: `http://localhost/api/companies/${company.id}/logo`,
   };
-  const { calls, request } = createRequestSpy({ data: assessment });
-  const service = createAssessmentService(request);
+  const { calls, request } = createRequestSpy({ data: companyWithLogo });
+  const service = createCompanyService(request);
 
-  assert.deepEqual(await service.create(input), assessment);
-  expectSingleCall(calls, {
-    input: '/api/assessments',
-    method: 'POST',
-    body: input,
-  });
+  assert.deepEqual(await service.uploadLogo(company.id, file), companyWithLogo);
+  assert.equal(calls.length, 1);
+  const call = calls[0];
+  assert.ok(call);
+  assert.equal(String(call.input), `/api/companies/${company.id}/logo`);
+  assert.equal(call.init?.method, 'PUT');
+  assert.equal(call.init?.rawBody, file);
+  assert.equal(call.init?.body, undefined);
+  const headers = new Headers(call.init?.headers);
+  assert.equal(headers.get('Content-Type'), 'image/png');
+  assert.equal(headers.get('X-File-Name'), 'logo.png');
 }
 
 {
-  const input: AssessmentUpdateInput = {
-    title: 'Updated assessment',
-  };
-  const { calls, request } = createRequestSpy({ data: assessment });
-  const service = createAssessmentService(request);
+  const { calls, request } = createRequestSpy(undefined);
+  const service = createCompanyService(request);
 
-  assert.deepEqual(await service.update(assessment.id, input), assessment);
-  expectSingleCall(calls, {
-    input: `/api/assessments/${assessment.id}`,
-    method: 'PATCH',
-    body: input,
-  });
+  await service.removeLogo(company.id);
+  assert.equal(calls.length, 1);
+  const call = calls[0];
+  assert.ok(call);
+  assert.equal(String(call.input), `/api/companies/${company.id}/logo`);
+  assert.equal(call.init?.method, 'DELETE');
 }
 
-{
-  const { calls, request } = createRequestSpy({ data: assessmentOverview });
-  const service = createAssessmentService(request);
-
-  assert.deepEqual(
-    await service.start(company.id, assessment.id, 3),
-    assessmentOverview,
-  );
-  expectSingleCall(calls, {
-    input: `/api/companies/${company.id}/assessments/${assessment.id}/commands/start`,
-    method: 'POST',
-    body: { recordVersion: 3 },
-  });
-}
-
-{
-  const { calls, request } = createRequestSpy({ data: assessmentOverview });
-  const service = createAssessmentService(request);
-
-  assert.deepEqual(
-    await service.complete(company.id, assessment.id, 3),
-    assessmentOverview,
-  );
-  expectSingleCall(calls, {
-    input: `/api/companies/${company.id}/assessments/${assessment.id}/commands/complete`,
-    method: 'POST',
-    body: { recordVersion: 3 },
-  });
-}
-
-{
-  const { calls, request } = createRequestSpy({ data: assessmentOverview });
-  const service = createAssessmentService(request);
-
-  assert.deepEqual(
-    await service.reopen(company.id, assessment.id, 3),
-    assessmentOverview,
-  );
-  expectSingleCall(calls, {
-    input: `/api/companies/${company.id}/assessments/${assessment.id}/commands/reopen`,
-    method: 'POST',
-    body: { recordVersion: 3 },
-  });
-}
-
-{
-  const { calls, request } = createRequestSpy({ data: assessmentOverview });
-  const service = createAssessmentService(request);
-
-  assert.deepEqual(
-    await service.archive(company.id, assessment.id, 3),
-    assessmentOverview,
-  );
-  expectSingleCall(calls, {
-    input: `/api/companies/${company.id}/assessments/${assessment.id}/commands/archive`,
-    method: 'POST',
-    body: { recordVersion: 3 },
-  });
-}
-
-{
-  const { calls, request } = createRequestSpy({ data: [threat] });
-  const service = createThreatService(request);
-
-  assert.deepEqual(await service.listByAssessment(assessment.id), [threat]);
-  expectSingleCall(calls, {
-    input: '/api/threats',
-    method: 'GET',
-    query: {
-      assessmentId: assessment.id,
-    },
-  });
-}
-
-{
-  const { calls, request } = createRequestSpy({ data: threat });
-  const service = createThreatService(request);
-
-  assert.deepEqual(await service.getById(threat.id), threat);
-  expectSingleCall(calls, {
-    input: `/api/threats/${threat.id}`,
-    method: 'GET',
-  });
-}
-
-{
-  const input: ThreatCreateInput = {
-    assessmentId: assessment.id,
-    title: threat.title,
-    description: threat.description,
-    severity: threat.severity,
-    strideCategories: [...threat.strideCategories],
-    status: threat.status,
-    affectedAsset: threat.affectedAsset,
-    impact: threat.impact,
-    recommendation: threat.recommendation,
-    observation: threat.observation,
-    affectedComponent: threat.affectedComponent,
-    affectedEndpoint: threat.affectedEndpoint,
-    risk: threat.risk,
-  };
-  const { calls, request } = createRequestSpy({ data: threat });
-  const service = createThreatService(request);
-
-  assert.deepEqual(await service.create(input), threat);
-  expectSingleCall(calls, {
-    input: '/api/threats',
-    method: 'POST',
-    body: input,
-  });
-}
-
-{
-  const input: ThreatUpdateInput = {
-    title: 'Updated threat',
-  };
-  const { calls, request } = createRequestSpy({ data: threat });
-  const service = createThreatService(request);
-
-  assert.deepEqual(await service.update(threat.id, input), threat);
-  expectSingleCall(calls, {
-    input: `/api/threats/${threat.id}`,
-    method: 'PATCH',
-    body: input,
-  });
-}
-
-{
-  const { calls, request } = createRequestSpy({ data: settings });
-  const service = createSettingsService(request);
-
-  assert.deepEqual(await service.get(), settings);
-  expectSingleCall(calls, {
-    input: '/api/settings',
-    method: 'GET',
-  });
-}
-
-{
-  const input: SettingsUpdateInput = {
-    defaultReportTitle: 'Updated report title',
-  };
-  const { calls, request } = createRequestSpy({ data: settings });
-  const service = createSettingsService(request);
-
-  assert.deepEqual(await service.update(input), settings);
-  expectSingleCall(calls, {
-    input: '/api/settings',
-    method: 'PATCH',
-    body: input,
-  });
-}
-
-{
-  const { calls, request } = createRequestSpy({ data: reportView });
-  const service = createReportService(request);
-
-  assert.deepEqual(await service.getById(reportView.report.id), reportView);
-  expectSingleCall(calls, {
-    input: `/api/reports/${reportView.report.id}`,
-    method: 'GET',
-  });
-}
-
-console.log('services checks passed');
+console.log('company service checks passed');

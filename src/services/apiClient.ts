@@ -16,6 +16,7 @@ export interface ApiRequestOptions<TBody = unknown> {
   headers?: HeadersInit;
   method?: string;
   query?: ApiQueryParams;
+  rawBody?: BodyInit;
   signal?: AbortSignal;
 }
 
@@ -277,12 +278,13 @@ export const apiRequest = async <T>(
   }
 
   const hasJsonBody = init.body !== undefined;
+  const hasRawBody = init.rawBody !== undefined;
 
   if (hasJsonBody && !requestHeaders.has('Content-Type')) {
     requestHeaders.set('Content-Type', 'application/json');
   }
 
-  const method = init.method ?? (hasJsonBody ? 'POST' : 'GET');
+  const method = init.method ?? (hasJsonBody || hasRawBody ? 'POST' : 'GET');
 
   const requestInit: RequestInit = {
     headers: requestHeaders,
@@ -292,6 +294,8 @@ export const apiRequest = async <T>(
 
   if (hasJsonBody) {
     requestInit.body = JSON.stringify(init.body);
+  } else if (hasRawBody) {
+    requestInit.body = init.rawBody;
   }
 
   let response: Response;

@@ -8,6 +8,7 @@ export interface CompanyFormValue {
   contactEmail: string;
   footerText: string;
   logoFile: File | null;
+  hasExistingLogo: boolean;
 }
 
 export interface CompanyFormProps {
@@ -16,6 +17,7 @@ export interface CompanyFormProps {
   errorMessage?: string;
   isSubmitting?: boolean;
   submitLabel?: string;
+  existingLogoUrl?: string | null;
   onChange: (value: CompanyFormValue) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onCancel: () => void;

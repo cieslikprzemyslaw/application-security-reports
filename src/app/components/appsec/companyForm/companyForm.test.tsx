@@ -70,6 +70,7 @@ const emptyValue: CompanyFormValue = {
   contactEmail: '',
   footerText: '',
   logoFile: null,
+  hasExistingLogo: false,
 };
 
 await (async () => {
@@ -348,6 +349,11 @@ await (async () => {
       changeEvents[0].logoFile,
       null,
       'Expected logoFile to be null after remove',
+    );
+    assert.equal(
+      changeEvents[0].hasExistingLogo,
+      false,
+      'Expected hasExistingLogo to be false after remove',
     );
     await act(async () => root.unmount());
   }
