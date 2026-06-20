@@ -78,11 +78,13 @@ const renderView = async () => {
               companyId: 'cmp_1',
               companyName: 'Northstar Digital',
               applicationName: 'Customer Services Portal',
+              environment: 'Production',
               status: 'in-progress',
               recordVersion: 3,
               findingsCount: 12,
               evidenceCount: 4,
               reportVersionCount: 2,
+              testerName: 'Alex Mercer',
             }}
           />
         </MemoryRouter>
@@ -131,6 +133,77 @@ await (async () => {
   assert.ok(
     container.querySelector('[data-testid="evidence-content"]'),
     'Expected the evidence content slot to render',
+  );
+  assert.equal(
+    container
+      .querySelector(
+        '.assessment-summary-metadata-item:nth-child(1) .assessment-summary-metadata-value',
+      )
+      ?.textContent?.trim(),
+    'Production',
+  );
+  assert.equal(
+    container
+      .querySelector(
+        '.assessment-summary-metadata-item:nth-child(3) .assessment-summary-metadata-value',
+      )
+      ?.textContent?.trim(),
+    'Alex Mercer',
+  );
+
+  await act(async () => {
+    root.unmount();
+  });
+})();
+
+await (async () => {
+  const { container, root } = await renderView();
+
+  await act(async () => {
+    root.render(
+      <ThemeProvider theme={defaultTheme}>
+        <MemoryRouter>
+          <AssessmentDetailsView
+            activeSection="overview"
+            overviewHref="/companies/cmp_1/assessments/asm_1/overview"
+            onSectionChange={() => undefined}
+            onBack={() => undefined}
+            onAction={() => undefined}
+            assessment={{
+              id: 'asm_1',
+              companyId: 'cmp_1',
+              companyName: 'Northstar Digital',
+              applicationName: 'Customer Services Portal',
+              environment: '   ',
+              status: 'in-progress',
+              recordVersion: 3,
+              findingsCount: 12,
+              evidenceCount: 4,
+              reportVersionCount: 2,
+              testerName: '   ',
+            }}
+          />
+        </MemoryRouter>
+      </ThemeProvider>,
+    );
+    await renderTick();
+  });
+
+  assert.equal(
+    container
+      .querySelector(
+        '.assessment-summary-metadata-item:nth-child(1) .assessment-summary-metadata-value',
+      )
+      ?.textContent?.trim(),
+    '—',
+  );
+  assert.equal(
+    container
+      .querySelector(
+        '.assessment-summary-metadata-item:nth-child(3) .assessment-summary-metadata-value',
+      )
+      ?.textContent?.trim(),
+    '—',
   );
 
   await act(async () => {

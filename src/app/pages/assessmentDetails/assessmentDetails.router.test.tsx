@@ -10,7 +10,6 @@ import { routes } from '~/routes';
 import { defaultTheme } from '~/theme';
 
 const renderTick = () => new Promise<void>(resolve => setTimeout(resolve, 0));
-
 const originalFetch = globalThis.fetch;
 
 const setFetch = (value: typeof fetch) => {
@@ -21,16 +20,12 @@ const setFetch = (value: typeof fetch) => {
   });
 };
 
-const restoreFetch = () => {
-  setFetch(originalFetch);
-};
-
+const restoreFetch = () => setFetch(originalFetch);
 const createJsonResponse = (body: unknown, init: ResponseInit = {}): Response =>
   new Response(JSON.stringify(body), {
     headers: { 'Content-Type': 'application/json', ...init.headers },
     ...init,
   });
-
 const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
   Object.defineProperty(globalThis, key, {
     value,
@@ -64,9 +59,7 @@ const setupDom = (pathname: string) => {
   );
   setGlobal('IS_REACT_ACT_ENVIRONMENT', true);
 
-  return {
-    container: window.document.getElementById('root'),
-  };
+  return { container: window.document.getElementById('root') };
 };
 
 const renderApp = async (pathname: string) => {
@@ -90,7 +83,6 @@ const renderApp = async (pathname: string) => {
 };
 
 const textContent = (container: HTMLElement) => container.textContent ?? '';
-
 const companyResponse = {
   data: [
     {
@@ -138,6 +130,10 @@ const createAssessmentOverviewResponse = (
   assessmentId: string,
   evidenceCount: number,
   applicationName: string | null = baseAssessment.assessment.applicationName,
+  overrides: Partial<{
+    environment: string | null;
+    testerName: string | null;
+  }> = {},
 ) => ({
   data: {
     ...baseAssessment,
@@ -146,6 +142,7 @@ const createAssessmentOverviewResponse = (
       id: assessmentId,
       evidenceCount,
       applicationName,
+      ...overrides,
     },
   },
 });
@@ -216,6 +213,22 @@ await (async () => {
       assert.ok(textContent(container).includes('Customer Services Portal'));
       assert.ok(textContent(container).includes('Assessment ID'));
       assert.ok(textContent(container).includes('Evidence'));
+      assert.equal(
+        container
+          .querySelector(
+            '.assessment-summary-metadata-item:nth-child(1) .assessment-summary-metadata-value',
+          )
+          ?.textContent?.trim(),
+        'Production',
+      );
+      assert.equal(
+        container
+          .querySelector(
+            '.assessment-summary-metadata-item:nth-child(3) .assessment-summary-metadata-value',
+          )
+          ?.textContent?.trim(),
+        'Alex Mercer',
+      );
 
       const evidenceTab = Array.from(
         container.querySelectorAll('[role="tab"]'),
@@ -248,7 +261,10 @@ await (async () => {
 
         if (path === '/api/companies/cmp_1/assessments/asm_null/overview') {
           return createJsonResponse(
-            createAssessmentOverviewResponse('asm_null', 1, null),
+            createAssessmentOverviewResponse('asm_null', 1, null, {
+              environment: null,
+              testerName: null,
+            }),
           );
         }
 
@@ -266,6 +282,22 @@ await (async () => {
       assert.equal(
         container
           .querySelector('.assessment-summary-application-name')
+          ?.textContent?.trim(),
+        '—',
+      );
+      assert.equal(
+        container
+          .querySelector(
+            '.assessment-summary-metadata-item:nth-child(1) .assessment-summary-metadata-value',
+          )
+          ?.textContent?.trim(),
+        '—',
+      );
+      assert.equal(
+        container
+          .querySelector(
+            '.assessment-summary-metadata-item:nth-child(3) .assessment-summary-metadata-value',
+          )
           ?.textContent?.trim(),
         '—',
       );

@@ -13,11 +13,14 @@ import type { AssessmentDetailsAssessment } from './assessmentDetails.type';
 import type { ThreatFormValue } from '~/app/components/appsec/threatForm';
 import type { ThreatTableRow } from '~/app/components/appsec/threatTable';
 
-const normalizeOptionalText = (value?: string) => {
+const normalizeOptionalText = (value?: string | null) => {
   const trimmed = value?.trim();
 
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
 };
+
+const normalizeDisplayText = (value?: string | null) =>
+  normalizeOptionalText(value) ?? '—';
 
 const getDefaultOwaspCategoryCode = (owaspTaxonomyVersion: string) =>
   getOwaspTop10CategoryOptions(owaspTaxonomyVersion)[0]?.value ?? '';
@@ -47,7 +50,9 @@ export const toAssessmentViewModel = (
 ): AssessmentDetailsAssessment => ({
   ...overview.assessment,
   companyName: overview.company.name,
-  applicationName: overview.assessment.applicationName?.trim() || '—',
+  applicationName: normalizeDisplayText(overview.assessment.applicationName),
+  environment: normalizeDisplayText(overview.assessment.environment),
+  testerName: normalizeDisplayText(overview.assessment.testerName),
 });
 
 export const threatToFormValue = (
