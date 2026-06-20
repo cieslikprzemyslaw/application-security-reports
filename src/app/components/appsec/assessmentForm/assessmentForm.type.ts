@@ -10,6 +10,7 @@ export type AssessmentTypeMode = 'preset' | 'custom';
 
 export type AssessmentFormFieldName =
   | 'name'
+  | 'applicationName'
   | 'typeMode'
   | 'presetType'
   | 'customType'
@@ -19,6 +20,7 @@ export type AssessmentFormFieldName =
 
 export interface AssessmentFormValue {
   name: string;
+  applicationName: string;
   typeMode: AssessmentTypeMode;
   presetType: AssessmentPresetType;
   customType: string;

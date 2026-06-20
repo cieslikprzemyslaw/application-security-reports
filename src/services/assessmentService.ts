@@ -64,6 +64,7 @@ export interface AssessmentListItem {
   id: string;
   companyId?: string;
   name: string;
+  applicationName?: string;
   type: string;
   status: AssessmentStatus;
   findingsCount: number;
@@ -77,6 +78,7 @@ interface AssessmentListApiItem {
   companyId?: string;
   title?: string;
   name?: string;
+  applicationName?: string;
   assessmentType?: string;
   type?: string;
   status: AssessmentStatus;
@@ -92,6 +94,7 @@ const mapAssessmentListItem = (
   id: item.id,
   companyId: item.companyId,
   name: item.name ?? item.title ?? 'Untitled assessment',
+  applicationName: item.applicationName,
   type: item.type ?? item.assessmentType ?? 'Unspecified',
   status: item.status,
   findingsCount: item.findingsCount ?? 0,

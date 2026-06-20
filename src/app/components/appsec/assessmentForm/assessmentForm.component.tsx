@@ -32,6 +32,7 @@ const statusActionValues: AssessmentFormValue['status'][] = [
 
 const fieldIdMap: Record<AssessmentFormFieldName, string> = {
   name: 'assessment-name',
+  applicationName: 'assessment-application-name',
   typeMode: 'assessment-type-mode',
   presetType: 'assessment-preset-type',
   customType: 'assessment-custom-type',
@@ -65,6 +66,7 @@ const AssessmentForm = ({
   const firstErrorFieldId = useMemo(() => {
     const orderedFields: Array<AssessmentFormFieldName> = [
       'name',
+      'applicationName',
       'typeMode',
       'presetType',
       'customType',
@@ -122,6 +124,22 @@ const AssessmentForm = ({
             required
             onChange={event =>
               onChange(updateField(value, 'name', event.target.value))
+            }
+          />
+        </div>
+
+        <div className="assessment-form-full-width">
+          <Input
+            id="assessment-application-name"
+            label="Application or website"
+            value={value.applicationName}
+            error={errors.applicationName}
+            description="Required. Enter the application name or website covered by this assessment."
+            required
+            onChange={event =>
+              onChange(
+                updateField(value, 'applicationName', event.target.value),
+              )
             }
           />
         </div>

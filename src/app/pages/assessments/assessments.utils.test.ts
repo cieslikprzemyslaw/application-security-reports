@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 
-import { nextSortDirection } from './assessments.utils';
+import {
+  createAssessmentValidationErrorMap,
+  nextSortDirection,
+} from './assessments.utils';
 
 // first click on an inactive column activates it with ascending direction
 assert.equal(
@@ -42,4 +45,22 @@ assert.equal(
   'Switching from one active column to another should start at ascending',
 );
 
-console.log('assessments.utils nextSortDirection checks passed');
+assert.deepEqual(
+  createAssessmentValidationErrorMap(
+    [
+      {
+        path: 'applicationName',
+        message: 'Application or website is required.',
+      },
+    ],
+    'preset',
+  ),
+  {
+    fieldErrors: {
+      applicationName: 'Application or website is required.',
+    },
+    generalErrors: [],
+  },
+);
+
+console.log('assessments.utils checks passed');

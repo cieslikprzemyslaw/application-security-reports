@@ -245,6 +245,11 @@ export const createAssessmentValidationErrorMap = (
       continue;
     }
 
+    if (path === 'applicationName' && !fieldErrors.applicationName) {
+      fieldErrors.applicationName = detail.message;
+      continue;
+    }
+
     if (path === 'assessmentType') {
       const targetField = valueType === 'custom' ? 'customType' : 'presetType';
 
@@ -261,6 +266,7 @@ export const createAssessmentValidationErrorMap = (
         'scope',
         'status',
         'name',
+        'applicationName',
         'presetType',
         'customType',
       ].includes(path) &&
