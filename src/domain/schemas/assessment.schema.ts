@@ -8,9 +8,9 @@ import {
   isoDateStringSchema,
   nonEmptyIdSchema,
   nonEmptyTextSchema,
-  optionalTrimmedTextSchema,
   severitySchema,
   timestampSchema,
+  optionalTrimmedTextSchema,
 } from './common.schema.js';
 
 export const assessmentObjectSchema = z
@@ -23,7 +23,7 @@ export const assessmentObjectSchema = z
     status: assessmentStatusSchema,
     startedAt: isoDateStringSchema.optional(),
     completedAt: isoDateStringSchema.optional(),
-    applicationName: optionalTrimmedTextSchema.nullable(),
+    applicationName: z.union([nonEmptyTextSchema, z.null()]),
     environment: optionalTrimmedTextSchema,
     assessmentType: optionalTrimmedTextSchema,
     overallRisk: severitySchema.optional(),
