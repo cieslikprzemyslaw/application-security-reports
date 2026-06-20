@@ -39,5 +39,6 @@ export interface ThreatDrawerProps {
   footer?: ReactNode;
   onClose: () => void;
   onEdit?: () => void;
+  onDelete?: () => void;
   closeLabel?: string;
 }

@@ -26,6 +26,7 @@ const ThreatDrawer = ({
   footer,
   onClose,
   onEdit,
+  onDelete,
   closeLabel = 'Close threat details',
 }: ThreatDrawerProps) => {
   const drawerTitle = title ?? threat?.title ?? 'Threat details';
@@ -182,9 +183,16 @@ const ThreatDrawer = ({
               </section>
             )}
 
-            {onEdit && (
+            {(onEdit || onDelete) && (
               <div className="threat-drawer-actions">
-                <Button title="Edit threat" onClick={onEdit} />
+                {onEdit && <Button title="Edit threat" onClick={onEdit} />}
+                {onDelete && (
+                  <Button
+                    title="Delete threat"
+                    variant="destructive"
+                    onClick={onDelete}
+                  />
+                )}
               </div>
             )}
           </div>

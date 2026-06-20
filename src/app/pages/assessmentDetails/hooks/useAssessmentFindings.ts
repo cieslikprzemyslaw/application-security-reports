@@ -35,6 +35,8 @@ export interface AssessmentFindingsController {
   fieldErrors: ThreatFormErrors;
   formError?: string;
   isSubmitting: boolean;
+  isDeleting: boolean;
+  deleteError?: string;
   canEditFindings: boolean;
   openCreateFinding: () => void;
   openEditFinding: (threat?: Threat | ThreatTableRow) => void;
@@ -42,16 +44,19 @@ export interface AssessmentFindingsController {
   closeFindingDrawer: () => void;
   handleFindingChange: (value: ThreatFormValue) => void;
   handleFindingSave: (event: FormEvent<HTMLFormElement>) => Promise<void>;
+  handleFindingDelete: () => Promise<void>;
 }
 
 export const useAssessmentFindings = ({
   assessmentId,
   assessmentStatus,
   assessmentOwaspTaxonomyVersion = OWASP_TOP_10_CURRENT_VERSION,
+  onMutationSuccess,
 }: {
   assessmentId?: string;
   assessmentStatus?: AssessmentDetailsAssessment['status'];
   assessmentOwaspTaxonomyVersion?: string;
+  onMutationSuccess?: (delta: number) => void;
 }): AssessmentFindingsController => {
   const [threats, setThreats] = useState<Threat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -66,6 +71,8 @@ export const useAssessmentFindings = ({
   const [fieldErrors, setFieldErrors] = useState<ThreatFormErrors>({});
   const [formError, setFormError] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | undefined>();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -156,6 +163,7 @@ export const useAssessmentFindings = ({
     setFieldErrors({});
     setFormError(undefined);
     setIsSubmitting(false);
+    setDeleteError(undefined);
   };
 
   const confirmDiscardChanges = () => {
@@ -276,6 +284,7 @@ export const useAssessmentFindings = ({
         await threatService.create(
           threatFormValueToCreateInput(assessmentId, draftValue),
         );
+        onMutationSuccess?.(1);
       }
 
       setReloadKey(key => key + 1);
@@ -307,6 +316,34 @@ export const useAssessmentFindings = ({
     setFormError(undefined);
   };
 
+  const handleFindingDelete = async () => {
+    if (!selectedFindingId || isDeleting) {
+      return;
+    }
+
+    const title = selectedFinding?.title ?? 'this threat';
+
+    if (!window.confirm(`Delete "${title}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError(undefined);
+
+    try {
+      await threatService.remove(selectedFindingId);
+      setReloadKey(key => key + 1);
+      resetDrawerState();
+      onMutationSuccess?.(-1);
+    } catch (error) {
+      setDeleteError(
+        error instanceof Error ? error.message : 'Unable to delete threat.',
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return {
     threats,
     isLoading,
@@ -317,6 +354,8 @@ export const useAssessmentFindings = ({
     fieldErrors,
     formError,
     isSubmitting,
+    isDeleting,
+    deleteError,
     canEditFindings: assessmentStatus !== 'archived',
     openCreateFinding,
     openEditFinding,
@@ -324,5 +363,6 @@ export const useAssessmentFindings = ({
     closeFindingDrawer,
     handleFindingChange,
     handleFindingSave,
+    handleFindingDelete,
   };
 };

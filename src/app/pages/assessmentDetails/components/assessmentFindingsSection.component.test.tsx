@@ -181,6 +181,8 @@ const renderHarness = async (
         fieldErrors={{}}
         formError={undefined}
         isSubmitting={false}
+        isDeleting={false}
+        deleteError={undefined}
         canEditFindings={assessment.status !== 'archived'}
         openCreateFinding={openCreateFinding}
         openEditFinding={openEditFinding}
@@ -193,6 +195,7 @@ const renderHarness = async (
         handleFindingSave={async event => {
           event.preventDefault();
         }}
+        handleFindingDelete={async () => {}}
       />
     );
   };
