@@ -53,9 +53,11 @@ export interface AssessmentEvidenceController {
 export const useAssessmentEvidence = ({
   assessmentId,
   assessmentStatus,
+  onMutationSuccess,
 }: {
   assessmentId?: string;
   assessmentStatus?: AssessmentDetailsAssessment['status'];
+  onMutationSuccess?: (delta: number) => void;
 }): AssessmentEvidenceController => {
   const collection = useEvidenceCollection(assessmentId);
   const editor = useEvidenceEditor(collection.evidence);
@@ -72,15 +74,20 @@ export const useAssessmentEvidence = ({
       setStatusMessage('Evidence deleted.');
       editor.resetEditor();
       download.setDownloadError(undefined);
+      onMutationSuccess?.(-1);
     },
   });
 
   const handleSuccessfulSave = () => {
+    const isCreate = editor.drawerMode !== 'edit';
     collection.reloadEvidence();
     setStatusMessage('Evidence saved.');
     editor.resetEditor();
     deletion.resetDeletion();
     download.setDownloadError(undefined);
+    if (isCreate) {
+      onMutationSuccess?.(1);
+    }
   };
 
   const submission = useEvidenceSubmission({
