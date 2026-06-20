@@ -299,7 +299,7 @@ await (async () => {
     });
 
     try {
-      const { container, root, window } = await renderDashboard('/dashboard', {
+      const { container, root } = await renderDashboard('/dashboard', {
         'appsec-company-switcher-recents': JSON.stringify(['cmp_2', 'cmp_1']),
         'appsec-company-switcher-recent-open-times': JSON.stringify({
           cmp_2: '2026-06-14T16:45:00.000Z',
