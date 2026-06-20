@@ -16,6 +16,7 @@ import { createEvidenceRepository } from '../database/repositories/evidence.repo
 import { createReportRepository } from '../database/repositories/report.repository.js';
 import { createThreatRepository } from '../database/repositories/threat.repository.js';
 import { createApiApp } from './api-app.js';
+import { createCompanyLogoStorage } from '../services/companyLogoStorage.js';
 
 const repoRoot = path.resolve(process.cwd());
 const migrationPath = path.resolve(
@@ -507,6 +508,161 @@ try {
   } finally {
     await overviewPrisma.$disconnect();
     await rm(overviewTempDir, { recursive: true, force: true });
+  }
+}
+
+// --- Logo integration: upload → read → delete cycle ---
+{
+  const logoTempDir = await mkdtemp(
+    path.join(os.tmpdir(), 'appsec-logo-integration-'),
+  );
+  const logoDbPath = path.join(logoTempDir, 'logo.sqlite');
+  const logoAdapterUrl = `file:${logoDbPath.replaceAll('\\', '/')}`;
+
+  const logoBootstrap = new Database(logoDbPath);
+  try {
+    logoBootstrap.exec(schemaSql);
+    logoBootstrap.exec(companyLogoMigrationSql);
+    logoBootstrap.exec(assessmentMigrationSql);
+    logoBootstrap.exec(threatMigrationSql);
+    logoBootstrap.exec(evidenceMigrationSql);
+  } finally {
+    logoBootstrap.close();
+  }
+
+  const logoPrisma = new PrismaClient({
+    adapter: new PrismaBetterSqlite3({ url: logoAdapterUrl }),
+  });
+
+  let logoCompanyId: string | undefined;
+
+  try {
+    await logoPrisma.$executeRawUnsafe('PRAGMA journal_mode = MEMORY');
+    await logoPrisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
+
+    const logoRepository = createCompanyRepository(logoPrisma);
+    const logoStorage = createCompanyLogoStorage();
+    const logoServer = await startTestServer(
+      createApiApp(config, {
+        companyRepository: logoRepository,
+        logoStorage,
+      }),
+    );
+
+    try {
+      // Create a company for the logo cycle
+      const createResp = await fetch(`${logoServer.baseUrl}/api/companies`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Logo Test Corp',
+          description: undefined,
+          website: undefined,
+          contactName: undefined,
+          contactEmail: undefined,
+          footerText: undefined,
+        }),
+      });
+      assert.equal(createResp.status, 201);
+      const createJson = (await createResp.json()) as {
+        data: { id: string; logoUrl: string | null };
+      };
+      logoCompanyId = createJson.data.id;
+      assert.equal(createJson.data.logoUrl, null);
+
+      // Minimal PNG: magic bytes only (8 bytes)
+      const pngBytes = Buffer.from([
+        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+      ]);
+
+      // PUT logo
+      const putResp = await fetch(
+        `${logoServer.baseUrl}/api/companies/${logoCompanyId}/logo`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'image/png',
+            'X-File-Name': 'logo.png',
+          },
+          body: pngBytes,
+        },
+      );
+      assert.equal(putResp.status, 200);
+      const putJson = (await putResp.json()) as {
+        data: { id: string; logoUrl: string | null };
+      };
+      assert.equal(putJson.data.id, logoCompanyId);
+      assert.ok(
+        typeof putJson.data.logoUrl === 'string' &&
+          putJson.data.logoUrl.includes(`/api/companies/${logoCompanyId}/logo`),
+      );
+
+      // GET logo — should return binary PNG with correct Content-Type
+      const getResp = await fetch(
+        `${logoServer.baseUrl}/api/companies/${logoCompanyId}/logo`,
+      );
+      assert.equal(getResp.status, 200);
+      assert.ok(getResp.headers.get('content-type')?.startsWith('image/png'));
+      const gotBytes = Buffer.from(await getResp.arrayBuffer());
+      assert.deepEqual(gotBytes, pngBytes);
+
+      // GET company — logoUrl should be a full URL to the logo endpoint
+      const getCompanyResp = await fetch(
+        `${logoServer.baseUrl}/api/companies/${logoCompanyId}`,
+      );
+      assert.equal(getCompanyResp.status, 200);
+      const getCompanyJson = (await getCompanyResp.json()) as {
+        data: { logoUrl: string | null };
+      };
+      assert.ok(
+        typeof getCompanyJson.data.logoUrl === 'string' &&
+          getCompanyJson.data.logoUrl.startsWith('http'),
+      );
+
+      // DELETE logo
+      const deleteResp = await fetch(
+        `${logoServer.baseUrl}/api/companies/${logoCompanyId}/logo`,
+        { method: 'DELETE' },
+      );
+      assert.equal(deleteResp.status, 204);
+      assert.equal(await deleteResp.text(), '');
+
+      // GET after delete — 404
+      const getAfterDeleteResp = await fetch(
+        `${logoServer.baseUrl}/api/companies/${logoCompanyId}/logo`,
+      );
+      assert.equal(getAfterDeleteResp.status, 404);
+      const getAfterDeleteJson = (await getAfterDeleteResp.json()) as {
+        error: { code: string };
+      };
+      assert.equal(getAfterDeleteJson.error.code, 'COMPANY_LOGO_NOT_FOUND');
+
+      // Second DELETE — idempotent (204 even with no logo)
+      const secondDeleteResp = await fetch(
+        `${logoServer.baseUrl}/api/companies/${logoCompanyId}/logo`,
+        { method: 'DELETE' },
+      );
+      assert.equal(secondDeleteResp.status, 204);
+    } finally {
+      await logoServer.close();
+    }
+  } finally {
+    await logoPrisma.$disconnect();
+
+    // Clean up any logo files written during this test
+    if (logoCompanyId) {
+      const logoDir = path.join(
+        process.cwd(),
+        'uploads',
+        'company-logos',
+        logoCompanyId,
+      );
+      await rm(logoDir, { recursive: true, force: true }).catch(
+        () => undefined,
+      );
+    }
+
+    await rm(logoTempDir, { recursive: true, force: true });
   }
 }
 

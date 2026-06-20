@@ -11,6 +11,11 @@ import type {
   CompanyOverview,
   CompanyRepository,
 } from '../database/repositories/company.repository.js';
+import {
+  CompanyLogoValidationError,
+  CompanyLogoStorageError,
+  type CompanyLogoStorage,
+} from '../services/companyLogoStorage.js';
 import { createApiApp } from './api-app.js';
 
 const allowedOrigin = 'http://localhost:5173';
@@ -107,6 +112,10 @@ type CompanyRepositoryOverrides = Partial<{
     id: string,
     input: Parameters<CompanyRepository['update']>[1],
   ) => Promise<typeof defaultCompany>;
+  updateLogoUrl: (
+    id: string,
+    logoUrl: string | null,
+  ) => Promise<typeof defaultCompany>;
   delete: (id: string) => Promise<void>;
 }>;
 
@@ -119,6 +128,7 @@ const createCompanyRepository = (
     findOverview: 0,
     create: 0,
     update: 0,
+    updateLogoUrl: 0,
     delete: 0,
     createArgs: undefined as
       | {
@@ -131,6 +141,9 @@ const createCompanyRepository = (
           id: string;
           input: Parameters<CompanyRepository['update']>[1];
         }
+      | undefined,
+    updateLogoUrlArgs: undefined as
+      | { id: string; logoUrl: string | null }
       | undefined,
   };
 
@@ -176,6 +189,18 @@ const createCompanyRepository = (
       );
     },
 
+    async updateLogoUrl(id, logoUrl) {
+      calls.updateLogoUrl += 1;
+      calls.updateLogoUrlArgs = { id, logoUrl };
+      return (
+        (await overrides.updateLogoUrl?.(id, logoUrl)) ?? {
+          ...defaultCompany,
+          id,
+          logoUrl,
+        }
+      );
+    },
+
     async delete(id) {
       calls.delete += 1;
       return overrides.delete?.(id);
@@ -185,9 +210,63 @@ const createCompanyRepository = (
   return { calls, repository };
 };
 
-const createApp = (repository: CompanyRepository) =>
+type MockLogoStorageOverrides = Partial<{
+  validateCompanyLogoFile: (
+    input: Parameters<CompanyLogoStorage['validateCompanyLogoFile']>[0],
+  ) => ReturnType<CompanyLogoStorage['validateCompanyLogoFile']>;
+  buildCompanyLogoStorageKey: (
+    companyId: string,
+    fileName: string,
+    logoId?: string,
+  ) => string;
+  readCompanyLogoFile: (storageKey: string) => Promise<Buffer>;
+  deleteCompanyLogoFile: (storageKey: string) => Promise<void>;
+  stageCompanyLogoReplacement: (
+    input: Parameters<CompanyLogoStorage['stageCompanyLogoReplacement']>[0],
+  ) => Promise<void>;
+}>;
+
+const defaultStorageKey = `uploads/company-logos/${defaultCompany.id}/logo_test.png`;
+const defaultLogoBuffer = Buffer.from([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+]);
+
+const createMockLogoStorage = (
+  overrides: MockLogoStorageOverrides = {},
+): CompanyLogoStorage => ({
+  validateCompanyLogoFile(input) {
+    return (
+      overrides.validateCompanyLogoFile?.(input) ?? {
+        fileName: input.fileName,
+        mimeType: 'image/png' as const,
+        sizeBytes: input.sizeBytes,
+      }
+    );
+  },
+  buildCompanyLogoStorageKey(companyId, fileName, logoId) {
+    return (
+      overrides.buildCompanyLogoStorageKey?.(companyId, fileName, logoId) ??
+      defaultStorageKey
+    );
+  },
+  async readCompanyLogoFile(storageKey) {
+    return overrides.readCompanyLogoFile?.(storageKey) ?? defaultLogoBuffer;
+  },
+  async deleteCompanyLogoFile(storageKey) {
+    return overrides.deleteCompanyLogoFile?.(storageKey);
+  },
+  async stageCompanyLogoReplacement(input) {
+    return overrides.stageCompanyLogoReplacement?.(input);
+  },
+});
+
+const createApp = (
+  repository: CompanyRepository,
+  logoStorage?: CompanyLogoStorage,
+) =>
   createApiApp(config, {
     companyRepository: repository,
+    logoStorage,
   });
 
 {
@@ -1072,6 +1151,457 @@ const createApp = (repository: CompanyRepository) =>
     const body = await readJson<ApiErrorBody>(response);
     assert.equal(body.error.code, 'INTERNAL_SERVER_ERROR');
     assert.equal(JSON.stringify(body).includes('boom'), false);
+  } finally {
+    await server.close();
+  }
+}
+
+// --- Logo route tests ---
+
+const pngMagicBytes = Buffer.from([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00,
+]);
+
+// PUT /:id/logo — success
+{
+  const { calls, repository } = createCompanyRepository({
+    findById: async () => defaultCompany,
+    updateLogoUrl: async (_id, logoUrl) => ({ ...defaultCompany, logoUrl }),
+  });
+  const logoStorage = createMockLogoStorage();
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/logo`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'image/png',
+          'X-File-Name': 'logo.png',
+        },
+        body: pngMagicBytes,
+      },
+    );
+
+    assert.equal(response.status, 200);
+    const body = await readJson<{ data: { logoUrl: string | null } }>(response);
+    assert.ok(
+      typeof body.data.logoUrl === 'string' &&
+        body.data.logoUrl.includes(`/api/companies/${defaultCompany.id}/logo`),
+    );
+    assert.equal(calls.findById, 1);
+    assert.equal(calls.updateLogoUrl, 1);
+    assert.equal(calls.updateLogoUrlArgs?.id, defaultCompany.id);
+  } finally {
+    await server.close();
+  }
+}
+
+// PUT /:id/logo — company not found
+{
+  const { calls, repository } = createCompanyRepository({
+    findById: async () => null,
+  });
+  const logoStorage = createMockLogoStorage();
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/logo`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'image/png',
+          'X-File-Name': 'logo.png',
+        },
+        body: pngMagicBytes,
+      },
+    );
+
+    assert.equal(response.status, 404);
+    assert.deepEqual(await readJson(response), {
+      error: {
+        code: 'COMPANY_NOT_FOUND',
+        message: 'Company not found',
+        details: [],
+      },
+    });
+    assert.equal(calls.findById, 1);
+    assert.equal(calls.updateLogoUrl, 0);
+  } finally {
+    await server.close();
+  }
+}
+
+// PUT /:id/logo — validation error (mocked)
+{
+  const { calls, repository } = createCompanyRepository({
+    findById: async () => defaultCompany,
+  });
+  const logoStorage = createMockLogoStorage({
+    validateCompanyLogoFile: () => {
+      throw new CompanyLogoValidationError(
+        'Company logo file type is not supported',
+      );
+    },
+  });
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/logo`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'image/png',
+          'X-File-Name': 'logo.png',
+        },
+        body: pngMagicBytes,
+      },
+    );
+
+    assert.equal(response.status, 422);
+    const body = await readJson<ApiErrorBody>(response);
+    assert.equal(body.error.code, 'LOGO_VALIDATION_ERROR');
+    assert.equal(calls.updateLogoUrl, 0);
+  } finally {
+    await server.close();
+  }
+}
+
+// PUT /:id/logo — empty body (422)
+{
+  const { calls, repository } = createCompanyRepository({
+    findById: async () => defaultCompany,
+  });
+  const logoStorage = createMockLogoStorage();
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/logo`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'image/png',
+          'X-File-Name': 'logo.png',
+          'Content-Length': '0',
+        },
+        body: Buffer.alloc(0),
+      },
+    );
+
+    assert.equal(response.status, 422);
+    const body = await readJson<ApiErrorBody>(response);
+    assert.equal(body.error.code, 'LOGO_VALIDATION_ERROR');
+    assert.equal(calls.updateLogoUrl, 0);
+  } finally {
+    await server.close();
+  }
+}
+
+// PUT /:id/logo — wrong content type (415)
+{
+  const { repository } = createCompanyRepository();
+  const logoStorage = createMockLogoStorage();
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/logo`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'text/plain' },
+        body: 'not an image',
+      },
+    );
+
+    assert.equal(response.status, 415);
+    const body = await readJson<ApiErrorBody>(response);
+    assert.equal(body.error.code, 'UNSUPPORTED_MEDIA_TYPE');
+  } finally {
+    await server.close();
+  }
+}
+
+// PUT /:id/logo — invalid param (400)
+{
+  const { calls, repository } = createCompanyRepository();
+  const logoStorage = createMockLogoStorage();
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/not-an-id/logo`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'image/png',
+          'X-File-Name': 'logo.png',
+        },
+        body: pngMagicBytes,
+      },
+    );
+
+    assert.equal(response.status, 400);
+    assert.equal(calls.findById, 0);
+  } finally {
+    await server.close();
+  }
+}
+
+// PUT /:id/logo — storage error (500)
+{
+  const { repository } = createCompanyRepository({
+    findById: async () => defaultCompany,
+  });
+  const logoStorage = createMockLogoStorage({
+    stageCompanyLogoReplacement: async () => {
+      throw new CompanyLogoStorageError('Failed to stage');
+    },
+  });
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/logo`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'image/png',
+          'X-File-Name': 'logo.png',
+        },
+        body: pngMagicBytes,
+      },
+    );
+
+    assert.equal(response.status, 500);
+    const body = await readJson<ApiErrorBody>(response);
+    assert.equal(body.error.code, 'INTERNAL_SERVER_ERROR');
+  } finally {
+    await server.close();
+  }
+}
+
+// GET /:id/logo — success
+{
+  const companyWithLogo = {
+    ...defaultCompany,
+    logoUrl: defaultStorageKey,
+  };
+  const { calls, repository } = createCompanyRepository({
+    findById: async () => companyWithLogo,
+  });
+  const logoStorage = createMockLogoStorage({
+    readCompanyLogoFile: async () => defaultLogoBuffer,
+  });
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/logo`,
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('content-type'), 'image/png');
+    assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+    const bytes = Buffer.from(await response.arrayBuffer());
+    assert.deepEqual(bytes, defaultLogoBuffer);
+    assert.equal(calls.findById, 1);
+  } finally {
+    await server.close();
+  }
+}
+
+// GET /:id/logo — no logo (404)
+{
+  const { calls, repository } = createCompanyRepository({
+    findById: async () => defaultCompany,
+  });
+  const logoStorage = createMockLogoStorage();
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/logo`,
+    );
+
+    assert.equal(response.status, 404);
+    assert.deepEqual(await readJson(response), {
+      error: {
+        code: 'COMPANY_LOGO_NOT_FOUND',
+        message: 'Company logo not found',
+        details: [],
+      },
+    });
+    assert.equal(calls.findById, 1);
+  } finally {
+    await server.close();
+  }
+}
+
+// GET /:id/logo — company not found (404)
+{
+  const { repository } = createCompanyRepository({
+    findById: async () => null,
+  });
+  const logoStorage = createMockLogoStorage();
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/logo`,
+    );
+
+    assert.equal(response.status, 404);
+    const body = await readJson<ApiErrorBody>(response);
+    assert.equal(body.error.code, 'COMPANY_NOT_FOUND');
+  } finally {
+    await server.close();
+  }
+}
+
+// GET /:id/logo — invalid param (400)
+{
+  const { repository } = createCompanyRepository();
+  const logoStorage = createMockLogoStorage();
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/not-an-id/logo`,
+    );
+
+    assert.equal(response.status, 400);
+  } finally {
+    await server.close();
+  }
+}
+
+// DELETE /:id/logo — success with existing logo
+{
+  const companyWithLogo = {
+    ...defaultCompany,
+    logoUrl: defaultStorageKey,
+  };
+  const { calls, repository } = createCompanyRepository({
+    findById: async () => companyWithLogo,
+    updateLogoUrl: async () => ({ ...defaultCompany, logoUrl: null }),
+  });
+  const logoStorage = createMockLogoStorage();
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/logo`,
+      { method: 'DELETE' },
+    );
+
+    assert.equal(response.status, 204);
+    assert.equal(await response.text(), '');
+    assert.equal(calls.findById, 1);
+    assert.equal(calls.updateLogoUrl, 1);
+    assert.equal(calls.updateLogoUrlArgs?.logoUrl, null);
+  } finally {
+    await server.close();
+  }
+}
+
+// DELETE /:id/logo — idempotent (no logo)
+{
+  const { calls, repository } = createCompanyRepository({
+    findById: async () => defaultCompany,
+    updateLogoUrl: async () => ({ ...defaultCompany, logoUrl: null }),
+  });
+  const logoStorage = createMockLogoStorage();
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/logo`,
+      { method: 'DELETE' },
+    );
+
+    assert.equal(response.status, 204);
+    assert.equal(calls.findById, 1);
+    assert.equal(calls.updateLogoUrl, 1);
+  } finally {
+    await server.close();
+  }
+}
+
+// DELETE /:id/logo — company not found (404)
+{
+  const { calls, repository } = createCompanyRepository({
+    findById: async () => null,
+  });
+  const logoStorage = createMockLogoStorage();
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/logo`,
+      { method: 'DELETE' },
+    );
+
+    assert.equal(response.status, 404);
+    assert.deepEqual(await readJson(response), {
+      error: {
+        code: 'COMPANY_NOT_FOUND',
+        message: 'Company not found',
+        details: [],
+      },
+    });
+    assert.equal(calls.updateLogoUrl, 0);
+  } finally {
+    await server.close();
+  }
+}
+
+// DELETE /:id/logo — file cleanup warning does not fail the operation
+{
+  const companyWithLogo = {
+    ...defaultCompany,
+    logoUrl: defaultStorageKey,
+  };
+  const { calls, repository } = createCompanyRepository({
+    findById: async () => companyWithLogo,
+    updateLogoUrl: async () => ({ ...defaultCompany, logoUrl: null }),
+  });
+  const logoStorage = createMockLogoStorage({
+    deleteCompanyLogoFile: async () => {
+      throw new CompanyLogoStorageError('File not accessible');
+    },
+  });
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/${defaultCompany.id}/logo`,
+      { method: 'DELETE' },
+    );
+
+    assert.equal(response.status, 204);
+    assert.equal(calls.updateLogoUrl, 1);
+  } finally {
+    await server.close();
+  }
+}
+
+// DELETE /:id/logo — invalid param (400)
+{
+  const { repository } = createCompanyRepository();
+  const logoStorage = createMockLogoStorage();
+  const server = await startTestServer(createApp(repository, logoStorage));
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/companies/not-an-id/logo`,
+      { method: 'DELETE' },
+    );
+
+    assert.equal(response.status, 400);
   } finally {
     await server.close();
   }

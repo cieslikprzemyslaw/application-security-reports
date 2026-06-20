@@ -1,4 +1,9 @@
-import {
+import { randomUUID } from 'node:crypto';
+import { promises as fsPromises } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+import express, {
   Router,
   type NextFunction,
   type Request,
@@ -28,6 +33,11 @@ import type { AssessmentRepository } from '../database/repositories/assessment.r
 import type { ThreatRepository } from '../database/repositories/threat.repository.js';
 import type { EvidenceRepository } from '../database/repositories/evidence.repository.js';
 import type { ReportRepository } from '../database/repositories/report.repository.js';
+import {
+  CompanyLogoStorageError,
+  CompanyLogoValidationError,
+  type CompanyLogoStorage,
+} from '../services/companyLogoStorage.js';
 
 const companyAssessmentOverviewRouteParamsSchema = z
   .object({
@@ -65,7 +75,17 @@ type CompanyResponse = {
   updatedAt: string;
 };
 
-const companyResponse = (company: Company): CompanyResponse =>
+const logoContentTypeByExtension: Record<string, string> = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+};
+
+const buildBaseUrl = (req: Request): string =>
+  `${req.protocol}://${req.get('host') ?? 'localhost'}`;
+
+const companyResponse = (company: Company, baseUrl: string): CompanyResponse =>
   companyPublicSchema.parse({
     id: company.id,
     name: company.name,
@@ -73,19 +93,22 @@ const companyResponse = (company: Company): CompanyResponse =>
     website: company.website,
     contactName: company.contactName,
     contactEmail: company.contactEmail,
-    logoUrl: company.logoUrl ?? null,
+    logoUrl: company.logoUrl
+      ? `${baseUrl}/api/companies/${company.id}/logo`
+      : null,
     footerText: company.footerText,
     createdAt: company.createdAt,
     updatedAt: company.updatedAt,
   });
 
 const sendCompanyResponse = (
+  req: Request,
   res: Response,
   statusCode: number,
   company: Company,
 ): Response =>
   res.status(statusCode).json({
-    data: companyResponse(company),
+    data: companyResponse(company, buildBaseUrl(req)),
   });
 
 type CompanyRepositoryOperation =
@@ -150,18 +173,21 @@ export const createCompaniesRouter = (
     threatRepository?: ThreatRepository;
     evidenceRepository?: EvidenceRepository;
     reportRepository?: ReportRepository;
+    logoStorage?: CompanyLogoStorage;
   } = {},
 ): Router => {
   const router = Router();
+  const { logoStorage } = dependencies;
 
   router.get(
     '/',
-    asyncRoute(async (_req, res) => {
+    asyncRoute(async (req, res) => {
       try {
         const companies = await companyRepository.findAll();
+        const baseUrl = buildBaseUrl(req);
 
         res.status(200).json({
-          data: companies.map(companyResponse),
+          data: companies.map(c => companyResponse(c, baseUrl)),
         });
       } catch (error) {
         if (!handleCompanyRepositoryError(error, res, 'list')) {
@@ -176,7 +202,7 @@ export const createCompaniesRouter = (
     createRequestValidationMiddleware({
       params: companyRouteParamsSchema,
     }),
-    asyncRoute(async (_req, res) => {
+    asyncRoute(async (req, res) => {
       const { id } = res.locals.validatedRequest?.params as { id: string };
 
       try {
@@ -187,10 +213,12 @@ export const createCompaniesRouter = (
           return;
         }
 
+        const baseUrl = buildBaseUrl(req);
+
         res.status(200).json({
           data: {
             ...overview,
-            company: companyResponse(overview.company),
+            company: companyResponse(overview.company, baseUrl),
           },
         });
       } catch (error) {
@@ -291,7 +319,7 @@ export const createCompaniesRouter = (
     createRequestValidationMiddleware({
       params: companyRouteParamsSchema,
     }),
-    asyncRoute(async (_req, res) => {
+    asyncRoute(async (req, res) => {
       const { id } = res.locals.validatedRequest?.params as {
         id: string;
       };
@@ -304,7 +332,7 @@ export const createCompaniesRouter = (
           return;
         }
 
-        sendCompanyResponse(res, 200, company);
+        sendCompanyResponse(req, res, 200, company);
       } catch (error) {
         if (!handleCompanyRepositoryError(error, res, 'retrieve')) {
           throw error;
@@ -318,7 +346,7 @@ export const createCompaniesRouter = (
     createRequestValidationMiddleware({
       body: createCompanyRequestSchema,
     }),
-    asyncRoute(async (_req, res) => {
+    asyncRoute(async (req, res) => {
       const body = res.locals.validatedRequest?.body as {
         name: string;
         description?: string;
@@ -332,7 +360,7 @@ export const createCompaniesRouter = (
         const company = await companyRepository.create(body);
         const response = res.location(`/api/companies/${company.id}`);
 
-        sendCompanyResponse(response, 201, company);
+        sendCompanyResponse(req, response, 201, company);
       } catch (error) {
         if (!handleCompanyRepositoryError(error, res, 'create')) {
           throw error;
@@ -347,7 +375,7 @@ export const createCompaniesRouter = (
       params: companyRouteParamsSchema,
       body: updateCompanyRequestSchema,
     }),
-    asyncRoute(async (_req, res) => {
+    asyncRoute(async (req, res) => {
       const { id } = res.locals.validatedRequest?.params as {
         id: string;
       };
@@ -378,7 +406,7 @@ export const createCompaniesRouter = (
             : {}),
         });
 
-        sendCompanyResponse(res, 200, updatedCompany);
+        sendCompanyResponse(req, res, 200, updatedCompany);
       } catch (error) {
         if (!handleCompanyRepositoryError(error, res, 'update')) {
           throw error;
@@ -399,6 +427,193 @@ export const createCompaniesRouter = (
 
       try {
         await companyRepository.delete(id);
+        res.status(204).send();
+      } catch (error) {
+        if (!handleCompanyRepositoryError(error, res, 'delete')) {
+          throw error;
+        }
+      }
+    }),
+  );
+
+  router.put(
+    '/:id/logo',
+    express.raw({
+      type: ['image/jpeg', 'image/png', 'image/webp'],
+      limit: '5mb',
+    }),
+    createRequestValidationMiddleware({ params: companyRouteParamsSchema }),
+    asyncRoute(async (req, res) => {
+      const { id } = res.locals.validatedRequest?.params as { id: string };
+
+      if (!logoStorage) {
+        sendApiError(
+          res,
+          500,
+          'INTERNAL_SERVER_ERROR',
+          'Unexpected server error',
+        );
+        return;
+      }
+
+      if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+        sendApiError(
+          res,
+          422,
+          'LOGO_VALIDATION_ERROR',
+          'Logo file body is required',
+        );
+        return;
+      }
+
+      const fileName = (req.get('X-File-Name') ?? '').trim();
+      const mimeType = (req.get('Content-Type') ?? '').split(';')[0].trim();
+      const fileBytes = req.body;
+
+      try {
+        const validatedFile = logoStorage.validateCompanyLogoFile({
+          fileName,
+          mimeType,
+          sizeBytes: fileBytes.length,
+          bytes: fileBytes,
+        });
+
+        const company = await companyRepository.findById(id);
+
+        if (!company) {
+          sendApiError(res, 404, 'COMPANY_NOT_FOUND', 'Company not found');
+          return;
+        }
+
+        const previousStorageKey = company.logoUrl ?? undefined;
+        const newStorageKey = logoStorage.buildCompanyLogoStorageKey(
+          id,
+          validatedFile.fileName,
+        );
+
+        const tmpPath = path.join(
+          os.tmpdir(),
+          `company-logo-${randomUUID()}.tmp`,
+        );
+
+        try {
+          await fsPromises.writeFile(tmpPath, fileBytes);
+          await logoStorage.stageCompanyLogoReplacement({
+            sourcePath: tmpPath,
+            targetStorageKey: newStorageKey,
+            previousStorageKey,
+          });
+        } finally {
+          await fsPromises.rm(tmpPath, { force: true }).catch(() => undefined);
+        }
+
+        const updatedCompany = await companyRepository.updateLogoUrl(
+          id,
+          newStorageKey,
+        );
+
+        sendCompanyResponse(req, res, 200, updatedCompany);
+      } catch (error) {
+        if (error instanceof CompanyLogoValidationError) {
+          sendApiError(res, 422, 'LOGO_VALIDATION_ERROR', error.message);
+          return;
+        }
+
+        if (error instanceof CompanyLogoStorageError) {
+          console.error('Company logo storage error', error);
+          sendApiError(
+            res,
+            500,
+            'INTERNAL_SERVER_ERROR',
+            'Unexpected server error',
+          );
+          return;
+        }
+
+        if (!handleCompanyRepositoryError(error, res, 'update')) {
+          throw error;
+        }
+      }
+    }),
+  );
+
+  router.get(
+    '/:id/logo',
+    createRequestValidationMiddleware({ params: companyRouteParamsSchema }),
+    asyncRoute(async (_req, res) => {
+      const { id } = res.locals.validatedRequest?.params as { id: string };
+
+      try {
+        const company = await companyRepository.findById(id);
+
+        if (!company) {
+          sendApiError(res, 404, 'COMPANY_NOT_FOUND', 'Company not found');
+          return;
+        }
+
+        if (!company.logoUrl || !logoStorage) {
+          sendApiError(
+            res,
+            404,
+            'COMPANY_LOGO_NOT_FOUND',
+            'Company logo not found',
+          );
+          return;
+        }
+
+        const fileBuffer = await logoStorage.readCompanyLogoFile(
+          company.logoUrl,
+        );
+        const ext = path.extname(company.logoUrl).toLowerCase();
+        const contentType =
+          logoContentTypeByExtension[ext] ?? 'application/octet-stream';
+
+        res.status(200).setHeader('Content-Type', contentType).send(fileBuffer);
+      } catch (error) {
+        if (error instanceof CompanyLogoStorageError) {
+          console.error('Company logo storage error', error);
+          sendApiError(
+            res,
+            500,
+            'INTERNAL_SERVER_ERROR',
+            'Unexpected server error',
+          );
+          return;
+        }
+
+        if (!handleCompanyRepositoryError(error, res, 'retrieve')) {
+          throw error;
+        }
+      }
+    }),
+  );
+
+  router.delete(
+    '/:id/logo',
+    createRequestValidationMiddleware({ params: companyRouteParamsSchema }),
+    asyncRoute(async (_req, res) => {
+      const { id } = res.locals.validatedRequest?.params as { id: string };
+
+      try {
+        const company = await companyRepository.findById(id);
+
+        if (!company) {
+          sendApiError(res, 404, 'COMPANY_NOT_FOUND', 'Company not found');
+          return;
+        }
+
+        if (company.logoUrl && logoStorage) {
+          try {
+            await logoStorage.deleteCompanyLogoFile(company.logoUrl);
+          } catch (storageError) {
+            console.warn(
+              'Failed to delete company logo file during logo removal',
+              storageError,
+            );
+          }
+        }
+
+        await companyRepository.updateLogoUrl(id, null);
         res.status(204).send();
       } catch (error) {
         if (!handleCompanyRepositoryError(error, res, 'delete')) {

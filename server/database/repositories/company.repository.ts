@@ -38,6 +38,7 @@ export interface CompanyRepository {
   findOverview(companyId: string): Promise<CompanyOverview | null>;
   create(input: CreateCompanyInput, id?: string): Promise<Company>;
   update(id: string, input: UpdateCompanyInput): Promise<Company>;
+  updateLogoUrl(id: string, logoUrl: string | null): Promise<Company>;
   delete(id: string): Promise<void>;
 }
 
@@ -216,6 +217,20 @@ export function createCompanyRepository(
               ? { footerText: input.footerText }
               : {}),
           },
+          select: companySelect,
+        });
+
+        return toCompany(company);
+      } catch (error) {
+        throw mapPrismaError(error);
+      }
+    },
+
+    async updateLogoUrl(id, logoUrl) {
+      try {
+        const company = await db.company.update({
+          where: { id },
+          data: { logoUrl },
           select: companySelect,
         });
 

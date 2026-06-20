@@ -120,6 +120,8 @@ const createStagedStorageKey = (
   randomSuffix: string,
 ): string => `${storageKey}.staged-${randomSuffix}`;
 
+export type CompanyLogoStorage = ReturnType<typeof createCompanyLogoStorage>;
+
 export const createCompanyLogoStorage = (
   dependencies: CompanyLogoStorageDependencies = {},
 ) => {
