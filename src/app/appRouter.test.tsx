@@ -8,7 +8,7 @@ import { ThemeProvider } from 'styled-components';
 
 import { AppLayout } from '~/app/layouts';
 import { routes } from '~/routes';
-import { defaultTheme } from '~/theme';
+import { AppThemeProvider, defaultTheme } from '~/theme';
 
 import AppRouter from './appRouter';
 
@@ -57,6 +57,19 @@ const setupDom = (
   setGlobal('document', window.document);
   setGlobal('navigator', window.navigator);
   setGlobal('HTMLElement', window.HTMLElement);
+
+  // React's legacy input change polyfill can call attachEvent/detachEvent on
+  // the active element, which JSDOM does not implement. Provide no-op shims so
+  // focus-driven interactions do not throw in this test environment.
+  const htmlElementPrototype = window.HTMLElement
+    .prototype as typeof window.HTMLElement.prototype & {
+    attachEvent?: () => void;
+    detachEvent?: () => void;
+  };
+
+  htmlElementPrototype.attachEvent ??= () => undefined;
+  htmlElementPrototype.detachEvent ??= () => undefined;
+
   setGlobal('Node', window.Node);
   setGlobal(
     'requestAnimationFrame',
@@ -94,9 +107,11 @@ const renderApp = async (
 
   await act(async () => {
     root.render(
-      <ThemeProvider theme={defaultTheme}>
-        <AppRouter />
-      </ThemeProvider>,
+      <AppThemeProvider>
+        <ThemeProvider theme={defaultTheme}>
+          <AppRouter />
+        </ThemeProvider>
+      </AppThemeProvider>,
     );
     if (settle) {
       await renderTick();
@@ -1516,22 +1531,55 @@ await (async () => {
   }
   await assertRouteRenders('/reports', 'Report Preview');
   {
-    const { container, root } = await renderApp('/settings');
+    setFetch(async input => {
+      assert.equal(String(input), '/api/settings');
 
-    assert.ok(
-      textContent(container).includes(
-        'Manage organisation details, report branding, defaults, and user preferences.',
-      ),
-    );
-    assert.ok(
-      !textContent(container).includes('Something went wrong'),
-      'Expected the settings route to avoid the route error boundary',
-    );
-    assert.ok(container.querySelector('.settings-form'));
-
-    await act(async () => {
-      root.unmount();
+      return createJsonResponse({
+        data: {
+          id: 'set_00000000-0000-0000-0000-000000000001',
+          organisationName: 'Northstar Digital',
+          consultantName: 'Alex Mercer',
+          consultantEmail: 'alex.mercer@appsec.io',
+          issuerLogoId: null,
+          defaultReportTitle: 'Application Security Assessment',
+          defaultSeverity: 'medium',
+          theme: 'system',
+          dateFormat: 'YYYY-MM-DD',
+          reportFooterText:
+            '(c) 2026 Northstar Digital. Confidential - do not distribute.',
+          reportConfidentialityLabel: 'Confidential',
+          methodology: 'OWASP ASVS / WSTG',
+          reportStyle: 'Technical & structured',
+          includeEvidence: true,
+          confidentialReports: true,
+          allowedBrandingModes: ['issuer', 'client'],
+          defaultBrandingMode: 'issuer',
+          createdAt: '2026-06-01T09:00:00.000Z',
+          updatedAt: '2026-06-11T09:00:00.000Z',
+        },
+      });
     });
+
+    try {
+      const { container, root } = await renderApp('/settings');
+
+      assert.ok(
+        textContent(container).includes(
+          'Manage organisation details, report branding, defaults, and user preferences.',
+        ),
+      );
+      assert.ok(
+        !textContent(container).includes('Something went wrong'),
+        'Expected the settings route to avoid the route error boundary',
+      );
+      assert.ok(container.querySelector('.settings-form'));
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
   }
 
   setFetch(async input => {
