@@ -4,6 +4,7 @@ import Badge from '~/app/components/ui/badge';
 import Button from '~/app/components/ui/button';
 import EmptyState from '~/app/components/ui/emptyState';
 import IconSVG from '~/app/components/ui/iconSVG';
+import { formatCount, formatWithMissingValue } from '~/app/utils/formatters';
 
 import StyledDashboard from './dashboard.styled';
 import { enrichRecentCompanies, formatRelativeTime } from './dashboard.utils';
@@ -32,7 +33,7 @@ const getAssessmentSummary = (company: RecentCompanyItem) => {
     return '—';
   }
 
-  return company.latestAssessment.name;
+  return formatWithMissingValue(company.latestAssessment.name);
 };
 
 const Dashboard = ({
@@ -112,7 +113,7 @@ const Dashboard = ({
                       Active assessments
                     </dt>
                     <dd className="dashboard-company-detail-value">
-                      {company.assessmentCount}
+                      {formatCount(company.assessmentCount)}
                     </dd>
                   </div>
 

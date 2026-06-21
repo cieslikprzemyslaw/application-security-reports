@@ -2,6 +2,7 @@ import {
   readRecentCompanyIds,
   readRecentCompanyOpenTimes,
 } from '~/app/layouts/sidebar/companySwitcher.utils';
+import { formatRelativeTime } from '~/app/utils/formatters';
 
 import type { RecentCompanyItem } from './dashboard.type';
 
@@ -38,34 +39,4 @@ export const enrichRecentCompanies = (
   }));
 };
 
-export const formatRelativeTime = (value?: string) => {
-  if (!value) {
-    return '—';
-  }
-
-  const timestamp = new Date(value).getTime();
-
-  if (Number.isNaN(timestamp)) {
-    return '—';
-  }
-
-  const elapsedMinutes = Math.round((Date.now() - timestamp) / 60000);
-
-  if (elapsedMinutes < 1) {
-    return 'just now';
-  }
-
-  if (elapsedMinutes < 60) {
-    return `${elapsedMinutes}m ago`;
-  }
-
-  const elapsedHours = Math.round(elapsedMinutes / 60);
-
-  if (elapsedHours < 24) {
-    return `${elapsedHours}h ago`;
-  }
-
-  const elapsedDays = Math.round(elapsedHours / 24);
-
-  return `${elapsedDays}d ago`;
-};
+export { formatRelativeTime };

@@ -7,6 +7,7 @@ import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 
 import { routes } from '~/routes';
+import { formatReportVersion } from '~/app/utils/formatters';
 import { defaultTheme } from '~/theme';
 import packageJson from '../../../../package.json';
 
@@ -120,7 +121,7 @@ const SidebarFixture = ({
           </div>
         }
         navigationGroups={navigationGroups}
-        footer={<small>Version {packageJson.version}</small>}
+        footer={<small>{formatReportVersion(packageJson.version)}</small>}
         isOpen={isOpen}
         onClose={handleClose}
       />
@@ -202,7 +203,7 @@ await (async () => {
       routes.settings,
     );
     assert.equal(
-      container.textContent?.includes(`Version ${packageJson.version}`),
+      container.textContent?.includes(formatReportVersion(packageJson.version)),
       true,
     );
     assert.equal(container.querySelector('a[href="/assessments"]'), null);

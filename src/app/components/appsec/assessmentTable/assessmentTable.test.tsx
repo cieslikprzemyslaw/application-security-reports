@@ -310,6 +310,38 @@ await (async () => {
       root.unmount();
     });
   }
+
+  {
+    const { container, root } = await renderTable('updated', 'desc');
+
+    await act(async () => {
+      root.render(
+        <ThemeProvider theme={defaultTheme}>
+          <AssessmentTable
+            assessments={[
+              {
+                ...sampleAssessment,
+                updatedAt: 'not-a-date',
+              },
+            ]}
+            sortBy="updated"
+            sortDirection="desc"
+            onSortChange={() => undefined}
+          />
+        </ThemeProvider>,
+      );
+      await renderTick();
+    });
+
+    const updatedCell = container.querySelector('.assessment-table__cell time');
+
+    assert.equal(updatedCell?.textContent?.trim(), 'Invalid date');
+    assert.ok(!updatedCell?.textContent?.includes('Invalid Date'));
+
+    await act(async () => {
+      root.unmount();
+    });
+  }
 })();
 
 console.log('AssessmentTable sort icon checks passed');

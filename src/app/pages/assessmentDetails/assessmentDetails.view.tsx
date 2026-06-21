@@ -8,6 +8,7 @@ import Card from '~/app/components/ui/card';
 import IconSVG from '~/app/components/ui/iconSVG';
 import StatCard from '~/app/components/common/statCard';
 import Tabs from '~/app/components/ui/tabs';
+import { formatDate, formatWithMissingValue } from '~/app/utils/formatters';
 
 import StyledAssessmentDetails from './assessmentDetails.styled';
 
@@ -51,27 +52,7 @@ const defaultActionOrder: AssessmentDetailAction[] = [
 ];
 
 const getAssessmentName = (assessment: AssessmentDetailsAssessment) =>
-  assessment.applicationName.trim().length > 0
-    ? assessment.applicationName
-    : '—';
-
-const formatAssessmentMetaValue = (value?: string) => {
-  const trimmed = value?.trim();
-
-  return trimmed && trimmed.length > 0 ? trimmed : '—';
-};
-
-const formatDate = (value?: string) => {
-  if (!value) {
-    return '—';
-  }
-
-  const date = new Date(value);
-
-  return Number.isNaN(date.getTime())
-    ? '—'
-    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date);
-};
+  formatWithMissingValue(assessment.applicationName);
 
 const formatDateRange = (startedAt?: string, completedAt?: string) => {
   const start = formatDate(startedAt);
@@ -128,17 +109,17 @@ const AssessmentDetailsView = ({
   const summaryMetadata = [
     {
       label: 'Assessment type',
-      value: assessment.assessmentType ?? '—',
+      value: formatWithMissingValue(assessment.assessmentType),
       icon: <IconSVG name="assessment" />,
     },
     {
       label: 'Description',
-      value: assessment.description ?? '—',
+      value: formatWithMissingValue(assessment.description),
       icon: <IconSVG name="file" />,
     },
     {
       label: 'Scope',
-      value: assessment.scope ?? '—',
+      value: formatWithMissingValue(assessment.scope),
       icon: <IconSVG name="finding" />,
     },
   ];
@@ -271,12 +252,12 @@ const AssessmentDetailsView = ({
         companyName={assessment.companyName}
         applicationName={assessmentName}
         assessmentId={assessment.id}
-        environment={formatAssessmentMetaValue(assessment.environment)}
+        environment={formatWithMissingValue(assessment.environment)}
         dateRange={formatDateRange(
           assessment.startedAt,
           assessment.completedAt,
         )}
-        testerName={formatAssessmentMetaValue(assessment.testerName)}
+        testerName={formatWithMissingValue(assessment.testerName)}
         overallRisk={assessment.overallRisk ?? 'informational'}
         status={assessment.status}
         metadata={summaryMetadata}

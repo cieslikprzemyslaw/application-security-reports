@@ -1,6 +1,7 @@
 import React from 'react';
 
 import IconSVG from '~/app/components/ui/iconSVG';
+import { formatCount } from '~/app/utils/formatters';
 import StyledStatCard from './statCard.styled';
 
 import type { StatCardProps, StatTrendDirection } from './statCard.type';
@@ -36,7 +37,9 @@ const StatCard = ({
       <span className="stat-card-label">{label}</span>
     </div>
 
-    <strong className="stat-card-value">{value}</strong>
+    <strong className="stat-card-value">
+      {typeof value === 'number' ? formatCount(value) : value}
+    </strong>
 
     {(trendValue || helperText) && (
       <div className="stat-card-footer">

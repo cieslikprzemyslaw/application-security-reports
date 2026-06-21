@@ -6,6 +6,7 @@ import Badge from '~/app/components/ui/badge';
 import StyledRecentAssessmentTable from './recentAssessmentTable.styled';
 
 import type { RecentAssessmentTableProps } from './recentAssessmentTable.type';
+import { formatCount, formatWithMissingValue } from '~/app/utils/formatters';
 
 const assessmentStatusLabelMap: Record<string, string> = {
   draft: 'Draft',
@@ -16,7 +17,7 @@ const assessmentStatusLabelMap: Record<string, string> = {
 };
 
 const formatApplicationName = (applicationName: string) =>
-  applicationName.trim().length > 0 ? applicationName : '—';
+  formatWithMissingValue(applicationName);
 
 const RecentAssessmentTable = ({
   assessments,
@@ -83,7 +84,7 @@ const RecentAssessmentTable = ({
 
             <td className="recent-assessment-table-cell">
               <strong className="recent-assessment-table-findings-count">
-                {assessment.findingsCount}
+                {formatCount(assessment.findingsCount)}
               </strong>
             </td>
 
