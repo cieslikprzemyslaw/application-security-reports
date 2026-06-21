@@ -390,6 +390,7 @@ export const ModelName = {
   Evidence: 'Evidence',
   EvidenceExchange: 'EvidenceExchange',
   Report: 'Report',
+  ReportVersion: 'ReportVersion',
   EvidenceThreat: 'EvidenceThreat',
   ReportThreat: 'ReportThreat',
   Activity: 'Activity',
@@ -409,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "company" | "assessment" | "threat" | "evidence" | "evidenceExchange" | "report" | "evidenceThreat" | "reportThreat" | "activity" | "settings"
+    modelProps: "company" | "assessment" | "threat" | "evidence" | "evidenceExchange" | "report" | "reportVersion" | "evidenceThreat" | "reportThreat" | "activity" | "settings"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -857,6 +858,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ReportVersion: {
+      payload: Prisma.$ReportVersionPayload<ExtArgs>
+      fields: Prisma.ReportVersionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReportVersionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportVersionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReportVersionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportVersionPayload>
+        }
+        findFirst: {
+          args: Prisma.ReportVersionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportVersionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReportVersionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportVersionPayload>
+        }
+        findMany: {
+          args: Prisma.ReportVersionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportVersionPayload>[]
+        }
+        create: {
+          args: Prisma.ReportVersionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportVersionPayload>
+        }
+        createMany: {
+          args: Prisma.ReportVersionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReportVersionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportVersionPayload>[]
+        }
+        delete: {
+          args: Prisma.ReportVersionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportVersionPayload>
+        }
+        update: {
+          args: Prisma.ReportVersionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportVersionPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReportVersionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReportVersionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReportVersionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportVersionPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReportVersionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportVersionPayload>
+        }
+        aggregate: {
+          args: Prisma.ReportVersionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReportVersion>
+        }
+        groupBy: {
+          args: Prisma.ReportVersionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReportVersionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReportVersionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReportVersionCountAggregateOutputType> | number
+        }
+      }
+    }
     EvidenceThreat: {
       payload: Prisma.$EvidenceThreatPayload<ExtArgs>
       fields: Prisma.EvidenceThreatFieldRefs
@@ -1198,6 +1273,7 @@ export const CompanyScalarFieldEnum = {
   contactEmail: 'contactEmail',
   logoUrl: 'logoUrl',
   footerText: 'footerText',
+  archivedAt: 'archivedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1298,6 +1374,20 @@ export const ReportScalarFieldEnum = {
 } as const
 
 export type ReportScalarFieldEnum = (typeof ReportScalarFieldEnum)[keyof typeof ReportScalarFieldEnum]
+
+
+export const ReportVersionScalarFieldEnum = {
+  id: 'id',
+  reportId: 'reportId',
+  version: 'version',
+  status: 'status',
+  generatedAt: 'generatedAt',
+  filePath: 'filePath',
+  snapshot: 'snapshot',
+  createdAt: 'createdAt'
+} as const
+
+export type ReportVersionScalarFieldEnum = (typeof ReportVersionScalarFieldEnum)[keyof typeof ReportVersionScalarFieldEnum]
 
 
 export const EvidenceThreatScalarFieldEnum = {
@@ -1464,6 +1554,13 @@ export type EnumReportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
 
 
 /**
+ * Reference to a field of type 'ReportVersionStatus'
+ */
+export type EnumReportVersionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportVersionStatus'>
+    
+
+
+/**
  * Reference to a field of type 'ActivityEntityType'
  */
 export type EnumActivityEntityTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ActivityEntityType'>
@@ -1613,6 +1710,7 @@ export type GlobalOmitConfig = {
   evidence?: Prisma.EvidenceOmit
   evidenceExchange?: Prisma.EvidenceExchangeOmit
   report?: Prisma.ReportOmit
+  reportVersion?: Prisma.ReportVersionOmit
   evidenceThreat?: Prisma.EvidenceThreatOmit
   reportThreat?: Prisma.ReportThreatOmit
   activity?: Prisma.ActivityOmit
