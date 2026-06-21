@@ -5,38 +5,30 @@ const invalidRelativeTimeDisplayValue = 'Invalid relative time';
 const invalidFileSizeDisplayValue = 'Invalid file size';
 const invalidCountDisplayValue = 'Invalid count';
 
-const isMissingText = (value?: string): value is string =>
-  value === undefined || value.trim().length === 0;
+const isMissingText = (value?: string | null): value is string =>
+  value === undefined || value === null || value.trim().length === 0;
 
-const isValidNumber = (value?: number) =>
+const isValidNumber = (value?: number | null) =>
   typeof value === 'number' && Number.isFinite(value);
 
-const parseDate = (value?: string) => {
+export const formatDate = (value?: string | null) => {
   if (isMissingText(value)) {
-    return undefined;
-  }
-
-  return new Date(value);
-};
-
-export const formatDate = (value?: string) => {
-  const date = parseDate(value);
-
-  if (date === undefined) {
     return missingDisplayValue;
   }
+
+  const date = new Date(value);
 
   return Number.isNaN(date.getTime())
     ? invalidDateDisplayValue
     : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date);
 };
 
-export const formatDateTime = (value?: string) => {
-  const date = parseDate(value);
-
-  if (date === undefined) {
+export const formatDateTime = (value?: string | null) => {
+  if (isMissingText(value)) {
     return missingDisplayValue;
   }
+
+  const date = new Date(value);
 
   return Number.isNaN(date.getTime())
     ? invalidDateDisplayValue
@@ -46,14 +38,12 @@ export const formatDateTime = (value?: string) => {
       }).format(date);
 };
 
-export const formatRelativeTime = (value?: string, now = Date.now()) => {
-  const date = parseDate(value);
-
-  if (date === undefined) {
+export const formatRelativeTime = (value?: string | null, now = Date.now()) => {
+  if (isMissingText(value)) {
     return missingDisplayValue;
   }
 
-  const timestamp = date.getTime();
+  const timestamp = new Date(value).getTime();
 
   if (Number.isNaN(timestamp)) {
     return invalidRelativeTimeDisplayValue;
@@ -80,7 +70,7 @@ export const formatRelativeTime = (value?: string, now = Date.now()) => {
   return `${elapsedDays}d ago`;
 };
 
-export const formatFileSize = (value?: number) => {
+export const formatFileSize = (value?: number | null) => {
   if (value === undefined || value === null) {
     return missingDisplayValue;
   }
@@ -100,7 +90,7 @@ export const formatFileSize = (value?: number) => {
   return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-export const formatCount = (value?: number) => {
+export const formatCount = (value?: number | null) => {
   if (value === undefined || value === null) {
     return missingDisplayValue;
   }
@@ -121,7 +111,7 @@ export const formatWithMissingValue = (
   return trimmed && trimmed.length > 0 ? trimmed : fallback;
 };
 
-export const formatReportVersion = (value?: string) => {
+export const formatReportVersion = (value?: string | null) => {
   const displayValue = formatWithMissingValue(value);
 
   return displayValue === missingDisplayValue
