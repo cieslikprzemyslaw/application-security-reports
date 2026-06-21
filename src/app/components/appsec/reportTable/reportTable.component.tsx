@@ -2,6 +2,7 @@ import React from 'react';
 
 import DataTable from '~/app/components/common/dataTable';
 import Badge from '~/app/components/ui/badge';
+import { formatDateTime } from '~/app/utils/formatters';
 
 import StyledReportTable from './reportTable.styled';
 
@@ -58,8 +59,11 @@ const ReportTable = ({
           id: 'generated',
           header: 'Generated',
           cell: report => (
-            <time className="report-table-report-date">
-              {report.generatedAt ?? '—'}
+            <time
+              className="report-table-report-date"
+              dateTime={report.generatedAt}
+            >
+              {formatDateTime(report.generatedAt)}
             </time>
           ),
         },
@@ -67,7 +71,12 @@ const ReportTable = ({
           id: 'updated',
           header: 'Updated',
           cell: report => (
-            <time className="report-table-report-date">{report.updatedAt}</time>
+            <time
+              className="report-table-report-date"
+              dateTime={report.updatedAt}
+            >
+              {formatDateTime(report.updatedAt)}
+            </time>
           ),
         },
       ]}

@@ -3,6 +3,7 @@ import React from 'react';
 import Badge from '~/app/components/ui/badge';
 import Button from '~/app/components/ui/button';
 import IconSVG from '~/app/components/ui/iconSVG';
+import { formatCount, formatDateTime } from '~/app/utils/formatters';
 
 import StyledAssessmentTable from './assessmentTable.styled';
 import type {
@@ -163,16 +164,13 @@ const AssessmentTable = ({
 
             <td className="assessment-table__cell">
               <strong className="assessment-table__findings-count">
-                {assessment.findingsCount}
+                {formatCount(assessment.findingsCount)}
               </strong>
             </td>
 
             <td className="assessment-table__cell">
               <time dateTime={assessment.updatedAt}>
-                {new Intl.DateTimeFormat(undefined, {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
-                }).format(new Date(assessment.updatedAt))}
+                {formatDateTime(assessment.updatedAt)}
               </time>
             </td>
 

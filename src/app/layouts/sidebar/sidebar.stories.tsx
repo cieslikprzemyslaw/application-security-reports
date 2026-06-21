@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
 import IconSVG from '~/app/components/ui/iconSVG';
+import { formatReportVersion } from '~/app/utils/formatters';
 import packageJson from '../../../../package.json';
 import Sidebar from './sidebar.component';
 import { routes } from '~/routes';
@@ -82,6 +83,6 @@ export const Default: Story = {
         ],
       },
     ],
-    footer: <small>Version {packageJson.version}</small>,
+    footer: <small>{formatReportVersion(packageJson.version)}</small>,
   },
 };

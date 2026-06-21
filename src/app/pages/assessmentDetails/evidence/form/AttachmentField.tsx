@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Dropzone from '~/app/components/ui/dropzone';
+import { formatFileSize } from '~/app/utils/formatters';
 import {
   isEvidenceFileNameCompatibleWithMimeType,
   type SupportedEvidenceMimeType,
@@ -8,7 +9,6 @@ import {
 
 import {
   attachmentAcceptedTypes,
-  formatFileSize,
   MAX_ATTACHMENT_SIZE_BYTES,
 } from './EvidenceForm.constants';
 import {

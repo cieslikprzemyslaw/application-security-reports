@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 
+import { formatReportVersion } from '~/app/utils/formatters';
 import { defaultTheme } from '~/theme';
 import packageJson from '../../../../package.json';
 
@@ -102,7 +103,7 @@ await (async () => {
     assert.ok(container.querySelector('.topbar'));
     assert.ok(container.querySelector('.page-content'));
     assert.ok(
-      textContent(container).includes(`Version ${packageJson.version}`),
+      textContent(container).includes(formatReportVersion(packageJson.version)),
     );
     assert.ok(textContent(container).includes('Dashboard page'));
     assert.equal(

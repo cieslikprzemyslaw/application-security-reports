@@ -14,6 +14,7 @@ import CompanySwitcher from '../sidebar/companySwitcher.component';
 import Sidebar from '../sidebar';
 import Topbar from '../topbar';
 import TopbarUserIdentity from '../topbar/topbarUserIdentity.component';
+import { formatReportVersion } from '~/app/utils/formatters';
 import type { CompanyIdentity } from '~/app/pages/companies';
 import type { SidebarNavigationGroup } from '../sidebar';
 
@@ -87,7 +88,7 @@ const AppLayout = ({
           onClose={closeSidebar}
           brand={sidebarBrand}
           navigationGroups={navigationGroups}
-          footer={<small>Version {packageJson.version}</small>}
+          footer={<small>{formatReportVersion(packageJson.version)}</small>}
         />
       }
       topbar={
