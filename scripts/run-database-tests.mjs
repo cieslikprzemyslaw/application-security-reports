@@ -69,6 +69,7 @@ const testFiles = [
   'server/database/repositories/repositories.test.evidence-report-settings.js',
   'server/database/repositories/repositories.test.report-version.js',
   'server/database/repositories/repositories.integration.test.js',
+  'server/database/repositories/repositories.integration.report-version.test.js',
   'server/database/seed.test.js',
 ];
 

@@ -12,7 +12,6 @@ import { createAssessmentRepository } from './assessment.repository.js';
 import { createCompanyRepository } from './company.repository.js';
 import { createEvidenceRepository } from './evidence.repository.js';
 import { createReportRepository } from './report.repository.js';
-import { createReportVersionRepository } from './reportVersion.repository.js';
 import { createSettingsRepository } from './settings.repository.js';
 import { createThreatRepository } from './threat.repository.js';
 
@@ -96,19 +95,6 @@ const evidenceMigrationPath = path.resolve(
   'migration.sql',
 );
 const evidenceMigrationSql = readFileSync(evidenceMigrationPath, 'utf8');
-const reportVersionMigrationPath = path.resolve(
-  buildDir,
-  '..',
-  '..',
-  'prisma',
-  'migrations',
-  '20260621120000_add_report_version',
-  'migration.sql',
-);
-const reportVersionMigrationSql = readFileSync(
-  reportVersionMigrationPath,
-  'utf8',
-);
 const adapterUrl = databaseUrl.startsWith('file:')
   ? `file:${databasePath}`
   : databasePath;
@@ -128,7 +114,6 @@ const Database = require('better-sqlite3') as new (databasePath: string) => {
     bootstrapDb.exec(settingsBrandingMigrationSql);
     bootstrapDb.exec(threatMigrationSql);
     bootstrapDb.exec(evidenceMigrationSql);
-    bootstrapDb.exec(reportVersionMigrationSql);
   } finally {
     bootstrapDb.close();
   }
@@ -154,7 +139,6 @@ try {
   const threatRepo = createThreatRepository(prisma);
   const evidenceRepo = createEvidenceRepository(prisma);
   const reportRepo = createReportRepository(prisma);
-  const reportVersionRepo = createReportVersionRepository(prisma);
   const activityRepo = createActivityRepository(prisma);
   const settingsRepo = createSettingsRepository(prisma);
 
@@ -350,72 +334,6 @@ try {
   const loadedReportAfterDetach = await reportRepo.findById(report.id);
   assert.ok(loadedReportAfterDetach);
   assert.deepEqual(loadedReportAfterDetach?.selectedThreatIds, []);
-
-  const validSnapshot = {
-    reportTitle: 'Security Report',
-    companyName: 'Northstar Digital',
-    assessmentTitle: 'API review',
-    branding: { clientName: 'Northstar Digital' },
-    threats: [],
-  };
-
-  const draftVersion = await reportVersionRepo.create({
-    reportId: report.id,
-    version: 1,
-    status: 'draft',
-    generatedAt: '2026-06-21',
-    filePath: undefined,
-    snapshot: validSnapshot,
-  });
-
-  assert.ok(draftVersion.id.startsWith('rvs_'));
-  assert.equal(draftVersion.reportId, report.id);
-  assert.equal(draftVersion.version, 1);
-  assert.equal(draftVersion.status, 'draft');
-  assert.equal(draftVersion.generatedAt, '2026-06-21');
-  assert.equal(draftVersion.filePath, undefined);
-  assert.deepEqual(draftVersion.snapshot, validSnapshot);
-
-  const finalVersion = await reportVersionRepo.create({
-    reportId: report.id,
-    version: 2,
-    status: 'final',
-    generatedAt: '2026-06-21',
-    filePath: undefined,
-    snapshot: validSnapshot,
-  });
-
-  assert.equal(finalVersion.status, 'final');
-  assert.equal(finalVersion.version, 2);
-
-  const loadedDraft = await reportVersionRepo.findById(draftVersion.id);
-  assert.ok(loadedDraft);
-  assert.equal(loadedDraft?.id, draftVersion.id);
-  assert.equal(loadedDraft?.status, 'draft');
-  assert.deepEqual(loadedDraft?.snapshot, validSnapshot);
-
-  assert.equal(
-    await reportVersionRepo.findById(
-      'rvs_00000000-0000-0000-0000-000000000099',
-    ),
-    null,
-  );
-
-  const versionList = await reportVersionRepo.findByReportId(report.id);
-  assert.equal(versionList.length, 2);
-  assert.ok(versionList.every(v => v.reportId === report.id));
-
-  await assert.rejects(
-    reportVersionRepo.create({
-      reportId: report.id,
-      version: 3,
-      status: 'draft',
-      generatedAt: '2026-06-21',
-      filePath: undefined,
-      snapshot: { reportTitle: 'Missing required fields' } as never,
-    }),
-    error => error instanceof ValidationError,
-  );
 
   await assert.rejects(
     companyRepo.delete(company.id),
