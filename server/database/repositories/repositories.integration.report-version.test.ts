@@ -74,6 +74,12 @@ const reportVersionMigrationSql = loadSql(
   '20260621120000_add_report_version',
   'migration.sql',
 );
+const companyArchivedAtMigrationSql = loadSql(
+  'prisma',
+  'migrations',
+  '20260621130000_add_company_archived_at',
+  'migration.sql',
+);
 
 const adapterUrl = databaseUrl.startsWith('file:')
   ? `file:${databasePath}`
@@ -95,6 +101,7 @@ const Database = require('better-sqlite3') as new (databasePath: string) => {
     bootstrapDb.exec(threatMigrationSql);
     bootstrapDb.exec(evidenceMigrationSql);
     bootstrapDb.exec(reportVersionMigrationSql);
+    bootstrapDb.exec(companyArchivedAtMigrationSql);
   } finally {
     bootstrapDb.close();
   }
