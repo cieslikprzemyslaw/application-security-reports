@@ -49,7 +49,7 @@ function normalizeLineEndings(raw: string): string {
 }
 
 function rawHttpInputByteLength(raw: string): number {
-  return Buffer.byteLength(raw, 'utf8');
+  return new TextEncoder().encode(raw).byteLength;
 }
 
 function splitHeadersAndBody(raw: string): {
