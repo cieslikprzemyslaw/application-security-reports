@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 
+import { ApplicationErrorBoundary } from '~/app/components/routeStateViews';
 import { AppLayout } from '~/app/layouts';
 import { routes } from '~/routes';
 import { AppThemeProvider, defaultTheme } from '~/theme';
@@ -155,6 +156,54 @@ export const renderRouteErrorFixture = async (pathname: string) => {
                 <Route path="/broken" element={<ThrowingRoute />} />
               </Route>
             </Routes>
+          </BrowserRouter>
+        </ThemeProvider>,
+      );
+      await renderTick();
+      await renderTick();
+    });
+  } finally {
+    console.error = originalConsoleError;
+  }
+
+  return { container, root };
+};
+
+export const renderApplicationErrorFixture = async (
+  pathname: string,
+  onReload: () => void,
+) => {
+  const { container } = setupDom(pathname);
+
+  assert.ok(container, 'Expected root container to exist');
+
+  const root = createRoot(container);
+  const originalConsoleError = console.error;
+  console.error = () => undefined;
+
+  const ThrowingRoute = () => {
+    throw new Error('Simulated application failure');
+  };
+
+  const ApplicationBoundaryFixture = () => {
+    const location = useLocation();
+
+    return (
+      <ApplicationErrorBoundary key={location.pathname} onReload={onReload}>
+        <Routes>
+          <Route path="/dashboard" element={<h1>Security Dashboard</h1>} />
+          <Route path="/broken" element={<ThrowingRoute />} />
+        </Routes>
+      </ApplicationErrorBoundary>
+    );
+  };
+
+  try {
+    await act(async () => {
+      root.render(
+        <ThemeProvider theme={defaultTheme}>
+          <BrowserRouter>
+            <ApplicationBoundaryFixture />
           </BrowserRouter>
         </ThemeProvider>,
       );

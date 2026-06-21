@@ -7,6 +7,7 @@ import React, {
   useState,
 } from 'react';
 import {
+  Outlet,
   createBrowserRouter,
   createRoutesFromElements,
   Navigate,
@@ -18,7 +19,10 @@ import {
   useParams,
 } from 'react-router-dom';
 
-import { EntityNotFoundView } from '~/app/components/routeStateViews';
+import {
+  ApplicationErrorBoundary,
+  EntityNotFoundView,
+} from '~/app/components/routeStateViews';
 import { AppLayout } from '~/app/layouts';
 import NotFound from '~/app/pages/notFound';
 import { routes, routePatterns } from '~/routes';
@@ -129,6 +133,19 @@ const ReportDetailsRoute = () => {
 };
 
 const RedirectToDashboard = () => <Navigate replace to={routes.dashboard} />;
+
+const ApplicationRouteBoundary = () => {
+  const location = useLocation();
+
+  return (
+    <ApplicationErrorBoundary
+      key={location.pathname}
+      onReload={() => window.location.reload()}
+    >
+      <Outlet />
+    </ApplicationErrorBoundary>
+  );
+};
 
 const DashboardRouteElement = () => {
   const {
@@ -337,70 +354,75 @@ const createAppRouter = () =>
   createBrowserRouter(
     createRoutesFromElements(
       <>
-        <Route path={routePatterns.root} element={<RedirectToDashboard />} />
-        <Route element={<RouterShell />}>
-          <Route
-            path={routePatterns.dashboard}
-            element={<DashboardRouteElement />}
-          />
-          <Route
-            path={routePatterns.companies}
-            element={<CompaniesRouteElement />}
-          />
-          <Route
-            path={routePatterns.companiesNew}
-            element={<CreateCompanyRouteElement />}
-          />
-          <Route
-            path={routePatterns.companyWorkspace}
-            element={<CompanyWorkspaceRouteShellElement />}
-          >
-            <Route index element={<CompanyWorkspaceIndexRoute />} />
-            <Route path="overview" element={<CompanyOverviewRoute />} />
+        <Route element={<ApplicationRouteBoundary />}>
+          <Route path={routePatterns.root} element={<RedirectToDashboard />} />
+          <Route element={<RouterShell />}>
             <Route
-              path="assessments"
-              element={<CompanyAssessmentsRouteElement />}
+              path={routePatterns.dashboard}
+              element={<DashboardRouteElement />}
             />
-            <Route path="reports" element={<CompanyReportsRoute />} />
-            <Route path="activity" element={<CompanyActivityRouteElement />} />
-            <Route path="*" element={<CompanyWorkspaceNotFoundRoute />} />
+            <Route
+              path={routePatterns.companies}
+              element={<CompaniesRouteElement />}
+            />
+            <Route
+              path={routePatterns.companiesNew}
+              element={<CreateCompanyRouteElement />}
+            />
+            <Route
+              path={routePatterns.companyWorkspace}
+              element={<CompanyWorkspaceRouteShellElement />}
+            >
+              <Route index element={<CompanyWorkspaceIndexRoute />} />
+              <Route path="overview" element={<CompanyOverviewRoute />} />
+              <Route
+                path="assessments"
+                element={<CompanyAssessmentsRouteElement />}
+              />
+              <Route path="reports" element={<CompanyReportsRoute />} />
+              <Route
+                path="activity"
+                element={<CompanyActivityRouteElement />}
+              />
+              <Route path="*" element={<CompanyWorkspaceNotFoundRoute />} />
+            </Route>
+            <Route
+              path={routePatterns.assessments}
+              element={<AssessmentsRouteElement />}
+            />
+            <Route
+              path={routePatterns.assessmentDetails}
+              element={<AssessmentDetailsRoute section="overview" />}
+            />
+            <Route
+              path={routePatterns.assessmentDetailsOverview}
+              element={<AssessmentDetailsRoute section="overview" />}
+            />
+            <Route
+              path={routePatterns.assessmentDetailsFindings}
+              element={<AssessmentDetailsRoute section="findings" />}
+            />
+            <Route
+              path={routePatterns.assessmentDetailsEvidence}
+              element={<AssessmentDetailsRoute section="evidence" />}
+            />
+            <Route
+              path={routePatterns.assessmentDetailsReports}
+              element={<AssessmentDetailsRoute section="reports" />}
+            />
+            <Route
+              path={routePatterns.assessmentDetailsHistory}
+              element={<AssessmentDetailsRoute section="history" />}
+            />
+            <Route
+              path={routePatterns.reportDetails}
+              element={<ReportDetailsRoute />}
+            />
+            <Route path={routePatterns.threats} element={<ThreatsRoute />} />
+            <Route path={routePatterns.reports} element={<ReportsRoute />} />
+            <Route path={routePatterns.settings} element={<SettingsRoute />} />
+            <Route path="*" element={<NotFound />} />
           </Route>
-          <Route
-            path={routePatterns.assessments}
-            element={<AssessmentsRouteElement />}
-          />
-          <Route
-            path={routePatterns.assessmentDetails}
-            element={<AssessmentDetailsRoute section="overview" />}
-          />
-          <Route
-            path={routePatterns.assessmentDetailsOverview}
-            element={<AssessmentDetailsRoute section="overview" />}
-          />
-          <Route
-            path={routePatterns.assessmentDetailsFindings}
-            element={<AssessmentDetailsRoute section="findings" />}
-          />
-          <Route
-            path={routePatterns.assessmentDetailsEvidence}
-            element={<AssessmentDetailsRoute section="evidence" />}
-          />
-          <Route
-            path={routePatterns.assessmentDetailsReports}
-            element={<AssessmentDetailsRoute section="reports" />}
-          />
-          <Route
-            path={routePatterns.assessmentDetailsHistory}
-            element={<AssessmentDetailsRoute section="history" />}
-          />
-          <Route
-            path={routePatterns.reportDetails}
-            element={<ReportDetailsRoute />}
-          />
-          <Route path={routePatterns.threats} element={<ThreatsRoute />} />
-          <Route path={routePatterns.reports} element={<ReportsRoute />} />
-          <Route path={routePatterns.settings} element={<SettingsRoute />} />
-          <Route path="*" element={<NotFound />} />
         </Route>
       </>,
     ),
