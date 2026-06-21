@@ -12,6 +12,8 @@ export interface CalloutProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   icon?: ReactNode;
   actions?: ReactNode;
+  dismissLabel?: string;
+  onDismiss?: () => void;
   variant?: CalloutVariant;
 }
 

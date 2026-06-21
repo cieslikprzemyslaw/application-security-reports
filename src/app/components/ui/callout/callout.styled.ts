@@ -49,8 +49,10 @@ const StyledCallout = styled.div`
   ${({ theme: { colors, radii, spacing, typography } }) => css`
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
     gap: ${spacing.s};
 
+    width: 100%;
     padding: ${spacing.s};
 
     border-left: 0.25rem solid;
@@ -81,12 +83,23 @@ const StyledCallout = styled.div`
 
     .callout-body {
       color: ${colors.text.secondary};
+      overflow-wrap: anywhere;
     }
 
     .callout-actions {
       display: inline-flex;
       align-items: flex-start;
+      justify-content: flex-start;
+      flex-wrap: wrap;
       gap: ${spacing.xxs};
+    }
+
+    @media (max-width: 40rem) {
+      grid-template-columns: auto minmax(0, 1fr);
+
+      .callout-actions {
+        grid-column: 1 / -1;
+      }
     }
 
     &.callout--info {
