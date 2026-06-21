@@ -147,8 +147,8 @@ function assertWarning(
 // ---------------------------------------------------------------------------
 
 {
-  const body = 'line one\nline two\nline three';
-  const raw = `POST /data HTTP/1.1\nHost: example.com\n\n${body}`;
+  const body = 'line one\r\nline two\r\nline three';
+  const raw = `POST /data HTTP/1.1\r\nHost: example.com\r\n\r\n${body}`;
   const result = parseRawHttpRequest(raw);
   assertNoErrors(result, 'multiline body');
   assert.equal(result.parsed?.body, body, 'body preserved');
@@ -219,11 +219,16 @@ function assertWarning(
 
 {
   const result = parseRawHttpRequest('GET / SMTP/1.0\r\nHost: x\r\n\r\n');
+  assertError(result, 'request', 'HTTP version must match', 'non-HTTP version');
+}
+
+{
+  const result = parseRawHttpRequest('GET / HTTP/\r\nHost: x\r\n\r\n');
   assertError(
     result,
     'request',
-    'HTTP version must start with "HTTP/"',
-    'non-HTTP version',
+    'HTTP version must match',
+    'incomplete HTTP version',
   );
 }
 
@@ -236,6 +241,17 @@ function assertWarning(
   const result = parseRawHttpRequest(oversize);
   assertError(result, 'request', 'size limit', 'oversize request');
   assert.equal(result.parsed, undefined, 'no parsed result for oversize');
+}
+
+{
+  const unicodeOversize = 'é'.repeat(MAX_RAW_HTTP_INPUT_BYTES / 2 + 1);
+  const result = parseRawHttpRequest(unicodeOversize);
+  assertError(result, 'request', 'size limit', 'unicode oversize request');
+  assert.equal(
+    result.parsed,
+    undefined,
+    'no parsed result for unicode oversize',
+  );
 }
 
 // ---------------------------------------------------------------------------

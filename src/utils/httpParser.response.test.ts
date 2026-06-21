@@ -167,11 +167,21 @@ function assertWarning(
 }
 
 {
+  const result = parseRawHttpResponse('HTTP/ 200 OK\r\n\r\n');
+  assertError(
+    result,
+    'response',
+    'HTTP version must match',
+    'incomplete HTTP version',
+  );
+}
+
+{
   const result = parseRawHttpResponse('200 OK\r\n\r\n');
   assertError(
     result,
     'response',
-    'HTTP version must start with "HTTP/"',
+    'HTTP version must match',
     'missing HTTP version',
   );
 }

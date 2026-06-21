@@ -3,6 +3,7 @@
  * Inputs exceeding this limit are rejected with a structured error.
  */
 export const MAX_RAW_HTTP_INPUT_BYTES = 512 * 1024;
+const HTTP_VERSION_RE = /^HTTP\/\d+(?:\.\d+)?$/;
 
 export interface RawHttpHeader {
   name: string;
@@ -47,18 +48,33 @@ function normalizeLineEndings(raw: string): string {
   return raw.replace(/\r\n/g, '\n');
 }
 
-function splitHeadersAndBody(normalized: string): {
+function rawHttpInputByteLength(raw: string): number {
+  return Buffer.byteLength(raw, 'utf8');
+}
+
+function splitHeadersAndBody(raw: string): {
   headerSection: string;
   body: string;
   hasSeparator: boolean;
 } {
-  const idx = normalized.indexOf('\n\n');
-  if (idx === -1) {
-    return { headerSection: normalized, body: '', hasSeparator: false };
+  const crlfSeparatorIdx = raw.indexOf('\r\n\r\n');
+  const lfSeparatorIdx = raw.indexOf('\n\n');
+
+  if (crlfSeparatorIdx === -1 && lfSeparatorIdx === -1) {
+    return { headerSection: raw, body: '', hasSeparator: false };
   }
+
+  const separatorIdx =
+    crlfSeparatorIdx === -1
+      ? lfSeparatorIdx
+      : lfSeparatorIdx === -1
+        ? crlfSeparatorIdx
+        : Math.min(crlfSeparatorIdx, lfSeparatorIdx);
+  const separatorLength = raw.startsWith('\r\n\r\n', separatorIdx) ? 4 : 2;
+
   return {
-    headerSection: normalized.slice(0, idx),
-    body: normalized.slice(idx + 2),
+    headerSection: raw.slice(0, separatorIdx),
+    body: raw.slice(separatorIdx + separatorLength),
     hasSeparator: true,
   };
 }
@@ -84,8 +100,9 @@ function parseHeaderLines(lines: string[]): RawHttpHeader[] {
  * Parse a raw HTTP request message.
  *
  * Preserves the original raw text in `parsed.raw`. Line endings are normalised
- * to LF in `headers`, `body`, and all parsed fields; the original is untouched.
- * Input is treated as untrusted plain text and is never executed or HTML-rendered.
+ * to LF in headers and start-line fields, while the body is preserved exactly as
+ * supplied. Input is treated as untrusted plain text and is never executed or
+ * HTML-rendered.
  */
 export function parseRawHttpRequest(raw: string): {
   parsed?: ParsedHttpRequest;
@@ -95,7 +112,7 @@ export function parseRawHttpRequest(raw: string): {
   const warnings: HttpParseWarning[] = [];
   const errors: HttpParseError[] = [];
 
-  if (raw.length > MAX_RAW_HTTP_INPUT_BYTES) {
+  if (rawHttpInputByteLength(raw) > MAX_RAW_HTTP_INPUT_BYTES) {
     errors.push({
       field: 'request',
       message: `Raw request exceeds the ${MAX_RAW_HTTP_INPUT_BYTES / 1024} KB size limit`,
@@ -103,8 +120,8 @@ export function parseRawHttpRequest(raw: string): {
     return { warnings, errors };
   }
 
-  const normalized = normalizeLineEndings(raw);
-  const { headerSection, body, hasSeparator } = splitHeadersAndBody(normalized);
+  const { headerSection, body, hasSeparator } = splitHeadersAndBody(raw);
+  const normalizedHeaderSection = normalizeLineEndings(headerSection);
 
   if (!hasSeparator) {
     warnings.push({
@@ -113,7 +130,7 @@ export function parseRawHttpRequest(raw: string): {
     });
   }
 
-  const lines = headerSection.split('\n');
+  const lines = normalizedHeaderSection.split('\n');
   const startLine = lines[0] ?? '';
   const headerLines = lines.slice(1);
 
@@ -140,10 +157,10 @@ export function parseRawHttpRequest(raw: string): {
     errors.push({ field: 'request', message: 'Request target is empty' });
   }
 
-  if (!httpVersion.startsWith('HTTP/')) {
+  if (!HTTP_VERSION_RE.test(httpVersion)) {
     errors.push({
       field: 'request',
-      message: `HTTP version must start with "HTTP/"; got: "${httpVersion}"`,
+      message: `HTTP version must match "HTTP/x" or "HTTP/x.y"; got: "${httpVersion}"`,
     });
   }
 
@@ -169,8 +186,9 @@ export function parseRawHttpRequest(raw: string): {
  * Parse a raw HTTP response message.
  *
  * Preserves the original raw text in `parsed.raw`. Line endings are normalised
- * to LF in `headers`, `body`, and all parsed fields; the original is untouched.
- * Input is treated as untrusted plain text and is never executed or HTML-rendered.
+ * to LF in headers and start-line fields, while the body is preserved exactly as
+ * supplied. Input is treated as untrusted plain text and is never executed or
+ * HTML-rendered.
  */
 export function parseRawHttpResponse(raw: string): {
   parsed?: ParsedHttpResponse;
@@ -180,7 +198,7 @@ export function parseRawHttpResponse(raw: string): {
   const warnings: HttpParseWarning[] = [];
   const errors: HttpParseError[] = [];
 
-  if (raw.length > MAX_RAW_HTTP_INPUT_BYTES) {
+  if (rawHttpInputByteLength(raw) > MAX_RAW_HTTP_INPUT_BYTES) {
     errors.push({
       field: 'response',
       message: `Raw response exceeds the ${MAX_RAW_HTTP_INPUT_BYTES / 1024} KB size limit`,
@@ -188,8 +206,8 @@ export function parseRawHttpResponse(raw: string): {
     return { warnings, errors };
   }
 
-  const normalized = normalizeLineEndings(raw);
-  const { headerSection, body, hasSeparator } = splitHeadersAndBody(normalized);
+  const { headerSection, body, hasSeparator } = splitHeadersAndBody(raw);
+  const normalizedHeaderSection = normalizeLineEndings(headerSection);
 
   if (!hasSeparator) {
     warnings.push({
@@ -198,7 +216,7 @@ export function parseRawHttpResponse(raw: string): {
     });
   }
 
-  const lines = headerSection.split('\n');
+  const lines = normalizedHeaderSection.split('\n');
   const startLine = lines[0] ?? '';
   const headerLines = lines.slice(1);
 
@@ -220,10 +238,10 @@ export function parseRawHttpResponse(raw: string): {
   const reasonPhrase =
     secondSpaceIdx === -1 ? '' : rest.slice(secondSpaceIdx + 1);
 
-  if (!httpVersion.startsWith('HTTP/')) {
+  if (!HTTP_VERSION_RE.test(httpVersion)) {
     errors.push({
       field: 'response',
-      message: `HTTP version must start with "HTTP/"; got: "${httpVersion}"`,
+      message: `HTTP version must match "HTTP/x" or "HTTP/x.y"; got: "${httpVersion}"`,
     });
   }
 
