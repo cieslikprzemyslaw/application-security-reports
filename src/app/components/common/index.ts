@@ -1,4 +1,6 @@
 export { default as ActivityFeed } from './activityFeed';
+export { default as DirtyFormGuard } from './dirtyFormGuard';
+export type { DirtyFormGuardProps } from './dirtyFormGuard';
 export { default as DataTable } from './dataTable';
 export { default as FilterToolbar } from './filterToolbar';
 export { default as PageHeader } from './pageHeader';
