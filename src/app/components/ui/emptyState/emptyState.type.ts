@@ -2,7 +2,10 @@ import type { HTMLAttributes, ReactNode } from 'react';
 
 export type EmptyStateVariant = 'first-use' | 'no-results' | 'unavailable';
 
-export interface EmptyStateProps extends HTMLAttributes<HTMLDivElement> {
+export interface EmptyStateProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'title'
+> {
   variant?: EmptyStateVariant;
   eyebrow?: ReactNode;
   title: ReactNode;
