@@ -9,6 +9,7 @@ export interface Company extends TimestampedEntity {
   contactEmail?: string;
   logoUrl?: string | null;
   footerText?: string;
+  archivedAt?: string | null;
 }
 
 export type CompanyListItem = Company & {
@@ -17,7 +18,7 @@ export type CompanyListItem = Company & {
 
 export type CreateCompanyInput = Omit<
   Company,
-  'id' | 'createdAt' | 'updatedAt' | 'logoUrl'
+  'id' | 'createdAt' | 'updatedAt' | 'logoUrl' | 'archivedAt'
 >;
 
 export type UpdateCompanyInput = Partial<CreateCompanyInput>;

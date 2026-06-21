@@ -5,6 +5,7 @@ import {
   RepositoryConflictError,
   RepositoryConstraintError,
   RepositoryNotFoundError,
+  RepositoryStateError,
 } from '../../database/errors.js';
 import type {
   CompanyOverview,
@@ -71,6 +72,7 @@ const defaultCompany = {
   contactEmail: 'security@northstar.example',
   logoUrl: null as string | null,
   footerText: 'Confidential - do not distribute.',
+  archivedAt: null as string | null,
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-11T09:00:00.000Z',
 };
@@ -116,6 +118,8 @@ type CompanyRepositoryOverrides = Partial<{
     logoUrl: string | null,
   ) => Promise<typeof defaultCompany>;
   delete: (id: string) => Promise<void>;
+  archive: (id: string) => Promise<typeof defaultCompany>;
+  restore: (id: string) => Promise<typeof defaultCompany>;
 }>;
 
 const createCompanyRepository = (
@@ -129,6 +133,8 @@ const createCompanyRepository = (
     update: 0,
     updateLogoUrl: 0,
     delete: 0,
+    archive: 0,
+    restore: 0,
     createArgs: undefined as
       | {
           input: Parameters<CompanyRepository['create']>[0];
@@ -204,6 +210,28 @@ const createCompanyRepository = (
       calls.delete += 1;
       return overrides.delete?.(id);
     },
+
+    async archive(id) {
+      calls.archive += 1;
+      return (
+        (await overrides.archive?.(id)) ?? {
+          ...defaultCompany,
+          id,
+          archivedAt: '2026-06-21T13:00:00.000Z',
+        }
+      );
+    },
+
+    async restore(id) {
+      calls.restore += 1;
+      return (
+        (await overrides.restore?.(id)) ?? {
+          ...defaultCompany,
+          id,
+          archivedAt: null,
+        }
+      );
+    },
   };
 
   return { calls, repository };
@@ -272,6 +300,7 @@ export {
   RepositoryConflictError,
   RepositoryConstraintError,
   RepositoryNotFoundError,
+  RepositoryStateError,
   CompanyLogoValidationError,
   CompanyLogoStorageError,
   startTestServer,

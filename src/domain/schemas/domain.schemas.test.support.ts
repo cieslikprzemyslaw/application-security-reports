@@ -165,13 +165,15 @@ export const validCompany = {
   contactEmail: 'security@northstar.example',
   logoUrl: null,
   footerText: 'Confidential',
+  archivedAt: null,
   createdAt: '2026-06-01T00:00:00.000Z',
   updatedAt: '2026-06-10T00:00:00.000Z',
 };
 
-export const validCompanyPublic = (({ logoUrl: _logoUrl, ...rest }) => rest)(
-  validCompany,
-);
+export const validCompanyPublic = {
+  ...validCompany,
+  logoUrl: null as string | null,
+};
 
 export const validAssessment = {
   id: 'asm_00000000-0000-0000-0000-000000000001',

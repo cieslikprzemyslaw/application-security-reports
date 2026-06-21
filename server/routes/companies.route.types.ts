@@ -43,6 +43,7 @@ export type CompanyResponse = {
   contactEmail?: string;
   logoUrl: string | null;
   footerText?: string;
+  archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -53,7 +54,9 @@ export type CompanyRepositoryOperation =
   | 'overview'
   | 'create'
   | 'update'
-  | 'delete';
+  | 'delete'
+  | 'archive'
+  | 'restore';
 
 export type CompaniesRouteDependencies = {
   assessmentRepository?: AssessmentRepository;

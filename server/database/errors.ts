@@ -37,6 +37,16 @@ export class RepositoryConstraintError extends RepositoryError {
   }
 }
 
+export class RepositoryStateError extends RepositoryError {
+  constructor(
+    message = 'The requested operation is not valid for the current record state.',
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+    this.name = 'RepositoryStateError';
+  }
+}
+
 export class RepositoryUnavailableError extends RepositoryError {
   constructor(
     message = 'The database is temporarily unavailable.',

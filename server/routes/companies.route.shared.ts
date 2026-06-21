@@ -7,6 +7,7 @@ import {
   RepositoryConstraintError,
   RepositoryError,
   RepositoryNotFoundError,
+  RepositoryStateError,
 } from '../database/errors.js';
 import { sendApiError } from '../http/api-errors.js';
 import type {
@@ -32,6 +33,7 @@ export const companyResponse = (
       ? baseUrl + '/api/companies/' + company.id + '/logo'
       : null,
     footerText: company.footerText,
+    archivedAt: company.archivedAt ?? null,
     createdAt: company.createdAt,
     updatedAt: company.updatedAt,
   });
@@ -73,6 +75,21 @@ export const handleCompanyRepositoryError = (
       'COMPANY_DELETE_CONFLICT',
       'Company cannot be deleted while related assessments exist',
     );
+    return true;
+  }
+
+  if (error instanceof RepositoryStateError && operation === 'archive') {
+    sendApiError(
+      res,
+      409,
+      'COMPANY_ALREADY_ARCHIVED',
+      'Company is already archived',
+    );
+    return true;
+  }
+
+  if (error instanceof RepositoryStateError && operation === 'restore') {
+    sendApiError(res, 409, 'COMPANY_NOT_ARCHIVED', 'Company is not archived');
     return true;
   }
 

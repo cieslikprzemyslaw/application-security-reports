@@ -60,7 +60,7 @@ enum ActivityEntityType {
 }
 
 model Company {
-  id           String   @id
+  id           String    @id
   name         String
   description  String?
   website      String?
@@ -68,12 +68,14 @@ model Company {
   contactEmail String?
   logoUrl      String?
   footerText   String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  archivedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   assessments Assessment[]
 
   @@index([name])
+  @@index([archivedAt])
 }
 
 model Assessment {

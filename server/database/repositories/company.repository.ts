@@ -4,7 +4,11 @@ import type {
   UpdateCompanyInput,
 } from '../../../src/domain/company.js';
 import { generateId } from '../../utils/id.js';
-import { mapPrismaError, RepositoryNotFoundError } from '../errors.js';
+import {
+  mapPrismaError,
+  RepositoryNotFoundError,
+  RepositoryStateError,
+} from '../errors.js';
 import type { RepositoryClient } from '../repository.types.js';
 import { toIsoString, toOptionalText } from './repository.helpers.js';
 
@@ -40,6 +44,8 @@ export interface CompanyRepository {
   update(id: string, input: UpdateCompanyInput): Promise<Company>;
   updateLogoUrl(id: string, logoUrl: string | null): Promise<Company>;
   delete(id: string): Promise<void>;
+  archive(id: string): Promise<Company>;
+  restore(id: string): Promise<Company>;
 }
 
 type CompanyRepositoryDb = Pick<RepositoryClient, 'company' | 'assessment'>;
@@ -53,6 +59,7 @@ type CompanyRow = {
   contactEmail: string | null;
   logoUrl: string | null;
   footerText: string | null;
+  archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -66,6 +73,7 @@ const companySelect = {
   contactEmail: true,
   logoUrl: true,
   footerText: true,
+  archivedAt: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -79,6 +87,7 @@ const toCompany = (row: CompanyRow): Company => ({
   contactEmail: toOptionalText(row.contactEmail),
   logoUrl: row.logoUrl,
   footerText: toOptionalText(row.footerText),
+  archivedAt: row.archivedAt ? toIsoString(row.archivedAt) : null,
   createdAt: toIsoString(row.createdAt),
   updatedAt: toIsoString(row.updatedAt),
 });
@@ -90,6 +99,7 @@ export function createCompanyRepository(
     async findAll() {
       const companies = await db.company.findMany({
         orderBy: { name: 'asc' },
+        where: { archivedAt: null },
         select: companySelect,
       });
 
@@ -247,6 +257,58 @@ export function createCompanyRepository(
         if (error instanceof RepositoryNotFoundError) {
           throw error;
         }
+        throw mapPrismaError(error);
+      }
+    },
+
+    async archive(id) {
+      const existing = await db.company.findUnique({
+        where: { id },
+        select: { archivedAt: true },
+      });
+
+      if (!existing) {
+        throw new RepositoryNotFoundError();
+      }
+
+      if (existing.archivedAt !== null) {
+        throw new RepositoryStateError('Company is already archived.');
+      }
+
+      try {
+        const company = await db.company.update({
+          where: { id },
+          data: { archivedAt: new Date() },
+          select: companySelect,
+        });
+        return toCompany(company);
+      } catch (error) {
+        throw mapPrismaError(error);
+      }
+    },
+
+    async restore(id) {
+      const existing = await db.company.findUnique({
+        where: { id },
+        select: { archivedAt: true },
+      });
+
+      if (!existing) {
+        throw new RepositoryNotFoundError();
+      }
+
+      if (existing.archivedAt === null) {
+        throw new RepositoryStateError('Company is not archived.');
+      }
+
+      try {
+        const company = await db.company.update({
+          where: { id },
+          data: { archivedAt: null },
+          select: companySelect,
+        });
+        return toCompany(company);
+      } catch (error) {
         throw mapPrismaError(error);
       }
     },

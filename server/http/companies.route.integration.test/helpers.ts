@@ -33,10 +33,21 @@ const companyLogoMigrationPath = path.resolve(
   repoRoot,
   'prisma',
   'migrations',
-  '20260619130000_add_company_logo_url',
+  '20260620090747',
   'migration.sql',
 );
 const companyLogoMigrationSql = readFileSync(companyLogoMigrationPath, 'utf8');
+const companyArchivedAtMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260621130000_add_company_archived_at',
+  'migration.sql',
+);
+const companyArchivedAtMigrationSql = readFileSync(
+  companyArchivedAtMigrationPath,
+  'utf8',
+);
 const threatMigrationPath = path.resolve(
   repoRoot,
   'prisma',
@@ -117,6 +128,7 @@ export const createIntegrationDatabase = async (prefix: string) => {
     bootstrapDb.exec(assessmentMigrationSql);
     bootstrapDb.exec(threatMigrationSql);
     bootstrapDb.exec(evidenceMigrationSql);
+    bootstrapDb.exec(companyArchivedAtMigrationSql);
   } finally {
     bootstrapDb.close();
   }
