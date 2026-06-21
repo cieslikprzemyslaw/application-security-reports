@@ -39,6 +39,7 @@ const EmptyState = ({
   icon,
   primaryAction,
   secondaryAction,
+  className,
   ...rest
 }: EmptyStateProps) => {
   const eyebrowId = useId();
@@ -55,51 +56,55 @@ const EmptyState = ({
   const describedBy = description ? descriptionId : undefined;
 
   return (
-    <StyledEmptyState
-      className={[
-        'empty-state',
-        variant ? `empty-state--${variant}` : 'empty-state--legacy',
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      data-variant={variant ?? 'legacy'}
-      role={role}
-      aria-live={live}
-      aria-atomic={role === 'status' ? 'true' : undefined}
-      aria-labelledby={labelledBy}
-      aria-describedby={describedBy}
-      {...rest}
-    >
-      {resolvedIcon && (
-        <span className="empty-state-icon" aria-hidden="true">
-          {resolvedIcon}
-        </span>
-      )}
-
-      <div className="empty-state-copy">
-        {resolvedEyebrow && (
-          <p className="empty-state-eyebrow" id={eyebrowId}>
-            {resolvedEyebrow}
-          </p>
+    <StyledEmptyState className="empty-state-container">
+      <div
+        className={[
+          'empty-state-layout',
+          'empty-state',
+          variant ? `empty-state--${variant}` : 'empty-state--legacy',
+          className,
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        data-variant={variant ?? 'legacy'}
+        role={role}
+        aria-live={live}
+        aria-atomic={role === 'status' ? 'true' : undefined}
+        aria-labelledby={labelledBy}
+        aria-describedby={describedBy}
+        {...rest}
+      >
+        {resolvedIcon && (
+          <span className="empty-state-icon" aria-hidden="true">
+            {resolvedIcon}
+          </span>
         )}
 
-        <h3 className="empty-state-title" id={titleId}>
-          {title}
-        </h3>
+        <div className="empty-state-copy">
+          {resolvedEyebrow && (
+            <p className="empty-state-eyebrow" id={eyebrowId}>
+              {resolvedEyebrow}
+            </p>
+          )}
 
-        {description && (
-          <div className="empty-state-description" id={descriptionId}>
-            {description}
+          <h3 className="empty-state-title" id={titleId}>
+            {title}
+          </h3>
+
+          {description && (
+            <div className="empty-state-description" id={descriptionId}>
+              {description}
+            </div>
+          )}
+        </div>
+
+        {(primaryAction || secondaryAction) && (
+          <div className="empty-state-actions">
+            {primaryAction}
+            {secondaryAction}
           </div>
         )}
       </div>
-
-      {(primaryAction || secondaryAction) && (
-        <div className="empty-state-actions">
-          {primaryAction}
-          {secondaryAction}
-        </div>
-      )}
     </StyledEmptyState>
   );
 };

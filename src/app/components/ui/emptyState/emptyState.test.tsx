@@ -322,29 +322,89 @@ await (async () => {
 
     assert.ok(markup.includes('data-variant="no-results"'));
 
-    const styles = sheet.getStyleTags();
+    const markupDocument = new JSDOM(
+      `<!doctype html><html><body>${markup}</body></html>`,
+    ).window.document;
+    const responsiveContainer = markupDocument.querySelector(
+      '.empty-state-container',
+    );
+    const responsiveLayout = markupDocument.querySelector(
+      '.empty-state-layout[data-variant="no-results"]',
+    );
 
     assert.ok(
-      styles.includes('container-type: inline-size'),
-      'Expected the empty state to establish a container for responsive layout',
+      responsiveContainer,
+      'Expected a parent container for responsive layout',
     );
+    assert.equal(
+      responsiveLayout?.parentElement,
+      responsiveContainer,
+      'Expected the responsive layout to be a descendant of the query container',
+    );
+
+    const styles = sheet.getStyleTags();
+
+    assert.match(
+      styles,
+      /container-type:\s*inline-size\s*;?/,
+      'Expected the wrapper to establish an inline-size container',
+    );
+    assert.match(
+      styles,
+      /container-name:\s*empty-state\s*;?/,
+      'Expected the wrapper to establish the named empty-state container',
+    );
+
+    const containerQueryMatch =
+      /@container\s+empty-state\s*\(max-width:\s*30rem\)\s*\{/.exec(styles);
+    const containerQueryIndex = containerQueryMatch?.index ?? -1;
+
     assert.ok(
-      styles.includes('@container empty-state (max-width: 30rem)'),
-      'Expected the empty state to collapse at narrow container widths',
+      containerQueryIndex >= 0,
+      'Expected the empty state to define a narrow container query',
+    );
+
+    const responsiveStyles = styles.slice(containerQueryIndex);
+
+    assert.match(
+      responsiveStyles,
+      /\.empty-state-layout\.empty-state--first-use/,
+      'Expected the query to target the descendant first-use layout',
+    );
+    assert.match(
+      responsiveStyles,
+      /\.empty-state-layout\.empty-state--no-results/,
+      'Expected the query to target the descendant no-results layout',
+    );
+    assert.match(
+      responsiveStyles,
+      /\.empty-state-layout\.empty-state--unavailable/,
+      'Expected the query to target the descendant unavailable layout',
+    );
+    assert.match(
+      responsiveStyles,
+      /grid-template-columns:\s*1fr\s*;?/,
+      'Expected the narrow layout to use one column',
+    );
+    assert.match(
+      responsiveStyles,
+      /grid-template-areas:\s*['"]icon['"]\s*['"]copy['"]\s*['"]actions['"]/,
+      'Expected the narrow layout to stack icon, copy, and actions',
     );
     assert.match(
       styles,
-      /grid-template-areas:\s*'icon'\s*'copy'\s*'actions'/,
-      'Expected the mobile layout to stack the icon, copy and actions',
-    );
-    assert.match(
-      styles,
-      /overflow-wrap:\s*anywhere/,
+      /overflow-wrap:\s*anywhere\s*;?/,
       'Expected long copy to wrap without overflow',
     );
-    assert.ok(
-      styles.includes('width: 100%;') && styles.includes('flex: 1 1 100%;'),
-      'Expected actions to stretch full width on narrow containers',
+    assert.match(
+      responsiveStyles,
+      /width:\s*100%\s*;?/,
+      'Expected narrow action controls to use the available width',
+    );
+    assert.match(
+      responsiveStyles,
+      /flex:\s*1\s+1\s+100%\s*;?/,
+      'Expected narrow action controls to stretch to full width',
     );
   } finally {
     sheet.seal();

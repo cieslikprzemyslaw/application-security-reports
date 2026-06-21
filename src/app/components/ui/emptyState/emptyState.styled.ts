@@ -5,15 +5,19 @@ const StyledEmptyState = styled.div`
     container-type: inline-size;
     container-name: empty-state;
 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: ${spacing.m};
-
     width: 100%;
-    padding: ${spacing.xl} ${spacing.m};
 
-    text-align: center;
+    .empty-state-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: ${spacing.m};
+
+      width: 100%;
+      padding: ${spacing.xl} ${spacing.m};
+
+      text-align: center;
+    }
 
     .empty-state-icon {
       display: inline-flex;
@@ -85,13 +89,13 @@ const StyledEmptyState = styled.div`
       max-width: 100%;
     }
 
-    &.empty-state--legacy {
+    .empty-state-layout.empty-state--legacy {
       padding-inline: ${spacing.m};
     }
 
-    &.empty-state--first-use,
-    &.empty-state--no-results,
-    &.empty-state--unavailable {
+    .empty-state-layout.empty-state--first-use,
+    .empty-state-layout.empty-state--no-results,
+    .empty-state-layout.empty-state--unavailable {
       display: grid;
       grid-template-columns: auto minmax(0, 1fr);
       grid-template-areas:
@@ -110,7 +114,7 @@ const StyledEmptyState = styled.div`
       background-color: ${colors.surface.card};
     }
 
-    &.empty-state--first-use {
+    .empty-state-layout.empty-state--first-use {
       border-left-color: ${colors.brand.primary};
       background-color: ${colors.brand.wash};
 
@@ -124,7 +128,7 @@ const StyledEmptyState = styled.div`
       }
     }
 
-    &.empty-state--no-results {
+    .empty-state-layout.empty-state--no-results {
       border-left-color: ${colors.text.secondary};
       background-color: ${colors.neutral.grey100};
 
@@ -134,7 +138,7 @@ const StyledEmptyState = styled.div`
       }
     }
 
-    &.empty-state--unavailable {
+    .empty-state-layout.empty-state--unavailable {
       border-left-color: ${colors.severity.medium.solid};
       background-color: ${colors.severity.medium.background};
 
@@ -163,9 +167,9 @@ const StyledEmptyState = styled.div`
     }
 
     @container empty-state (max-width: 30rem) {
-      &.empty-state--first-use,
-      &.empty-state--no-results,
-      &.empty-state--unavailable {
+      .empty-state-layout.empty-state--first-use,
+      .empty-state-layout.empty-state--no-results,
+      .empty-state-layout.empty-state--unavailable {
         grid-template-columns: 1fr;
         grid-template-areas:
           'icon'
@@ -173,7 +177,9 @@ const StyledEmptyState = styled.div`
           'actions';
       }
 
-      .empty-state-actions > * {
+      .empty-state-layout.empty-state--first-use .empty-state-actions > *,
+      .empty-state-layout.empty-state--no-results .empty-state-actions > *,
+      .empty-state-layout.empty-state--unavailable .empty-state-actions > * {
         width: 100%;
         flex: 1 1 100%;
       }
