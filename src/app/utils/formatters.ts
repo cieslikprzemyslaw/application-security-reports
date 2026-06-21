@@ -11,12 +11,20 @@ const isMissingText = (value?: string): value is string =>
 const isValidNumber = (value?: number) =>
   typeof value === 'number' && Number.isFinite(value);
 
-export const formatDate = (value?: string) => {
+const parseDate = (value?: string) => {
   if (isMissingText(value)) {
-    return missingDisplayValue;
+    return undefined;
   }
 
-  const date = new Date(value);
+  return new Date(value);
+};
+
+export const formatDate = (value?: string) => {
+  const date = parseDate(value);
+
+  if (date === undefined) {
+    return missingDisplayValue;
+  }
 
   return Number.isNaN(date.getTime())
     ? invalidDateDisplayValue
@@ -24,11 +32,11 @@ export const formatDate = (value?: string) => {
 };
 
 export const formatDateTime = (value?: string) => {
-  if (isMissingText(value)) {
+  const date = parseDate(value);
+
+  if (date === undefined) {
     return missingDisplayValue;
   }
-
-  const date = new Date(value);
 
   return Number.isNaN(date.getTime())
     ? invalidDateDisplayValue
@@ -39,11 +47,13 @@ export const formatDateTime = (value?: string) => {
 };
 
 export const formatRelativeTime = (value?: string, now = Date.now()) => {
-  if (isMissingText(value)) {
+  const date = parseDate(value);
+
+  if (date === undefined) {
     return missingDisplayValue;
   }
 
-  const timestamp = new Date(value).getTime();
+  const timestamp = date.getTime();
 
   if (Number.isNaN(timestamp)) {
     return invalidRelativeTimeDisplayValue;
