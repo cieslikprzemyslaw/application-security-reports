@@ -21,6 +21,7 @@ import {
   CompanyWorkspaceRouteShellElement,
   DashboardRouteElement,
   RedirectToDashboard,
+  CreateCompanyRouteElement,
   RouterShell,
 } from './appRouterShell';
 import {
@@ -31,9 +32,6 @@ import {
 } from './companyWorkspaceRoutes';
 import { ReportsRoute, SettingsRoute, ThreatsRoute } from './routerPages';
 
-const CreateCompany = lazy(
-  () => import('./pages/companies/createCompany.component'),
-);
 const AssessmentDetails = lazy(() => import('./pages/assessmentDetails'));
 const ReportDetails = lazy(() => import('./pages/reportDetails'));
 
@@ -63,10 +61,6 @@ const ReportDetailsRoute = () => {
   const { cover } = reportDetailsById[reportId];
 
   return <ReportDetails cover={cover} autoSaved={false} />;
-};
-
-const CreateCompanyRouteElement = () => {
-  return <CreateCompany />;
 };
 
 const createAppRouter = () =>

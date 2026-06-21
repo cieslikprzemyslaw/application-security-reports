@@ -269,3 +269,4 @@ export const assertRouteRenders = async (
 };
 
 export { assert, act, routes };
+export { setupAssessmentWorkspaceFetchFixture } from './supportAppRouter';

@@ -29,7 +29,6 @@ import {
 import CompanyWorkspaceRouteShell, {
   CompanyActivityRoute,
   CompanyAssessmentsRoute,
-  CompanyReportsRoute,
   CompanyWorkspaceIndexRoute,
   CompanyWorkspaceNotFoundRoute,
   createCompanyWorkspaceNavigationGroups,
@@ -41,6 +40,7 @@ import {
   SettingsRoute,
   ThreatsRoute,
 } from './routerPages';
+import Reports from './pages/reports';
 
 import { reportDetailsById } from './appData';
 import type { CompanyIdentity } from './pages/companies';
@@ -87,7 +87,7 @@ const ReportDetailsRoute = ({ reportId }: ReportDetailsRouteProps) => {
 
   const { cover } = reportDetailsById[reportId];
 
-  return <CompanyReportsRoute cover={cover} autoSaved={false} />;
+  return <Reports cover={cover} autoSaved={false} />;
 };
 
 const RedirectToDashboard = () => <Navigate replace to={routes.dashboard} />;
