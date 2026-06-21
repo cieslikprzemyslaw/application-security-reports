@@ -148,6 +148,12 @@ const createCompanyRepository = (
     async delete() {
       return undefined;
     },
+    async archive(id) {
+      return { ...defaultCompany, id, archivedAt: '2026-06-21T13:00:00.000Z' };
+    },
+    async restore(id) {
+      return { ...defaultCompany, id, archivedAt: null };
+    },
   };
 
   return { findByIdCalls: () => findByIdCalls, repository };
