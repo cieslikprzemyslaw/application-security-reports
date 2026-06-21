@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 
+import { ApplicationErrorBoundary } from '~/app/components/routeStateViews';
 import { AppLayout } from '~/app/layouts';
 import { routes } from '~/routes';
 import { AppThemeProvider, defaultTheme } from '~/theme';
@@ -168,6 +169,54 @@ export const renderRouteErrorFixture = async (pathname: string) => {
   return { container, root };
 };
 
+export const renderApplicationErrorFixture = async (
+  pathname: string,
+  onReload: () => void,
+) => {
+  const { container } = setupDom(pathname);
+
+  assert.ok(container, 'Expected root container to exist');
+
+  const root = createRoot(container);
+  const originalConsoleError = console.error;
+  console.error = () => undefined;
+
+  const ThrowingRoute = () => {
+    throw new Error('Simulated application failure');
+  };
+
+  const ApplicationBoundaryFixture = () => {
+    const location = useLocation();
+
+    return (
+      <ApplicationErrorBoundary key={location.pathname} onReload={onReload}>
+        <Routes>
+          <Route path="/dashboard" element={<h1>Security Dashboard</h1>} />
+          <Route path="/broken" element={<ThrowingRoute />} />
+        </Routes>
+      </ApplicationErrorBoundary>
+    );
+  };
+
+  try {
+    await act(async () => {
+      root.render(
+        <ThemeProvider theme={defaultTheme}>
+          <BrowserRouter>
+            <ApplicationBoundaryFixture />
+          </BrowserRouter>
+        </ThemeProvider>,
+      );
+      await renderTick();
+      await renderTick();
+    });
+  } finally {
+    console.error = originalConsoleError;
+  }
+
+  return { container, root };
+};
+
 export const renderRouteLoadingFixture = async (pathname: string) => {
   const { container } = setupDom(pathname);
 
@@ -218,143 +267,6 @@ export const assertRouteRenders = async (
     root.unmount();
   });
 };
-export const setupAssessmentWorkspaceFetchFixture = () => {
-  setFetch(async input => {
-    const path = String(input);
-
-    if (path === '/api/companies') {
-      return createJsonResponse({
-        data: [
-          {
-            id: 'cmp_1',
-            name: 'Northwind Labs',
-            website: 'https://northwind.example',
-            contactEmail: 'security@northwind.example',
-            assessmentCount: 2,
-            createdAt: '2026-06-01T00:00:00.000Z',
-            updatedAt: '2026-06-10T00:00:00.000Z',
-          },
-        ],
-      });
-    }
-
-    if (path === '/api/companies/cmp_1/assessments') {
-      return createJsonResponse({
-        data: [
-          {
-            id: 'asm_1',
-            name: 'Customer Services Portal',
-            type: 'Web App',
-            status: 'in-progress',
-            findingsCount: 14,
-            updatedAt: '2026-06-15T09:00:00.000Z',
-            description: 'Assessment of the customer portal',
-            scope: 'Web application',
-          },
-          {
-            id: 'asm_5',
-            name: 'Data Export Service',
-            type: 'API',
-            status: 'archived',
-            findingsCount: 3,
-            updatedAt: '2026-06-12T09:00:00.000Z',
-            description: 'Archived export service review',
-            scope: 'Backend API',
-          },
-        ],
-      });
-    }
-
-    if (path === '/api/companies/cmp_1/assessments/asm_1/overview') {
-      return createJsonResponse({
-        data: {
-          company: {
-            id: 'cmp_1',
-            name: 'Northwind Labs',
-          },
-          assessment: {
-            id: 'asm_1',
-            companyId: 'cmp_1',
-            title: 'Customer Services Portal',
-            description: 'Assessment of the customer portal',
-            scope: 'Web application',
-            status: 'in-progress',
-            startedAt: '2026-06-01',
-            completedAt: '2026-06-10',
-            applicationName: 'Customer Services Portal',
-            environment: 'Production',
-            assessmentType: 'Web App',
-            overallRisk: 'high',
-            createdAt: '2026-06-01T09:00:00.000Z',
-            updatedAt: '2026-06-11T09:00:00.000Z',
-            recordVersion: 3,
-            findingsCount: 14,
-            evidenceCount: 6,
-            reportVersionCount: 2,
-            testerName: 'Alex Mercer',
-            availableActions: ['complete', 'archive'],
-          },
-        },
-      });
-    }
-
-    if (path === '/api/companies/cmp_1/assessments/asm_5/overview') {
-      return createJsonResponse({
-        data: {
-          company: {
-            id: 'cmp_1',
-            name: 'Northwind Labs',
-          },
-          assessment: {
-            id: 'asm_5',
-            companyId: 'cmp_1',
-            title: 'Data Export Service',
-            status: 'archived',
-            applicationName: 'Data Export Service',
-            environment: 'Production',
-            assessmentType: 'API',
-            overallRisk: 'low',
-            createdAt: '2026-05-16T09:00:00.000Z',
-            updatedAt: '2026-05-24T09:00:00.000Z',
-            recordVersion: 1,
-            findingsCount: 3,
-            evidenceCount: 0,
-            reportVersionCount: 0,
-            testerName: 'Jordan Lee',
-            availableActions: ['reopen'],
-          },
-        },
-      });
-    }
-
-    if (path === '/api/companies/cmp_1/assessments/asm_missing/overview') {
-      return createJsonResponse(
-        {
-          error: {
-            code: 'ASSESSMENT_NOT_FOUND',
-            message: 'Assessment not found',
-            details: [],
-          },
-        },
-        { status: 404 },
-      );
-    }
-
-    if (path === '/api/companies/cmp_1/assessments/asm_1/commands/complete') {
-      return createJsonResponse(
-        {
-          error: {
-            code: 'RESOURCE_MODIFIED',
-            message: 'The assessment was modified by another session.',
-            details: [],
-          },
-        },
-        { status: 409 },
-      );
-    }
-
-    throw new Error(`Unexpected request: ${path}`);
-  });
-};
 
 export { assert, act, routes };
+export { setupAssessmentWorkspaceFetchFixture } from './supportAppRouter';

@@ -42,10 +42,13 @@ const StyledRouteStateView = styled.section`
       justify-content: center;
       min-height: 2.75rem;
       padding: 0 ${spacing.l};
+      appearance: none;
       border: 1px solid transparent;
       border-radius: ${radii.md};
       color: ${colors.text.inverse};
       background: ${colors.brand.primary};
+      cursor: pointer;
+      font: inherit;
       font-size: ${typography.body.medium.size};
       font-weight: ${typography.fontWeights.semibold};
       text-decoration: none;
