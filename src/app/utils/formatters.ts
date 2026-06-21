@@ -5,14 +5,14 @@ const invalidRelativeTimeDisplayValue = 'Invalid relative time';
 const invalidFileSizeDisplayValue = 'Invalid file size';
 const invalidCountDisplayValue = 'Invalid count';
 
-const isMissingText = (value?: string | null): value is string =>
-  value === undefined || value === null || value.trim().length === 0;
+const hasText = (value?: string | null): value is string =>
+  typeof value === 'string' && value.trim().length > 0;
 
 const isValidNumber = (value?: number | null) =>
   typeof value === 'number' && Number.isFinite(value);
 
 export const formatDate = (value?: string | null) => {
-  if (isMissingText(value)) {
+  if (!hasText(value)) {
     return missingDisplayValue;
   }
 
@@ -24,7 +24,7 @@ export const formatDate = (value?: string | null) => {
 };
 
 export const formatDateTime = (value?: string | null) => {
-  if (isMissingText(value)) {
+  if (!hasText(value)) {
     return missingDisplayValue;
   }
 
@@ -39,7 +39,7 @@ export const formatDateTime = (value?: string | null) => {
 };
 
 export const formatRelativeTime = (value?: string | null, now = Date.now()) => {
-  if (isMissingText(value)) {
+  if (!hasText(value)) {
     return missingDisplayValue;
   }
 
