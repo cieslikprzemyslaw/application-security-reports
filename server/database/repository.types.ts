@@ -8,6 +8,7 @@ export type RepositoryClient = Pick<
   | 'evidence'
   | 'evidenceExchange'
   | 'report'
+  | 'reportVersion'
   | 'evidenceThreat'
   | 'reportThreat'
   | 'activity'

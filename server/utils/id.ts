@@ -11,6 +11,7 @@ const ENTITY_PREFIXES = {
   evidence: 'evd_',
   evidenceExchange: 'evx_',
   report: 'rpt_',
+  reportVersion: 'rvs_',
   activity: 'act_',
   settings: 'set_',
 } as const;

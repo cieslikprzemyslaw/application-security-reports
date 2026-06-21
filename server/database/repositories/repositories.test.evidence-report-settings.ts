@@ -91,6 +91,7 @@ const createEvidenceDb = (row = evidenceRow) => {
       },
     } as RepositoryTransactionClient['evidenceExchange'],
     report: {} as RepositoryTransactionClient['report'],
+    reportVersion: {} as RepositoryTransactionClient['reportVersion'],
     reportThreat: {} as RepositoryTransactionClient['reportThreat'],
     activity: {} as RepositoryTransactionClient['activity'],
     company: {} as RepositoryTransactionClient['company'],
@@ -158,6 +159,7 @@ const createReportDb = () => {
         return { reportId: 'rpt_123', threatId: 'thr_123' };
       },
     } as RepositoryTransactionClient['reportThreat'],
+    reportVersion: {} as RepositoryTransactionClient['reportVersion'],
     evidenceExchange: {} as RepositoryTransactionClient['evidenceExchange'],
     evidence: {} as RepositoryTransactionClient['evidence'],
     evidenceThreat: {} as RepositoryTransactionClient['evidenceThreat'],

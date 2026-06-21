@@ -6,6 +6,7 @@ import {
   ASSESSMENT_STATUSES,
   EVIDENCE_TYPES,
   REPORT_STATUSES,
+  REPORT_VERSION_STATUSES,
   SEVERITIES,
   STRIDE_CATEGORIES,
   THREAT_STATUSES,
@@ -100,6 +101,8 @@ export const assessmentStatusSchema = z.enum(ASSESSMENT_STATUSES);
 export const threatStatusSchema = z.enum(THREAT_STATUSES);
 
 export const reportStatusSchema = z.enum(REPORT_STATUSES);
+
+export const reportVersionStatusSchema = z.enum(REPORT_VERSION_STATUSES);
 
 export const activityActionSchema = z.enum(ACTIVITY_ACTIONS);
 

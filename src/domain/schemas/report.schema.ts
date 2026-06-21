@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { Report } from '../report.js';
+import type { Report, ReportVersion } from '../report.js';
 
 import {
   isoDateStringSchema,
@@ -12,6 +12,7 @@ import {
   prefixedUuidSchema,
   reportBrandingModeSchema,
   reportStatusSchema,
+  reportVersionStatusSchema,
   severitySchema,
   strideCategorySchema,
   threatStatusSchema,
@@ -71,6 +72,7 @@ export const reportVersionObjectSchema = z
     id: nonEmptyIdSchema,
     reportId: nonEmptyIdSchema,
     version: positiveIntegerSchema,
+    status: reportVersionStatusSchema,
     generatedAt: isoDateStringSchema,
     filePath: optionalTrimmedTextSchema,
     snapshot: reportSnapshotSchema,
@@ -78,6 +80,11 @@ export const reportVersionObjectSchema = z
   .strict();
 
 export const reportVersionSchema = reportVersionObjectSchema;
+
+type ReportVersionSchemaOutput = Required<z.output<typeof reportVersionSchema>>;
+const _reportVersionSchemaCompatibilityCheck: ReportVersionSchemaOutput extends ReportVersion
+  ? true
+  : never = true;
 
 export const reportObjectSchema = z
   .object({

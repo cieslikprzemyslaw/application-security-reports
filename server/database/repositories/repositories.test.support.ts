@@ -10,6 +10,7 @@ import { createAssessmentRepository } from './assessment.repository.js';
 import { createCompanyRepository } from './company.repository.js';
 import { createEvidenceRepository } from './evidence.repository.js';
 import { createReportRepository } from './report.repository.js';
+import { createReportVersionRepository } from './reportVersion.repository.js';
 import { createSettingsRepository } from './settings.repository.js';
 import { createThreatRepository } from './threat.repository.js';
 
@@ -26,6 +27,7 @@ export {
   createCompanyRepository,
   createEvidenceRepository,
   createReportRepository,
+  createReportVersionRepository,
   createSettingsRepository,
   createThreatRepository,
 };
@@ -304,5 +306,44 @@ export const createSettingsDb = () => {
   return {
     calls,
     db: { settings },
+  };
+};
+
+export const reportVersionRow = {
+  id: 'rvs_00000000-0000-0000-0000-000000000001',
+  reportId: 'rpt_123',
+  version: 1,
+  status: 'draft',
+  generatedAt: '2026-06-21',
+  filePath: null,
+  snapshot: {
+    reportTitle: 'Security Report',
+    companyName: 'Northstar Digital',
+    assessmentTitle: 'API review',
+    branding: { clientName: 'Northstar Digital' },
+    threats: [],
+  },
+};
+
+export const createReportVersionDb = (row = reportVersionRow) => {
+  const calls: Array<{ method: string; args?: unknown }> = [];
+  const reportVersion = {
+    async findUnique(args: unknown) {
+      calls.push({ method: 'reportVersion.findUnique', args });
+      return row;
+    },
+    async findMany(args: unknown) {
+      calls.push({ method: 'reportVersion.findMany', args });
+      return [row];
+    },
+    async create(args: unknown) {
+      calls.push({ method: 'reportVersion.create', args });
+      return row;
+    },
+  } as RepositoryClient['reportVersion'];
+
+  return {
+    calls,
+    db: { reportVersion },
   };
 };

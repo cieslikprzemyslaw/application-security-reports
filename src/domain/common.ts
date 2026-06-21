@@ -83,6 +83,10 @@ export const REPORT_STATUSES = ['draft', 'generated', 'archived'] as const;
 
 export type ReportStatus = (typeof REPORT_STATUSES)[number];
 
+export const REPORT_VERSION_STATUSES = ['draft', 'final'] as const;
+
+export type ReportVersionStatus = (typeof REPORT_VERSION_STATUSES)[number];
+
 export const ACTIVITY_ACTIONS = [
   'created',
   'updated',

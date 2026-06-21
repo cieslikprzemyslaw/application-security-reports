@@ -30,6 +30,7 @@ const validReportVersion = {
   id: 'repv_1',
   reportId: 'rep_1',
   version: 1,
+  status: 'draft',
   generatedAt: '2026-06-10',
   snapshot: {
     reportTitle: 'Security Report',
