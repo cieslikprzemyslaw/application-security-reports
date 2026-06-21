@@ -183,7 +183,7 @@ await (async () => {
 })();
 
 await (async () => {
-  // Reset: dirty→clean removes all blocking behaviour
+  // Reset after save: clean state cancels the pending navigation and clears blockers
   const { root, router, window } = await renderTest();
 
   await clickById(window, 'make-dirty');
@@ -193,24 +193,13 @@ await (async () => {
     await renderTick();
   });
 
-  const keepEditingBtn = findDialogButton(window, 'Keep editing');
-
-  assert.ok(keepEditingBtn, 'Expected Keep editing button');
-
-  await act(async () => {
-    keepEditingBtn!.dispatchEvent(
-      new window.MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-        button: 0,
-      }),
-    );
-    await renderTick();
-  });
+  await clickById(window, 'make-clean');
 
   assert.equal(router.state.location.pathname, '/form');
-
-  await clickById(window, 'make-clean');
+  assert.ok(
+    !window.document.querySelector('[role="dialog"]'),
+    'Expected dialog to close after save',
+  );
 
   await act(async () => {
     await router.navigate('/other');
