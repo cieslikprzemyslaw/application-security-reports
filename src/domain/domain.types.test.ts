@@ -76,6 +76,7 @@ const reportVersion: ReportVersion = {
   id: 'repv_1',
   reportId: report.id,
   version: 1,
+  status: 'draft',
   generatedAt: '2026-06-10',
   filePath: '/tmp/report-v1.pdf',
   snapshot: {

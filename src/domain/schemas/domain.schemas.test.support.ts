@@ -304,6 +304,7 @@ export const validReportVersion = {
   id: 'repv_1',
   reportId: validReport.id,
   version: 1,
+  status: 'draft',
   generatedAt: '2026-06-10',
   filePath: '/tmp/report-v1.pdf',
   snapshot: validReportSnapshot,

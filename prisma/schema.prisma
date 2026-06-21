@@ -45,6 +45,11 @@ enum ReportBrandingMode {
   none
 }
 
+enum ReportVersionStatus {
+  draft
+  final
+}
+
 enum ActivityEntityType {
   company
   assessment
@@ -181,12 +186,29 @@ model Report {
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
-  assessment      Assessment     @relation(fields: [assessmentId], references: [id], onDelete: Restrict)
+  assessment      Assessment      @relation(fields: [assessmentId], references: [id], onDelete: Restrict)
   selectedThreats ReportThreat[]
+  versions        ReportVersion[]
 
   @@index([assessmentId])
   @@index([assessmentId, createdAt])
   @@index([status])
+}
+
+model ReportVersion {
+  id          String              @id
+  reportId    String
+  version     Int
+  status      ReportVersionStatus
+  generatedAt String
+  filePath    String?
+  snapshot    Json
+  createdAt   DateTime            @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Restrict)
+
+  @@index([reportId])
+  @@index([reportId, createdAt])
 }
 
 model EvidenceThreat {

@@ -4,6 +4,7 @@ import type {
   ReportId,
   ReportStatus,
   ReportVersionId,
+  ReportVersionStatus,
   Severity,
   StrideCategory,
   ThreatId,
@@ -62,10 +63,13 @@ export interface ReportVersion {
   id: ReportVersionId;
   reportId: ReportId;
   version: number;
+  status: ReportVersionStatus;
   generatedAt: ISODateString;
   filePath?: string;
   snapshot: ReportSnapshot;
 }
+
+export type CreateReportVersionInput = Omit<ReportVersion, 'id'>;
 
 export type CreateReportInput = Omit<Report, 'id' | 'createdAt' | 'updatedAt'>;
 

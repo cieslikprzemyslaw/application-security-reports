@@ -5,6 +5,7 @@ import { createAssessmentRepository } from './assessment.repository.js';
 import { createCompanyRepository } from './company.repository.js';
 import { createEvidenceRepository } from './evidence.repository.js';
 import { createReportRepository } from './report.repository.js';
+import { createReportVersionRepository } from './reportVersion.repository.js';
 import { createSettingsRepository } from './settings.repository.js';
 import { createThreatRepository } from './threat.repository.js';
 
@@ -14,6 +15,7 @@ export const createRepositories = (db: RepositoryClient) => ({
   company: createCompanyRepository(db),
   evidence: createEvidenceRepository(db),
   report: createReportRepository(db),
+  reportVersion: createReportVersionRepository(db),
   settings: createSettingsRepository(db),
   threat: createThreatRepository(db),
 });
@@ -26,6 +28,7 @@ export {
   createCompanyRepository,
   createEvidenceRepository,
   createReportRepository,
+  createReportVersionRepository,
   createSettingsRepository,
   createThreatRepository,
 };

@@ -58,7 +58,7 @@ const companyLogoMigrationPath = path.resolve(
   '..',
   'prisma',
   'migrations',
-  '20260619130000_add_company_logo_url',
+  '20260620090747',
   'migration.sql',
 );
 const companyLogoMigrationSql = readFileSync(companyLogoMigrationPath, 'utf8');
