@@ -5,7 +5,7 @@ const invalidRelativeTimeDisplayValue = 'Invalid relative time';
 const invalidFileSizeDisplayValue = 'Invalid file size';
 const invalidCountDisplayValue = 'Invalid count';
 
-const isMissingText = (value?: string) =>
+const isMissingText = (value?: string): value is string =>
   value === undefined || value.trim().length === 0;
 
 const isValidNumber = (value?: number) =>
