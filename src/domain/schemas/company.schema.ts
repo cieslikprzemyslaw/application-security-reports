@@ -22,6 +22,7 @@ export const companyObjectSchema = z
     contactEmail: optionalEmailSchema,
     logoUrl: urlSchema.nullable().optional(),
     footerText: optionalTrimmedTextSchema,
+    archivedAt: timestampSchema.nullable().optional(),
     createdAt: timestampSchema,
     updatedAt: timestampSchema,
   })
@@ -44,6 +45,7 @@ export const companyPublicSchema = z
     contactEmail: optionalEmailSchema,
     logoUrl: urlSchema.nullable(),
     footerText: optionalTrimmedTextSchema,
+    archivedAt: timestampSchema.nullable(),
     createdAt: timestampSchema,
     updatedAt: timestampSchema,
   })

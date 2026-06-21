@@ -198,6 +198,44 @@ export const createCompaniesRouter = (
     }),
   );
 
+  router.post(
+    '/:id/archive',
+    createRequestValidationMiddleware({
+      params: companyRouteParamsSchema,
+    }),
+    asyncRoute(async (req, res) => {
+      const { id } = res.locals.validatedRequest?.params as { id: string };
+
+      try {
+        const company = await companyRepository.archive(id);
+        sendCompanyResponse(req, res, 200, company);
+      } catch (error) {
+        if (!handleCompanyRepositoryError(error, res, 'archive')) {
+          throw error;
+        }
+      }
+    }),
+  );
+
+  router.post(
+    '/:id/restore',
+    createRequestValidationMiddleware({
+      params: companyRouteParamsSchema,
+    }),
+    asyncRoute(async (req, res) => {
+      const { id } = res.locals.validatedRequest?.params as { id: string };
+
+      try {
+        const company = await companyRepository.restore(id);
+        sendCompanyResponse(req, res, 200, company);
+      } catch (error) {
+        if (!handleCompanyRepositoryError(error, res, 'restore')) {
+          throw error;
+        }
+      }
+    }),
+  );
+
   router.use(
     createCompanyLogoRouter(companyRepository, dependencies.logoStorage),
   );
