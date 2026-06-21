@@ -15,6 +15,7 @@ import {
   restoreFetch,
   selectLogoFile,
   setFetch,
+  waitForCondition,
 } from './createCompany.route.test.utils';
 
 await (async () => {
@@ -126,8 +127,8 @@ await (async () => {
         ).length,
         1,
       );
-      assert.ok(
-        container.textContent?.includes('Northwind Labs'),
+      await waitForCondition(
+        () => container.textContent?.includes('Northwind Labs') ?? false,
         'Expected the first company workspace to open after logo upload',
       );
 
@@ -275,8 +276,8 @@ await (async () => {
         ).length,
         2,
       );
-      assert.ok(
-        container.textContent?.includes('Companies'),
+      await waitForCondition(
+        () => container.textContent?.includes('Companies') ?? false,
         'Expected the companies list after retry succeeds',
       );
 

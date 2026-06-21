@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import {
-  unstable_usePrompt,
-  useBeforeUnload,
-  useNavigate,
-} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import CompanyForm from '~/app/components/appsec/companyForm';
 import type { CompanyFormValue } from '~/app/components/appsec/companyForm';
 import Button from '~/app/components/ui/button';
 import { PageHeader } from '~/app/components/common';
 import PageContent from '~/app/layouts/pageContent';
+import { useDirtyFormGuard } from '~/app/hooks/useDirtyFormGuard';
 import type { Company, CompanyListItem } from '~/domain';
 import { ApiError } from '~/services/apiClient';
 import { companyService } from '~/services';
@@ -112,21 +109,24 @@ const CreateCompany = ({
   >();
 
   const isDirty = !areCompanyFormValuesEqual(draftValue, baselineValue);
+  const {
+    isBlocked: isNavigationBlocked,
+    proceed: proceedNavigation,
+    cancel: cancelNavigation,
+  } = useDirtyFormGuard(isDirty && !isSubmitting);
 
-  useBeforeUnload(event => {
-    if (!isDirty || isSubmitting) {
+  useEffect(() => {
+    if (!isNavigationBlocked) {
       return;
     }
 
-    event.preventDefault();
-    event.returnValue = '';
-  });
+    if (window.confirm('Discard unsaved company changes?')) {
+      proceedNavigation();
+      return;
+    }
 
-  unstable_usePrompt({
-    when: isDirty && !isSubmitting,
-    message: 'Discard unsaved company changes?',
-  });
-
+    cancelNavigation();
+  }, [cancelNavigation, isNavigationBlocked, proceedNavigation]);
   useEffect(() => {
     if (!completedCompany) {
       return;
@@ -141,7 +141,6 @@ const CreateCompany = ({
       navigate(routes.companies);
     }
   }, [completedCompany, navigate, onActiveCompanyChange]);
-
   const handleCompaniesUpdate = (company: Company) => {
     onCompaniesChange(upsertCompany(companies, company));
   };
@@ -171,7 +170,6 @@ const CreateCompany = ({
   const handleCancel = () => {
     navigate(routes.companies);
   };
-
   const handleDeferLogo = () => {
     if (!createdCompany) {
       return;

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 
 import { act } from 'react';
+import { Simulate } from 'react-dom/test-utils';
 
 import { routes } from '~/routes';
 import {
@@ -90,7 +91,7 @@ await (async () => {
                 details: [],
               },
             },
-            { status: 400 },
+            { status: 500 },
           );
         }
 
@@ -143,6 +144,20 @@ await (async () => {
         );
         await renderTick();
       });
+
+      const titleInput = window.document.querySelector(
+        '#threat-title',
+      ) as HTMLInputElement | null;
+
+      assert.ok(titleInput, 'Expected the create form title input');
+
+      await act(async () => {
+        titleInput!.value = 'SQL injection';
+        Simulate.change(titleInput!);
+        await renderTick();
+      });
+
+      assert.equal(titleInput.value, 'SQL injection');
 
       const createButton = Array.from(
         window.document.querySelectorAll('button'),

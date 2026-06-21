@@ -16,6 +16,36 @@ export type TestWindow = Window &
 export const renderTick = () =>
   new Promise<void>(resolve => setTimeout(resolve, 0));
 
+export const waitForCondition = async (
+  condition: () => boolean,
+  failureMessage: string,
+  attempts = 25,
+) => {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    if (condition()) {
+      return;
+    }
+
+    await act(async () => {
+      await renderTick();
+    });
+  }
+
+  console.error(
+    [
+      '',
+      '===== waitForCondition diagnostic =====',
+      `Failure: ${failureMessage}`,
+      `Pathname: ${window.location.pathname}`,
+      `Body: ${document.body.textContent?.replace(/\s+/g, ' ').trim()}`,
+      '=======================================',
+      '',
+    ].join('\n'),
+  );
+
+  assert.fail(failureMessage);
+};
+
 const originalFetch = globalThis.fetch;
 
 export const setFetch = (value: typeof fetch) => {

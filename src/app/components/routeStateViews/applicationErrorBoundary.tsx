@@ -5,6 +5,7 @@ import ApplicationErrorView from './applicationErrorView.component';
 interface ApplicationErrorBoundaryProps {
   children: React.ReactNode;
   onReload: () => void;
+  resetKey?: string;
 }
 
 interface ApplicationErrorBoundaryState {
@@ -23,6 +24,11 @@ class ApplicationErrorBoundary extends React.Component<
     return { hasError: true };
   }
 
+  componentDidUpdate(previousProps: ApplicationErrorBoundaryProps) {
+    if (this.state.hasError && previousProps.resetKey !== this.props.resetKey) {
+      this.setState({ hasError: false });
+    }
+  }
   componentDidCatch(error: unknown) {
     if (error instanceof Error) {
       console.error('Application rendering error', {

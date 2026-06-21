@@ -43,7 +43,8 @@ import {
 import Reports from './pages/reports';
 
 import { reportDetailsById } from './appData';
-import type { CompanyIdentity } from './pages/companies';
+import Companies, { type CompanyIdentity } from './pages/companies';
+import CreateCompany from './pages/companies/createCompany.component';
 
 interface RouterShellContextValue {
   activeCompany?: CompanyIdentity;
@@ -97,7 +98,7 @@ const ApplicationRouteBoundary = () => {
 
   return (
     <ApplicationErrorBoundary
-      key={location.pathname}
+      resetKey={location.pathname}
       onReload={() => window.location.reload()}
     >
       <Outlet />
@@ -126,28 +127,26 @@ const DashboardRouteElement = () => {
 };
 
 const CompaniesRouteElement = () => {
-  const { onActiveCompanyChange } = useRouterShellContext();
+  const { activeCompany, onActiveCompanyChange, onCompaniesChange } =
+    useRouterShellContext();
 
   return (
-    <DashboardRoute
-      companies={[]}
-      companiesLoadError={undefined}
-      isCompaniesLoading={false}
-      onOpenCompany={onActiveCompanyChange}
-      onRetryCompanies={() => undefined}
+    <Companies
+      activeCompany={activeCompany}
+      onActiveCompanyChange={onActiveCompanyChange}
+      onCompaniesChange={onCompaniesChange}
     />
   );
 };
 
 const CreateCompanyRouteElement = () => {
-  const { companies, onActiveCompanyChange } = useRouterShellContext();
+  const { companies, onActiveCompanyChange, onCompaniesChange } =
+    useRouterShellContext();
 
   return (
-    <AppLayout
-      activeCompany={undefined}
+    <CreateCompany
       companies={companies}
-      isCompaniesLoading={false}
-      navigationGroups={undefined}
+      onCompaniesChange={onCompaniesChange}
       onActiveCompanyChange={onActiveCompanyChange}
     />
   );

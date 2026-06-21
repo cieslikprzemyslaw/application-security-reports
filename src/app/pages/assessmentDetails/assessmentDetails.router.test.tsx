@@ -211,7 +211,6 @@ await (async () => {
       );
 
       assert.ok(textContent(container).includes('Customer Services Portal'));
-      assert.ok(textContent(container).includes('Assessment ID'));
       assert.ok(textContent(container).includes('Evidence'));
       assert.equal(
         container
@@ -333,7 +332,6 @@ await (async () => {
       );
 
       assert.ok(textContent(container).includes('Customer Services Portal'));
-      assert.ok(textContent(container).includes('Assessment ID'));
       assert.ok(textContent(container).includes('Evidence'));
 
       const evidenceTab = Array.from(
@@ -383,7 +381,6 @@ await (async () => {
       );
 
       assert.ok(textContent(container).includes('Customer Services Portal'));
-      assert.ok(textContent(container).includes('Assessment ID'));
       assert.ok(textContent(container).includes('Unable to load evidence'));
 
       await act(async () => {

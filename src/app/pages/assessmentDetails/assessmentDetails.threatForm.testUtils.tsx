@@ -67,6 +67,21 @@ export const setupDom = (pathname: string) => {
   );
   setGlobal('IS_REACT_ACT_ENVIRONMENT', true);
 
+  Object.defineProperty(window.HTMLElement.prototype, 'attachEvent', {
+    value: () => undefined,
+    configurable: true,
+  });
+
+  Object.defineProperty(window.HTMLElement.prototype, 'detachEvent', {
+    value: () => undefined,
+    configurable: true,
+  });
+
+  Object.defineProperty(window.HTMLElement.prototype, 'scrollIntoView', {
+    value: () => undefined,
+    configurable: true,
+  });
+
   return {
     container: window.document.getElementById('root'),
     window,
@@ -77,7 +92,6 @@ export const renderApp = async (pathname: string) => {
   const { container, window } = setupDom(pathname);
 
   assert.ok(container, 'Expected root container to exist');
-
   const root = createRoot(container);
 
   await act(async () => {
