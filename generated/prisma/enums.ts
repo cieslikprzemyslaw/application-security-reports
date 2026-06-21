@@ -62,6 +62,14 @@ export const ReportBrandingMode = {
 export type ReportBrandingMode = (typeof ReportBrandingMode)[keyof typeof ReportBrandingMode]
 
 
+export const ReportVersionStatus = {
+  draft: 'draft',
+  final: 'final'
+} as const
+
+export type ReportVersionStatus = (typeof ReportVersionStatus)[keyof typeof ReportVersionStatus]
+
+
 export const ActivityEntityType = {
   company: 'company',
   assessment: 'assessment',

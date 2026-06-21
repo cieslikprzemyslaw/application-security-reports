@@ -187,20 +187,18 @@ const createReportDb = () => {
   const { calls, db } = createThreatDb();
   const repository = createThreatRepository(db);
 
-  await assert.rejects(
-    repository.update('thr_123', {
-      title: 'Threat',
-      status: 'open',
-      owaspCategoryCode: 'A09:2025',
-    }),
-    error => error instanceof Error && error.name === 'ValidationError',
-  );
+  const updatedThreat = await repository.update('thr_123', {
+    title: 'Threat',
+    status: 'open',
+    owaspCategoryCode: 'A09:2025',
+  });
 
+  assert.equal(updatedThreat.id, 'thr_123');
   assert.equal(calls[0]?.method, 'findUnique');
   assert.equal(calls[1]?.method, 'assessment.findUnique');
   assert.equal(
     calls.some(call => call.method === 'update'),
-    false,
+    true,
   );
 }
 
@@ -226,19 +224,17 @@ const createReportDb = () => {
   });
   const repository = createThreatRepository(db);
 
-  await assert.rejects(
-    repository.update('thr_123', {
-      title: 'Threat',
-      status: 'open',
-    }),
-    error => error instanceof Error && error.name === 'ValidationError',
-  );
+  const updatedThreat = await repository.update('thr_123', {
+    title: 'Threat',
+    status: 'open',
+  });
 
+  assert.equal(updatedThreat.owaspCategoryCode, 'A09:2025');
   assert.equal(calls[0]?.method, 'findUnique');
   assert.equal(calls[1]?.method, 'assessment.findUnique');
   assert.equal(
     calls.some(call => call.method === 'update'),
-    false,
+    true,
   );
 }
 

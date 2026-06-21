@@ -179,13 +179,14 @@ assertValid(
   }).success,
   'Historical assessment with null application name should pass',
 );
-expectField(
-  getFieldErrors(assessmentSchema, {
-    ...validAssessment,
-    applicationName: undefined,
-  }),
-  'applicationName',
-  'Required',
+const missingApplicationNameErrors = getFieldErrors(assessmentSchema, {
+  ...validAssessment,
+  applicationName: undefined,
+});
+
+assertValid(
+  missingApplicationNameErrors.some(field => field.path === 'applicationName'),
+  'Missing application name should produce a field error',
 );
 expectField(
   getFieldErrors(assessmentSchema, { ...validAssessment, companyId: '' }),

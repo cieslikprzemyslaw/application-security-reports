@@ -57,6 +57,7 @@ export const ModelName = {
   Evidence: 'Evidence',
   EvidenceExchange: 'EvidenceExchange',
   Report: 'Report',
+  ReportVersion: 'ReportVersion',
   EvidenceThreat: 'EvidenceThreat',
   ReportThreat: 'ReportThreat',
   Activity: 'Activity',
@@ -85,6 +86,7 @@ export const CompanyScalarFieldEnum = {
   contactEmail: 'contactEmail',
   logoUrl: 'logoUrl',
   footerText: 'footerText',
+  archivedAt: 'archivedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -185,6 +187,20 @@ export const ReportScalarFieldEnum = {
 } as const
 
 export type ReportScalarFieldEnum = (typeof ReportScalarFieldEnum)[keyof typeof ReportScalarFieldEnum]
+
+
+export const ReportVersionScalarFieldEnum = {
+  id: 'id',
+  reportId: 'reportId',
+  version: 'version',
+  status: 'status',
+  generatedAt: 'generatedAt',
+  filePath: 'filePath',
+  snapshot: 'snapshot',
+  createdAt: 'createdAt'
+} as const
+
+export type ReportVersionScalarFieldEnum = (typeof ReportVersionScalarFieldEnum)[keyof typeof ReportVersionScalarFieldEnum]
 
 
 export const EvidenceThreatScalarFieldEnum = {

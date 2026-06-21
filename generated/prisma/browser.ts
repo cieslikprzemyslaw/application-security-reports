@@ -48,6 +48,11 @@ export type EvidenceExchange = Prisma.EvidenceExchangeModel
  */
 export type Report = Prisma.ReportModel
 /**
+ * Model ReportVersion
+ * 
+ */
+export type ReportVersion = Prisma.ReportVersionModel
+/**
  * Model EvidenceThreat
  * 
  */

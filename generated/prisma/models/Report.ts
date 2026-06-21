@@ -242,6 +242,7 @@ export type ReportWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Report"> | Date | string
   assessment?: Prisma.XOR<Prisma.AssessmentScalarRelationFilter, Prisma.AssessmentWhereInput>
   selectedThreats?: Prisma.ReportThreatListRelationFilter
+  versions?: Prisma.ReportVersionListRelationFilter
 }
 
 export type ReportOrderByWithRelationInput = {
@@ -255,6 +256,7 @@ export type ReportOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   assessment?: Prisma.AssessmentOrderByWithRelationInput
   selectedThreats?: Prisma.ReportThreatOrderByRelationAggregateInput
+  versions?: Prisma.ReportVersionOrderByRelationAggregateInput
 }
 
 export type ReportWhereUniqueInput = Prisma.AtLeast<{
@@ -271,6 +273,7 @@ export type ReportWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Report"> | Date | string
   assessment?: Prisma.XOR<Prisma.AssessmentScalarRelationFilter, Prisma.AssessmentWhereInput>
   selectedThreats?: Prisma.ReportThreatListRelationFilter
+  versions?: Prisma.ReportVersionListRelationFilter
 }, "id">
 
 export type ReportOrderByWithAggregationInput = {
@@ -313,6 +316,7 @@ export type ReportCreateInput = {
   updatedAt?: Date | string
   assessment: Prisma.AssessmentCreateNestedOneWithoutReportsInput
   selectedThreats?: Prisma.ReportThreatCreateNestedManyWithoutReportInput
+  versions?: Prisma.ReportVersionCreateNestedManyWithoutReportInput
 }
 
 export type ReportUncheckedCreateInput = {
@@ -325,6 +329,7 @@ export type ReportUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   selectedThreats?: Prisma.ReportThreatUncheckedCreateNestedManyWithoutReportInput
+  versions?: Prisma.ReportVersionUncheckedCreateNestedManyWithoutReportInput
 }
 
 export type ReportUpdateInput = {
@@ -337,6 +342,7 @@ export type ReportUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assessment?: Prisma.AssessmentUpdateOneRequiredWithoutReportsNestedInput
   selectedThreats?: Prisma.ReportThreatUpdateManyWithoutReportNestedInput
+  versions?: Prisma.ReportVersionUpdateManyWithoutReportNestedInput
 }
 
 export type ReportUncheckedUpdateInput = {
@@ -349,6 +355,7 @@ export type ReportUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   selectedThreats?: Prisma.ReportThreatUncheckedUpdateManyWithoutReportNestedInput
+  versions?: Prisma.ReportVersionUncheckedUpdateManyWithoutReportNestedInput
 }
 
 export type ReportCreateManyInput = {
@@ -485,6 +492,20 @@ export type EnumReportStatusFieldUpdateOperationsInput = {
   set?: $Enums.ReportStatus
 }
 
+export type ReportCreateNestedOneWithoutVersionsInput = {
+  create?: Prisma.XOR<Prisma.ReportCreateWithoutVersionsInput, Prisma.ReportUncheckedCreateWithoutVersionsInput>
+  connectOrCreate?: Prisma.ReportCreateOrConnectWithoutVersionsInput
+  connect?: Prisma.ReportWhereUniqueInput
+}
+
+export type ReportUpdateOneRequiredWithoutVersionsNestedInput = {
+  create?: Prisma.XOR<Prisma.ReportCreateWithoutVersionsInput, Prisma.ReportUncheckedCreateWithoutVersionsInput>
+  connectOrCreate?: Prisma.ReportCreateOrConnectWithoutVersionsInput
+  upsert?: Prisma.ReportUpsertWithoutVersionsInput
+  connect?: Prisma.ReportWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ReportUpdateToOneWithWhereWithoutVersionsInput, Prisma.ReportUpdateWithoutVersionsInput>, Prisma.ReportUncheckedUpdateWithoutVersionsInput>
+}
+
 export type ReportCreateNestedOneWithoutSelectedThreatsInput = {
   create?: Prisma.XOR<Prisma.ReportCreateWithoutSelectedThreatsInput, Prisma.ReportUncheckedCreateWithoutSelectedThreatsInput>
   connectOrCreate?: Prisma.ReportCreateOrConnectWithoutSelectedThreatsInput
@@ -508,6 +529,7 @@ export type ReportCreateWithoutAssessmentInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   selectedThreats?: Prisma.ReportThreatCreateNestedManyWithoutReportInput
+  versions?: Prisma.ReportVersionCreateNestedManyWithoutReportInput
 }
 
 export type ReportUncheckedCreateWithoutAssessmentInput = {
@@ -519,6 +541,7 @@ export type ReportUncheckedCreateWithoutAssessmentInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   selectedThreats?: Prisma.ReportThreatUncheckedCreateNestedManyWithoutReportInput
+  versions?: Prisma.ReportVersionUncheckedCreateNestedManyWithoutReportInput
 }
 
 export type ReportCreateOrConnectWithoutAssessmentInput = {
@@ -560,6 +583,70 @@ export type ReportScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Report"> | Date | string
 }
 
+export type ReportCreateWithoutVersionsInput = {
+  id: string
+  title: string
+  status?: $Enums.ReportStatus
+  latestVersion?: number
+  executiveSummary?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  assessment: Prisma.AssessmentCreateNestedOneWithoutReportsInput
+  selectedThreats?: Prisma.ReportThreatCreateNestedManyWithoutReportInput
+}
+
+export type ReportUncheckedCreateWithoutVersionsInput = {
+  id: string
+  assessmentId: string
+  title: string
+  status?: $Enums.ReportStatus
+  latestVersion?: number
+  executiveSummary?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  selectedThreats?: Prisma.ReportThreatUncheckedCreateNestedManyWithoutReportInput
+}
+
+export type ReportCreateOrConnectWithoutVersionsInput = {
+  where: Prisma.ReportWhereUniqueInput
+  create: Prisma.XOR<Prisma.ReportCreateWithoutVersionsInput, Prisma.ReportUncheckedCreateWithoutVersionsInput>
+}
+
+export type ReportUpsertWithoutVersionsInput = {
+  update: Prisma.XOR<Prisma.ReportUpdateWithoutVersionsInput, Prisma.ReportUncheckedUpdateWithoutVersionsInput>
+  create: Prisma.XOR<Prisma.ReportCreateWithoutVersionsInput, Prisma.ReportUncheckedCreateWithoutVersionsInput>
+  where?: Prisma.ReportWhereInput
+}
+
+export type ReportUpdateToOneWithWhereWithoutVersionsInput = {
+  where?: Prisma.ReportWhereInput
+  data: Prisma.XOR<Prisma.ReportUpdateWithoutVersionsInput, Prisma.ReportUncheckedUpdateWithoutVersionsInput>
+}
+
+export type ReportUpdateWithoutVersionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+  latestVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  executiveSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assessment?: Prisma.AssessmentUpdateOneRequiredWithoutReportsNestedInput
+  selectedThreats?: Prisma.ReportThreatUpdateManyWithoutReportNestedInput
+}
+
+export type ReportUncheckedUpdateWithoutVersionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  assessmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+  latestVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  executiveSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  selectedThreats?: Prisma.ReportThreatUncheckedUpdateManyWithoutReportNestedInput
+}
+
 export type ReportCreateWithoutSelectedThreatsInput = {
   id: string
   title: string
@@ -569,6 +656,7 @@ export type ReportCreateWithoutSelectedThreatsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   assessment: Prisma.AssessmentCreateNestedOneWithoutReportsInput
+  versions?: Prisma.ReportVersionCreateNestedManyWithoutReportInput
 }
 
 export type ReportUncheckedCreateWithoutSelectedThreatsInput = {
@@ -580,6 +668,7 @@ export type ReportUncheckedCreateWithoutSelectedThreatsInput = {
   executiveSummary?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  versions?: Prisma.ReportVersionUncheckedCreateNestedManyWithoutReportInput
 }
 
 export type ReportCreateOrConnectWithoutSelectedThreatsInput = {
@@ -607,6 +696,7 @@ export type ReportUpdateWithoutSelectedThreatsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assessment?: Prisma.AssessmentUpdateOneRequiredWithoutReportsNestedInput
+  versions?: Prisma.ReportVersionUpdateManyWithoutReportNestedInput
 }
 
 export type ReportUncheckedUpdateWithoutSelectedThreatsInput = {
@@ -618,6 +708,7 @@ export type ReportUncheckedUpdateWithoutSelectedThreatsInput = {
   executiveSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versions?: Prisma.ReportVersionUncheckedUpdateManyWithoutReportNestedInput
 }
 
 export type ReportCreateManyAssessmentInput = {
@@ -639,6 +730,7 @@ export type ReportUpdateWithoutAssessmentInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   selectedThreats?: Prisma.ReportThreatUpdateManyWithoutReportNestedInput
+  versions?: Prisma.ReportVersionUpdateManyWithoutReportNestedInput
 }
 
 export type ReportUncheckedUpdateWithoutAssessmentInput = {
@@ -650,6 +742,7 @@ export type ReportUncheckedUpdateWithoutAssessmentInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   selectedThreats?: Prisma.ReportThreatUncheckedUpdateManyWithoutReportNestedInput
+  versions?: Prisma.ReportVersionUncheckedUpdateManyWithoutReportNestedInput
 }
 
 export type ReportUncheckedUpdateManyWithoutAssessmentInput = {
@@ -669,10 +762,12 @@ export type ReportUncheckedUpdateManyWithoutAssessmentInput = {
 
 export type ReportCountOutputType = {
   selectedThreats: number
+  versions: number
 }
 
 export type ReportCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   selectedThreats?: boolean | ReportCountOutputTypeCountSelectedThreatsArgs
+  versions?: boolean | ReportCountOutputTypeCountVersionsArgs
 }
 
 /**
@@ -692,6 +787,13 @@ export type ReportCountOutputTypeCountSelectedThreatsArgs<ExtArgs extends runtim
   where?: Prisma.ReportThreatWhereInput
 }
 
+/**
+ * ReportCountOutputType without action
+ */
+export type ReportCountOutputTypeCountVersionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReportVersionWhereInput
+}
+
 
 export type ReportSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -704,6 +806,7 @@ export type ReportSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   updatedAt?: boolean
   assessment?: boolean | Prisma.AssessmentDefaultArgs<ExtArgs>
   selectedThreats?: boolean | Prisma.Report$selectedThreatsArgs<ExtArgs>
+  versions?: boolean | Prisma.Report$versionsArgs<ExtArgs>
   _count?: boolean | Prisma.ReportCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["report"]>
 
@@ -746,6 +849,7 @@ export type ReportOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
 export type ReportInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   assessment?: boolean | Prisma.AssessmentDefaultArgs<ExtArgs>
   selectedThreats?: boolean | Prisma.Report$selectedThreatsArgs<ExtArgs>
+  versions?: boolean | Prisma.Report$versionsArgs<ExtArgs>
   _count?: boolean | Prisma.ReportCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ReportIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -760,6 +864,7 @@ export type $ReportPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   objects: {
     assessment: Prisma.$AssessmentPayload<ExtArgs>
     selectedThreats: Prisma.$ReportThreatPayload<ExtArgs>[]
+    versions: Prisma.$ReportVersionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1166,6 +1271,7 @@ export interface Prisma__ReportClient<T, Null = never, ExtArgs extends runtime.T
   readonly [Symbol.toStringTag]: "PrismaPromise"
   assessment<T extends Prisma.AssessmentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AssessmentDefaultArgs<ExtArgs>>): Prisma.Prisma__AssessmentClient<runtime.Types.Result.GetResult<Prisma.$AssessmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   selectedThreats<T extends Prisma.Report$selectedThreatsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Report$selectedThreatsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReportThreatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  versions<T extends Prisma.Report$versionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Report$versionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReportVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1623,6 +1729,30 @@ export type Report$selectedThreatsArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.ReportThreatScalarFieldEnum | Prisma.ReportThreatScalarFieldEnum[]
+}
+
+/**
+ * Report.versions
+ */
+export type Report$versionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReportVersion
+   */
+  select?: Prisma.ReportVersionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ReportVersion
+   */
+  omit?: Prisma.ReportVersionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReportVersionInclude<ExtArgs> | null
+  where?: Prisma.ReportVersionWhereInput
+  orderBy?: Prisma.ReportVersionOrderByWithRelationInput | Prisma.ReportVersionOrderByWithRelationInput[]
+  cursor?: Prisma.ReportVersionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReportVersionScalarFieldEnum | Prisma.ReportVersionScalarFieldEnum[]
 }
 
 /**
