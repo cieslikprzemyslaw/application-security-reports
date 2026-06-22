@@ -41,6 +41,7 @@
     "test:threat-workflow": "vitest run --project frontend src/app/pages/assessmentDetails/assessmentDetails.threatWorkflow.vitest.test.tsx src/app/pages/assessmentDetails/assessmentDetails.threatForm.composition.vitest.test.tsx src/app/pages/assessmentDetails/components/assessmentFindingsSection.component.vitest.test.tsx",
     "test:evidence": "vitest run --project backend src/domain/schemas/evidence.schema.vitest.test.ts server/database/repositories/evidence.repository.vitest.test.ts server/database/repositories/evidence.repository.integration.vitest.test.ts",
     "test:evidence-api": "tsx server/http/evidence.route.integration.test.ts && vitest run --project backend server/http/evidence.route.integration.gaps.vitest.test.ts",
+    "test:evidence-workflow": "vitest run --project frontend src/app/pages/assessmentDetails/evidence/evidence.workflow.vitest.test.tsx src/app/pages/assessmentDetails/evidence/section/EvidenceSection.states.vitest.test.tsx src/app/pages/assessmentDetails/evidence/section/EvidenceSection.flows.vitest.test.tsx src/app/pages/assessmentDetails/evidence/section/EvidenceSection.edge.vitest.test.tsx",
     "validate": "npm run db:validate && npm run format:check && npm run lint && npm run typecheck && npm test && npm run build"
   },
   "lint-staged": {
