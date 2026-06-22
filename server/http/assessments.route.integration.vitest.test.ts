@@ -75,6 +75,7 @@ describe.sequential('Assessments API integration', () => {
     expect(createResponse.headers.get('location')).toBe(
       `/api/assessments/${createBody.data.id}`,
     );
+    expect(createBody.data.id).toMatch(/^asm_/);
     expect(createBody.data).toEqual(
       expect.objectContaining({
         companyId: company.id,
@@ -94,6 +95,16 @@ describe.sequential('Assessments API integration', () => {
         companyId: company.id,
       }),
     });
+
+    const allResponse = await fetch(`${server.baseUrl}/api/assessments`);
+    expect(allResponse.status).toBe(200);
+
+    const allBody = await readJson<{
+      data: Array<{ id: string }>;
+    }>(allResponse);
+
+    expect(allBody.data).toHaveLength(2);
+    expect(allBody.data[0]?.id).toBe(createBody.data.id);
 
     const listResponse = await fetch(
       `${server.baseUrl}/api/assessments?companyId=${company.id}`,

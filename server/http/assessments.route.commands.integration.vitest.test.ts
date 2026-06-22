@@ -66,6 +66,19 @@ describe.sequential('Assessment command integration', () => {
       completedAt: expect.any(String),
     });
 
+    const completedOverviewResponse = await fetch(
+      `${server.baseUrl}/api/companies/${company.id}/assessments/${assessment.id}/overview`,
+    );
+
+    expect(completedOverviewResponse.status).toBe(200);
+    await expect(readJson(completedOverviewResponse)).resolves.toEqual({
+      data: expect.objectContaining({
+        assessment: expect.objectContaining({
+          status: 'completed',
+        }),
+      }),
+    });
+
     const conflicted = await assessmentRepository.create({
       companyId: company.id,
       title: 'Conflicted assessment',
@@ -194,6 +207,22 @@ describe.sequential('Assessment command integration', () => {
       environment: undefined,
       assessmentType: undefined,
       overallRisk: undefined,
+    });
+
+    await prisma.assessment.update({
+      where: { id: blockedAssessment.id },
+      data: { applicationName: null },
+    });
+
+    const blockedAssessmentResponse = await fetch(
+      `${server.baseUrl}/api/assessments/${blockedAssessment.id}`,
+    );
+
+    expect(blockedAssessmentResponse.status).toBe(200);
+    await expect(readJson(blockedAssessmentResponse)).resolves.toEqual({
+      data: expect.objectContaining({
+        applicationName: null,
+      }),
     });
 
     await prisma.report.create({
