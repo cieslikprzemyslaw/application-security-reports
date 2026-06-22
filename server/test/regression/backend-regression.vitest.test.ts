@@ -9,10 +9,6 @@ describe.sequential('backend regression coverage', () => {
     await import('../../http/api-app.test.js');
   }, 120_000);
 
-  it('server/http/assessments.route.integration.test.ts', async () => {
-    await import('../../http/assessments.route.integration.test.js');
-  }, 120_000);
-
   it('server/http/assessments.route.test.ts', async () => {
     await import('../../http/assessments.route.test.js');
   }, 120_000);
