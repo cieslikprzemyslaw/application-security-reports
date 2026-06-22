@@ -34,7 +34,13 @@ try {
     // Archive the company
     const archiveResponse = await fetch(
       server.baseUrl + '/api/companies/' + companyId + '/archive',
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
     assert.equal(archiveResponse.status, 200);
     const archiveJson = (await archiveResponse.json()) as {
@@ -65,7 +71,13 @@ try {
     // Repeat archive returns 409 COMPANY_ALREADY_ARCHIVED
     const repeatArchive = await fetch(
       server.baseUrl + '/api/companies/' + companyId + '/archive',
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
     assert.equal(repeatArchive.status, 409);
     const repeatArchiveJson = (await repeatArchive.json()) as {
@@ -76,7 +88,13 @@ try {
     // Restore the company
     const restoreResponse = await fetch(
       server.baseUrl + '/api/companies/' + companyId + '/restore',
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
     assert.equal(restoreResponse.status, 200);
     const restoreJson = (await restoreResponse.json()) as {
@@ -97,7 +115,13 @@ try {
     // Repeat restore on active company returns 409 COMPANY_NOT_ARCHIVED
     const repeatRestore = await fetch(
       server.baseUrl + '/api/companies/' + companyId + '/restore',
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
     assert.equal(repeatRestore.status, 409);
     const repeatRestoreJson = (await repeatRestore.json()) as {
@@ -109,13 +133,25 @@ try {
     const missingId = 'cmp_00000000-0000-0000-0000-000000000099';
     const archiveMissing = await fetch(
       server.baseUrl + '/api/companies/' + missingId + '/archive',
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
     assert.equal(archiveMissing.status, 404);
 
     const restoreMissing = await fetch(
       server.baseUrl + '/api/companies/' + missingId + '/restore',
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
     assert.equal(restoreMissing.status, 404);
   } finally {

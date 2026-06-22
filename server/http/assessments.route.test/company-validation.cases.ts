@@ -29,6 +29,7 @@ import {
       body: JSON.stringify({
         companyId: defaultCompany.id,
         title: 'Example Assessment',
+        applicationName: 'Example Assessment',
         status: 'draft',
       }),
     });
@@ -74,6 +75,7 @@ import {
       body: JSON.stringify({
         companyId: defaultCompany.id,
         title: 'Example Assessment',
+        applicationName: 'Example Assessment',
         status: 'draft',
       }),
     });
@@ -110,6 +112,7 @@ import {
         id: 'asm_client_controlled',
         companyId: defaultCompany.id,
         title: 'Example Assessment',
+        applicationName: 'Example Assessment',
         status: 'draft',
       }),
     });
@@ -150,6 +153,7 @@ import {
       body: JSON.stringify({
         companyId: defaultCompany.id,
         title: '',
+        applicationName: 'Example Assessment',
         status: 'draft',
       }),
     });
@@ -186,6 +190,7 @@ import {
       body: JSON.stringify({
         companyId: defaultCompany.id,
         title: 'Example Assessment',
+        applicationName: 'Example Assessment',
         status: 'draft',
         unknown: true,
       }),

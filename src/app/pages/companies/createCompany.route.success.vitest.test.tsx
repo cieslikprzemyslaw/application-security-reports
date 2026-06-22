@@ -120,6 +120,11 @@ describe('Create Company success route', () => {
         .headers.get('X-File-Name'),
     ).toBe('logo.png');
 
+    await waitFor(() => {
+      expect(api.requestCount(`GET /api/companies/${companyId}/overview`)).toBe(
+        1,
+      );
+    });
     api.verifyAllHandlersUsed();
   }, 15_000);
 

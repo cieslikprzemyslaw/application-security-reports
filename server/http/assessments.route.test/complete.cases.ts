@@ -49,11 +49,21 @@ import {
     assert.equal(calls.updateArgs?.input.status, 'completed');
     assert.equal(typeof calls.updateArgs?.input.completedAt, 'string');
     const body = await readJson<{
-      data: typeof defaultAssessment & { availableActions: string[] };
+      data: {
+        assessment: typeof defaultAssessment & {
+          availableActions: string[];
+        };
+      };
     }>(response);
-    assert.equal(body.data.status, 'completed');
-    assert.equal(body.data.completedAt, '2026-06-12T10:00:00.000Z');
-    assert.deepEqual(body.data.availableActions, ['reopen', 'archive']);
+    assert.equal(body.data.assessment.status, 'completed');
+    assert.equal(
+      body.data.assessment.completedAt,
+      calls.updateArgs?.input.completedAt,
+    );
+    assert.deepEqual(body.data.assessment.availableActions, [
+      'reopen',
+      'archive',
+    ]);
   } finally {
     await server.close();
   }

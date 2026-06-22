@@ -28,15 +28,15 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "npm run test:vitest",
-    "test:api": "tsx server/config.test.ts && tsx server/http/api-app.test.ts && tsx server/http/companies.route.test.ts && tsx server/http/companies.route.integration.test.ts && tsx server/http/settings.route.test.ts && tsx server/http/settings.route.integration.test.ts && tsx server/http/evidence.route.test.ts && tsx server/http/evidence.route.integration.test.ts && tsx server/http/assessments.route.test.ts && tsx server/http/assessments.route.integration.test.ts && tsx server/http/threats.route.test.ts && tsx server/http/threats.route.integration.test.ts && tsx server/http/reports.route.test.ts && tsx server/http/reports.route.integration.test.ts && tsx server/http/shutdown.test.ts",
-    "test:validation": "tsx src/domain/owaspTop10.test.ts && tsx src/domain/schemas/domain.schemas.test.ts && tsx src/domain/schemas/domain.schemas.test.core.cases.ts && tsx src/domain/schemas/domain.schemas.test.report-and-request.cases.ts && tsx src/domain/schemas/domain.schemas.test.edge.cases.ts && tsx src/domain/schemas/company.schema.test.ts && tsx src/validation/path-boundary.test.ts && tsx src/validation/validation.test.ts && tsx server/services/jsonFileStore.test.ts && tsx server/services/companyLogoStorage.test.ts && tsx src/utils/httpParser.test.ts && tsx src/utils/httpParser.response.test.ts",
-    "test:database": "npm run db:generate && npx tsc -p tsconfig.server.json --outDir .tmp/appsec-db-build && node scripts/run-database-tests.mjs",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.server.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:vitest": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:frontend": "vitest run --project frontend",
+    "test:backend": "vitest run --project backend",
+    "test:assessment": "vitest run --project backend src/domain/schemas/assessment.schema.vitest.test.ts server/database/repositories/assessment.repository.vitest.test.ts server/database/repositories/assessment.repository.integration.vitest.test.ts",
+    "validate": "npm run db:validate && npm run format:check && npm run lint && npm run typecheck && npm test && npm run build"
   },
   "lint-staged": {
     "*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}": [

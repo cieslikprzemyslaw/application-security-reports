@@ -351,7 +351,13 @@ try {
 
   assert.equal(traversalResponse.status, 404);
   const traversalBody = await traversalResponse.text();
-  assert.equal(traversalBody, 'Not found');
+  assert.deepEqual(JSON.parse(traversalBody), {
+    error: {
+      code: 'NOT_FOUND',
+      message: 'API route not found',
+      details: [],
+    },
+  });
   assert.equal(
     traversalBody.includes(process.cwd()),
     false,

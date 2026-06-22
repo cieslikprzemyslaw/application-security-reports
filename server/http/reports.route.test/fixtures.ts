@@ -4,6 +4,7 @@ import type { Evidence } from '../../../src/domain/evidence.js';
 import type { Report } from '../../../src/domain/report.js';
 import type { Settings } from '../../../src/domain/settings.js';
 import type { Threat } from '../../../src/domain/threat.js';
+import { OWASP_TOP_10_CURRENT_VERSION } from '../../../src/domain/owaspTop10.js';
 
 const defaultCompany: Company = {
   id: 'cmp_00000000-0000-0000-0000-000000000001',
@@ -31,6 +32,7 @@ const defaultAssessment: Assessment = {
   environment: 'Production',
   assessmentType: 'Web App',
   overallRisk: 'high',
+  owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-11T09:00:00.000Z',
 };
