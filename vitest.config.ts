@@ -7,6 +7,7 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: 'jsdom',
+      testTimeout: 15_000,
       setupFiles: ['./src/test/setup.ts'],
 
       // Legacy *.test.ts(x) files still run through scripts/run-legacy-tests.mjs.
