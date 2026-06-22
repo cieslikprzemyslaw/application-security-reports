@@ -1,8 +1,12 @@
 import assert from 'node:assert/strict';
 
-import { JSDOM } from 'jsdom';
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
+import {
+  createTestDom,
+  createTestingLibraryRoot,
+  act,
+} from '~/test/vitestLegacyBridge';
+
+import React from 'react';
 import { ThemeProvider } from 'styled-components';
 
 import {
@@ -37,7 +41,7 @@ const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
 };
 
 export const setupDom = () => {
-  const dom = new JSDOM(
+  const dom = createTestDom(
     '<!doctype html><html><body><div id="root"></div></body></html>',
     { url: 'http://localhost/' },
   );
@@ -113,7 +117,7 @@ export const renderHarness = async (
 
   assert.ok(container, 'Expected root container to exist');
 
-  const root = createRoot(container);
+  const root = createTestingLibraryRoot(container);
   const events: string[] = [];
 
   const Harness = () => {

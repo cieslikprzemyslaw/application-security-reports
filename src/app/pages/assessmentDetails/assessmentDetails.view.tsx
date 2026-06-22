@@ -213,8 +213,6 @@ const AssessmentDetailsView = ({
 
           <p className="assessment-details-subtitle">
             {assessment.companyName}
-            {' · '}
-            {assessment.id}
           </p>
 
           {assessment.status === 'archived' && (

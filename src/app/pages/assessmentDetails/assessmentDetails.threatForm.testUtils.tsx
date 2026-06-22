@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 
-import { JSDOM } from 'jsdom';
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
+import {
+  createTestDom,
+  createTestingLibraryRoot,
+  act,
+} from '~/test/vitestLegacyBridge';
+
 import { ThemeProvider } from 'styled-components';
 
 import AppRouter from '~/app/appRouter';
@@ -43,7 +46,7 @@ export const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
 };
 
 export const setupDom = (pathname: string) => {
-  const dom = new JSDOM(
+  const dom = createTestDom(
     '<!doctype html><html><body><div id="root"></div></body></html>',
     { url: `http://localhost${pathname}` },
   );
@@ -92,7 +95,7 @@ export const renderApp = async (pathname: string) => {
   const { container, window } = setupDom(pathname);
 
   assert.ok(container, 'Expected root container to exist');
-  const root = createRoot(container);
+  const root = createTestingLibraryRoot(container);
 
   await act(async () => {
     root.render(

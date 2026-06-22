@@ -43,7 +43,7 @@ const AttachmentField = ({
       return;
     }
 
-    if (!file.type) {
+    if (!file.type || !attachmentAcceptedTypes.split(',').includes(file.type)) {
       onSelectionError(
         'The selected file type is not supported by the evidence attachment allowlist.',
       );

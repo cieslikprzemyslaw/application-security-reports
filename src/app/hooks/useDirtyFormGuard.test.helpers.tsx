@@ -1,8 +1,12 @@
 import assert from 'node:assert/strict';
 
-import { JSDOM } from 'jsdom';
-import React, { act, useState } from 'react';
-import { createRoot } from 'react-dom/client';
+import {
+  createTestDom,
+  createTestingLibraryRoot,
+  act,
+} from '~/test/vitestLegacyBridge';
+
+import { useState } from 'react';
 import { createMemoryRouter, Link, RouterProvider } from 'react-router-dom';
 
 import DirtyFormGuard from '~/app/components/common/dirtyFormGuard';
@@ -26,7 +30,7 @@ const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
 };
 
 export const setupDom = () => {
-  const dom = new JSDOM(
+  const dom = createTestDom(
     '<!doctype html><html><body><div id="root"></div></body></html>',
     { url: 'http://localhost/form' },
   );
@@ -106,7 +110,7 @@ const createTestRouter = () =>
 
 export const renderTest = async () => {
   const { container, window } = setupDom();
-  const root = createRoot(container);
+  const root = createTestingLibraryRoot(container);
   const router = createTestRouter();
 
   await act(async () => {

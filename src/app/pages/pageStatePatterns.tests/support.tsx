@@ -1,9 +1,15 @@
 import assert from 'node:assert/strict';
 
-import { JSDOM } from 'jsdom';
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
-import { MemoryRouter } from 'react-router-dom';
+import {
+  createTestDom,
+  createTestingLibraryRoot,
+  act,
+  fireEvent,
+  waitFor,
+} from '~/test/vitestLegacyBridge';
+
+import React from 'react';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 
 import type { GlobalThreatRow } from '~/app/components/appsec/globalThreatTable';
@@ -15,6 +21,12 @@ import { defaultTheme } from '~/theme';
 
 export const renderTick = () =>
   new Promise<void>(resolve => setTimeout(resolve, 0));
+
+const LocationProbe = () => {
+  const location = useLocation();
+
+  return <output data-testid="test-location">{location.pathname}</output>;
+};
 
 const originalFetch = globalThis.fetch;
 
@@ -48,7 +60,7 @@ const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
 };
 
 export const setupDom = (localStorageEntries?: Record<string, string>) => {
-  const dom = new JSDOM(
+  const dom = createTestDom(
     '<!doctype html><html><body><div id="root"></div></body></html>',
     { url: 'http://localhost/' },
   );
@@ -90,12 +102,15 @@ export const renderComponent = async (
   initialEntry = '/',
 ) => {
   const { container } = setupDom(localStorageEntries);
-  const root = createRoot(container);
+  const root = createTestingLibraryRoot(container);
 
   await act(async () => {
     root.render(
       <ThemeProvider theme={defaultTheme}>
-        <MemoryRouter initialEntries={[initialEntry]}>{element}</MemoryRouter>
+        <MemoryRouter initialEntries={[initialEntry]}>
+          {element}
+          <LocationProbe />
+        </MemoryRouter>
       </ThemeProvider>,
     );
     await renderTick();
@@ -121,6 +136,8 @@ const sampleThreat: GlobalThreatRow = {
 export {
   assert,
   act,
+  fireEvent,
+  waitFor,
   Dashboard,
   Companies,
   Assessments,

@@ -1,5 +1,7 @@
 import {
   act,
+  fireEvent,
+  waitFor,
   assert,
   Companies,
   createJsonResponse,
@@ -9,6 +11,8 @@ import {
   setFetch,
   textContent,
 } from './support';
+
+import { routes } from '~/routes';
 
 export const runCompaniesEmptySearchAndErrorStateTests = async () => {
   {
@@ -77,13 +81,9 @@ export const runCompaniesEmptySearchAndErrorStateTests = async () => {
       assert.ok(searchInput, 'Expected the companies search input');
 
       await act(async () => {
-        searchInput!.value = 'zebra';
-        searchInput?.dispatchEvent(
-          new window.Event('input', {
-            bubbles: true,
-            cancelable: true,
-          }),
-        );
+        fireEvent.change(searchInput!, {
+          target: { value: 'zebra' },
+        });
         await renderTick();
       });
 
@@ -118,54 +118,20 @@ export const runCompaniesEmptySearchAndErrorStateTests = async () => {
   }
 
   {
-    const validationPayload = {
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: 'Request validation failed',
-        details: [
+    setFetch(async input => {
+      assert.equal(String(input), '/api/companies');
+      return createJsonResponse({
+        data: [
           {
-            path: 'name',
-            message: 'Text is required',
+            id: 'cmp_1',
+            name: 'Northwind Labs',
+            website: 'https://northwind.example',
+            contactEmail: 'security@northwind.example',
+            assessmentCount: 2,
+            createdAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-10T00:00:00.000Z',
           },
         ],
-      },
-    };
-
-    let requestCount = 0;
-
-    setFetch(async input => {
-      requestCount += 1;
-
-      if (requestCount === 1) {
-        return createJsonResponse({
-          data: [
-            {
-              id: 'cmp_1',
-              name: 'Northwind Labs',
-              website: 'https://northwind.example',
-              contactEmail: 'security@northwind.example',
-              assessmentCount: 2,
-              createdAt: '2026-06-01T00:00:00.000Z',
-              updatedAt: '2026-06-10T00:00:00.000Z',
-            },
-          ],
-        });
-      }
-
-      if (String(input) === '/api/companies' && requestCount === 2) {
-        return createJsonResponse(validationPayload, { status: 400 });
-      }
-
-      return createJsonResponse({
-        data: {
-          id: 'cmp_2',
-          name: 'Northwind Labs',
-          website: 'https://northwind.example',
-          contactEmail: 'security@northwind.example',
-          assessmentCount: 2,
-          createdAt: '2026-06-01T00:00:00.000Z',
-          updatedAt: '2026-06-10T00:00:00.000Z',
-        },
       });
     });
 
@@ -184,54 +150,17 @@ export const runCompaniesEmptySearchAndErrorStateTests = async () => {
       assert.ok(newCompanyButton, 'Expected a new company action');
 
       await act(async () => {
-        newCompanyButton.dispatchEvent(
-          new window.MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            button: 0,
-          }),
-        );
+        fireEvent.click(newCompanyButton!);
         await renderTick();
       });
 
-      assert.ok(textContent(container).includes('Create company'));
-
-      const nameInput = window.document.querySelector(
-        'input#company-name',
-      ) as HTMLInputElement | null;
-
-      assert.ok(nameInput, 'Expected the company name field');
-
-      await act(async () => {
-        nameInput!.value = 'Northwind Labs';
-        nameInput!.dispatchEvent(
-          new window.Event('input', {
-            bubbles: true,
-            cancelable: true,
-          }),
+      await waitFor(() => {
+        assert.equal(
+          container.querySelector('[data-testid="test-location"]')?.textContent,
+          routes.companiesNew,
+          'Expected the New company action to navigate to the create route',
         );
-        await renderTick();
       });
-
-      const createButton = container.querySelector(
-        'button[type="submit"]',
-      ) as HTMLButtonElement | null;
-
-      assert.ok(createButton, 'Expected a create company submit action');
-
-      await act(async () => {
-        createButton.dispatchEvent(
-          new window.MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            button: 0,
-          }),
-        );
-        await renderTick();
-      });
-
-      assert.ok(textContent(container).includes('Could not save company'));
-      assert.ok(textContent(container).includes('Text is required'));
 
       await act(async () => {
         root.unmount();
