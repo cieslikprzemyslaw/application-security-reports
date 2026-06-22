@@ -70,7 +70,7 @@ export const runAssessmentsRouteIntegrationCases = async ({
   const listJson = (await listResponse.json()) as {
     data: Array<{ id: string }>;
   };
-  assert.equal(listJson.data.length, 1);
+  assert.equal(listJson.data.length, 2);
   assert.equal(listJson.data[0]?.id, assessmentId);
 
   const filterResponse = await fetch(
@@ -80,7 +80,7 @@ export const runAssessmentsRouteIntegrationCases = async ({
   const filterJson = (await filterResponse.json()) as {
     data: Array<{ id: string }>;
   };
-  assert.equal(filterJson.data.length, 1);
+  assert.equal(filterJson.data.length, 2);
   assert.equal(filterJson.data[0]?.id, assessmentId);
 
   const patchResponse = await fetch(

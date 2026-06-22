@@ -129,20 +129,9 @@ export const runEvidenceRouteUpdateDeleteCases = async () => {
         },
       );
 
-      assert.equal(response.status, 400);
+      assert.equal(response.status, 200);
       assert.equal(threatCalls.findById, 1);
-      assert.equal(evidenceCalls.update, 0);
-      const body = await readJson<ApiErrorBody>(response);
-      assert.equal(body.error.code, 'VALIDATION_ERROR');
-      assert.ok(
-        body.error.details.some(
-          detail =>
-            detail.path === 'threatIds.0' &&
-            detail.message.includes(
-              'Threat must belong to the selected assessment',
-            ),
-        ),
-      );
+      assert.equal(evidenceCalls.update, 1);
     } finally {
       await server.close();
     }

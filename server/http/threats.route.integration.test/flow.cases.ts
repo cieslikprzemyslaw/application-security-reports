@@ -24,7 +24,7 @@ export const runThreatsRouteIntegrationCases = async ({
       severity: 'critical',
       strideCategories: ['spoofing', 'tampering'],
       status: 'accepted-risk',
-      owaspCategoryCode: 'A09:2021',
+      owaspCategoryCode: 'A09:2025',
       affectedAsset: '/api/v1/orders/{id}',
       impact: 'Unauthorised access to customer order data',
       recommendation: 'Apply object-level authorization on every request.',
