@@ -37,6 +37,7 @@
     "test:backend": "vitest run --project backend",
     "test:assessment": "vitest run --project backend src/domain/schemas/assessment.schema.vitest.test.ts server/database/repositories/assessment.repository.vitest.test.ts server/database/repositories/assessment.repository.integration.vitest.test.ts server/http/assessments.route.integration.vitest.test.ts server/http/assessments.route.commands.integration.vitest.test.ts",
     "test:threat": "vitest run --project backend src/domain/schemas/threat.schema.vitest.test.ts server/database/repositories/threat.repository.vitest.test.ts server/database/repositories/threat.repository.integration.vitest.test.ts",
+    "test:threat-api": "tsx server/http/threats.route.integration.test.ts && vitest run --project backend server/http/threats.route.integration.gaps.vitest.test.ts",
     "validate": "npm run db:validate && npm run format:check && npm run lint && npm run typecheck && npm test && npm run build"
   },
   "lint-staged": {
