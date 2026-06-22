@@ -11,6 +11,7 @@ import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import { loadServerConfig } from '../../config.js';
 import { createAssessmentRepository } from '../../database/repositories/assessment.repository.js';
 import { createCompanyRepository } from '../../database/repositories/company.repository.js';
+import { createEvidenceRepository } from '../../database/repositories/evidence.repository.js';
 import { createThreatRepository } from '../../database/repositories/threat.repository.js';
 import { createApiApp } from '../api-app.js';
 import type { PrismaClient as PrismaClientType } from '../../../generated/prisma/client.js';
@@ -159,6 +160,7 @@ export const createEvidenceRouteIntegrationHarness =
 
       const companyRepository = createCompanyRepository(prisma);
       const assessmentRepository = createAssessmentRepository(prisma);
+      const evidenceRepository = createEvidenceRepository(prisma);
       const threatRepository = createThreatRepository(prisma);
       const company = await companyRepository.create({
         name: 'Northstar Digital',
