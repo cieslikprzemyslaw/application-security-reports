@@ -747,7 +747,7 @@ const createApp = (
     );
     const body = await readJson<{ data: typeof defaultEvidence }>(response);
     assert.equal(body.data.assessmentId, defaultAssessment.id);
-    assert.equal(body.data.filePath, 'uploads/evidence/mock/evidence.png');
+    assert.equal(body.data.filePath, 'uploads/evidence/evidence.png');
     assert.equal(calls.findById, 1);
     assert.equal(threatCalls.findById, 2);
     assert.equal(evidenceCalls.create, 1);
@@ -831,6 +831,7 @@ const createApp = (
       },
       body: JSON.stringify({
         assessmentId: defaultAssessment.id,
+        threatIds: [],
         type: 'http',
         title: 'HTTP evidence',
         httpExchanges: [
@@ -889,6 +890,7 @@ const createApp = (
       },
       body: JSON.stringify({
         assessmentId: defaultAssessment.id,
+        threatIds: [],
         type: 'text',
         title: 'Notes',
         httpExchanges: [
@@ -1040,10 +1042,7 @@ const createApp = (
     assert.equal(response.status, 200);
     const body = await readJson<{ data: typeof defaultEvidence }>(response);
     assert.equal(body.data.title, 'Updated evidence title');
-    assert.equal(
-      body.data.filePath,
-      'uploads/evidence/mock/updated-evidence.png',
-    );
+    assert.equal(body.data.filePath, 'uploads/evidence/evidence.png');
     assert.equal(evidenceCalls.findById, 1);
     assert.equal(calls.findById, 1);
     assert.equal(evidenceCalls.update, 1);

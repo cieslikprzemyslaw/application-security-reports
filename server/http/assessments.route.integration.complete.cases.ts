@@ -36,21 +36,29 @@ export const runAssessmentCompleteIntegrationCases = async ({
   assert.equal(completeResponse.status, 200);
   const completeJson = (await completeResponse.json()) as {
     data: {
-      status: string;
-      completedAt: string;
-      availableActions: string[];
+      assessment: {
+        status: string;
+        completedAt: string;
+        availableActions: string[];
+      };
     };
   };
-  assert.equal(completeJson.data.status, 'completed');
-  assert.equal(typeof completeJson.data.completedAt, 'string');
-  assert.deepEqual(completeJson.data.availableActions, ['reopen', 'archive']);
+  assert.equal(completeJson.data.assessment.status, 'completed');
+  assert.equal(typeof completeJson.data.assessment.completedAt, 'string');
+  assert.deepEqual(completeJson.data.assessment.availableActions, [
+    'reopen',
+    'archive',
+  ]);
 
   const completedAssessment = await prisma.assessment.findUnique({
     where: { id: assessmentId },
     select: { status: true, completedAt: true },
   });
   assert.equal(completedAssessment?.status, 'completed');
-  assert.equal(completedAssessment?.completedAt, completeJson.data.completedAt);
+  assert.equal(
+    completedAssessment?.completedAt,
+    completeJson.data.assessment.completedAt,
+  );
 
   const completedOverviewResponse = await fetch(
     `${baseUrl}/api/companies/${companyId}/assessments/${assessmentId}/overview`,

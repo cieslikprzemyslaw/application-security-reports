@@ -6,21 +6,44 @@ export default mergeConfig(
   viteConfig,
   defineConfig({
     test: {
-      environment: 'jsdom',
-      testTimeout: 15_000,
-      setupFiles: ['./src/test/setup.ts'],
-
-      // Legacy *.test.ts(x) files still run through scripts/run-legacy-tests.mjs.
-      // Migrated tests use *.vitest.test.ts(x) during the transition.
-      include: ['src/**/*.vitest.test.{ts,tsx}'],
-
-      clearMocks: true,
-      restoreMocks: true,
-      unstubEnvs: true,
-      unstubGlobals: true,
-
-      // The first migration steps may not contain Vitest tests yet.
-      passWithNoTests: true,
+      projects: [
+        {
+          extends: true,
+          test: {
+            name: 'frontend',
+            environment: 'jsdom',
+            testTimeout: 15_000,
+            setupFiles: ['./src/test/setup.ts'],
+            include: ['src/**/*.vitest.test.{ts,tsx}'],
+            exclude: [
+              'src/domain/**/*.vitest.test.ts',
+              'src/validation/**/*.vitest.test.ts',
+            ],
+            clearMocks: true,
+            restoreMocks: true,
+            unstubEnvs: true,
+            unstubGlobals: true,
+          },
+        },
+        {
+          extends: true,
+          test: {
+            name: 'backend',
+            environment: 'node',
+            testTimeout: 30_000,
+            include: [
+              'server/**/*.vitest.test.ts',
+              'src/domain/**/*.vitest.test.ts',
+              'src/validation/**/*.vitest.test.ts',
+            ],
+            clearMocks: true,
+            restoreMocks: true,
+            unstubEnvs: true,
+            unstubGlobals: true,
+            fileParallelism: false,
+          },
+        },
+      ],
     },
   }),
 );

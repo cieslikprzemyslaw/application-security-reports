@@ -76,7 +76,7 @@ import {
     const response = await fetch(`${server.baseUrl}/api/reports/${report.id}`);
 
     assert.equal(response.status, 404);
-    assert.equal(findByIdCalls(), 1);
+    assert.equal(findByIdCalls(), 0);
     assert.deepEqual(await readJson(response), {
       error: {
         code: 'REPORT_NOT_FOUND',

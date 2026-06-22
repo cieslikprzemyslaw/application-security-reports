@@ -54,10 +54,21 @@ const companyLogoMigrationPath = path.resolve(
   repoRoot,
   'prisma',
   'migrations',
-  '20260619130000_add_company_logo_url',
+  '20260620090747',
   'migration.sql',
 );
 const companyLogoMigrationSql = readFileSync(companyLogoMigrationPath, 'utf8');
+const companyArchivedAtMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260621130000_add_company_archived_at',
+  'migration.sql',
+);
+const companyArchivedAtMigrationSql = readFileSync(
+  companyArchivedAtMigrationPath,
+  'utf8',
+);
 const allowedOrigin = 'http://localhost:5173';
 const config = loadServerConfig({
   FRONTEND_ORIGIN: allowedOrigin,
@@ -114,6 +125,7 @@ const bootstrapDb = new Database(databasePath);
 try {
   bootstrapDb.exec(schemaSql);
   bootstrapDb.exec(companyLogoMigrationSql);
+  bootstrapDb.exec(companyArchivedAtMigrationSql);
   bootstrapDb.exec(assessmentMigrationSql);
   bootstrapDb.exec(threatMigrationSql);
   bootstrapDb.exec(evidenceMigrationSql);
@@ -322,6 +334,7 @@ try {
       },
       body: JSON.stringify({
         assessmentId: assessment.id,
+        threatIds: [],
         type: 'http',
         title: 'HTTP exchange evidence',
         httpExchanges: [

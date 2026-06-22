@@ -19,7 +19,13 @@ import {
   try {
     const response = await fetch(
       `${server.baseUrl}/api/companies/${defaultCompany.id}/archive`,
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
 
     assert.equal(response.status, 200);
@@ -45,7 +51,13 @@ import {
   try {
     const response = await fetch(
       `${server.baseUrl}/api/companies/${defaultCompany.id}/archive`,
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
 
     assert.equal(response.status, 409);
@@ -74,7 +86,13 @@ import {
   try {
     const response = await fetch(
       `${server.baseUrl}/api/companies/${defaultCompany.id}/archive`,
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
 
     assert.equal(response.status, 404);
@@ -99,7 +117,13 @@ import {
   try {
     const response = await fetch(
       `${server.baseUrl}/api/companies/not-an-id/archive`,
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
 
     assert.equal(response.status, 400);
@@ -134,7 +158,13 @@ import {
   try {
     const response = await fetch(
       `${server.baseUrl}/api/companies/${defaultCompany.id}/archive`,
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
 
     assert.equal(response.status, 500);
@@ -160,7 +190,13 @@ import {
   try {
     const response = await fetch(
       `${server.baseUrl}/api/companies/${defaultCompany.id}/restore`,
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
 
     assert.equal(response.status, 200);
@@ -186,7 +222,13 @@ import {
   try {
     const response = await fetch(
       `${server.baseUrl}/api/companies/${defaultCompany.id}/restore`,
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
 
     assert.equal(response.status, 409);
@@ -215,7 +257,13 @@ import {
   try {
     const response = await fetch(
       `${server.baseUrl}/api/companies/${defaultCompany.id}/restore`,
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
 
     assert.equal(response.status, 404);
@@ -240,7 +288,13 @@ import {
   try {
     const response = await fetch(
       `${server.baseUrl}/api/companies/not-an-id/restore`,
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
 
     assert.equal(response.status, 400);
@@ -275,7 +329,13 @@ import {
   try {
     const response = await fetch(
       `${server.baseUrl}/api/companies/${defaultCompany.id}/restore`,
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
     );
 
     assert.equal(response.status, 500);

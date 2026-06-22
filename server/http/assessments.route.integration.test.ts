@@ -12,6 +12,9 @@ import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import { loadServerConfig } from '../config.js';
 import { createAssessmentRepository } from '../database/repositories/assessment.repository.js';
 import { createCompanyRepository } from '../database/repositories/company.repository.js';
+import { createEvidenceRepository } from '../database/repositories/evidence.repository.js';
+import { createReportRepository } from '../database/repositories/report.repository.js';
+import { createThreatRepository } from '../database/repositories/threat.repository.js';
 import { createApiApp } from './api-app.js';
 import { runAssessmentCompleteIntegrationCases } from './assessments.route.integration.complete.cases.js';
 import { OWASP_TOP_10_CURRENT_VERSION } from '../../src/domain/index.js';
@@ -54,10 +57,21 @@ const companyLogoMigrationPath = path.resolve(
   repoRoot,
   'prisma',
   'migrations',
-  '20260619130000_add_company_logo_url',
+  '20260620090747',
   'migration.sql',
 );
 const companyLogoMigrationSql = readFileSync(companyLogoMigrationPath, 'utf8');
+const companyArchivedAtMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260621130000_add_company_archived_at',
+  'migration.sql',
+);
+const companyArchivedAtMigrationSql = readFileSync(
+  companyArchivedAtMigrationPath,
+  'utf8',
+);
 const allowedOrigin = 'http://localhost:5173';
 const config = loadServerConfig({
   FRONTEND_ORIGIN: allowedOrigin,
@@ -114,6 +128,7 @@ const bootstrapDb = new Database(databasePath);
 try {
   bootstrapDb.exec(schemaSql);
   bootstrapDb.exec(companyLogoMigrationSql);
+  bootstrapDb.exec(companyArchivedAtMigrationSql);
   bootstrapDb.exec(assessmentMigrationSql);
   bootstrapDb.exec(threatMigrationSql);
   bootstrapDb.exec(evidenceMigrationSql);
@@ -131,10 +146,16 @@ try {
 
   const companyRepository = createCompanyRepository(prisma);
   const assessmentRepository = createAssessmentRepository(prisma);
+  const threatRepository = createThreatRepository(prisma);
+  const evidenceRepository = createEvidenceRepository(prisma);
+  const reportRepository = createReportRepository(prisma);
   const server = await startTestServer(
     createApiApp(config, {
       assessmentRepository,
       companyRepository,
+      threatRepository,
+      evidenceRepository,
+      reportRepository,
     }),
   );
 
