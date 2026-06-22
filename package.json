@@ -44,6 +44,7 @@
     "test:evidence-workflow": "vitest run --project frontend src/app/pages/assessmentDetails/evidence/evidence.workflow.vitest.test.tsx src/app/pages/assessmentDetails/evidence/section/EvidenceSection.states.vitest.test.tsx src/app/pages/assessmentDetails/evidence/section/EvidenceSection.flows.vitest.test.tsx src/app/pages/assessmentDetails/evidence/section/EvidenceSection.edge.vitest.test.tsx",
     "test:report": "vitest run --project backend src/domain/schemas/report.repository.schema.vitest.test.ts server/database/repositories/report.repository.vitest.test.ts server/database/repositories/report.repository.integration.vitest.test.ts",
     "test:report-api": "tsx server/http/reports.route.integration.test.ts && vitest run --project backend server/http/reports.route.integration.gaps.vitest.test.ts",
+    "test:report-workflow": "vitest run --project frontend src/app/pages/reports/reports.workflow.vitest.test.tsx src/app/components/appsec/reportPreviewShell/reportPreviewShell.vitest.test.tsx",
     "validate": "npm run db:validate && npm run format:check && npm run lint && npm run typecheck && npm test && npm run build"
   },
   "lint-staged": {
