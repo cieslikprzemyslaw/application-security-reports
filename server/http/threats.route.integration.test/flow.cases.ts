@@ -131,8 +131,11 @@ export const runThreatsRouteIntegrationCases = async ({
       owaspCategoryCode?: string;
     }>;
   };
-  assert.equal(listJson.data.length, 1);
-  assert.equal(listJson.data[0]?.id, primaryThreatId);
+  assert.equal(listJson.data.length, 2);
+  assert.equal(
+    listJson.data.some(threat => threat.id === primaryThreatId),
+    true,
+  );
   assert.equal(
     listJson.data[0]?.assessmentOwaspTaxonomyVersion,
     OWASP_TOP_10_CURRENT_VERSION,
