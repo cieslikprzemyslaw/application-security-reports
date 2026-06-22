@@ -1,13 +1,14 @@
 import {
   act,
+  fireEvent,
   assert,
   Assessments,
   createJsonResponse,
   renderComponent,
-  renderTick,
   restoreFetch,
   setFetch,
   textContent,
+  waitFor,
 } from './support';
 
 export const runAssessmentsPageStateTests = async () => {
@@ -67,22 +68,17 @@ export const runAssessmentsPageStateTests = async () => {
 
       assert.ok(searchInput, 'Expected the assessments search input');
 
-      await act(async () => {
-        searchInput!.value = 'missing';
-        searchInput?.dispatchEvent(
-          new window.Event('input', {
-            bubbles: true,
-            cancelable: true,
-          }),
-        );
-        await renderTick();
+      fireEvent.change(searchInput!, {
+        target: { value: 'missing' },
       });
 
-      assert.ok(
-        textContent(container).includes(
-          'No assessments match your current search and filters',
-        ),
-      );
+      await waitFor(() => {
+        assert.ok(
+          textContent(container).includes(
+            'No assessments match your current search and filters',
+          ),
+        );
+      });
       assert.ok(textContent(container).includes('Clear filters'));
 
       const clearButton = Array.from(container.querySelectorAll('button')).find(
@@ -91,18 +87,11 @@ export const runAssessmentsPageStateTests = async () => {
 
       assert.ok(clearButton, 'Expected a clear filters action');
 
-      await act(async () => {
-        clearButton.dispatchEvent(
-          new window.MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            button: 0,
-          }),
-        );
-        await renderTick();
-      });
+      fireEvent.click(clearButton);
 
-      assert.equal(searchInput?.value, '');
+      await waitFor(() => {
+        assert.equal(searchInput?.value, '');
+      });
 
       await act(async () => {
         root.unmount();

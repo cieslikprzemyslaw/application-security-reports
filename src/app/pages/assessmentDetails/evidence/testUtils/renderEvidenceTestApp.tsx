@@ -1,8 +1,14 @@
 import assert from 'node:assert/strict';
 
-import { JSDOM } from 'jsdom';
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
+import {
+  createTestDom,
+  createTestingLibraryRoot,
+  act,
+  fireEvent,
+  waitFor,
+} from '~/test/vitestLegacyBridge';
+
+import { useEffect, useRef } from 'react';
 import { ThemeProvider } from 'styled-components';
 
 import type { Evidence, Threat } from '~/domain';
@@ -25,7 +31,7 @@ export const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
 };
 
 export const setupDom = () => {
-  const dom = new JSDOM(
+  const dom = createTestDom(
     '<!doctype html><html><body><div id="root"></div></body></html>',
     { url: 'http://localhost/' },
   );
@@ -171,63 +177,43 @@ export const createEvidenceRecord = (
 });
 
 export const setInputValue = (
-  window: TestWindow,
+  _window: TestWindow,
   element: HTMLInputElement | HTMLTextAreaElement,
   value: string,
 ) => {
-  element.value = value;
-  element.dispatchEvent(
-    new Event('input', {
-      bubbles: true,
-      cancelable: true,
-    }),
-  );
+  fireEvent.change(element, {
+    target: { value },
+  });
 };
 
 export const setSelectValue = (
-  window: TestWindow,
+  _window: TestWindow,
   element: HTMLSelectElement,
   value: string,
 ) => {
-  element.value = value;
-  element.dispatchEvent(
-    new Event('change', {
-      bubbles: true,
-      cancelable: true,
-    }),
-  );
+  fireEvent.change(element, {
+    target: { value },
+  });
 };
 
 export const toggleCheckbox = (
-  window: TestWindow,
+  _window: TestWindow,
   element: HTMLInputElement,
   checked: boolean,
 ) => {
-  element.checked = checked;
-  element.dispatchEvent(
-    new Event('change', {
-      bubbles: true,
-      cancelable: true,
-    }),
-  );
+  if (element.checked !== checked) {
+    fireEvent.click(element);
+  }
 };
 
 export const setFileSelection = (
-  window: TestWindow,
+  _window: TestWindow,
   element: HTMLInputElement,
   files: File[],
 ) => {
-  Object.defineProperty(element, 'files', {
-    value: files,
-    configurable: true,
+  fireEvent.change(element, {
+    target: { files },
   });
-
-  element.dispatchEvent(
-    new Event('change', {
-      bubbles: true,
-      cancelable: true,
-    }),
-  );
 };
 
 export const clickButton = (window: TestWindow, button: HTMLButtonElement) => {
@@ -245,18 +231,43 @@ export const findButtonByText = (root: ParentNode, text: string) =>
     button.textContent?.includes(text),
   ) as HTMLButtonElement | undefined;
 
-export const renderHarness = async (evidenceList: Evidence[]) => {
+type EvidenceServiceOverrides = Partial<
+  Pick<
+    typeof evidenceService,
+    'list' | 'getById' | 'create' | 'update' | 'remove'
+  >
+>;
+
+interface RenderHarnessOptions {
+  openEvidenceId?: string;
+}
+
+export const renderHarness = async (
+  evidenceList: Evidence[],
+  serviceOverrides: EvidenceServiceOverrides = {},
+  options: RenderHarnessOptions = {},
+) => {
   const { container, window } = setupDom();
 
   assert.ok(container, 'Expected root container to exist');
 
-  const root = createRoot(container);
+  const root = createTestingLibraryRoot(container);
 
   const Harness = () => {
     const controller = useAssessmentEvidence({
       assessmentId: assessment.id,
       assessmentStatus: assessment.status,
     });
+    const initialOpenHandledRef = useRef(false);
+
+    useEffect(() => {
+      if (!options.openEvidenceId || initialOpenHandledRef.current) {
+        return;
+      }
+
+      initialOpenHandledRef.current = true;
+      controller.openEvidenceDetails(options.openEvidenceId);
+    }, [controller, options.openEvidenceId]);
 
     return (
       <AssessmentEvidenceSection
@@ -275,24 +286,48 @@ export const renderHarness = async (evidenceList: Evidence[]) => {
     remove: evidenceService.remove,
   };
 
-  evidenceService.list = async () => evidenceList;
-  evidenceService.getById = async evidenceId => {
-    if (evidenceId === seededEvidence.id) {
-      return seededEvidence;
-    }
+  let records = [...evidenceList];
 
-    throw new Error('Evidence not found.');
-  };
-  evidenceService.create = async input => createEvidenceRecord(input);
-  evidenceService.update = async (_id, input) => ({
-    ...seededEvidence,
-    ...input,
-    httpExchanges:
-      input.httpExchanges !== undefined
-        ? input.httpExchanges
-        : seededEvidence.httpExchanges,
-  });
-  evidenceService.remove = async () => undefined;
+  evidenceService.list = serviceOverrides.list ?? (async () => [...records]);
+  evidenceService.getById =
+    serviceOverrides.getById ??
+    (async evidenceId => {
+      const record = records.find(item => item.id === evidenceId);
+
+      if (record) {
+        return record;
+      }
+
+      throw new Error('Evidence not found.');
+    });
+  evidenceService.create =
+    serviceOverrides.create ??
+    (async input => {
+      const created = createEvidenceRecord(input);
+      records = [...records, created];
+      return created;
+    });
+  evidenceService.update =
+    serviceOverrides.update ??
+    (async (id, input) => {
+      const current = records.find(item => item.id === id) ?? seededEvidence;
+      const updated: Evidence = {
+        ...current,
+        ...input,
+        httpExchanges:
+          input.httpExchanges !== undefined
+            ? input.httpExchanges
+            : current.httpExchanges,
+      };
+
+      records = records.map(item => (item.id === id ? updated : item));
+      return updated;
+    });
+  evidenceService.remove =
+    serviceOverrides.remove ??
+    (async id => {
+      records = records.filter(item => item.id !== id);
+    });
 
   await act(async () => {
     root.render(
@@ -302,6 +337,14 @@ export const renderHarness = async (evidenceList: Evidence[]) => {
     );
     await renderTick();
     await renderTick();
+  });
+
+  await waitFor(() => {
+    assert.equal(
+      textContent(container).includes('Loading evidence'),
+      false,
+      'Expected the initial evidence request to settle',
+    );
   });
 
   return {

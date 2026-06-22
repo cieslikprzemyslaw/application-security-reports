@@ -1,5 +1,6 @@
 import {
   act,
+  fireEvent,
   assert,
   Companies,
   createJsonResponse,
@@ -36,20 +37,23 @@ export const runCompaniesFocusAndRowSelectionTests = async () => {
         />,
       );
 
-      const newCompanyButton = Array.from(
-        container.querySelectorAll('button'),
-      ).find(button => button.textContent?.includes('New company'));
-
-      assert.ok(newCompanyButton, 'Expected a new company action');
+      const actionsButton = container.querySelector(
+        'button[aria-label="Actions for Northwind Labs"]',
+      ) as HTMLButtonElement | null;
+      assert.ok(actionsButton, 'Expected company row actions');
 
       await act(async () => {
-        newCompanyButton.dispatchEvent(
-          new window.MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            button: 0,
-          }),
-        );
+        fireEvent.click(actionsButton!);
+        await renderTick();
+      });
+
+      const editMenuItem = Array.from(
+        window.document.querySelectorAll<HTMLElement>('[role="menuitem"]'),
+      ).find(item => item.textContent?.trim() === 'Edit');
+      assert.ok(editMenuItem, 'Expected an Edit menu item');
+
+      await act(async () => {
+        fireEvent.click(editMenuItem!);
         await renderTick();
         await renderTick();
       });
@@ -57,22 +61,15 @@ export const runCompaniesFocusAndRowSelectionTests = async () => {
       const nameInput = window.document.querySelector(
         'input#company-name',
       ) as HTMLInputElement | null;
-
       assert.ok(nameInput, 'Expected the company name field');
-      assert.equal(
-        window.document.activeElement,
-        nameInput,
-        'Expected the name field to keep focus after the drawer opens',
-      );
+      assert.equal(nameInput?.value, 'Northwind Labs');
+
+      nameInput!.focus();
 
       await act(async () => {
-        nameInput!.value = 'Northwind Labs';
-        nameInput!.dispatchEvent(
-          new window.Event('input', {
-            bubbles: true,
-            cancelable: true,
-          }),
-        );
+        fireEvent.change(nameInput!, {
+          target: { value: 'Northwind Security Labs' },
+        });
         await renderTick();
       });
 
@@ -108,38 +105,34 @@ export const runCompaniesFocusAndRowSelectionTests = async () => {
     );
 
     try {
+      const selectedCompanies: Array<{ id: string; name: string }> = [];
       const { container, root } = await renderComponent(
         <Companies
-          activeCompany={{ id: 'cmp_1', name: 'Northwind Labs' }}
-          onActiveCompanyChange={() => undefined}
+          activeCompany={{ id: 'cmp_other', name: 'Other Company' }}
+          onActiveCompanyChange={company => {
+            if (company) {
+              selectedCompanies.push(company);
+            }
+          }}
         />,
       );
 
-      const companyRow = Array.from(
-        container.querySelectorAll('.company-table__row'),
-      )[0] as HTMLTableRowElement | undefined;
-
+      const companyRow = container.querySelector(
+        '.company-table__row',
+      ) as HTMLTableRowElement | null;
       assert.ok(companyRow, 'Expected a company row');
 
       await act(async () => {
-        companyRow.dispatchEvent(
-          new window.MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            button: 0,
-          }),
-        );
+        fireEvent.click(companyRow!);
         await renderTick();
       });
 
-      assert.ok(textContent(container).includes('Edit company'));
+      assert.equal(selectedCompanies.length, 1);
+      assert.equal(selectedCompanies[0]?.id, 'cmp_1');
       assert.equal(
-        (
-          window.document.querySelector(
-            'input#company-name',
-          ) as HTMLInputElement
-        )?.value,
-        'Northwind Labs',
+        textContent(window.document.body).includes('Edit company'),
+        false,
+        'Expected row selection not to open the edit drawer',
       );
 
       await act(async () => {

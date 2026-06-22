@@ -6,6 +6,7 @@ import { existsSync, statSync, readFileSync } from 'node:fs';
 const MAX_LINES = 400;
 
 const ignoredPathPatterns = [
+  /(^|\/)(?:package-lock\.json|npm-shrinkwrap\.json|pnpm-lock\.yaml|yarn\.lock)$/,
   /^generated\//,
   /^node_modules\//,
   /^dist\//,

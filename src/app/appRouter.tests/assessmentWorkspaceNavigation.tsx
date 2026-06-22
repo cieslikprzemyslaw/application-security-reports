@@ -7,6 +7,7 @@ import {
   routes,
   setupAssessmentWorkspaceFetchFixture,
   textContent,
+  waitFor,
 } from './support';
 
 export const runAssessmentWorkspaceNavigationTests = async () => {
@@ -44,15 +45,17 @@ export const runAssessmentWorkspaceNavigationTests = async () => {
         await renderTick();
       });
 
-      assert.equal(
-        window.location.pathname,
-        routes.assessmentDetailsOverview('cmp_1', 'asm_1'),
-      );
-      assert.equal(
-        container.querySelector('[role="tab"][aria-selected="true"]')
-          ?.textContent,
-        'Overview',
-      );
+      await waitFor(() => {
+        assert.equal(
+          window.location.pathname,
+          routes.assessmentDetailsOverview('cmp_1', 'asm_1'),
+        );
+        assert.equal(
+          container.querySelector('[role="tab"][aria-selected="true"]')
+            ?.textContent,
+          'Overview',
+        );
+      });
 
       const findingsTab = Array.from(
         container.querySelectorAll('[role="tab"]'),
@@ -78,7 +81,7 @@ export const runAssessmentWorkspaceNavigationTests = async () => {
         window.location.pathname,
         routes.assessmentDetailsFindings('cmp_1', 'asm_1'),
       );
-      assert.ok(textContent(container).includes('Add finding'));
+      assert.ok(textContent(container).includes('Add threat'));
 
       await act(async () => {
         root.unmount();
@@ -144,7 +147,7 @@ export const runAssessmentWorkspaceNavigationTests = async () => {
         routes.assessmentDetailsFindings('cmp_1', 'asm_5'),
       );
       assert.ok(
-        !textContent(container).includes('Add finding'),
+        !textContent(container).includes('Add threat'),
         'Expected archived assessments to hide the create action',
       );
 

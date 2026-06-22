@@ -52,34 +52,57 @@ export const runCompanyListAndCreationTests = async () => {
   }
 
   {
-    let requestCount = 0;
+    const companyId = 'cmp_2';
+    let companyCreated = false;
 
-    setFetch(async input => {
-      requestCount += 1;
+    setFetch(async (input, init) => {
+      const request = input instanceof Request ? input : undefined;
+      const method = (init?.method ?? request?.method ?? 'GET').toUpperCase();
+      const path = new URL(request?.url ?? String(input), 'http://localhost')
+        .pathname;
 
-      if (requestCount === 1 || requestCount === 2) {
-        return createJsonResponse({ data: [] });
+      if (method === 'GET' && path === '/api/companies') {
+        return createJsonResponse({
+          data: companyCreated
+            ? [
+                {
+                  id: companyId,
+                  name: 'Northwind Labs',
+                  website: 'https://northwind.example',
+                  contactEmail: 'security@northwind.example',
+                  assessmentCount: 1,
+                  createdAt: '2026-06-01T00:00:00.000Z',
+                  updatedAt: '2026-06-10T00:00:00.000Z',
+                },
+              ]
+            : [],
+        });
       }
 
-      if (String(input) === '/api/companies' && requestCount === 3) {
+      if (method === 'POST' && path === '/api/companies') {
+        companyCreated = true;
+
         return createJsonResponse({
           data: {
-            id: 'cmp_2',
+            id: companyId,
             name: 'Northwind Labs',
+            description: 'Cloud security partner',
             website: 'https://northwind.example',
+            contactName: 'A. Example',
             contactEmail: 'security@northwind.example',
-            assessmentCount: 1,
+            logoUrl: null,
+            footerText: 'Confidential',
             createdAt: '2026-06-01T00:00:00.000Z',
             updatedAt: '2026-06-10T00:00:00.000Z',
           },
         });
       }
 
-      if (String(input) === '/api/companies/cmp_2/overview') {
+      if (method === 'GET' && path === `/api/companies/${companyId}/overview`) {
         return createJsonResponse({
           data: {
             company: {
-              id: 'cmp_2',
+              id: companyId,
               name: 'Northwind Labs',
               description: 'Cloud security partner',
               website: 'https://northwind.example',
@@ -101,19 +124,7 @@ export const runCompanyListAndCreationTests = async () => {
         });
       }
 
-      return createJsonResponse({
-        data: [
-          {
-            id: 'cmp_2',
-            name: 'Northwind Labs',
-            website: 'https://northwind.example',
-            contactEmail: 'security@northwind.example',
-            assessmentCount: 1,
-            createdAt: '2026-06-01T00:00:00.000Z',
-            updatedAt: '2026-06-10T00:00:00.000Z',
-          },
-        ],
-      });
+      throw new Error(`Unexpected request: ${method} ${path}`);
     });
 
     try {

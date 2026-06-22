@@ -19,7 +19,11 @@ export const runAssessmentWorkspaceOverviewActionTests = async () => {
       );
 
       assert.ok(textContent(container).includes('Customer Services Portal'));
-      assert.ok(textContent(container).includes('NSD-CSP-2026-014'));
+      assert.equal(
+        textContent(container).includes('asm_1'),
+        false,
+        'Expected the Assessment ID to stay hidden from the UI',
+      );
       assert.equal(
         container.querySelector('[role="tablist"]')?.getAttribute('aria-label'),
         'Assessment sections',

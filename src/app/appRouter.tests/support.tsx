@@ -1,14 +1,18 @@
 import assert from 'node:assert/strict';
 
-import { JSDOM } from 'jsdom';
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
+import React from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 
 import { ApplicationErrorBoundary } from '~/app/components/routeStateViews';
 import { AppLayout } from '~/app/layouts';
 import { routes } from '~/routes';
+import {
+  act,
+  createTestDom,
+  createTestingLibraryRoot,
+  waitFor,
+} from '~/test/vitestLegacyBridge';
 import { AppThemeProvider, defaultTheme } from '~/theme';
 import AppRouter from '../appRouter';
 
@@ -38,54 +42,14 @@ export const createJsonResponse = (
     ...init,
   });
 
-const setGlobal = <K extends PropertyKey>(key: K, value: unknown) => {
-  Object.defineProperty(globalThis, key, {
-    value,
-    configurable: true,
-    writable: true,
-  });
-};
-
 export const setupDom = (
   pathname: string,
   localStorageEntries?: Record<string, string>,
 ) => {
-  const dom = new JSDOM(
+  const { window } = createTestDom(
     '<!doctype html><html><body><div id="root"></div></body></html>',
-    { url: `http://localhost${pathname}` },
+    { url: 'http://localhost' + pathname },
   );
-
-  const { window } = dom;
-
-  setGlobal('window', window);
-  setGlobal('document', window.document);
-  setGlobal('navigator', window.navigator);
-  setGlobal('HTMLElement', window.HTMLElement);
-
-  // React's legacy input change polyfill can call attachEvent/detachEvent on
-  // the active element, which JSDOM does not implement. Provide no-op shims so
-  // focus-driven interactions do not throw in this test environment.
-  const htmlElementPrototype = window.HTMLElement
-    .prototype as typeof window.HTMLElement.prototype & {
-    attachEvent?: () => void;
-    detachEvent?: () => void;
-  };
-
-  htmlElementPrototype.attachEvent ??= () => undefined;
-  htmlElementPrototype.detachEvent ??= () => undefined;
-
-  setGlobal('Node', window.Node);
-  setGlobal(
-    'requestAnimationFrame',
-    window.requestAnimationFrame?.bind(window) ??
-      ((callback: FrameRequestCallback) => window.setTimeout(callback, 16)),
-  );
-  setGlobal(
-    'cancelAnimationFrame',
-    window.cancelAnimationFrame?.bind(window) ??
-      window.clearTimeout.bind(window),
-  );
-  setGlobal('IS_REACT_ACT_ENVIRONMENT', true);
 
   if (localStorageEntries) {
     for (const [key, value] of Object.entries(localStorageEntries)) {
@@ -107,7 +71,7 @@ export const renderApp = async (
 
   assert.ok(container, 'Expected root container to exist');
 
-  const root = createRoot(container);
+  const root = createTestingLibraryRoot(container);
 
   await act(async () => {
     root.render(
@@ -134,7 +98,7 @@ export const renderRouteErrorFixture = async (pathname: string) => {
 
   assert.ok(container, 'Expected root container to exist');
 
-  const root = createRoot(container);
+  const root = createTestingLibraryRoot(container);
   const originalConsoleError = console.error;
   console.error = () => undefined;
 
@@ -177,9 +141,22 @@ export const renderApplicationErrorFixture = async (
 
   assert.ok(container, 'Expected root container to exist');
 
-  const root = createRoot(container);
+  const root = createTestingLibraryRoot(container);
   const originalConsoleError = console.error;
   console.error = () => undefined;
+
+  const preventExpectedApplicationError = (event: ErrorEvent) => {
+    const error = event.error;
+
+    if (
+      error instanceof Error &&
+      error.message === 'Simulated application failure'
+    ) {
+      event.preventDefault();
+    }
+  };
+
+  window.addEventListener('error', preventExpectedApplicationError);
 
   const ThrowingRoute = () => {
     throw new Error('Simulated application failure');
@@ -211,6 +188,7 @@ export const renderApplicationErrorFixture = async (
       await renderTick();
     });
   } finally {
+    window.removeEventListener('error', preventExpectedApplicationError);
     console.error = originalConsoleError;
   }
 
@@ -222,7 +200,7 @@ export const renderRouteLoadingFixture = async (pathname: string) => {
 
   assert.ok(container, 'Expected root container to exist');
 
-  const root = createRoot(container);
+  const root = createTestingLibraryRoot(container);
   const DelayedRoute = React.lazy(
     () =>
       new Promise<{ default: React.ComponentType }>(resolve => {
@@ -268,5 +246,5 @@ export const assertRouteRenders = async (
   });
 };
 
-export { assert, act, routes };
+export { assert, act, routes, waitFor };
 export { setupAssessmentWorkspaceFetchFixture } from './supportAppRouter';
