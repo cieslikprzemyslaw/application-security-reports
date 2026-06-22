@@ -15,8 +15,14 @@ uploads/evidence/*
 !uploads/evidence/.gitkeep
 .tmp/
 AGENTS.md
-docs
 .github/pull_request_template.md
 .github/ISSUE_TEMPLATE/*
 prototype/
 CLAUDE.md
+uploads/company-logos/*
+!uploads/company-logos/.gitkeep
+
+# Local agent documentation
+docs/*
+!docs/public/
+!docs/public/**
