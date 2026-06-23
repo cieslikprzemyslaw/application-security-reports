@@ -30,6 +30,13 @@ const StyledReportBuilderTree = styled.section.attrs({
       color: ${colors.text.secondary};
     }
 
+    .report-builder-tree-configuration {
+      margin: ${spacing.m} 0;
+      padding: ${spacing.m} 0;
+      border-top: 1px solid ${colors.border.subtle};
+      border-bottom: 1px solid ${colors.border.subtle};
+    }
+
     .report-builder-tree-state {
       display: flex;
       flex-direction: column;

@@ -27,6 +27,8 @@ describe('ReportBuilderTree async states', () => {
       <ReportBuilderTree
         companyId={companyId}
         companyName="Northstar Digital"
+        includeEvidence={false}
+        onIncludeEvidenceChange={vi.fn()}
         selection={emptySelection}
         selectionState={createEmptySelectionState()}
         onSelectionChange={vi.fn()}
@@ -65,6 +67,8 @@ describe('ReportBuilderTree async states', () => {
       <ReportBuilderTree
         companyId={companyId}
         companyName="Northstar Digital"
+        includeEvidence={false}
+        onIncludeEvidenceChange={vi.fn()}
         selection={emptySelection}
         selectionState={createEmptySelectionState()}
         onSelectionChange={vi.fn()}
@@ -111,6 +115,8 @@ describe('ReportBuilderTree async states', () => {
       <ReportBuilderTree
         companyId={companyId}
         companyName="Northstar Digital"
+        includeEvidence={false}
+        onIncludeEvidenceChange={vi.fn()}
         selection={emptySelection}
         selectionState={createEmptySelectionState()}
         onSelectionChange={vi.fn()}
@@ -126,6 +132,8 @@ describe('ReportBuilderTree async states', () => {
       <ReportBuilderTree
         companyId={otherCompanyId}
         companyName="Second Company"
+        includeEvidence={false}
+        onIncludeEvidenceChange={vi.fn()}
         selection={emptySelection}
         selectionState={createEmptySelectionState()}
         onSelectionChange={vi.fn()}

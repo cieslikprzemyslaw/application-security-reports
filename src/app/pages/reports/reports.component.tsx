@@ -9,6 +9,7 @@ import {
 } from './reportBuilderSelectionTree';
 import {
   createDefaultReportBuilderState,
+  updateReportBuilderConfiguration,
   updateReportBuilderSelection,
 } from './reportBuilderState';
 import ReportBuilderTree from './reportBuilderTree.component';
@@ -99,6 +100,12 @@ const ReportBuilderReports = ({
     );
   };
 
+  const handleIncludeEvidenceChange = (includeEvidence: boolean) => {
+    setBuilderState(current =>
+      updateReportBuilderConfiguration(current, { includeEvidence }),
+    );
+  };
+
   return (
     <ReportsShell
       cover={cover}
@@ -109,9 +116,11 @@ const ReportBuilderReports = ({
         <ReportBuilderTree
           companyId={companyId}
           companyName={companyName}
+          includeEvidence={builderState.configuration.includeEvidence}
           selection={builderState.selection}
           selectionState={selectionState}
           onSelectionChange={handleSelectionChange}
+          onIncludeEvidenceChange={handleIncludeEvidenceChange}
         />
       }
     />

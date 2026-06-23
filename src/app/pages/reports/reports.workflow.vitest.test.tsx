@@ -227,10 +227,29 @@ describe('Report workflow through the production router', () => {
           .getAttribute('id')
           ?.includes('evidence-evd_00000000-0000-0000-0000-000000000001'),
       ) as HTMLInputElement | undefined;
+      const includeEvidenceCheckbox = container.querySelector(
+        '#report-builder-include-evidence',
+      ) as HTMLInputElement | null;
 
+      assert.ok(
+        includeEvidenceCheckbox,
+        'Expected the include Evidence checkbox',
+      );
       assert.ok(assessmentCheckbox, 'Expected the assessment checkbox');
       assert.ok(threatCheckbox, 'Expected the threat checkbox');
       assert.ok(evidenceCheckbox, 'Expected the evidence checkbox');
+
+      assert.equal(includeEvidenceCheckbox?.checked, false);
+      assert.equal(evidenceCheckbox?.checked, false);
+
+      await act(async () => {
+        includeEvidenceCheckbox!.click();
+      });
+
+      await waitFor(() => {
+        assert.equal(includeEvidenceCheckbox?.checked, true);
+        assert.equal(evidenceCheckbox?.checked, false);
+      });
 
       await act(async () => {
         assessmentCheckbox!.click();

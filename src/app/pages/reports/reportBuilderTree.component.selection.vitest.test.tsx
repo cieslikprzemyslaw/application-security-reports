@@ -35,18 +35,21 @@ const ControlledTree = ({ loadHierarchy }: ControlledTreeProps) => {
     useState<ReportBuilderSelection>(emptySelection);
   const [selectionState, setSelectionState] =
     useState<ReportBuilderSelectionTreeState>(createEmptySelectionState);
+  const [includeEvidence, setIncludeEvidence] = useState(false);
 
   return (
     <>
       <ReportBuilderTree
         companyId={companyId}
         companyName="Northstar Digital"
+        includeEvidence={includeEvidence}
         selection={selection}
         selectionState={selectionState}
         onSelectionChange={(nextState, exactSelection) => {
           setSelectionState(nextState);
           setSelection(exactSelection);
         }}
+        onIncludeEvidenceChange={setIncludeEvidence}
         loadHierarchy={loadHierarchy}
       />
 
@@ -133,15 +136,63 @@ describe('ReportBuilderTree controlled selection', () => {
     });
   });
 
+  it('keeps Evidence selection explicit when includeEvidence changes', async () => {
+    const { user } = renderWithProviders(
+      <ControlledTree loadHierarchy={async () => populatedHierarchy} />,
+    );
+
+    const includeEvidenceCheckbox = (await screen.findByRole('checkbox', {
+      name: /Include selected evidence/,
+    })) as HTMLInputElement;
+    const evidenceCheckbox = screen.getByRole('checkbox', {
+      name: /Authorization note/,
+    }) as HTMLInputElement;
+
+    assert.equal(includeEvidenceCheckbox.checked, false);
+    assert.equal(evidenceCheckbox.checked, false);
+    assert.deepEqual(readControlledSelection(), emptySelection);
+
+    await user.click(includeEvidenceCheckbox);
+
+    await waitFor(() => {
+      assert.equal(includeEvidenceCheckbox.checked, true);
+      assert.equal(evidenceCheckbox.checked, false);
+    });
+    assert.deepEqual(readControlledSelection(), emptySelection);
+
+    await user.click(evidenceCheckbox);
+
+    await waitFor(() => {
+      assert.equal(evidenceCheckbox.checked, true);
+    });
+    assert.deepEqual(readControlledSelection(), {
+      selectedThreatIds: [],
+      selectedEvidenceIds: [evidenceOneId],
+    });
+
+    await user.click(includeEvidenceCheckbox);
+
+    await waitFor(() => {
+      assert.equal(includeEvidenceCheckbox.checked, false);
+      assert.equal(evidenceCheckbox.checked, true);
+    });
+    assert.deepEqual(readControlledSelection(), {
+      selectedThreatIds: [],
+      selectedEvidenceIds: [evidenceOneId],
+    });
+  });
+
   it('does not change rendered selection when the parent ignores the callback', async () => {
     const onSelectionChange = vi.fn();
     const { user } = renderWithProviders(
       <ReportBuilderTree
         companyId={companyId}
         companyName="Northstar Digital"
+        includeEvidence={false}
         selection={emptySelection}
         selectionState={createEmptySelectionState()}
         onSelectionChange={onSelectionChange}
+        onIncludeEvidenceChange={vi.fn()}
         loadHierarchy={async () => populatedHierarchy}
       />,
     );
