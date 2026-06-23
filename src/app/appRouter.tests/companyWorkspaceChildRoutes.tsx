@@ -18,7 +18,7 @@ export const runCompanyWorkspaceChildRouteTests = async () => {
         return createJsonResponse({
           data: [
             {
-              id: 'cmp_1',
+              id: 'cmp_00000000-0000-0000-0000-000000000001',
               name: 'Northwind Labs',
               website: 'https://northwind.example',
               contactEmail: 'security@northwind.example',
@@ -30,11 +30,14 @@ export const runCompanyWorkspaceChildRouteTests = async () => {
         });
       }
 
-      if (path === '/api/companies/cmp_1/overview') {
+      if (
+        path ===
+        '/api/companies/cmp_00000000-0000-0000-0000-000000000001/overview'
+      ) {
         return createJsonResponse({
           data: {
             company: {
-              id: 'cmp_1',
+              id: 'cmp_00000000-0000-0000-0000-000000000001',
               name: 'Northwind Labs',
               description: 'Cloud security partner',
               website: 'https://northwind.example',
@@ -78,7 +81,9 @@ export const runCompanyWorkspaceChildRouteTests = async () => {
 
     try {
       const { container, root } = await renderApp(
-        routes.companyWorkspaceAssessments('cmp_1'),
+        routes.companyWorkspaceAssessments(
+          'cmp_00000000-0000-0000-0000-000000000001',
+        ),
       );
 
       assert.ok(textContent(container).includes('Assessments'));
@@ -101,7 +106,7 @@ export const runCompanyWorkspaceChildRouteTests = async () => {
         return createJsonResponse({
           data: [
             {
-              id: 'cmp_1',
+              id: 'cmp_00000000-0000-0000-0000-000000000001',
               name: 'Northwind Labs',
               website: 'https://northwind.example',
               contactEmail: 'security@northwind.example',
@@ -113,11 +118,14 @@ export const runCompanyWorkspaceChildRouteTests = async () => {
         });
       }
 
-      if (path === '/api/companies/cmp_1/overview') {
+      if (
+        path ===
+        '/api/companies/cmp_00000000-0000-0000-0000-000000000001/overview'
+      ) {
         return createJsonResponse({
           data: {
             company: {
-              id: 'cmp_1',
+              id: 'cmp_00000000-0000-0000-0000-000000000001',
               name: 'Northwind Labs',
               description: 'Cloud security partner',
               website: 'https://northwind.example',
@@ -144,13 +152,17 @@ export const runCompanyWorkspaceChildRouteTests = async () => {
 
     try {
       const { container, root } = await renderApp(
-        routes.companyWorkspaceReports('cmp_1'),
+        routes.companyWorkspaceReports(
+          'cmp_00000000-0000-0000-0000-000000000001',
+        ),
       );
 
       assert.ok(textContent(container).includes('Report Preview'));
       assert.equal(
         window.location.pathname,
-        routes.companyWorkspaceReports('cmp_1'),
+        routes.companyWorkspaceReports(
+          'cmp_00000000-0000-0000-0000-000000000001',
+        ),
       );
 
       await act(async () => {

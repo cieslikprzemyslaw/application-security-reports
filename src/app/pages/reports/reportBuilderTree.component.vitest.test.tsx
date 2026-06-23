@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { describe, it } from 'vitest';
 
 import { renderWithProviders, screen, waitFor } from '~/test/render';
@@ -169,6 +169,7 @@ describe('ReportBuilderTree', () => {
 });
 
 const Harness = ({ hierarchy }: { hierarchy: ReportBuilderHierarchy }) => {
+  const loadHierarchy = useCallback(async () => hierarchy, [hierarchy]);
   const [selection, setSelection] = useState({
     selectedAssessmentId: undefined as string | undefined,
     selectedThreatIds: [] as string[],
@@ -204,7 +205,7 @@ const Harness = ({ hierarchy }: { hierarchy: ReportBuilderHierarchy }) => {
             : current.selectedEvidenceIds.filter(item => item !== evidenceId),
         }))
       }
-      loadHierarchy={async () => hierarchy}
+      loadHierarchy={loadHierarchy}
     />
   );
 };

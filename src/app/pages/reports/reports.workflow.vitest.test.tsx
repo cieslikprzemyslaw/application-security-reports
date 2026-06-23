@@ -91,7 +91,7 @@ describe('Report workflow through the production router', () => {
         return createJsonResponse({
           data: [
             {
-              id: 'cmp_1',
+              id: 'cmp_00000000-0000-0000-0000-000000000001',
               name: 'Northstar Digital',
               website: 'https://northstar.example',
               contactEmail: 'security@northstar.example',
@@ -103,12 +103,15 @@ describe('Report workflow through the production router', () => {
         });
       }
 
-      if (path === '/api/assessments?companyId=cmp_1') {
+      if (
+        path ===
+        '/api/assessments?companyId=cmp_00000000-0000-0000-0000-000000000001'
+      ) {
         return createJsonResponse({
           data: [
             {
-              id: 'asm_1',
-              companyId: 'cmp_1',
+              id: 'asm_00000000-0000-0000-0000-000000000001',
+              companyId: 'cmp_00000000-0000-0000-0000-000000000001',
               title: 'Customer Services Portal',
               applicationName: 'Customer Services Portal',
               assessmentType: 'Web App',
@@ -122,12 +125,15 @@ describe('Report workflow through the production router', () => {
         });
       }
 
-      if (path === '/api/threats?assessmentId=asm_1') {
+      if (
+        path ===
+        '/api/threats?assessmentId=asm_00000000-0000-0000-0000-000000000001'
+      ) {
         return createJsonResponse({
           data: [
             {
-              id: 'thr_1',
-              assessmentId: 'asm_1',
+              id: 'thr_00000000-0000-0000-0000-000000000001',
+              assessmentId: 'asm_00000000-0000-0000-0000-000000000001',
               title: 'Missing Server-Side Authorization',
               description:
                 'Authorization is missing on the order lookup endpoint.',
@@ -141,13 +147,16 @@ describe('Report workflow through the production router', () => {
         });
       }
 
-      if (path === '/api/evidence?assessmentId=asm_1') {
+      if (
+        path ===
+        '/api/evidence?assessmentId=asm_00000000-0000-0000-0000-000000000001'
+      ) {
         return createJsonResponse({
           data: [
             {
-              id: 'evd_1',
-              assessmentId: 'asm_1',
-              threatIds: ['thr_1'],
+              id: 'evd_00000000-0000-0000-0000-000000000001',
+              assessmentId: 'asm_00000000-0000-0000-0000-000000000001',
+              threatIds: ['thr_00000000-0000-0000-0000-000000000001'],
               type: 'text',
               title: 'Authorization note',
               createdAt: '2026-06-05T00:00:00.000Z',
@@ -162,7 +171,9 @@ describe('Report workflow through the production router', () => {
 
     try {
       const { container, root } = await renderApp(
-        routes.companyWorkspaceReports('cmp_1'),
+        routes.companyWorkspaceReports(
+          'cmp_00000000-0000-0000-0000-000000000001',
+        ),
       );
 
       await waitFor(() => {
