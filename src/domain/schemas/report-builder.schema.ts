@@ -79,6 +79,7 @@ export const reportBuilderBrandingSchema = reportBuilderBrandingObjectSchema;
 
 export const reportBuilderStateObjectSchema = z
   .object({
+    companyId: prefixedUuidSchema('cmp_', 'Company'),
     selection: reportBuilderSelectionSchema,
     configuration: reportBuilderConfigurationSchema,
     branding: reportBuilderBrandingSchema,
@@ -118,20 +119,6 @@ export const reportBuilderRouteConfigurationSchema =
 export const reportBuilderRouteBrandingObjectSchema = z
   .object({
     brandingMode: reportBrandingModeSchema.optional(),
-    companyName: optionalTrimmedTextSchema,
-    companyWebsite: optionalUrlSchema,
-    companyContactEmail: optionalEmailSchema,
-    companyLogoUrl: urlSchema.nullable().optional(),
-    companyFooterText: optionalTrimmedTextSchema,
-    issuerName: optionalTrimmedTextSchema,
-    issuerContactName: optionalTrimmedTextSchema,
-    issuerContactEmail: optionalEmailSchema,
-    issuerLogoUrl: urlSchema.nullable().optional(),
-    reportFooterText: optionalTrimmedTextSchema,
-    reportConfidentialityLabel: optionalTrimmedTextSchema,
-    confidentialReports: z.boolean().optional(),
-    allowedBrandingModes: reportBuilderBrandingModeListSchema.optional(),
-    defaultBrandingMode: reportBrandingModeSchema.optional(),
   })
   .strict();
 
@@ -140,6 +127,7 @@ export const reportBuilderRouteBrandingSchema =
 
 export const reportBuilderRouteStateObjectSchema = z
   .object({
+    companyId: prefixedUuidSchema('cmp_', 'Company'),
     selection: reportBuilderRouteSelectionSchema.optional(),
     configuration: reportBuilderRouteConfigurationSchema.optional(),
     branding: reportBuilderRouteBrandingSchema.optional(),

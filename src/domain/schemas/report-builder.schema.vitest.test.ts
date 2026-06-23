@@ -8,14 +8,16 @@ import {
   reportBuilderStateSchema,
 } from './report-builder.schema.js';
 
+const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
 const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
 const threatId = 'thr_00000000-0000-0000-0000-000000000001';
 const evidenceId = 'evd_00000000-0000-0000-0000-000000000001';
 
 describe('Report builder runtime schemas', () => {
-  it('accepts empty, partial, and complete builder states', () => {
+  it('accepts valid company-owned canonical and route builder states', () => {
     expect(
       reportBuilderStateSchema.safeParse({
+        companyId,
         selection: {},
         configuration: {},
         branding: {},
@@ -24,12 +26,14 @@ describe('Report builder runtime schemas', () => {
 
     expect(
       reportBuilderRouteStateSchema.safeParse({
+        companyId,
         configuration: { includeEvidence: true },
       }).success,
     ).toBe(true);
 
     expect(
       reportBuilderStateSchema.safeParse({
+        companyId,
         selection: {
           selectedAssessmentId: assessmentId,
           selectedThreatIds: [threatId],
@@ -61,7 +65,16 @@ describe('Report builder runtime schemas', () => {
     ).toBe(true);
   });
 
-  it('rejects invalid builder state fields, duplicate selections, and malformed branding', () => {
+  it('rejects invalid company ownership, duplicate selections, and malformed route branding', () => {
+    expect(
+      reportBuilderStateSchema.safeParse({
+        companyId: assessmentId,
+        selection: {},
+        configuration: {},
+        branding: {},
+      }).success,
+    ).toBe(false);
+
     expect(
       reportBuilderSelectionSchema.safeParse({
         selectedAssessmentId: assessmentId,
@@ -97,6 +110,7 @@ describe('Report builder runtime schemas', () => {
 
     expect(
       reportBuilderRouteStateSchema.safeParse({
+        companyId,
         selection: {
           selectedThreatIds: [threatId],
           snapshot: true,
@@ -106,6 +120,7 @@ describe('Report builder runtime schemas', () => {
 
     expect(
       reportBuilderStateSchema.safeParse({
+        companyId,
         selection: {
           selectedAssessmentId: assessmentId,
           selectedThreatIds: [threatId],
@@ -117,6 +132,16 @@ describe('Report builder runtime schemas', () => {
         },
         branding: {
           brandingMode: 'issuer',
+        },
+      }).success,
+    ).toBe(false);
+
+    expect(
+      reportBuilderRouteStateSchema.safeParse({
+        companyId,
+        branding: {
+          brandingMode: 'client',
+          companyName: 'Northstar Digital',
         },
       }).success,
     ).toBe(false);

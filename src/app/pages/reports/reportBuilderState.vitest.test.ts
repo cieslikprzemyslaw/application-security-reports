@@ -10,18 +10,26 @@ import {
   updateReportBuilderSelection,
 } from './reportBuilderState.js';
 
+const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
+const otherCompanyId = 'cmp_00000000-0000-0000-0000-000000000002';
 const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
 const threatId = 'thr_00000000-0000-0000-0000-000000000001';
 const evidenceId = 'evd_00000000-0000-0000-0000-000000000001';
 
 describe('Report builder state helpers', () => {
-  it('round-trips empty, partial, and complete route state safely', () => {
-    const emptyState = createDefaultReportBuilderState();
+  it('creates and round-trips company-owned route state safely', () => {
+    const emptyState = createDefaultReportBuilderState(companyId);
 
-    assert.deepEqual(serializeReportBuilderRouteState(emptyState), {});
-    assert.deepEqual(restoreReportBuilderRouteState({}), emptyState);
+    assert.deepEqual(serializeReportBuilderRouteState(emptyState), {
+      companyId,
+    });
+    assert.deepEqual(
+      restoreReportBuilderRouteState(companyId, { companyId }),
+      emptyState,
+    );
 
-    const partialState = restoreReportBuilderRouteState({
+    const partialState = restoreReportBuilderRouteState(companyId, {
+      companyId,
       selection: {
         selectedThreatIds: [threatId],
       },
@@ -30,11 +38,13 @@ describe('Report builder state helpers', () => {
       },
     });
 
+    assert.equal(partialState.companyId, companyId);
     assert.deepEqual(partialState.selection.selectedThreatIds, [threatId]);
     assert.equal(partialState.selection.selectedEvidenceIds.length, 0);
     assert.equal(partialState.configuration.includeEvidence, true);
 
     assert.deepEqual(serializeReportBuilderRouteState(partialState), {
+      companyId,
       selection: {
         selectedThreatIds: [threatId],
       },
@@ -43,7 +53,8 @@ describe('Report builder state helpers', () => {
       },
     });
 
-    const completeState = restoreReportBuilderRouteState({
+    const completeState = restoreReportBuilderRouteState(companyId, {
+      companyId,
       selection: {
         selectedAssessmentId: assessmentId,
         selectedThreatIds: [threatId],
@@ -56,24 +67,11 @@ describe('Report builder state helpers', () => {
       },
       branding: {
         brandingMode: 'client',
-        companyName: 'Northstar Digital',
-        companyWebsite: 'https://northstar.example',
-        companyContactEmail: 'security@northstar.example',
-        companyLogoUrl: null,
-        companyFooterText: 'Confidential - do not distribute.',
-        issuerName: 'Northstar Digital',
-        issuerContactName: 'Alex Mercer',
-        issuerContactEmail: 'alex.mercer@example.com',
-        issuerLogoUrl: null,
-        reportFooterText: 'Confidential',
-        reportConfidentialityLabel: 'Strictly confidential',
-        confidentialReports: true,
-        allowedBrandingModes: ['issuer', 'client'],
-        defaultBrandingMode: 'client',
       },
     });
 
     assert.deepEqual(serializeReportBuilderRouteState(completeState), {
+      companyId,
       selection: {
         selectedAssessmentId: assessmentId,
         selectedThreatIds: [threatId],
@@ -86,36 +84,24 @@ describe('Report builder state helpers', () => {
       },
       branding: {
         brandingMode: 'client',
-        companyName: 'Northstar Digital',
-        companyWebsite: 'https://northstar.example',
-        companyContactEmail: 'security@northstar.example',
-        companyLogoUrl: null,
-        companyFooterText: 'Confidential - do not distribute.',
-        issuerName: 'Northstar Digital',
-        issuerContactName: 'Alex Mercer',
-        issuerContactEmail: 'alex.mercer@example.com',
-        issuerLogoUrl: null,
-        reportFooterText: 'Confidential',
-        reportConfidentialityLabel: 'Strictly confidential',
-        confidentialReports: true,
-        allowedBrandingModes: ['issuer', 'client'],
-        defaultBrandingMode: 'client',
       },
     });
 
     assert.deepEqual(
       restoreReportBuilderRouteState(
+        companyId,
         serializeReportBuilderRouteState(completeState),
       ),
       completeState,
     );
   });
 
-  it('fails safely for malformed restored route state', () => {
-    const defaultState = createDefaultReportBuilderState();
+  it('fails safely for malformed or cross-company restored route state', () => {
+    const defaultState = createDefaultReportBuilderState(companyId);
 
     assert.deepEqual(
-      restoreReportBuilderRouteState({
+      restoreReportBuilderRouteState(companyId, {
+        companyId,
         selection: {
           selectedThreatIds: [threatId, threatId],
         },
@@ -124,7 +110,8 @@ describe('Report builder state helpers', () => {
     );
 
     assert.deepEqual(
-      restoreReportBuilderRouteState({
+      restoreReportBuilderRouteState(companyId, {
+        companyId,
         selection: {
           selectedAssessmentId: 'cmp_00000000-0000-0000-0000-000000000001',
         },
@@ -133,16 +120,27 @@ describe('Report builder state helpers', () => {
     );
 
     assert.deepEqual(
-      restoreReportBuilderRouteState({
+      restoreReportBuilderRouteState(companyId, {
+        companyId: otherCompanyId,
         branding: {
-          companyWebsite: 'not-a-url',
+          brandingMode: 'client',
         },
       }),
       defaultState,
     );
 
     assert.deepEqual(
-      restoreReportBuilderRouteState({
+      restoreReportBuilderRouteState(companyId, {
+        companyId,
+        branding: {
+          companyWebsite: 'https://northstar.example',
+        },
+      }),
+      defaultState,
+    );
+
+    assert.deepEqual(
+      restoreReportBuilderRouteState(companyId, {
         unexpected: true,
       }),
       defaultState,
@@ -150,7 +148,8 @@ describe('Report builder state helpers', () => {
   });
 
   it('preserves explicit exclusions and unrelated state when updating', () => {
-    const initialState = restoreReportBuilderRouteState({
+    const initialState = restoreReportBuilderRouteState(companyId, {
+      companyId,
       selection: {
         selectedThreatIds: [threatId],
         selectedEvidenceIds: [evidenceId],
@@ -165,6 +164,7 @@ describe('Report builder state helpers', () => {
       includeEvidence: true,
     });
 
+    assert.equal(nextConfiguration.companyId, companyId);
     assert.deepEqual(nextConfiguration.selection.selectedThreatIds, [threatId]);
     assert.deepEqual(nextConfiguration.selection.selectedEvidenceIds, [
       evidenceId,
@@ -182,6 +182,7 @@ describe('Report builder state helpers', () => {
       selectedEvidenceIds: [],
     });
 
+    assert.equal(nextSelection.companyId, companyId);
     assert.equal(nextSelection.selection.selectedAssessmentId, assessmentId);
     assert.deepEqual(nextSelection.selection.selectedThreatIds, [threatId]);
     assert.deepEqual(nextSelection.selection.selectedEvidenceIds, []);
