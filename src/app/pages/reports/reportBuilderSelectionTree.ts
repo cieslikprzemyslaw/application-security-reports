@@ -242,9 +242,9 @@ export const getThreatSelectionState = (
   );
 
   return {
-    checked: branchSelection.selectedCount === branchSelection.totalCount,
+    checked: branchSelection.threatSelected,
     indeterminate:
-      branchSelection.selectedCount > 0 &&
-      branchSelection.selectedCount < branchSelection.totalCount,
+      !branchSelection.threatSelected &&
+      branchSelection.evidenceSelectedCount > 0,
   };
 };
