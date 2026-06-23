@@ -35,7 +35,7 @@ export const apiNotFoundHandler: RequestHandler = (_req, res) => {
 
 export const apiErrorHandler: ErrorRequestHandler = (
   error: unknown,
-  _req,
+  req,
   res,
   next,
 ) => {
@@ -61,6 +61,16 @@ export const apiErrorHandler: ErrorRequestHandler = (
   }
 
   if (isPayloadTooLargeError(error)) {
+    if (req.method === 'PUT' && req.path === '/api/settings/issuer-logo') {
+      sendApiError(
+        res,
+        422,
+        'LOGO_VALIDATION_ERROR',
+        'Issuer logo file must be 5 MB or smaller',
+      );
+      return;
+    }
+
     sendApiError(
       res,
       413,

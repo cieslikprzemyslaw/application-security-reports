@@ -288,18 +288,31 @@ export const createActivityDb = () => {
 
 export const createSettingsDb = () => {
   const calls: Array<{ method: string; args?: unknown }> = [];
+  let currentSettings:
+    | (Omit<typeof settingsRow, 'issuerLogoId'> & {
+        issuerLogoId: string | null;
+      })
+    | null = null;
   const settings = {
     async findFirst(args: unknown) {
       calls.push({ method: 'findFirst', args });
-      return null;
+      return currentSettings;
     },
     async create(args: unknown) {
       calls.push({ method: 'create', args });
-      return settingsRow;
+      currentSettings = settingsRow;
+      return currentSettings;
     },
     async update(args: unknown) {
       calls.push({ method: 'update', args });
-      return settingsRow;
+      const data = (args as { data?: { issuerLogoId?: string | null } }).data;
+      currentSettings = {
+        ...(currentSettings ?? settingsRow),
+        ...(data && 'issuerLogoId' in data
+          ? { issuerLogoId: data.issuerLogoId ?? null }
+          : {}),
+      };
+      return currentSettings;
     },
   } as RepositoryClient['settings'];
 

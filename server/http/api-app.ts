@@ -10,6 +10,7 @@ import type { SettingsRepository } from '../database/repositories/settings.repos
 import type { ThreatRepository } from '../database/repositories/threat.repository.js';
 import type { ServerConfig } from '../config.js';
 import type { CompanyLogoStorage } from '../services/companyLogoStorage.js';
+import type { IssuerLogoStorage } from '../services/issuerLogoStorage.js';
 import { sendApiError } from './api-errors.js';
 import { createApiRouter } from './api-router.js';
 import { createEvidenceStaticRouter } from './evidence-static.js';
@@ -20,6 +21,7 @@ export interface ApiAppOptions {
   companyRepository?: CompanyRepository;
   evidenceRepository?: EvidenceRepository;
   logoStorage?: CompanyLogoStorage;
+  issuerLogoStorage?: IssuerLogoStorage;
   reportRepository?: ReportRepository;
   settingsRepository?: SettingsRepository;
   threatRepository?: ThreatRepository;
@@ -27,9 +29,10 @@ export interface ApiAppOptions {
 }
 
 const jsonBodyLimit = '1mb';
-const allowedCorsMethods = ['GET', 'POST', 'PATCH', 'DELETE'];
-const allowedCorsHeaders = ['Content-Type'];
-const logoUploadPath = /^\/api\/companies\/[^/]+\/logo$/;
+const allowedCorsMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+const allowedCorsHeaders = ['Content-Type', 'X-File-Name'];
+const companyLogoUploadPath = /^\/api\/companies\/[^/]+\/logo$/;
+const issuerLogoUploadPath = /^\/api\/settings\/issuer-logo$/;
 const logoUploadMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
 const applySecurityHeaders: RequestHandler = (_req, res, next) => {
@@ -50,9 +53,23 @@ const requireJsonMutationContentType: RequestHandler = (req, res, next) => {
     return;
   }
 
-  if (req.method === 'PUT' && logoUploadPath.test(req.path)) {
+  if (
+    req.method === 'PUT' &&
+    (companyLogoUploadPath.test(req.path) ||
+      issuerLogoUploadPath.test(req.path))
+  ) {
     if (logoUploadMimeTypes.some(type => req.is(type))) {
       next();
+      return;
+    }
+
+    if (issuerLogoUploadPath.test(req.path)) {
+      sendApiError(
+        res,
+        422,
+        'LOGO_VALIDATION_ERROR',
+        'Issuer logo file type is not supported',
+      );
       return;
     }
 

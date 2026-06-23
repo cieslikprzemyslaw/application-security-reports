@@ -332,6 +332,16 @@ try {
   assert.deepEqual(loadedSettings?.allowedBrandingModes, ['issuer', 'client']);
   assert.equal(loadedSettings?.defaultBrandingMode, 'issuer');
 
+  const settingsWithoutLogo = await settingsRepo.updateIssuerLogoId(null);
+  assert.equal(settingsWithoutLogo.issuerLogoId, undefined);
+  const settingsWithReplacementLogo = await settingsRepo.updateIssuerLogoId(
+    'logo_00000000-0000-0000-0000-000000000002',
+  );
+  assert.equal(
+    settingsWithReplacementLogo.issuerLogoId,
+    'logo_00000000-0000-0000-0000-000000000002',
+  );
+
   const loadedThreats = await threatRepo.findByAssessmentId(assessment.id);
   assert.equal(loadedThreats.length, 1);
 

@@ -130,8 +130,8 @@ try {
     method: 'OPTIONS',
     headers: {
       Origin: allowedOrigin,
-      'Access-Control-Request-Method': 'POST',
-      'Access-Control-Request-Headers': 'Content-Type',
+      'Access-Control-Request-Method': 'PUT',
+      'Access-Control-Request-Headers': 'Content-Type, X-File-Name',
     },
   });
 
@@ -142,11 +142,11 @@ try {
   );
   assert.equal(
     preflightResponse.headers.get('access-control-allow-methods'),
-    'GET,POST,PATCH,DELETE',
+    'GET,POST,PUT,PATCH,DELETE',
   );
   assert.equal(
     preflightResponse.headers.get('access-control-allow-headers'),
-    'Content-Type',
+    'Content-Type,X-File-Name',
   );
 
   const parsedJsonResponse = await fetch(`${server.baseUrl}/api/echo`, {

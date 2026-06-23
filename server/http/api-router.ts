@@ -10,6 +10,10 @@ import {
   createCompanyLogoStorage,
   type CompanyLogoStorage,
 } from '../services/companyLogoStorage.js';
+import {
+  createIssuerLogoStorage,
+  type IssuerLogoStorage,
+} from '../services/issuerLogoStorage.js';
 import { createAssessmentsRouter } from '../routes/assessments.route.js';
 import { createEvidenceRouter } from '../routes/evidence.route.js';
 import { registerHealthRoute } from '../routes/health.route.js';
@@ -23,6 +27,7 @@ export interface RegisterApiRoutesOptions {
   companyRepository?: CompanyRepository;
   evidenceRepository?: EvidenceRepository;
   logoStorage?: CompanyLogoStorage;
+  issuerLogoStorage?: IssuerLogoStorage;
   reportRepository?: ReportRepository;
   settingsRepository?: SettingsRepository;
   threatRepository?: ThreatRepository;
@@ -34,6 +39,8 @@ export const createApiRouter = (
 ): Router => {
   const router = Router();
   const logoStorage = options.logoStorage ?? createCompanyLogoStorage();
+  const issuerLogoStorage =
+    options.issuerLogoStorage ?? createIssuerLogoStorage();
 
   registerHealthRoute(router);
   if (options.assessmentRepository && options.threatRepository) {
@@ -101,7 +108,10 @@ export const createApiRouter = (
     );
   }
   if (options.settingsRepository) {
-    router.use('/settings', createSettingsRouter(options.settingsRepository));
+    router.use(
+      '/settings',
+      createSettingsRouter(options.settingsRepository, issuerLogoStorage),
+    );
   }
   options.registerRoutes?.(router);
 

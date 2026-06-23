@@ -5,13 +5,14 @@ import type {
 import { REPORT_BRANDING_MODES } from '../../../src/domain/settings.js';
 import type { CreateSettingsInput } from '../../../src/domain/settings.js';
 import { generateId } from '../../utils/id.js';
-import { mapPrismaError } from '../errors.js';
+import { mapPrismaError, RepositoryNotFoundError } from '../errors.js';
 import type { RepositoryClient } from '../repository.types.js';
 import { toIsoString, toOptionalText } from './repository.helpers.js';
 
 export interface SettingsRepository {
   get(): Promise<Settings | null>;
   upsert(input: CreateSettingsInput): Promise<Settings>;
+  updateIssuerLogoId(issuerLogoId: string | null): Promise<Settings>;
 }
 
 type SettingsRepositoryDb = Pick<RepositoryClient, 'settings'>;
@@ -164,6 +165,29 @@ export function createSettingsRepository(
         const settings = await db.settings.update({
           where: { id: existing.id },
           data: mergeSettingsInput(input, existing),
+          select: settingsSelect,
+        });
+
+        return toSettings(settings);
+      } catch (error) {
+        throw mapPrismaError(error);
+      }
+    },
+
+    async updateIssuerLogoId(issuerLogoId) {
+      try {
+        const existing = await db.settings.findFirst({
+          orderBy: { createdAt: 'asc' },
+          select: { id: true },
+        });
+
+        if (!existing) {
+          throw new RepositoryNotFoundError('Settings not found');
+        }
+
+        const settings = await db.settings.update({
+          where: { id: existing.id },
+          data: { issuerLogoId },
           select: settingsSelect,
         });
 
