@@ -11,6 +11,21 @@ import type { AssessmentRepository } from '../database/repositories/assessment.r
 import type { EvidenceRepository } from '../database/repositories/evidence.repository.js';
 import type { ThreatRepository } from '../database/repositories/threat.repository.js';
 
+export type ReportPreviewSelectionResource =
+  | 'assessment'
+  | 'threat'
+  | 'evidence';
+
+export class ReportPreviewSelectionNotFoundError extends RepositoryNotFoundError {
+  public readonly resource: ReportPreviewSelectionResource;
+
+  constructor(resource: ReportPreviewSelectionResource) {
+    const label = resource[0].toUpperCase() + resource.slice(1);
+    super(`${label} not found.`);
+    this.resource = resource;
+  }
+}
+
 export interface ResolvedReportPreviewRecords {
   assessment: Assessment;
   threats: Threat[];
@@ -23,9 +38,12 @@ export interface ReportPreviewSelectionRepositories {
   evidenceRepository: Pick<EvidenceRepository, 'findById'>;
 }
 
-const requireRecord = <T>(record: T | null, resourceName: string): T => {
+const requireRecord = <T>(
+  record: T | null,
+  resource: ReportPreviewSelectionResource,
+): T => {
   if (!record) {
-    throw new RepositoryNotFoundError(`${resourceName} not found.`);
+    throw new ReportPreviewSelectionNotFoundError(resource);
   }
 
   return record;
@@ -34,14 +52,14 @@ const requireRecord = <T>(record: T | null, resourceName: string): T => {
 const resolveSelectedRecords = async <T>(
   ids: readonly string[],
   findById: (id: string) => Promise<T | null>,
-  resourceName: string,
+  resource: ReportPreviewSelectionResource,
 ): Promise<T[]> => {
   const records: T[] = [];
 
   for (const id of ids) {
     const record = await findById(id);
 
-    records.push(requireRecord(record, resourceName));
+    records.push(requireRecord(record, resource));
   }
 
   return records;
@@ -53,19 +71,19 @@ export const resolveReportPreviewSelectedRecords = async (
 ): Promise<ResolvedReportPreviewRecords> => {
   const assessment = requireRecord(
     await repositories.assessmentRepository.findById(request.assessmentId),
-    'Assessment',
+    'assessment',
   );
 
   const threats = await resolveSelectedRecords(
     request.selection.threatIds,
     id => repositories.threatRepository.findById(id),
-    'Threat',
+    'threat',
   );
 
   const evidence = await resolveSelectedRecords(
     request.selection.evidenceIds,
     id => repositories.evidenceRepository.findById(id),
-    'Evidence',
+    'evidence',
   );
 
   return {

@@ -198,6 +198,7 @@ describe('resolveReportPreviewSelectedRecords', () => {
     ).rejects.toMatchObject({
       name: 'RepositoryNotFoundError',
       message: 'Assessment not found.',
+      resource: 'assessment',
     });
 
     expect(threatRepository.findById).not.toHaveBeenCalled();
@@ -222,6 +223,7 @@ describe('resolveReportPreviewSelectedRecords', () => {
     ).rejects.toMatchObject({
       name: 'RepositoryNotFoundError',
       message: 'Threat not found.',
+      resource: 'threat',
     });
 
     expect(evidenceRepository.findById).not.toHaveBeenCalled();
@@ -252,6 +254,7 @@ describe('resolveReportPreviewSelectedRecords', () => {
     expect(caughtError).toMatchObject({
       name: 'RepositoryNotFoundError',
       message: 'Evidence not found.',
+      resource: 'evidence',
     });
   });
 });

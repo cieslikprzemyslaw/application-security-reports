@@ -18,6 +18,7 @@ import { createAssessmentsRouter } from '../routes/assessments.route.js';
 import { createEvidenceRouter } from '../routes/evidence.route.js';
 import { registerHealthRoute } from '../routes/health.route.js';
 import { createCompaniesRouter } from '../routes/companies.route.js';
+import { createReportsPreviewRouter } from '../routes/reports.preview.route.js';
 import { createReportsRouter } from '../routes/reports.route.js';
 import { createSettingsRouter } from '../routes/settings.route.js';
 import { createThreatsRouter } from '../routes/threats.route.js';
@@ -70,6 +71,24 @@ export const createApiRouter = (
         evidenceRepository: options.evidenceRepository,
         reportRepository: options.reportRepository,
         logoStorage,
+      }),
+    );
+  }
+  if (
+    options.assessmentRepository &&
+    options.companyRepository &&
+    options.threatRepository &&
+    options.evidenceRepository &&
+    options.settingsRepository
+  ) {
+    router.use(
+      '/reports/preview',
+      createReportsPreviewRouter({
+        assessmentRepository: options.assessmentRepository,
+        companyRepository: options.companyRepository,
+        evidenceRepository: options.evidenceRepository,
+        settingsRepository: options.settingsRepository,
+        threatRepository: options.threatRepository,
       }),
     );
   }
