@@ -146,5 +146,44 @@ describe('reportPreviewShell', () => {
         root.unmount();
       });
     })();
+
+    await (async () => {
+      const { container } = setupDom();
+
+      assert.ok(container, 'Expected root container to exist');
+
+      const root = createTestingLibraryRoot(container);
+
+      await act(async () => {
+        root.render(
+          <ThemeProvider theme={darkTheme}>
+            <ReportPreviewShell
+              applicationName="AppSec Report Builder"
+              assessmentCode="ASM-001"
+              selectionView={<ThemeProbe label="Selection" />}
+              preview={<ThemeProbe label="Preview" />}
+              dataView={<ThemeProbe label="Data" />}
+            />
+          </ThemeProvider>,
+        );
+
+        await renderTick();
+      });
+
+      assert.ok(container.textContent?.includes('Selection'));
+
+      await clickButton(container, 'Selection');
+
+      assert.equal(
+        container
+          .querySelector('[data-testid="selection-theme"]')
+          ?.getAttribute('data-surface'),
+        '#FFFFFF',
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    })();
   });
 });

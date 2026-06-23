@@ -26,6 +26,7 @@ const fallbackCover: ReportCoverProps = {
 
 const Reports = ({
   cover = fallbackCover,
+  selectionView,
   dataView,
   autoSaved = true,
   onPrint,
@@ -35,6 +36,7 @@ const Reports = ({
     applicationName={cover.applicationName}
     assessmentCode={cover.reportId}
     autoSaved={autoSaved}
+    selectionView={selectionView}
     preview={<ReportCover {...cover} />}
     dataView={dataView ?? <pre>{JSON.stringify(cover, null, 2)}</pre>}
     onPrint={onPrint}

@@ -11,12 +11,19 @@ const ReportPreviewShell = ({
   applicationName,
   assessmentCode,
   autoSaved = true,
+  selectionView,
   preview,
   dataView,
   onPrint,
   onDownloadPdf,
 }: ReportPreviewShellProps) => {
-  const [activeTab, setActiveTab] = useState<'preview' | 'data'>('preview');
+  const [activeTab, setActiveTab] = useState<'preview' | 'selection' | 'data'>(
+    'preview',
+  );
+  const hasSelectionView =
+    selectionView !== undefined && selectionView !== null;
+  const renderedActiveTab =
+    activeTab === 'selection' && !hasSelectionView ? 'preview' : activeTab;
 
   return (
     <LightThemeProvider>
@@ -38,7 +45,7 @@ const ReportPreviewShell = ({
             <button
               className={[
                 'report-preview-shell-tab-button',
-                activeTab === 'preview'
+                renderedActiveTab === 'preview'
                   ? 'report-preview-shell-tab-button--active'
                   : 'report-preview-shell-tab-button--inactive',
               ].join(' ')}
@@ -48,10 +55,25 @@ const ReportPreviewShell = ({
               Preview
             </button>
 
+            {hasSelectionView && (
+              <button
+                className={[
+                  'report-preview-shell-tab-button',
+                  renderedActiveTab === 'selection'
+                    ? 'report-preview-shell-tab-button--active'
+                    : 'report-preview-shell-tab-button--inactive',
+                ].join(' ')}
+                type="button"
+                onClick={() => setActiveTab('selection')}
+              >
+                Selection
+              </button>
+            )}
+
             <button
               className={[
                 'report-preview-shell-tab-button',
-                activeTab === 'data'
+                renderedActiveTab === 'data'
                   ? 'report-preview-shell-tab-button--active'
                   : 'report-preview-shell-tab-button--inactive',
               ].join(' ')}
@@ -81,7 +103,11 @@ const ReportPreviewShell = ({
 
         <div className="report-preview-shell-stage">
           <div className="report-preview-shell-paper">
-            {activeTab === 'preview' ? preview : dataView}
+            {renderedActiveTab === 'preview'
+              ? preview
+              : renderedActiveTab === 'selection'
+                ? selectionView
+                : dataView}
           </div>
         </div>
       </StyledReportPreviewShell>
