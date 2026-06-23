@@ -8,6 +8,8 @@ import {
   type ReportBuilderState,
 } from '~/domain';
 import {
+  reportBuilderBrandingSchema,
+  reportBuilderConfigurationSchema,
   reportBuilderRouteStateSchema,
   reportBuilderStateSchema,
 } from '~/domain/schemas';
@@ -18,30 +20,10 @@ const createDefaultSelection = (): ReportBuilderSelection => ({
 });
 
 const createDefaultConfiguration = (): ReportBuilderConfiguration =>
-  reportBuilderStateSchema.parse({
-    companyId: 'cmp_00000000-0000-0000-0000-000000000000',
-    selection: createDefaultSelection(),
-    configuration: {
-      includeEvidence: false,
-    },
-    branding: {
-      brandingMode: 'issuer',
-      confidentialReports: false,
-    },
-  }).configuration;
+  reportBuilderConfigurationSchema.parse({});
 
 const createDefaultBranding = (): ReportBuilderState['branding'] =>
-  reportBuilderStateSchema.parse({
-    companyId: 'cmp_00000000-0000-0000-0000-000000000000',
-    selection: createDefaultSelection(),
-    configuration: {
-      includeEvidence: false,
-    },
-    branding: {
-      brandingMode: 'issuer',
-      confidentialReports: false,
-    },
-  }).branding;
+  reportBuilderBrandingSchema.parse({});
 
 export const createDefaultReportBuilderState = (
   companyId: string,
