@@ -72,6 +72,17 @@ const companyLogoMigrationPath = path.resolve(
   'migration.sql',
 );
 const companyLogoMigrationSql = readFileSync(companyLogoMigrationPath, 'utf8');
+const reportVersionMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260621120000_add_report_version',
+  'migration.sql',
+);
+const reportVersionMigrationSql = readFileSync(
+  reportVersionMigrationPath,
+  'utf8',
+);
 const companyArchivedAtMigrationPath = path.resolve(
   repoRoot,
   'prisma',
@@ -174,6 +185,7 @@ export const createReportsRouteIntegrationHarness =
       bootstrapDb.exec(settingsBrandingMigrationSql);
       bootstrapDb.exec(threatMigrationSql);
       bootstrapDb.exec(evidenceMigrationSql);
+      bootstrapDb.exec(reportVersionMigrationSql);
     } finally {
       bootstrapDb.close();
     }
