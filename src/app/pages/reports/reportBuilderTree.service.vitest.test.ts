@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 
 import type { Evidence, Threat } from '~/domain';
+import type { AssessmentListItem } from '~/services';
 
 import {
   createReportBuilderHierarchyLoader,
@@ -12,7 +13,7 @@ import {
 describe('reportBuilderHierarchyLoader', () => {
   it('loads only the current company assessments and groups evidence by threat', async () => {
     const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
-    const assessmentOne = {
+    const assessmentOne: AssessmentListItem = {
       id: 'asm_00000000-0000-0000-0000-000000000001',
       companyId,
       name: 'Customer Services Portal',
@@ -24,7 +25,7 @@ describe('reportBuilderHierarchyLoader', () => {
       description: 'Assessment of the customer portal',
       scope: 'Web application',
     };
-    const assessmentTwo = {
+    const assessmentTwo: AssessmentListItem = {
       id: 'asm_00000000-0000-0000-0000-000000000002',
       companyId,
       name: 'Payments Gateway API',
@@ -102,7 +103,7 @@ describe('reportBuilderHierarchyLoader', () => {
 
     const loader = createReportBuilderHierarchyLoader({
       assessmentService: {
-        async list(filters, signal) {
+        async list(filters?: { companyId?: string }, signal?: AbortSignal) {
           assessmentCalls.push({ filters, signal });
           return [assessmentOne, assessmentTwo];
         },
