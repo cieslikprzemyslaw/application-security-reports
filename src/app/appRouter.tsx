@@ -18,6 +18,7 @@ import {
   CompaniesRouteElement,
   CompanyActivityRouteElement,
   CompanyAssessmentsRouteElement,
+  CompanyReportsRouteElement,
   CompanyWorkspaceRouteShellElement,
   DashboardRouteElement,
   RedirectToDashboard,
@@ -26,7 +27,6 @@ import {
 } from './appRouterShell';
 import {
   CompanyOverviewRoute,
-  CompanyReportsRoute,
   CompanyWorkspaceIndexRoute,
   CompanyWorkspaceNotFoundRoute,
 } from './companyWorkspaceRoutes';
@@ -92,7 +92,7 @@ const createAppRouter = () =>
                 path="assessments"
                 element={<CompanyAssessmentsRouteElement />}
               />
-              <Route path="reports" element={<CompanyReportsRoute />} />
+              <Route path="reports" element={<CompanyReportsRouteElement />} />
               <Route
                 path="activity"
                 element={<CompanyActivityRouteElement />}
