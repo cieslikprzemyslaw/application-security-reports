@@ -103,7 +103,7 @@ describe('reportBuilderHierarchyLoader', () => {
 
     const loader = createReportBuilderHierarchyLoader({
       assessmentService: {
-        async list(filters?: { companyId?: string }, signal?: AbortSignal) {
+        async list(filters: { companyId: string }, signal?: AbortSignal) {
           assessmentCalls.push({ filters, signal });
           return [assessmentOne, assessmentTwo];
         },
