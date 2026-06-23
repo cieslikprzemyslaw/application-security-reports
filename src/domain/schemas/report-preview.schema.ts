@@ -1,18 +1,5 @@
 import { z } from 'zod';
 
-import type {
-  ReportPreviewAssessment,
-  ReportPreviewBranding,
-  ReportPreviewCompany,
-  ReportPreviewConfiguration,
-  ReportPreviewEvidence,
-  ReportPreviewRequest,
-  ReportPreviewRiskSummary,
-  ReportPreviewSelection,
-  ReportPreviewSnapshot,
-  ReportPreviewThreat,
-} from '../report-preview.js';
-
 import { assessmentObjectSchema } from './assessment.schema.js';
 import { companyObjectSchema } from './company.schema.js';
 import {
@@ -77,35 +64,87 @@ export const reportPreviewRequestObjectSchema = z
 
 export const reportPreviewRequestSchema = reportPreviewRequestObjectSchema;
 
-export const reportPreviewCompanyObjectSchema = companyObjectSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-  archivedAt: true,
-});
+export const reportPreviewCompanyObjectSchema = companyObjectSchema
+  .pick({
+    id: true,
+    name: true,
+    description: true,
+    website: true,
+    contactName: true,
+    contactEmail: true,
+    logoUrl: true,
+    footerText: true,
+  })
+  .strict();
 
 export const reportPreviewCompanySchema = reportPreviewCompanyObjectSchema;
 
-export const reportPreviewAssessmentObjectSchema = assessmentObjectSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-});
+export const reportPreviewAssessmentObjectSchema = assessmentObjectSchema
+  .pick({
+    id: true,
+    companyId: true,
+    title: true,
+    description: true,
+    scope: true,
+    status: true,
+    startedAt: true,
+    completedAt: true,
+    applicationName: true,
+    environment: true,
+    assessmentType: true,
+    overallRisk: true,
+    owaspTaxonomyVersion: true,
+  })
+  .strict();
 
 export const reportPreviewAssessmentSchema =
   reportPreviewAssessmentObjectSchema;
 
-export const reportPreviewThreatObjectSchema = threatObjectSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-});
+export const reportPreviewThreatObjectSchema = threatObjectSchema
+  .pick({
+    id: true,
+    assessmentId: true,
+    title: true,
+    description: true,
+    severity: true,
+    strideCategories: true,
+    status: true,
+    owaspCategoryCode: true,
+    customCategory: true,
+    affectedAsset: true,
+    impact: true,
+    recommendation: true,
+    remediation: true,
+    observation: true,
+    reproductionSteps: true,
+    affectedComponent: true,
+    affectedEndpoint: true,
+    risk: true,
+    references: true,
+    evidenceCount: true,
+    resolutionNote: true,
+    acceptedRiskJustification: true,
+  })
+  .strict();
 
 export const reportPreviewThreatSchema = reportPreviewThreatObjectSchema;
 
-export const reportPreviewEvidenceObjectSchema = evidenceObjectSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-  filePath: true,
-  storageKey: true,
-});
+export const reportPreviewEvidenceObjectSchema = evidenceObjectSchema
+  .pick({
+    id: true,
+    assessmentId: true,
+    threatIds: true,
+    type: true,
+    title: true,
+    description: true,
+    content: true,
+    fileName: true,
+    mimeType: true,
+    attachmentSizeBytes: true,
+    capturedAt: true,
+    httpExchanges: true,
+  })
+  .strict();
 
 export const reportPreviewEvidenceSchema = reportPreviewEvidenceObjectSchema;
 
@@ -166,72 +205,36 @@ export const reportPreviewSnapshotObjectSchema = z
 
 export const reportPreviewSnapshotSchema = reportPreviewSnapshotObjectSchema;
 
-type ReportPreviewSelectionSchemaOutput = Required<
-  z.output<typeof reportPreviewSelectionSchema>
+export type ReportPreviewSelection = z.output<
+  typeof reportPreviewSelectionSchema
 >;
-const _reportPreviewSelectionSchemaCompatibilityCheck: ReportPreviewSelectionSchemaOutput extends ReportPreviewSelection
-  ? true
-  : never = true;
 
-type ReportPreviewConfigurationSchemaOutput = Required<
-  z.output<typeof reportPreviewConfigurationSchema>
+export type ReportPreviewConfiguration = z.output<
+  typeof reportPreviewConfigurationSchema
 >;
-const _reportPreviewConfigurationSchemaCompatibilityCheck: ReportPreviewConfigurationSchemaOutput extends ReportPreviewConfiguration
-  ? true
-  : never = true;
 
-type ReportPreviewRequestSchemaOutput = Required<
-  z.output<typeof reportPreviewRequestSchema>
->;
-const _reportPreviewRequestSchemaCompatibilityCheck: ReportPreviewRequestSchemaOutput extends ReportPreviewRequest
-  ? true
-  : never = true;
+export type ReportPreviewRequest = z.output<typeof reportPreviewRequestSchema>;
 
-type ReportPreviewCompanySchemaOutput = Required<
-  z.output<typeof reportPreviewCompanySchema>
->;
-const _reportPreviewCompanySchemaCompatibilityCheck: ReportPreviewCompanySchemaOutput extends ReportPreviewCompany
-  ? true
-  : never = true;
+export type ReportPreviewCompany = z.output<typeof reportPreviewCompanySchema>;
 
-type ReportPreviewAssessmentSchemaOutput = Required<
-  z.output<typeof reportPreviewAssessmentSchema>
+export type ReportPreviewAssessment = z.output<
+  typeof reportPreviewAssessmentSchema
 >;
-const _reportPreviewAssessmentSchemaCompatibilityCheck: ReportPreviewAssessmentSchemaOutput extends ReportPreviewAssessment
-  ? true
-  : never = true;
 
-type ReportPreviewThreatSchemaOutput = Required<
-  z.output<typeof reportPreviewThreatSchema>
->;
-const _reportPreviewThreatSchemaCompatibilityCheck: ReportPreviewThreatSchemaOutput extends ReportPreviewThreat
-  ? true
-  : never = true;
+export type ReportPreviewThreat = z.output<typeof reportPreviewThreatSchema>;
 
-type ReportPreviewEvidenceSchemaOutput = Required<
-  z.output<typeof reportPreviewEvidenceSchema>
+export type ReportPreviewEvidence = z.output<
+  typeof reportPreviewEvidenceSchema
 >;
-const _reportPreviewEvidenceSchemaCompatibilityCheck: ReportPreviewEvidenceSchemaOutput extends ReportPreviewEvidence
-  ? true
-  : never = true;
 
-type ReportPreviewBrandingSchemaOutput = Required<
-  z.output<typeof reportPreviewBrandingSchema>
+export type ReportPreviewBranding = z.output<
+  typeof reportPreviewBrandingSchema
 >;
-const _reportPreviewBrandingSchemaCompatibilityCheck: ReportPreviewBrandingSchemaOutput extends ReportPreviewBranding
-  ? true
-  : never = true;
 
-type ReportPreviewRiskSummarySchemaOutput = Required<
-  z.output<typeof reportPreviewRiskSummarySchema>
+export type ReportPreviewRiskSummary = z.output<
+  typeof reportPreviewRiskSummarySchema
 >;
-const _reportPreviewRiskSummarySchemaCompatibilityCheck: ReportPreviewRiskSummarySchemaOutput extends ReportPreviewRiskSummary
-  ? true
-  : never = true;
 
-type ReportPreviewSnapshotSchemaOutput = Required<
-  z.output<typeof reportPreviewSnapshotSchema>
+export type ReportPreviewSnapshot = z.output<
+  typeof reportPreviewSnapshotSchema
 >;
-const _reportPreviewSnapshotSchemaCompatibilityCheck: ReportPreviewSnapshotSchemaOutput extends ReportPreviewSnapshot
-  ? true
-  : never = true;
