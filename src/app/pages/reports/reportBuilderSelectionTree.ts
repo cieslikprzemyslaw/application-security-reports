@@ -241,10 +241,14 @@ export const getThreatSelectionState = (
     context,
   );
 
+  const allEvidenceSelected =
+    branchSelection.evidenceSelectedCount === threat.evidence.length;
+  const fullySelected = branchSelection.threatSelected && allEvidenceSelected;
+  const partiallySelected =
+    branchSelection.threatSelected || branchSelection.evidenceSelectedCount > 0;
+
   return {
-    checked: branchSelection.threatSelected,
-    indeterminate:
-      !branchSelection.threatSelected &&
-      branchSelection.evidenceSelectedCount > 0,
+    checked: fullySelected,
+    indeterminate: partiallySelected && !fullySelected,
   };
 };

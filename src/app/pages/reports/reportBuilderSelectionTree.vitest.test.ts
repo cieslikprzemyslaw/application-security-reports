@@ -6,6 +6,8 @@ import type { ReportBuilderHierarchy } from './reportBuilderTree.service';
 import {
   createReportBuilderSelectionTreeState,
   getReportBuilderExactSelection,
+  getAssessmentSelectionState,
+  getThreatSelectionState,
   toggleReportBuilderAssessmentSelection,
   toggleReportBuilderEvidenceSelection,
   toggleReportBuilderThreatSelection,
@@ -158,6 +160,32 @@ describe('reportBuilderSelectionTree helpers', () => {
     assert.deepEqual(getReportBuilderExactSelection(state, hierarchy), {
       selectedThreatIds: [],
       selectedEvidenceIds: [],
+    });
+  });
+  it('marks a selected branch as partial when evidence is explicitly excluded', () => {
+    const assessment = hierarchy.assessments[0]!;
+    const threat = assessment.threats[0]!;
+    const evidence = threat.evidence[0]!;
+
+    let state = createReportBuilderSelectionTreeState();
+    state = toggleReportBuilderAssessmentSelection(
+      state,
+      assessment.assessment.id,
+      true,
+    );
+    state = toggleReportBuilderEvidenceSelection(
+      state,
+      evidence.evidence.id,
+      false,
+    );
+
+    assert.deepEqual(getThreatSelectionState(assessment, threat, state), {
+      checked: false,
+      indeterminate: true,
+    });
+    assert.deepEqual(getAssessmentSelectionState(assessment, state), {
+      checked: false,
+      indeterminate: true,
     });
   });
 });

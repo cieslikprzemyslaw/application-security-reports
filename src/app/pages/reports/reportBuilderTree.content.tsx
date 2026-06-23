@@ -15,9 +15,7 @@ import type {
 
 interface ReportBuilderTreeContentProps {
   hierarchy: ReportBuilderHierarchy;
-  exactSelectedAssessmentId?: string;
-  exactSelectedThreatIds: string[];
-  exactSelectedEvidenceIds: string[];
+  selectedEvidenceIds: string[];
   selectionState: ReportBuilderSelectionTreeState;
   onAssessmentChange: (assessmentId: string, checked: boolean) => void;
   onThreatChange: (threatId: string, checked: boolean) => void;
@@ -59,15 +57,13 @@ const countAssessmentDescendants = (
 
 const ReportBuilderTreeContent = ({
   hierarchy,
-  exactSelectedAssessmentId,
-  exactSelectedThreatIds,
-  exactSelectedEvidenceIds,
+  selectedEvidenceIds,
   selectionState,
   onAssessmentChange,
   onThreatChange,
   onEvidenceChange,
 }: ReportBuilderTreeContentProps) => {
-  const selectedEvidenceIdSet = new Set(exactSelectedEvidenceIds);
+  const selectedEvidenceIdSet = new Set(selectedEvidenceIds);
 
   function renderEvidenceNode(
     assessmentId: string,
@@ -217,30 +213,6 @@ const ReportBuilderTreeContent = ({
       <ul className="report-builder-tree-list">
         {hierarchy.assessments.map(renderAssessmentNode)}
       </ul>
-
-      <section
-        className="report-builder-tree-summary"
-        aria-labelledby="report-builder-tree-summary-title"
-      >
-        <h4
-          className="report-builder-tree-summary-title"
-          id="report-builder-tree-summary-title"
-        >
-          Exact selected IDs
-        </h4>
-
-        <pre className="report-builder-tree-summary-json">
-          {JSON.stringify(
-            {
-              selectedAssessmentId: exactSelectedAssessmentId,
-              selectedThreatIds: exactSelectedThreatIds,
-              selectedEvidenceIds: exactSelectedEvidenceIds,
-            },
-            null,
-            2,
-          )}
-        </pre>
-      </section>
     </div>
   );
 };

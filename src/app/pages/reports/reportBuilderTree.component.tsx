@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
@@ -7,7 +7,6 @@ import EmptyState from '~/app/components/ui/emptyState';
 
 import StyledReportBuilderTree from './reportBuilderTree.styled';
 import {
-  createReportBuilderSelectionTreeState,
   getReportBuilderExactSelection,
   toggleReportBuilderAssessmentSelection,
   toggleReportBuilderEvidenceSelection,
@@ -20,9 +19,17 @@ import {
   type ReportBuilderHierarchy,
 } from './reportBuilderTree.service';
 
+import type { ReportBuilderSelection } from '~/domain';
+
 interface ReportBuilderTreeProps {
   companyId: string;
   companyName: string;
+  selection: ReportBuilderSelection;
+  selectionState: ReportBuilderSelectionTreeState;
+  onSelectionChange: (
+    nextState: ReportBuilderSelectionTreeState,
+    exactSelection: ReportBuilderSelection,
+  ) => void;
   loadHierarchy?: (
     companyId: string,
     signal?: AbortSignal,
@@ -32,13 +39,12 @@ interface ReportBuilderTreeProps {
 const ReportBuilderTree = ({
   companyId,
   companyName,
+  selection,
+  selectionState,
+  onSelectionChange,
   loadHierarchy = reportBuilderHierarchyLoader,
 }: ReportBuilderTreeProps) => {
   const [hierarchy, setHierarchy] = useState<ReportBuilderHierarchy>();
-  const [selectionState, setSelectionState] =
-    useState<ReportBuilderSelectionTreeState>(() =>
-      createReportBuilderSelectionTreeState(),
-    );
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | undefined>();
   const [reloadKey, setReloadKey] = useState(0);
@@ -86,10 +92,12 @@ const ReportBuilderTree = ({
     };
   }, [companyId, loadHierarchy, reloadKey]);
 
-  const exactSelection = useMemo(
-    () => getReportBuilderExactSelection(selectionState, hierarchy),
-    [hierarchy, selectionState],
-  );
+  const commitSelection = (nextState: ReportBuilderSelectionTreeState) => {
+    onSelectionChange(
+      nextState,
+      getReportBuilderExactSelection(nextState, hierarchy),
+    );
+  };
 
   return (
     <StyledReportBuilderTree aria-labelledby="report-builder-tree-title">
@@ -137,28 +145,30 @@ const ReportBuilderTree = ({
         ) : hierarchy?.assessments.length ? (
           <ReportBuilderTreeContent
             hierarchy={hierarchy}
-            exactSelectedAssessmentId={exactSelection.selectedAssessmentId}
-            exactSelectedThreatIds={exactSelection.selectedThreatIds}
-            exactSelectedEvidenceIds={exactSelection.selectedEvidenceIds}
+            selectedEvidenceIds={selection.selectedEvidenceIds}
             selectionState={selectionState}
             onAssessmentChange={(assessmentId, checked) => {
-              setSelectionState(current =>
+              commitSelection(
                 toggleReportBuilderAssessmentSelection(
-                  current,
+                  selectionState,
                   assessmentId,
                   checked,
                 ),
               );
             }}
             onThreatChange={(threatId, checked) => {
-              setSelectionState(current =>
-                toggleReportBuilderThreatSelection(current, threatId, checked),
+              commitSelection(
+                toggleReportBuilderThreatSelection(
+                  selectionState,
+                  threatId,
+                  checked,
+                ),
               );
             }}
             onEvidenceChange={(evidenceId, checked) => {
-              setSelectionState(current =>
+              commitSelection(
                 toggleReportBuilderEvidenceSelection(
-                  current,
+                  selectionState,
                   evidenceId,
                   checked,
                 ),

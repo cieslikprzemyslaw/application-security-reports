@@ -239,6 +239,7 @@ describe('Report workflow through the production router', () => {
       await waitFor(() => {
         assert.equal(assessmentCheckbox?.checked, true);
         assert.equal(threatCheckbox?.checked, true);
+        assert.equal(threatCheckbox?.indeterminate, false);
         assert.equal(evidenceCheckbox?.checked, true);
       });
 
@@ -248,23 +249,9 @@ describe('Report workflow through the production router', () => {
 
       await waitFor(() => {
         assert.equal(assessmentCheckbox?.indeterminate, true);
-        assert.equal(threatCheckbox?.checked, true);
+        assert.equal(threatCheckbox?.checked, false);
+        assert.equal(threatCheckbox?.indeterminate, true);
         assert.equal(evidenceCheckbox?.checked, false);
-      });
-
-      const summary = JSON.parse(
-        container.querySelector('.report-builder-tree-summary-json')
-          ?.textContent ?? '{}',
-      ) as {
-        selectedAssessmentId?: string;
-        selectedThreatIds: string[];
-        selectedEvidenceIds: string[];
-      };
-
-      assert.deepEqual(summary, {
-        selectedAssessmentId: 'asm_00000000-0000-0000-0000-000000000001',
-        selectedThreatIds: ['thr_00000000-0000-0000-0000-000000000001'],
-        selectedEvidenceIds: [],
       });
 
       await act(async () => {

@@ -189,4 +189,26 @@ describe('Report builder state helpers', () => {
     assert.equal(nextSelection.configuration.includeEvidence, false);
     assert.equal(nextSelection.branding.brandingMode, 'issuer');
   });
+  it('clears the selected assessment without changing descendant selections', () => {
+    const initialState = restoreReportBuilderRouteState(companyId, {
+      companyId,
+      selection: {
+        selectedAssessmentId: assessmentId,
+        selectedThreatIds: [threatId],
+        selectedEvidenceIds: [evidenceId],
+      },
+      configuration: {
+        includeEvidence: true,
+      },
+    });
+
+    const nextState = updateReportBuilderSelection(initialState, {
+      selectedAssessmentId: null,
+    });
+
+    assert.equal(nextState.selection.selectedAssessmentId, undefined);
+    assert.deepEqual(nextState.selection.selectedThreatIds, [threatId]);
+    assert.deepEqual(nextState.selection.selectedEvidenceIds, [evidenceId]);
+    assert.equal(nextState.configuration.includeEvidence, true);
+  });
 });
