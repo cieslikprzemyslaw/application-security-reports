@@ -60,94 +60,119 @@ const mergeRouteState = (
 ): ReportBuilderState =>
   reportBuilderStateSchema.parse({
     selection: {
-      selectedAssessmentId:
-        routeState.selection?.selectedAssessmentId !== undefined
-          ? routeState.selection.selectedAssessmentId
-          : baseState.selection.selectedAssessmentId,
-      selectedThreatIds:
-        routeState.selection?.selectedThreatIds !== undefined
-          ? routeState.selection.selectedThreatIds
-          : baseState.selection.selectedThreatIds,
-      selectedEvidenceIds:
-        routeState.selection?.selectedEvidenceIds !== undefined
-          ? routeState.selection.selectedEvidenceIds
-          : baseState.selection.selectedEvidenceIds,
+      ...baseState.selection,
+      ...(routeState.selection?.selectedAssessmentId !== undefined
+        ? {
+            selectedAssessmentId: routeState.selection.selectedAssessmentId,
+          }
+        : {}),
+      ...(routeState.selection?.selectedThreatIds !== undefined
+        ? {
+            selectedThreatIds: routeState.selection.selectedThreatIds,
+          }
+        : {}),
+      ...(routeState.selection?.selectedEvidenceIds !== undefined
+        ? {
+            selectedEvidenceIds: routeState.selection.selectedEvidenceIds,
+          }
+        : {}),
     },
     configuration: {
-      methodology:
-        routeState.configuration?.methodology !== undefined
-          ? routeState.configuration.methodology
-          : baseState.configuration.methodology,
-      reportStyle:
-        routeState.configuration?.reportStyle !== undefined
-          ? routeState.configuration.reportStyle
-          : baseState.configuration.reportStyle,
-      includeEvidence:
-        routeState.configuration?.includeEvidence !== undefined
-          ? routeState.configuration.includeEvidence
-          : baseState.configuration.includeEvidence,
+      ...baseState.configuration,
+      ...(routeState.configuration?.methodology !== undefined
+        ? {
+            methodology: routeState.configuration.methodology,
+          }
+        : {}),
+      ...(routeState.configuration?.reportStyle !== undefined
+        ? {
+            reportStyle: routeState.configuration.reportStyle,
+          }
+        : {}),
+      ...(routeState.configuration?.includeEvidence !== undefined
+        ? {
+            includeEvidence: routeState.configuration.includeEvidence,
+          }
+        : {}),
     },
     branding: {
-      brandingMode:
-        routeState.branding?.brandingMode !== undefined
-          ? routeState.branding.brandingMode
-          : baseState.branding.brandingMode,
-      companyName:
-        routeState.branding?.companyName !== undefined
-          ? routeState.branding.companyName
-          : baseState.branding.companyName,
-      companyWebsite:
-        routeState.branding?.companyWebsite !== undefined
-          ? routeState.branding.companyWebsite
-          : baseState.branding.companyWebsite,
-      companyContactEmail:
-        routeState.branding?.companyContactEmail !== undefined
-          ? routeState.branding.companyContactEmail
-          : baseState.branding.companyContactEmail,
-      companyLogoUrl:
-        routeState.branding?.companyLogoUrl !== undefined
-          ? routeState.branding.companyLogoUrl
-          : baseState.branding.companyLogoUrl,
-      companyFooterText:
-        routeState.branding?.companyFooterText !== undefined
-          ? routeState.branding.companyFooterText
-          : baseState.branding.companyFooterText,
-      issuerName:
-        routeState.branding?.issuerName !== undefined
-          ? routeState.branding.issuerName
-          : baseState.branding.issuerName,
-      issuerContactName:
-        routeState.branding?.issuerContactName !== undefined
-          ? routeState.branding.issuerContactName
-          : baseState.branding.issuerContactName,
-      issuerContactEmail:
-        routeState.branding?.issuerContactEmail !== undefined
-          ? routeState.branding.issuerContactEmail
-          : baseState.branding.issuerContactEmail,
-      issuerLogoUrl:
-        routeState.branding?.issuerLogoUrl !== undefined
-          ? routeState.branding.issuerLogoUrl
-          : baseState.branding.issuerLogoUrl,
-      reportFooterText:
-        routeState.branding?.reportFooterText !== undefined
-          ? routeState.branding.reportFooterText
-          : baseState.branding.reportFooterText,
-      reportConfidentialityLabel:
-        routeState.branding?.reportConfidentialityLabel !== undefined
-          ? routeState.branding.reportConfidentialityLabel
-          : baseState.branding.reportConfidentialityLabel,
-      confidentialReports:
-        routeState.branding?.confidentialReports !== undefined
-          ? routeState.branding.confidentialReports
-          : baseState.branding.confidentialReports,
-      allowedBrandingModes:
-        routeState.branding?.allowedBrandingModes !== undefined
-          ? routeState.branding.allowedBrandingModes
-          : baseState.branding.allowedBrandingModes,
-      defaultBrandingMode:
-        routeState.branding?.defaultBrandingMode !== undefined
-          ? routeState.branding.defaultBrandingMode
-          : baseState.branding.defaultBrandingMode,
+      ...baseState.branding,
+      ...(routeState.branding?.brandingMode !== undefined
+        ? {
+            brandingMode: routeState.branding.brandingMode,
+          }
+        : {}),
+      ...(routeState.branding?.companyName !== undefined
+        ? {
+            companyName: routeState.branding.companyName,
+          }
+        : {}),
+      ...(routeState.branding?.companyWebsite !== undefined
+        ? {
+            companyWebsite: routeState.branding.companyWebsite,
+          }
+        : {}),
+      ...(routeState.branding?.companyContactEmail !== undefined
+        ? {
+            companyContactEmail: routeState.branding.companyContactEmail,
+          }
+        : {}),
+      ...(routeState.branding?.companyLogoUrl !== undefined
+        ? {
+            companyLogoUrl: routeState.branding.companyLogoUrl,
+          }
+        : {}),
+      ...(routeState.branding?.companyFooterText !== undefined
+        ? {
+            companyFooterText: routeState.branding.companyFooterText,
+          }
+        : {}),
+      ...(routeState.branding?.issuerName !== undefined
+        ? {
+            issuerName: routeState.branding.issuerName,
+          }
+        : {}),
+      ...(routeState.branding?.issuerContactName !== undefined
+        ? {
+            issuerContactName: routeState.branding.issuerContactName,
+          }
+        : {}),
+      ...(routeState.branding?.issuerContactEmail !== undefined
+        ? {
+            issuerContactEmail: routeState.branding.issuerContactEmail,
+          }
+        : {}),
+      ...(routeState.branding?.issuerLogoUrl !== undefined
+        ? {
+            issuerLogoUrl: routeState.branding.issuerLogoUrl,
+          }
+        : {}),
+      ...(routeState.branding?.reportFooterText !== undefined
+        ? {
+            reportFooterText: routeState.branding.reportFooterText,
+          }
+        : {}),
+      ...(routeState.branding?.reportConfidentialityLabel !== undefined
+        ? {
+            reportConfidentialityLabel:
+              routeState.branding.reportConfidentialityLabel,
+          }
+        : {}),
+      ...(routeState.branding?.confidentialReports !== undefined
+        ? {
+            confidentialReports: routeState.branding.confidentialReports,
+          }
+        : {}),
+      ...(routeState.branding?.allowedBrandingModes !== undefined
+        ? {
+            allowedBrandingModes: routeState.branding.allowedBrandingModes,
+          }
+        : {}),
+      ...(routeState.branding?.defaultBrandingMode !== undefined
+        ? {
+            defaultBrandingMode: routeState.branding.defaultBrandingMode,
+          }
+        : {}),
     },
   });
 
