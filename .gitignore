@@ -26,3 +26,6 @@ uploads/company-logos/*
 docs/*
 !docs/public/
 !docs/public/**
+
+uploads/issuer-logos/*
+!uploads/issuer-logos/.gitkeep
