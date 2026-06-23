@@ -204,68 +204,67 @@ describe('Report workflow through the production router', () => {
         );
       });
 
-      const assessmentButton = Array.from(
-        container.querySelectorAll('button'),
-      ).find(
-        button =>
-          button.textContent?.includes('Customer Services Portal') &&
-          button.textContent?.includes('Assessment'),
-      );
+      const assessmentCheckbox = Array.from(
+        container.querySelectorAll('input[type="checkbox"]'),
+      ).find(input =>
+        input
+          .getAttribute('id')
+          ?.includes('assessment-asm_00000000-0000-0000-0000-000000000001'),
+      ) as HTMLInputElement | undefined;
 
-      const threatButton = Array.from(
-        container.querySelectorAll('button'),
-      ).find(
-        button =>
-          button.textContent?.includes('Missing Server-Side Authorization') &&
-          button.textContent?.includes('evidence'),
-      );
+      const threatCheckbox = Array.from(
+        container.querySelectorAll('input[type="checkbox"]'),
+      ).find(input =>
+        input
+          .getAttribute('id')
+          ?.includes('threat-thr_00000000-0000-0000-0000-000000000001'),
+      ) as HTMLInputElement | undefined;
 
-      const evidenceButton = Array.from(
-        container.querySelectorAll('button'),
-      ).find(button => button.textContent?.includes('Authorization note'));
+      const evidenceCheckbox = Array.from(
+        container.querySelectorAll('input[type="checkbox"]'),
+      ).find(input =>
+        input
+          .getAttribute('id')
+          ?.includes('evidence-evd_00000000-0000-0000-0000-000000000001'),
+      ) as HTMLInputElement | undefined;
 
-      assert.ok(assessmentButton, 'Expected the assessment toggle');
-      assert.ok(threatButton, 'Expected the threat toggle');
-      assert.ok(evidenceButton, 'Expected the evidence toggle');
+      assert.ok(assessmentCheckbox, 'Expected the assessment checkbox');
+      assert.ok(threatCheckbox, 'Expected the threat checkbox');
+      assert.ok(evidenceCheckbox, 'Expected the evidence checkbox');
 
       await act(async () => {
-        assessmentButton!.dispatchEvent(
-          new window.MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            button: 0,
-          }),
-        );
+        assessmentCheckbox!.click();
       });
 
       await waitFor(() => {
-        assert.equal(assessmentButton?.getAttribute('aria-pressed'), 'true');
+        assert.equal(assessmentCheckbox?.checked, true);
+        assert.equal(threatCheckbox?.checked, true);
+        assert.equal(evidenceCheckbox?.checked, true);
       });
 
       await act(async () => {
-        threatButton!.dispatchEvent(
-          new window.MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            button: 0,
-          }),
-        );
-      });
-
-      await act(async () => {
-        evidenceButton!.dispatchEvent(
-          new window.MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            button: 0,
-          }),
-        );
+        evidenceCheckbox!.click();
       });
 
       await waitFor(() => {
-        assert.equal(threatButton?.getAttribute('aria-pressed'), 'true');
-        assert.equal(evidenceButton?.getAttribute('aria-pressed'), 'true');
-        assert.equal(assessmentButton?.getAttribute('aria-pressed'), 'true');
+        assert.equal(assessmentCheckbox?.indeterminate, true);
+        assert.equal(threatCheckbox?.checked, true);
+        assert.equal(evidenceCheckbox?.checked, false);
+      });
+
+      const summary = JSON.parse(
+        container.querySelector('.report-builder-tree-summary-json')
+          ?.textContent ?? '{}',
+      ) as {
+        selectedAssessmentId?: string;
+        selectedThreatIds: string[];
+        selectedEvidenceIds: string[];
+      };
+
+      assert.deepEqual(summary, {
+        selectedAssessmentId: 'asm_00000000-0000-0000-0000-000000000001',
+        selectedThreatIds: ['thr_00000000-0000-0000-0000-000000000001'],
+        selectedEvidenceIds: [],
       });
 
       await act(async () => {
