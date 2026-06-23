@@ -80,6 +80,9 @@ type SettingsRepositoryOverrides = Partial<{
   upsert: (
     input: Parameters<SettingsRepository['upsert']>[0],
   ) => Promise<typeof defaultSettings>;
+  updateIssuerLogoId: (
+    issuerLogoId: string | null,
+  ) => Promise<typeof defaultSettings>;
 }>;
 
 const createSettingsRepository = (
@@ -91,6 +94,8 @@ const createSettingsRepository = (
     upsertArgs: undefined as
       | Parameters<SettingsRepository['upsert']>[0]
       | undefined,
+    updateIssuerLogoId: 0,
+    updateIssuerLogoIdArg: undefined as string | null | undefined,
   };
 
   const repository: SettingsRepository = {
@@ -106,6 +111,17 @@ const createSettingsRepository = (
         (await overrides.upsert?.(input)) ?? {
           ...defaultSettings,
           ...input,
+        }
+      );
+    },
+
+    async updateIssuerLogoId(issuerLogoId) {
+      calls.updateIssuerLogoId += 1;
+      calls.updateIssuerLogoIdArg = issuerLogoId;
+      return (
+        (await overrides.updateIssuerLogoId?.(issuerLogoId)) ?? {
+          ...defaultSettings,
+          issuerLogoId: issuerLogoId ?? undefined,
         }
       );
     },

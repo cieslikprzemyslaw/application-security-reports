@@ -242,6 +242,12 @@ const createSettingsRepository = (
     async upsert() {
       return settings;
     },
+    async updateIssuerLogoId(issuerLogoId) {
+      return {
+        ...settings,
+        issuerLogoId: issuerLogoId ?? undefined,
+      };
+    },
   };
 
   return { getCalls: () => getCalls, repository };

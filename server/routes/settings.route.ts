@@ -1,9 +1,4 @@
-import {
-  Router,
-  type NextFunction,
-  type Request,
-  type Response,
-} from 'express';
+import { Router } from 'express';
 
 import type { Settings } from '../../src/domain/settings.js';
 import {
@@ -11,55 +6,27 @@ import {
   updateSettingsRequestSchema,
 } from '../../src/domain/schemas/index.js';
 import { formatValidationErrors } from '../../src/validation/index.js';
+import type { SettingsRepository } from '../database/repositories/settings.repository.js';
 import { sendApiError } from '../http/api-errors.js';
 import { createRequestValidationMiddleware } from '../http/request-validation.js';
+import type { IssuerLogoStorage } from '../services/issuerLogoStorage.js';
+import { createSettingsLogoRouter } from './settings.logo.route.js';
 import {
-  RepositoryError,
-  RepositoryNotFoundError,
-} from '../database/errors.js';
-import type { SettingsRepository } from '../database/repositories/settings.repository.js';
-
-const settingsResponse = (settings: Settings): Settings => ({ ...settings });
-
-const sendSettingsResponse = (
-  res: Response,
-  statusCode: number,
-  settings: Settings,
-): Response =>
-  res.status(statusCode).json({
-    data: settingsResponse(settings),
-  });
-
-const handleSettingsRepositoryError = (
-  error: unknown,
-  res: Response,
-): boolean => {
-  if (error instanceof RepositoryNotFoundError) {
-    sendApiError(res, 404, 'SETTINGS_NOT_FOUND', 'Settings not found');
-    return true;
-  }
-
-  if (error instanceof RepositoryError) {
-    console.error('Unexpected settings repository error', error);
-    sendApiError(res, 500, 'INTERNAL_SERVER_ERROR', 'Unexpected server error');
-    return true;
-  }
-
-  return false;
-};
-
-const asyncRoute =
-  (
-    handler: (req: Request, res: Response, next: NextFunction) => Promise<void>,
-  ) =>
-  (req: Request, res: Response, next: NextFunction): void => {
-    void handler(req, res, next).catch(next);
-  };
+  asyncRoute,
+  handleSettingsRepositoryError,
+  sendSettingsResponse,
+} from './settings.route.shared.js';
 
 export const createSettingsRouter = (
   settingsRepository: SettingsRepository,
+  issuerLogoStorage: IssuerLogoStorage,
 ): Router => {
   const router = Router();
+
+  router.use(
+    '/issuer-logo',
+    createSettingsLogoRouter(settingsRepository, issuerLogoStorage),
+  );
 
   router.get(
     '/',

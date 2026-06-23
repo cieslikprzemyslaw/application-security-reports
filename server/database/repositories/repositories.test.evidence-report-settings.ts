@@ -325,4 +325,13 @@ const createReportDb = () => {
   assert.equal(settings.id, settingsRow.id);
   assert.equal(settings.issuerLogoId, settingsRow.issuerLogoId);
   assert.equal(calls[0]?.method, 'findFirst');
+
+  const updatedSettings = await repository.updateIssuerLogoId(null);
+  assert.equal(updatedSettings.issuerLogoId, undefined);
+  assert.equal(calls.at(-2)?.method, 'findFirst');
+  assert.equal(calls.at(-1)?.method, 'update');
+  assert.deepEqual(
+    (calls.at(-1)?.args as { data?: { issuerLogoId?: string | null } })?.data,
+    { issuerLogoId: null },
+  );
 }
