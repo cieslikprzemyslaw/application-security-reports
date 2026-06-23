@@ -135,7 +135,11 @@ describe('ReportBuilderTree', () => {
     ).user;
 
     await waitFor(() => {
-      assert.ok(screen.getByText('Customer Services Portal'));
+      assert.ok(
+        screen.getByRole('button', {
+          name: /Customer Services Portal.*Assessment/i,
+        }),
+      );
     });
 
     const assessmentButton = screen.getByRole('button', {

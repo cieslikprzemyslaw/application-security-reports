@@ -34,10 +34,18 @@ interface ReportBuilderTreeProps {
 
 const formatAssessmentSubtitle = (
   assessment: ReportBuilderHierarchyAssessmentNode,
-) =>
-  assessment.assessment.applicationName ??
-  assessment.assessment.type ??
-  assessment.assessment.description;
+) => {
+  const subtitle =
+    assessment.assessment.applicationName ??
+    assessment.assessment.type ??
+    assessment.assessment.description;
+
+  if (subtitle === assessment.assessment.name) {
+    return assessment.assessment.type ?? assessment.assessment.description;
+  }
+
+  return subtitle;
+};
 
 const formatThreatSubtitle = (threat: ReportBuilderHierarchyThreatNode) =>
   threat.threat.severity.charAt(0).toUpperCase() +
