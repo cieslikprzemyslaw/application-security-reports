@@ -145,7 +145,7 @@ describe('reportBuilderSelectionTree', () => {
       );
     };
 
-    const { container, root } = setupDom();
+    const { container } = setupDom();
 
     assert.ok(container, 'Expected root container to exist');
 
@@ -272,7 +272,6 @@ describe('reportBuilderSelectionTree', () => {
 
     await act(async () => {
       reactRoot.unmount();
-      root.remove();
     });
   });
 });
