@@ -220,8 +220,11 @@ describe('ReportBuilderTree', () => {
         (assessmentCheckbox as HTMLInputElement).indeterminate,
         true,
       );
-      assert.equal((threatOneCheckbox as HTMLInputElement).checked, false);
-      assert.equal((threatOneCheckbox as HTMLInputElement).indeterminate, true);
+      assert.equal((threatOneCheckbox as HTMLInputElement).checked, true);
+      assert.equal(
+        (threatOneCheckbox as HTMLInputElement).indeterminate,
+        false,
+      );
       assert.equal((threatTwoCheckbox as HTMLInputElement).checked, true);
       assert.equal(
         (threatTwoCheckbox as HTMLInputElement).indeterminate,
