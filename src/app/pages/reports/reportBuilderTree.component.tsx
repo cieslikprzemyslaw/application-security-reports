@@ -1,68 +1,47 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import Card from '~/app/components/ui/card';
 import EmptyState from '~/app/components/ui/emptyState';
-import Badge from '~/app/components/ui/badge';
 
 import StyledReportBuilderTree from './reportBuilderTree.styled';
 import {
+  getReportBuilderExactSelection,
+  toggleReportBuilderAssessmentSelection,
+  toggleReportBuilderEvidenceSelection,
+  toggleReportBuilderThreatSelection,
+  type ReportBuilderSelectionTreeState,
+} from './reportBuilderSelectionTree';
+import ReportBuilderTreeContent from './reportBuilderTree.content';
+import {
   reportBuilderHierarchyLoader,
   type ReportBuilderHierarchy,
-  type ReportBuilderHierarchyAssessmentNode,
-  type ReportBuilderHierarchyThreatNode,
-  type ReportBuilderHierarchyEvidenceNode,
 } from './reportBuilderTree.service';
 
-type SelectionHandler = (id: string) => void;
+import type { ReportBuilderSelection } from '~/domain';
 
 interface ReportBuilderTreeProps {
   companyId: string;
   companyName: string;
-  selectedAssessmentId?: string;
-  selectedThreatIds: string[];
-  selectedEvidenceIds: string[];
-  onAssessmentSelect: SelectionHandler;
-  onThreatToggle: (threatId: string, selected: boolean) => void;
-  onEvidenceToggle: (evidenceId: string, selected: boolean) => void;
+  selection: ReportBuilderSelection;
+  selectionState: ReportBuilderSelectionTreeState;
+  onSelectionChange: (
+    nextState: ReportBuilderSelectionTreeState,
+    exactSelection: ReportBuilderSelection,
+  ) => void;
   loadHierarchy?: (
     companyId: string,
     signal?: AbortSignal,
   ) => Promise<ReportBuilderHierarchy>;
 }
 
-const formatAssessmentSubtitle = (
-  assessment: ReportBuilderHierarchyAssessmentNode,
-) => {
-  const subtitle =
-    assessment.assessment.applicationName ??
-    assessment.assessment.type ??
-    assessment.assessment.description;
-
-  if (subtitle === assessment.assessment.name) {
-    return assessment.assessment.type ?? assessment.assessment.description;
-  }
-
-  return subtitle;
-};
-
-const formatThreatSubtitle = (threat: ReportBuilderHierarchyThreatNode) =>
-  threat.threat.severity.charAt(0).toUpperCase() +
-  threat.threat.severity.slice(1);
-
-const formatEvidenceSubtitle = (evidence: ReportBuilderHierarchyEvidenceNode) =>
-  evidence.evidence.type.toUpperCase();
-
 const ReportBuilderTree = ({
   companyId,
   companyName,
-  selectedAssessmentId,
-  selectedThreatIds,
-  selectedEvidenceIds,
-  onAssessmentSelect,
-  onThreatToggle,
-  onEvidenceToggle,
+  selection,
+  selectionState,
+  onSelectionChange,
   loadHierarchy = reportBuilderHierarchyLoader,
 }: ReportBuilderTreeProps) => {
   const [hierarchy, setHierarchy] = useState<ReportBuilderHierarchy>();
@@ -70,7 +49,7 @@ const ReportBuilderTree = ({
   const [loadError, setLoadError] = useState<string | undefined>();
   const [reloadKey, setReloadKey] = useState(0);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const controller = new AbortController();
     let isActive = true;
 
@@ -113,136 +92,10 @@ const ReportBuilderTree = ({
     };
   }, [companyId, loadHierarchy, reloadKey]);
 
-  const selectedThreatIdSet = useMemo(
-    () => new Set(selectedThreatIds),
-    [selectedThreatIds],
-  );
-  const selectedEvidenceIdSet = useMemo(
-    () => new Set(selectedEvidenceIds),
-    [selectedEvidenceIds],
-  );
-
-  const renderAssessmentNode = (node: ReportBuilderHierarchyAssessmentNode) => {
-    const isSelected = selectedAssessmentId === node.assessment.id;
-
-    return (
-      <li key={node.assessment.id} className="report-builder-tree-item">
-        <button
-          className={[
-            'report-builder-tree-node-button',
-            isSelected ? 'report-builder-tree-node-button--selected' : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          type="button"
-          aria-pressed={isSelected}
-          onClick={() => onAssessmentSelect(node.assessment.id)}
-        >
-          <span className="report-builder-tree-node-copy">
-            <span className="report-builder-tree-node-title">
-              {node.assessment.name}
-            </span>
-
-            <span className="report-builder-tree-node-meta">
-              {formatAssessmentSubtitle(node)}
-            </span>
-          </span>
-
-          <span className="report-builder-tree-node-state">
-            {isSelected ? 'Selected assessment' : 'Assessment'}
-          </span>
-        </button>
-
-        <ul className="report-builder-tree-children report-builder-tree-node-subtree">
-          {node.threats.length > 0 ? (
-            node.threats.map(renderThreatNode)
-          ) : (
-            <li className="report-builder-tree-empty-node">
-              No threats in this assessment yet.
-            </li>
-          )}
-        </ul>
-      </li>
-    );
-  };
-
-  const renderThreatNode = (node: ReportBuilderHierarchyThreatNode) => {
-    const isSelected = selectedThreatIdSet.has(node.threat.id);
-
-    return (
-      <li key={node.threat.id} className="report-builder-tree-item">
-        <button
-          className={[
-            'report-builder-tree-node-button',
-            isSelected ? 'report-builder-tree-node-button--selected' : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          type="button"
-          aria-pressed={isSelected}
-          onClick={() => onThreatToggle(node.threat.id, !isSelected)}
-        >
-          <span className="report-builder-tree-node-copy">
-            <span className="report-builder-tree-node-title">
-              {node.threat.title}
-            </span>
-
-            <span className="report-builder-tree-node-meta">
-              {formatThreatSubtitle(node)}
-            </span>
-          </span>
-
-          <Badge
-            label={isSelected ? 'Selected' : `${node.evidence.length} evidence`}
-            variant={isSelected ? 'success' : 'neutral'}
-            size="small"
-          />
-        </button>
-
-        <ul className="report-builder-tree-children report-builder-tree-node-subtree">
-          {node.evidence.length > 0 ? (
-            node.evidence.map(renderEvidenceNode)
-          ) : (
-            <li className="report-builder-tree-empty-node">
-              No evidence linked to this threat yet.
-            </li>
-          )}
-        </ul>
-      </li>
-    );
-  };
-
-  const renderEvidenceNode = (node: ReportBuilderHierarchyEvidenceNode) => {
-    const isSelected = selectedEvidenceIdSet.has(node.evidence.id);
-
-    return (
-      <li key={node.evidence.id} className="report-builder-tree-item">
-        <button
-          className={[
-            'report-builder-tree-node-button',
-            isSelected ? 'report-builder-tree-node-button--selected' : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          type="button"
-          aria-pressed={isSelected}
-          onClick={() => onEvidenceToggle(node.evidence.id, !isSelected)}
-        >
-          <span className="report-builder-tree-node-copy">
-            <span className="report-builder-tree-node-title">
-              {node.evidence.title}
-            </span>
-
-            <span className="report-builder-tree-node-meta">
-              {formatEvidenceSubtitle(node)}
-            </span>
-          </span>
-
-          <span className="report-builder-tree-node-state">
-            {isSelected ? 'Selected evidence' : 'Evidence'}
-          </span>
-        </button>
-      </li>
+  const commitSelection = (nextState: ReportBuilderSelectionTreeState) => {
+    onSelectionChange(
+      nextState,
+      getReportBuilderExactSelection(nextState, hierarchy),
     );
   };
 
@@ -290,15 +143,38 @@ const ReportBuilderTree = ({
             </div>
           </Callout>
         ) : hierarchy?.assessments.length ? (
-          <div className="report-builder-tree-company">
-            <p className="report-builder-tree-company-meta">
-              {hierarchy.assessments.length} assessments in this company
-            </p>
-
-            <ul className="report-builder-tree-list">
-              {hierarchy.assessments.map(renderAssessmentNode)}
-            </ul>
-          </div>
+          <ReportBuilderTreeContent
+            hierarchy={hierarchy}
+            selectedEvidenceIds={selection.selectedEvidenceIds}
+            selectionState={selectionState}
+            onAssessmentChange={(assessmentId, checked) => {
+              commitSelection(
+                toggleReportBuilderAssessmentSelection(
+                  selectionState,
+                  assessmentId,
+                  checked,
+                ),
+              );
+            }}
+            onThreatChange={(threatId, checked) => {
+              commitSelection(
+                toggleReportBuilderThreatSelection(
+                  selectionState,
+                  threatId,
+                  checked,
+                ),
+              );
+            }}
+            onEvidenceChange={(evidenceId, checked) => {
+              commitSelection(
+                toggleReportBuilderEvidenceSelection(
+                  selectionState,
+                  evidenceId,
+                  checked,
+                ),
+              );
+            }}
+          />
         ) : (
           <EmptyState
             variant="first-use"

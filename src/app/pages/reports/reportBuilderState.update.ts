@@ -5,7 +5,7 @@ import {
 } from '~/domain';
 import { reportBuilderStateSchema } from '~/domain/schemas';
 
-const normalizeOptionalText = (value?: string): string | undefined => {
+const normalizeOptionalText = (value?: string | null): string | undefined => {
   const trimmed = value?.trim();
 
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
@@ -45,9 +45,16 @@ export const updateReportBuilderConfiguration = (
     },
   });
 
+type ReportBuilderSelectionPatch = Omit<
+  Partial<ReportBuilderSelection>,
+  'selectedAssessmentId'
+> & {
+  selectedAssessmentId?: string | null;
+};
+
 export const updateReportBuilderSelection = (
   state: ReportBuilderState,
-  patch: Partial<ReportBuilderSelection>,
+  patch: ReportBuilderSelectionPatch,
 ): ReportBuilderState =>
   reportBuilderStateSchema.parse({
     ...state,
