@@ -5,6 +5,7 @@ export * from './threat.schema.js';
 export * from './evidence.schema.js';
 export * from './report.schema.js';
 export * from './report-view.schema.js';
+export * from './report-preview.schema.js';
 export * from './activity.schema.js';
 export * from './settings.schema.js';
 export * from './request.schema.js';

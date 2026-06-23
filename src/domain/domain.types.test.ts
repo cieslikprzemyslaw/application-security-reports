@@ -3,6 +3,8 @@ import type {
   AssessmentStatus,
   Evidence,
   Report,
+  ReportPreviewRequest,
+  ReportPreviewSnapshot,
   ReportVersion,
   Severity,
   Settings,
@@ -111,6 +113,87 @@ const reportVersion: ReportVersion = {
   },
 };
 
+const {
+  createdAt: previewThreatCreatedAt,
+  updatedAt: previewThreatUpdatedAt,
+  ...previewThreat
+} = threat;
+const {
+  createdAt: previewEvidenceCreatedAt,
+  updatedAt: previewEvidenceUpdatedAt,
+  ...previewEvidence
+} = evidenceGeneral;
+
+const reportPreviewRequest: ReportPreviewRequest = {
+  companyId: 'cmp_1',
+  assessmentId: assessment.id,
+  selection: {
+    threatIds: [threat.id],
+    evidenceIds: [evidenceGeneral.id],
+  },
+  configuration: {
+    methodology: 'OWASP ASVS / WSTG',
+    reportStyle: 'Technical & structured',
+    includeEvidence: true,
+  },
+  brandingMode: 'issuer',
+};
+
+const reportPreviewSnapshot: ReportPreviewSnapshot = {
+  company: {
+    id: 'cmp_1',
+    name: 'Northstar Digital',
+    description: 'Security consulting and managed assessment services',
+    website: 'https://northstar.example',
+    contactName: 'Alex Mercer',
+    contactEmail: 'security@northstar.example',
+    logoUrl: null,
+    footerText: 'Confidential - do not distribute.',
+  },
+  assessment: {
+    id: assessment.id,
+    companyId: assessment.companyId,
+    title: assessment.title,
+    description: assessment.description,
+    scope: assessment.scope,
+    status: assessment.status,
+    startedAt: assessment.startedAt,
+    completedAt: assessment.completedAt,
+    applicationName: assessment.applicationName,
+    environment: assessment.environment,
+    assessmentType: assessment.assessmentType,
+    overallRisk: assessment.overallRisk,
+    owaspTaxonomyVersion: '2025',
+  },
+  selection: reportPreviewRequest.selection,
+  configuration: reportPreviewRequest.configuration,
+  branding: {
+    brandingMode: 'issuer',
+    companyName: 'Northstar Digital',
+    companyWebsite: 'https://northstar.example',
+    companyContactEmail: 'security@northstar.example',
+    companyLogoUrl: null,
+    companyFooterText: 'Confidential - do not distribute.',
+    issuerName: 'Northstar Digital',
+    issuerContactName: 'Alex Mercer',
+    issuerContactEmail: 'alex.mercer@example.com',
+    issuerLogoUrl: null,
+    reportFooterText: 'Confidential',
+    reportConfidentialityLabel: 'Strictly confidential',
+    confidentialReports: true,
+    allowedBrandingModes: ['issuer', 'client'],
+    defaultBrandingMode: 'issuer',
+  },
+  selectedThreats: [previewThreat],
+  selectedEvidence: [previewEvidence],
+  riskSummary: {
+    overallRisk: 'high',
+    threatCount: 1,
+    evidenceCount: 1,
+  },
+  warnings: ['Evidence selection is incomplete'],
+};
+
 const settings: Settings = {
   id: 'set_1',
   organisationName: 'Northstar Digital',
@@ -139,6 +222,12 @@ void evidenceGeneral;
 void evidenceLinked;
 void report;
 void reportVersion;
+void reportPreviewRequest;
+void reportPreviewSnapshot;
+void previewThreatCreatedAt;
+void previewThreatUpdatedAt;
+void previewEvidenceCreatedAt;
+void previewEvidenceUpdatedAt;
 void settings;
 void acceptedRiskThreatStatus;
 void criticalSeverity;
