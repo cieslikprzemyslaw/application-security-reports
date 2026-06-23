@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import Card from '~/app/components/ui/card';
+import Checkbox from '~/app/components/ui/checkbox';
 import EmptyState from '~/app/components/ui/emptyState';
 
 import StyledReportBuilderTree from './reportBuilderTree.styled';
@@ -24,12 +25,14 @@ import type { ReportBuilderSelection } from '~/domain';
 interface ReportBuilderTreeProps {
   companyId: string;
   companyName: string;
+  includeEvidence: boolean;
   selection: ReportBuilderSelection;
   selectionState: ReportBuilderSelectionTreeState;
   onSelectionChange: (
     nextState: ReportBuilderSelectionTreeState,
     exactSelection: ReportBuilderSelection,
   ) => void;
+  onIncludeEvidenceChange: (includeEvidence: boolean) => void;
   loadHierarchy?: (
     companyId: string,
     signal?: AbortSignal,
@@ -39,9 +42,11 @@ interface ReportBuilderTreeProps {
 const ReportBuilderTree = ({
   companyId,
   companyName,
+  includeEvidence,
   selection,
   selectionState,
   onSelectionChange,
+  onIncludeEvidenceChange,
   loadHierarchy = reportBuilderHierarchyLoader,
 }: ReportBuilderTreeProps) => {
   const [hierarchy, setHierarchy] = useState<ReportBuilderHierarchy>();
@@ -120,6 +125,16 @@ const ReportBuilderTree = ({
             Select the assessment, threats, and evidence to include in the
             report draft.
           </p>
+        </div>
+
+        <div className="report-builder-tree-configuration">
+          <Checkbox
+            id="report-builder-include-evidence"
+            label="Include selected evidence"
+            description="Only explicitly selected Evidence items are included. Changing this setting does not select or clear Evidence."
+            checked={includeEvidence}
+            onChange={event => onIncludeEvidenceChange(event.target.checked)}
+          />
         </div>
 
         {isLoading ? (
