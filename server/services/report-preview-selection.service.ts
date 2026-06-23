@@ -2,6 +2,10 @@ import type { Assessment } from '../../src/domain/assessment.js';
 import type { Evidence } from '../../src/domain/evidence.js';
 import type { ReportPreviewRequest } from '../../src/domain/report-preview.js';
 import type { Threat } from '../../src/domain/threat.js';
+import {
+  ValidationError,
+  type ValidationFieldError,
+} from '../../src/validation/index.js';
 import { RepositoryNotFoundError } from '../database/errors.js';
 import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
 import type { EvidenceRepository } from '../database/repositories/evidence.repository.js';
@@ -69,4 +73,72 @@ export const resolveReportPreviewSelectedRecords = async (
     threats,
     evidence,
   };
+};
+
+const addValidationError = (
+  fields: ValidationFieldError[],
+  path: string,
+  message: string,
+) => {
+  fields.push({ path, message, code: 'custom' });
+};
+
+export const validateReportPreviewSelectedRecords = (
+  request: ReportPreviewRequest,
+  records: ResolvedReportPreviewRecords,
+): ResolvedReportPreviewRecords => {
+  const fields: ValidationFieldError[] = [];
+
+  if (records.assessment.id !== request.assessmentId) {
+    addValidationError(
+      fields,
+      'assessmentId',
+      'Resolved Assessment does not match the requested Assessment.',
+    );
+  }
+
+  if (records.assessment.companyId !== request.companyId) {
+    addValidationError(
+      fields,
+      'companyId',
+      'Assessment does not belong to the requested Company.',
+    );
+  }
+
+  if (records.assessment.status === 'archived') {
+    addValidationError(
+      fields,
+      'assessmentId',
+      'Archived Assessments are not selectable.',
+    );
+  }
+
+  records.threats.forEach((threat, index) => {
+    if (threat.assessmentId !== records.assessment.id) {
+      addValidationError(
+        fields,
+        `selection.threatIds.${index}`,
+        'Threat does not belong to the selected Assessment.',
+      );
+    }
+  });
+
+  records.evidence.forEach((evidence, index) => {
+    if (evidence.assessmentId !== records.assessment.id) {
+      addValidationError(
+        fields,
+        `selection.evidenceIds.${index}`,
+        'Evidence does not belong to the selected Assessment.',
+      );
+    }
+  });
+
+  if (fields.length > 0) {
+    throw new ValidationError({
+      error: 'VALIDATION_ERROR',
+      fields,
+    });
+  }
+
+  return records;
 };
