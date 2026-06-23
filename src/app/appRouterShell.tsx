@@ -29,6 +29,7 @@ import {
 import CompanyWorkspaceRouteShell, {
   CompanyActivityRoute,
   CompanyAssessmentsRoute,
+  CompanyReportsRoute,
   CompanyWorkspaceIndexRoute,
   CompanyWorkspaceNotFoundRoute,
   createCompanyWorkspaceNavigationGroups,
@@ -181,6 +182,12 @@ const CompanyActivityRouteElement = () => {
   return <CompanyActivityRoute companyName={activeCompany?.name} />;
 };
 
+const CompanyReportsRouteElement = () => {
+  const { activeCompany } = useRouterShellContext();
+
+  return <CompanyReportsRoute companyName={activeCompany?.name} />;
+};
+
 const RouterShell = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -315,6 +322,7 @@ export {
   CompaniesRouteElement,
   CompanyActivityRouteElement,
   CompanyAssessmentsRouteElement,
+  CompanyReportsRouteElement,
   CompanyWorkspaceIndexRoute,
   CompanyWorkspaceNotFoundRoute,
   CompanyWorkspaceRouteShellElement,

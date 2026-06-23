@@ -131,10 +131,19 @@ export const CompanyAssessmentsRoute = ({
   ) : null;
 };
 
-export const CompanyReportsRoute = () => {
+export const CompanyReportsRoute = ({
+  companyName,
+}: CompanyWorkspaceRouteProps) => {
   const companyId = useCompanyId();
 
-  return <Reports key={companyId} cover={reportCover} />;
+  return (
+    <Reports
+      key={companyId}
+      companyId={companyId}
+      companyName={companyName}
+      cover={reportCover}
+    />
+  );
 };
 
 export const CompanyActivityRoute = ({
