@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 
+import type { ReportPreviewThreat } from '../domain/report-preview.js';
+
+import { buildReportPreviewSnapshotFixture } from '../../server/test/report-preview.fixture.js';
 import {
   createCompanyRequestSchema,
   isoDateStringSchema,
@@ -26,36 +29,34 @@ const validCompany = {
   updatedAt: '2026-06-10T00:00:00.000Z',
 };
 
+const validPreviewThreat: ReportPreviewThreat = {
+  id: 'thr_00000000-0000-0000-0000-000000000001',
+  assessmentId: 'asm_00000000-0000-0000-0000-000000000001',
+  title: 'Missing Server-Side Authorization',
+  description: 'The endpoint returns another customer order.',
+  severity: 'critical',
+  strideCategories: ['spoofing'],
+  status: 'accepted-risk',
+};
+
 const validReportVersion = {
   id: 'repv_1',
   reportId: 'rep_1',
   version: 1,
   status: 'draft',
   generatedAt: '2026-06-10',
-  snapshot: {
-    reportTitle: 'Security Report',
-    companyName: 'Northstar Digital',
-    assessmentTitle: 'Customer Services Portal',
-    branding: {
-      brandingMode: 'issuer',
-      issuerName: 'Northstar Digital',
-      issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
-      clientName: 'Northstar Digital',
-      reportFooterText: 'Confidential',
-      confidentialityLabel: 'Strictly confidential',
-      confidentialReports: true,
+  snapshot: buildReportPreviewSnapshotFixture({
+    selection: {
+      threatIds: [validPreviewThreat.id],
+      evidenceIds: [],
     },
-    threats: [
-      {
-        threatId: 'thr_1',
-        title: 'Missing Server-Side Authorization',
-        description: 'The endpoint returns another customer order.',
-        severity: 'critical',
-        status: 'accepted-risk',
-        strideCategories: ['spoofing'],
-      },
-    ],
-  },
+    selectedThreats: [validPreviewThreat],
+    riskSummary: {
+      overallRisk: 'critical',
+      threatCount: 1,
+      evidenceCount: 0,
+    },
+  }),
 };
 
 const expectValidationError = (
@@ -154,8 +155,11 @@ try {
     ...validReportVersion,
     snapshot: {
       ...validReportVersion.snapshot,
-      threats: [
-        { ...validReportVersion.snapshot.threats[0], severity: 'extreme' },
+      selectedThreats: [
+        {
+          ...validReportVersion.snapshot.selectedThreats[0],
+          severity: 'extreme',
+        },
       ],
     },
   });
@@ -163,7 +167,7 @@ try {
 } catch (error) {
   expectValidationError(
     error,
-    'snapshot.threats.0.severity',
+    'snapshot.selectedThreats.0.severity',
     'Invalid enum value',
   );
 }

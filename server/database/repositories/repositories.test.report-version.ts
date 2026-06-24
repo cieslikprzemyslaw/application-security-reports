@@ -1,19 +1,14 @@
 import assert from 'node:assert/strict';
 
 import { ValidationError } from '../../../src/validation/index.js';
+import { buildReportPreviewSnapshotFixture } from '../../test/report-preview.fixture.js';
 import {
   createReportVersionRepository,
   createReportVersionDb,
   reportVersionRow,
 } from './repositories.test.support.js';
 
-const validSnapshot = {
-  reportTitle: 'Security Report',
-  companyName: 'Northstar Digital',
-  assessmentTitle: 'API review',
-  branding: { clientName: 'Northstar Digital' },
-  threats: [],
-};
+const validSnapshot = buildReportPreviewSnapshotFixture();
 
 const validInput = {
   reportId: 'rpt_123',
@@ -106,14 +101,17 @@ const validInput = {
       return null;
     },
   } as never;
+  const report = { update: async () => undefined } as never;
   const db = {
+    report,
     reportVersion,
     async $transaction<T>(
       operation: (transaction: {
+        report: typeof report;
         reportVersion: typeof reportVersion;
       }) => Promise<T>,
     ) {
-      return operation({ reportVersion });
+      return operation({ report, reportVersion });
     },
   };
   const repository = createReportVersionRepository(db);
@@ -165,6 +163,16 @@ const validInput = {
     }),
     error => error === failure,
   );
+}
+
+// updateReportLatestVersion updates the parent Report through the transaction repository
+{
+  const { calls, db } = createReportVersionDb();
+  const repository = createReportVersionRepository(db);
+
+  await repository.updateReportLatestVersion('rpt_123', 2);
+
+  assert.equal(calls[0]?.method, 'report.update');
 }
 
 // no update or delete methods exist on the repository interface

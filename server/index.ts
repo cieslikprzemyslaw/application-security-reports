@@ -21,6 +21,7 @@ const main = async (): Promise<void> => {
     companyRepository: repositories.company,
     evidenceRepository: repositories.evidence,
     reportRepository: repositories.report,
+    reportVersionRepository: repositories.reportVersion,
     settingsRepository: repositories.settings,
     threatRepository: repositories.threat,
   });

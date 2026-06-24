@@ -4,6 +4,7 @@ import type { AssessmentRepository } from '../database/repositories/assessment.r
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
 import type { EvidenceRepository } from '../database/repositories/evidence.repository.js';
 import type { ReportRepository } from '../database/repositories/report.repository.js';
+import type { ReportVersionRepository } from '../database/repositories/reportVersion.repository.js';
 import type { SettingsRepository } from '../database/repositories/settings.repository.js';
 import type { ThreatRepository } from '../database/repositories/threat.repository.js';
 import {
@@ -18,6 +19,7 @@ import { createAssessmentsRouter } from '../routes/assessments.route.js';
 import { createEvidenceRouter } from '../routes/evidence.route.js';
 import { registerHealthRoute } from '../routes/health.route.js';
 import { createCompaniesRouter } from '../routes/companies.route.js';
+import { createReportVersionsDraftRouter } from '../routes/report-versions.draft.route.js';
 import { createReportsPreviewRouter } from '../routes/reports.preview.route.js';
 import { createReportsRouter } from '../routes/reports.route.js';
 import { createSettingsRouter } from '../routes/settings.route.js';
@@ -30,6 +32,7 @@ export interface RegisterApiRoutesOptions {
   logoStorage?: CompanyLogoStorage;
   issuerLogoStorage?: IssuerLogoStorage;
   reportRepository?: ReportRepository;
+  reportVersionRepository?: ReportVersionRepository;
   settingsRepository?: SettingsRepository;
   threatRepository?: ThreatRepository;
   registerRoutes?: (router: Router) => void;
@@ -89,6 +92,28 @@ export const createApiRouter = (
         evidenceRepository: options.evidenceRepository,
         settingsRepository: options.settingsRepository,
         threatRepository: options.threatRepository,
+      }),
+    );
+  }
+  if (
+    options.reportRepository &&
+    options.reportVersionRepository &&
+    options.assessmentRepository &&
+    options.companyRepository &&
+    options.threatRepository &&
+    options.evidenceRepository &&
+    options.settingsRepository
+  ) {
+    router.use(
+      '/reports',
+      createReportVersionsDraftRouter({
+        reportRepository: options.reportRepository,
+        reportVersionRepository: options.reportVersionRepository,
+        assessmentRepository: options.assessmentRepository,
+        companyRepository: options.companyRepository,
+        threatRepository: options.threatRepository,
+        evidenceRepository: options.evidenceRepository,
+        settingsRepository: options.settingsRepository,
       }),
     );
   }

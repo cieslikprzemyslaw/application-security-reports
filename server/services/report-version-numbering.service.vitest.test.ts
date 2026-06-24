@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { ReportVersion } from '../../src/domain/report.js';
+import { buildReportPreviewSnapshotFixture } from '../test/report-preview.fixture.js';
 import type { ReportVersionTransactionRepository } from '../database/repositories/reportVersion.repository.js';
 import {
   calculateNextDraftReportVersionNumber,
@@ -23,13 +24,7 @@ const buildVersion = (
   version,
   status,
   generatedAt: '2026-06-24',
-  snapshot: {
-    reportTitle: 'Application Security Assessment',
-    companyName: 'Northstar Digital',
-    assessmentTitle: 'Customer Services Portal',
-    branding: { clientName: 'Northstar Digital' },
-    threats: [],
-  },
+  snapshot: buildReportPreviewSnapshotFixture(),
   ...overrides,
 });
 
@@ -232,6 +227,7 @@ describe('withNextReportVersionNumber', () => {
       findByReportId: vi.fn().mockResolvedValue([buildVersion(1, 'draft')]),
       create: vi.fn(),
       findById: vi.fn(),
+      updateReportLatestVersion: vi.fn(),
     } satisfies ReportVersionTransactionRepository;
     const transactionStarted = vi.fn();
     const withTransaction = async <T>(
@@ -273,6 +269,7 @@ describe('withNextReportVersionNumber', () => {
         ]),
       create: vi.fn(),
       findById: vi.fn(),
+      updateReportLatestVersion: vi.fn(),
     } satisfies ReportVersionTransactionRepository;
     const transactionStarted = vi.fn();
     const withTransaction = async <T>(
