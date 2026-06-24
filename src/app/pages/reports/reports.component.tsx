@@ -12,6 +12,8 @@ import {
   updateReportBuilderConfiguration,
   updateReportBuilderSelection,
 } from './reportBuilderState';
+import ReportBuilderPreview from './reportBuilderPreview.component';
+import { useReportPreviewController } from './reportPreview.controller';
 import ReportBuilderTree from './reportBuilderTree.component';
 
 import type { ReportBuilderSelection } from '~/domain';
@@ -74,7 +76,6 @@ const ReportBuilderReports = ({
   cover,
   companyId,
   companyName,
-  autoSaved,
   onPrint,
   onDownloadPdf,
 }: ReportBuilderReportsProps) => {
@@ -85,6 +86,7 @@ const ReportBuilderReports = ({
     useState<ReportBuilderSelectionTreeState>(() =>
       createReportBuilderSelectionTreeState(builderState.selection),
     );
+  const previewController = useReportPreviewController(builderState);
 
   const handleSelectionChange = (
     nextSelectionState: ReportBuilderSelectionTreeState,
@@ -106,10 +108,29 @@ const ReportBuilderReports = ({
     );
   };
 
+  const previewCover = previewController.snapshot
+    ? {
+        ...cover,
+        applicationName:
+          previewController.snapshot.assessment.applicationName ??
+          previewController.snapshot.assessment.title,
+        reportId: previewController.snapshot.assessment.id,
+      }
+    : cover;
+
   return (
-    <ReportsShell
-      cover={cover}
-      autoSaved={autoSaved}
+    <ReportPreviewShell
+      applicationName={previewCover.applicationName}
+      assessmentCode={previewCover.reportId}
+      autoSaved={false}
+      preview={
+        <ReportBuilderPreview
+          status={previewController.status}
+          snapshot={previewController.snapshot}
+          errorMessage={previewController.errorMessage}
+          onRetry={previewController.retry}
+        />
+      }
       onPrint={onPrint}
       onDownloadPdf={onDownloadPdf}
       dataView={

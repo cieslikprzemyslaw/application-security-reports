@@ -1,10 +1,22 @@
-import type { ReportView } from '~/domain';
+import type {
+  ReportPreviewRequest,
+  ReportPreviewSnapshot,
+  ReportView,
+} from '~/domain';
+import {
+  reportPreviewRequestSchema,
+  reportPreviewSnapshotSchema,
+} from '~/domain/schemas';
 
-import { apiRequest } from './apiClient.js';
+import { ApiResponseParseError, apiRequest } from './apiClient.js';
 import { requestData, type ApiRequestFn } from './serviceHelpers.js';
 
 export interface ReportService {
   getById(reportId: string, signal?: AbortSignal): Promise<ReportView>;
+  preview(
+    input: ReportPreviewRequest,
+    signal?: AbortSignal,
+  ): Promise<ReportPreviewSnapshot>;
 }
 
 export const createReportService = (
@@ -15,6 +27,29 @@ export const createReportService = (
       method: 'GET',
       signal,
     });
+  },
+
+  async preview(input, signal) {
+    const validatedRequest = reportPreviewRequestSchema.parse(input);
+    const response = await requestData<unknown>(
+      request,
+      '/api/reports/preview',
+      {
+        method: 'POST',
+        body: validatedRequest,
+        signal,
+      },
+    );
+
+    const parsed = reportPreviewSnapshotSchema.safeParse(response);
+
+    if (!parsed.success) {
+      throw new ApiResponseParseError(
+        'Unable to validate the report preview response.',
+      );
+    }
+
+    return parsed.data;
   },
 });
 
