@@ -1,25 +1,50 @@
 import type { ReportVersion } from '../../src/domain/report.js';
-import type { ReportVersionRepository } from '../database/repositories/reportVersion.repository.js';
+import type { ReportVersionStatus } from '../../src/domain/common.js';
+import type {
+  ReportVersionRepository,
+  ReportVersionTransactionRepository,
+} from '../database/repositories/reportVersion.repository.js';
 
 const VERSION_SCALE = 10;
 const MAX_DRAFT_MINOR = VERSION_SCALE - 1;
 
-export interface NextReportVersionNumbers {
-  draft: number;
-  final: number;
+interface ReportVersionHistoryState {
+  currentFinalMajor: number;
+  currentDraftMinor: number;
 }
 
 export interface ReportVersionNumberingRepository {
   findByReportId: Pick<
-    ReportVersionRepository,
+    ReportVersionTransactionRepository,
     'findByReportId'
   >['findByReportId'];
+}
+
+export interface TransactionalReportVersionNumberingRepository {
+  withTransaction: Pick<
+    ReportVersionRepository,
+    'withTransaction'
+  >['withTransaction'];
+}
+
+export interface ReportVersionNumberingTransactionContext {
+  version: number;
+  repository: ReportVersionTransactionRepository;
 }
 
 export class ReportVersionHistoryError extends Error {
   constructor(message = 'Report version history is inconsistent.') {
     super(message);
     this.name = 'ReportVersionHistoryError';
+  }
+}
+
+export class ReportVersionSequenceExhaustedError extends Error {
+  constructor(
+    message = 'Report version history has exhausted the supported draft sequence.',
+  ) {
+    super(message);
+    this.name = 'ReportVersionSequenceExhaustedError';
   }
 }
 
@@ -54,9 +79,9 @@ const requireSupportedVersion = (version: ReportVersion): void => {
   failInvalidHistory();
 };
 
-export const calculateNextReportVersionNumbers = (
+const analyseReportVersionHistory = (
   history: readonly ReportVersion[],
-): NextReportVersionNumbers => {
+): ReportVersionHistoryState => {
   let currentFinalMajor = 0;
   let currentDraftMinor = 0;
 
@@ -85,27 +110,64 @@ export const calculateNextReportVersionNumbers = (
     currentDraftMinor = 0;
   }
 
-  if (currentDraftMinor >= MAX_DRAFT_MINOR) {
-    throw new ReportVersionHistoryError(
-      'Report version history has exhausted the supported draft sequence.',
-    );
-  }
-
-  return {
-    draft: currentFinalMajor * VERSION_SCALE + currentDraftMinor + 1,
-    final: (currentFinalMajor + 1) * VERSION_SCALE,
-  };
+  return { currentFinalMajor, currentDraftMinor };
 };
 
-export const getNextReportVersionNumbers = async (
+export const calculateNextDraftReportVersionNumber = (
+  history: readonly ReportVersion[],
+): number => {
+  const { currentFinalMajor, currentDraftMinor } =
+    analyseReportVersionHistory(history);
+
+  if (currentDraftMinor >= MAX_DRAFT_MINOR) {
+    throw new ReportVersionSequenceExhaustedError();
+  }
+
+  return currentFinalMajor * VERSION_SCALE + currentDraftMinor + 1;
+};
+
+export const calculateNextFinalReportVersionNumber = (
+  history: readonly ReportVersion[],
+): number => {
+  const { currentFinalMajor } = analyseReportVersionHistory(history);
+
+  return (currentFinalMajor + 1) * VERSION_SCALE;
+};
+
+const calculateNextReportVersionNumber = (
+  status: ReportVersionStatus,
+  history: readonly ReportVersion[],
+): number =>
+  status === 'draft'
+    ? calculateNextDraftReportVersionNumber(history)
+    : calculateNextFinalReportVersionNumber(history);
+
+export const getNextReportVersionNumber = async (
   reportId: string,
+  status: ReportVersionStatus,
   repository: ReportVersionNumberingRepository,
-): Promise<NextReportVersionNumbers> => {
+): Promise<number> => {
   const history = await repository.findByReportId(reportId);
 
   if (history.some(version => version.reportId !== reportId)) {
     failInvalidHistory();
   }
 
-  return calculateNextReportVersionNumbers(history);
+  return calculateNextReportVersionNumber(status, history);
 };
+
+export const withNextReportVersionNumber = async <T>(
+  reportId: string,
+  status: ReportVersionStatus,
+  repository: TransactionalReportVersionNumberingRepository,
+  operation: (context: ReportVersionNumberingTransactionContext) => Promise<T>,
+): Promise<T> =>
+  repository.withTransaction(async transactionRepository => {
+    const version = await getNextReportVersionNumber(
+      reportId,
+      status,
+      transactionRepository,
+    );
+
+    return operation({ version, repository: transactionRepository });
+  });

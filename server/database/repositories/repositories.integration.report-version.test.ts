@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import { ValidationError } from '../../../src/validation/index.js';
+import { RepositoryConflictError } from '../errors.js';
 import { createAssessmentRepository } from './assessment.repository.js';
 import { createCompanyRepository } from './company.repository.js';
 import { createReportRepository } from './report.repository.js';
@@ -80,6 +81,12 @@ const companyArchivedAtMigrationSql = loadSql(
   '20260621130000_add_company_archived_at',
   'migration.sql',
 );
+const reportVersionUniquenessMigrationSql = loadSql(
+  'prisma',
+  'migrations',
+  '20260624101500_add_report_version_number_uniqueness',
+  'migration.sql',
+);
 
 const adapterUrl = databaseUrl.startsWith('file:')
   ? `file:${databasePath}`
@@ -101,6 +108,7 @@ const Database = require('better-sqlite3') as new (databasePath: string) => {
     bootstrapDb.exec(threatMigrationSql);
     bootstrapDb.exec(evidenceMigrationSql);
     bootstrapDb.exec(reportVersionMigrationSql);
+    bootstrapDb.exec(reportVersionUniquenessMigrationSql);
     bootstrapDb.exec(companyArchivedAtMigrationSql);
   } finally {
     bootstrapDb.close();
@@ -182,7 +190,7 @@ try {
 
   const finalVersion = await reportVersionRepo.create({
     reportId: report.id,
-    version: 2,
+    version: 10,
     status: 'final',
     generatedAt: '2026-06-21',
     filePath: undefined,
@@ -190,7 +198,19 @@ try {
   });
 
   assert.equal(finalVersion.status, 'final');
-  assert.equal(finalVersion.version, 2);
+  assert.equal(finalVersion.version, 10);
+
+  await assert.rejects(
+    reportVersionRepo.create({
+      reportId: report.id,
+      version: 10,
+      status: 'final',
+      generatedAt: '2026-06-21',
+      filePath: undefined,
+      snapshot: validSnapshot,
+    }),
+    error => error instanceof RepositoryConflictError,
+  );
 
   const loadedDraft = await reportVersionRepo.findById(draftVersion.id);
   assert.ok(loadedDraft);

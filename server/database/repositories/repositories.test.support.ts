@@ -354,9 +354,16 @@ export const createReportVersionDb = (row = reportVersionRow) => {
       return row;
     },
   } as RepositoryClient['reportVersion'];
+  const transaction = { reportVersion } as RepositoryTransactionClient;
+  const $transaction = async <T>(
+    operation: (tx: RepositoryTransactionClient) => Promise<T>,
+  ): Promise<T> => {
+    calls.push({ method: '$transaction' });
+    return operation(transaction);
+  };
 
   return {
     calls,
-    db: { reportVersion },
+    db: { reportVersion, $transaction },
   };
 };
