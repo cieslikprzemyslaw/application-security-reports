@@ -154,9 +154,14 @@ const createVersionRepositoryFake = (
         throw error;
       }
     };
+  const withFinalisationTransaction: ReportVersionRepository['withFinalisationTransaction'] =
+    async () => {
+      throw new Error('Finalisation transaction is not used by draft tests.');
+    };
   const repository: ReportVersionRepository = {
     ...transactionRepository,
     withTransaction,
+    withFinalisationTransaction,
   };
 
   return {

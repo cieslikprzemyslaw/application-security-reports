@@ -12,7 +12,19 @@ import type {
   RepositoryClient,
   RepositoryTransactionClient,
 } from '../repository.types.js';
+import type { AssessmentRepository } from './assessment.repository.js';
+import { createAssessmentRepository } from './assessment.repository.js';
+import type { CompanyRepository } from './company.repository.js';
+import { createCompanyRepository } from './company.repository.js';
+import type { EvidenceLookupRepository } from './evidence.repository.js';
+import { createEvidenceLookupRepository } from './evidence.repository.js';
+import type { ReportLookupRepository } from './report.repository.js';
+import { createReportLookupRepository } from './report.repository.js';
 import { toOptionalText } from './repository.helpers.js';
+import type { SettingsRepository } from './settings.repository.js';
+import { createSettingsRepository } from './settings.repository.js';
+import type { ThreatRepository } from './threat.repository.js';
+import { createThreatRepository } from './threat.repository.js';
 
 export interface ReportVersionTransactionRepository {
   create(input: CreateReportVersionInput): Promise<ReportVersion>;
@@ -21,9 +33,24 @@ export interface ReportVersionTransactionRepository {
   updateReportLatestVersion(reportId: string, version: number): Promise<void>;
 }
 
+export interface ReportVersionFinalisationTransactionRepositories {
+  assessmentRepository: Pick<AssessmentRepository, 'findById'>;
+  companyRepository: Pick<CompanyRepository, 'findById'>;
+  evidenceRepository: EvidenceLookupRepository;
+  reportRepository: ReportLookupRepository;
+  reportVersionRepository: ReportVersionTransactionRepository;
+  settingsRepository: Pick<SettingsRepository, 'get'>;
+  threatRepository: Pick<ThreatRepository, 'findById'>;
+}
+
 export interface ReportVersionRepository extends ReportVersionTransactionRepository {
   withTransaction<T>(
     operation: (repository: ReportVersionTransactionRepository) => Promise<T>,
+  ): Promise<T>;
+  withFinalisationTransaction<T>(
+    operation: (
+      repositories: ReportVersionFinalisationTransactionRepositories,
+    ) => Promise<T>,
   ): Promise<T>;
 }
 
@@ -145,6 +172,39 @@ const createTransactionRepository = (
   },
 });
 
+const createFinalisationTransactionRepositories = (
+  db: RepositoryTransactionClient,
+): ReportVersionFinalisationTransactionRepositories => ({
+  assessmentRepository: createAssessmentRepository(db),
+  companyRepository: createCompanyRepository(db),
+  evidenceRepository: createEvidenceLookupRepository(db),
+  reportRepository: createReportLookupRepository(db),
+  reportVersionRepository: createTransactionRepository(db),
+  settingsRepository: createSettingsRepository(db),
+  threatRepository: createThreatRepository(db),
+});
+
+const runTransaction = async <T>(
+  db: ReportVersionRepositoryDb,
+  operation: (transaction: RepositoryTransactionClient) => Promise<T>,
+): Promise<T> => {
+  try {
+    return await db.$transaction(async (tx: RepositoryTransactionClient) => {
+      try {
+        return await operation(tx);
+      } catch (error) {
+        throw new ReportVersionTransactionOperationError(error);
+      }
+    });
+  } catch (error) {
+    if (error instanceof ReportVersionTransactionOperationError) {
+      throw error.operationError;
+    }
+
+    throw mapPrismaError(error);
+  }
+};
+
 export function createReportVersionRepository(
   db: ReportVersionRepositoryDb,
 ): ReportVersionRepository {
@@ -152,23 +212,15 @@ export function createReportVersionRepository(
     ...createTransactionRepository(db),
 
     async withTransaction(operation) {
-      try {
-        return await db.$transaction(
-          async (tx: RepositoryTransactionClient) => {
-            try {
-              return await operation(createTransactionRepository(tx));
-            } catch (error) {
-              throw new ReportVersionTransactionOperationError(error);
-            }
-          },
-        );
-      } catch (error) {
-        if (error instanceof ReportVersionTransactionOperationError) {
-          throw error.operationError;
-        }
+      return runTransaction(db, transaction =>
+        operation(createTransactionRepository(transaction)),
+      );
+    },
 
-        throw mapPrismaError(error);
-      }
+    async withFinalisationTransaction(operation) {
+      return runTransaction(db, transaction =>
+        operation(createFinalisationTransactionRepositories(transaction)),
+      );
     },
   };
 }

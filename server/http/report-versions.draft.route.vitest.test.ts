@@ -68,9 +68,14 @@ const createVersionRepository = (
 
       return operation(transactionRepository);
     };
+  const withFinalisationTransaction: ReportVersionRepository['withFinalisationTransaction'] =
+    async () => {
+      throw new Error('Finalisation transaction is not used by draft routes.');
+    };
   const repository: ReportVersionRepository = {
     ...transactionRepository,
     withTransaction,
+    withFinalisationTransaction,
   };
 
   return { repository, create, withTransactionCalls };

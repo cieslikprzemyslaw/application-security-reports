@@ -28,6 +28,8 @@ export interface EvidenceRepository {
   detachFromThreat(evidenceId: string, threatId: string): Promise<void>;
 }
 
+export type EvidenceLookupRepository = Pick<EvidenceRepository, 'findById'>;
+
 type EvidenceRepositoryDb = Pick<
   RepositoryClient,
   'evidence' | 'evidenceExchange' | 'evidenceThreat' | '$transaction'
@@ -143,6 +145,16 @@ const loadEvidenceById = async (
   return evidence ? toEvidence(evidence) : null;
 };
 
+export function createEvidenceLookupRepository(
+  db: EvidenceLookupDb,
+): EvidenceLookupRepository {
+  return {
+    async findById(id) {
+      return loadEvidenceById(db, id);
+    },
+  };
+}
+
 const replaceEvidenceThreatLinks = async (
   db: EvidenceLinkDb,
   evidenceId: string,
@@ -217,9 +229,7 @@ export function createEvidenceRepository(
   db: EvidenceRepositoryDb,
 ): EvidenceRepository {
   return {
-    async findById(id) {
-      return loadEvidenceById(db, id);
-    },
+    ...createEvidenceLookupRepository(db),
 
     async findByAssessmentId(assessmentId) {
       const evidence = await db.evidence.findMany({
