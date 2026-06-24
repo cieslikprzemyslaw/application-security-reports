@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 
+import type { ReportPreviewThreat } from '../domain/report-preview.js';
+
 import { buildReportPreviewSnapshotFixture } from '../../server/test/report-preview.fixture.js';
 import {
   createCompanyRequestSchema,
@@ -27,7 +29,7 @@ const validCompany = {
   updatedAt: '2026-06-10T00:00:00.000Z',
 };
 
-const validPreviewThreat = {
+const validPreviewThreat: ReportPreviewThreat = {
   id: 'thr_00000000-0000-0000-0000-000000000001',
   assessmentId: 'asm_00000000-0000-0000-0000-000000000001',
   title: 'Missing Server-Side Authorization',
@@ -35,7 +37,7 @@ const validPreviewThreat = {
   severity: 'critical',
   strideCategories: ['spoofing'],
   status: 'accepted-risk',
-} as const;
+};
 
 const validReportVersion = {
   id: 'repv_1',
