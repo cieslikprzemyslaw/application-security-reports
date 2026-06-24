@@ -36,6 +36,12 @@ export interface ResolveReportReadinessDependencies extends ReportPreviewGenerat
   reportRepository: Pick<ReportRepository, 'findById'>;
 }
 
+export interface ResolvedReportReadiness {
+  report: Report;
+  snapshot: ReportPreviewSnapshot;
+  readiness: ReportReadinessResult;
+}
+
 export class ReportReadinessReportNotFoundError extends RepositoryNotFoundError {
   constructor() {
     super('Report not found.');
@@ -189,10 +195,10 @@ export const classifyReportReadiness = ({
   return reportReadinessResultSchema.parse({ errors, warnings });
 };
 
-export const resolveReportReadiness = async (
+export const resolveReportReadinessSnapshot = async (
   input: ResolveReportReadinessInput,
   dependencies: ResolveReportReadinessDependencies,
-): Promise<ReportReadinessResult> => {
+): Promise<ResolvedReportReadiness> => {
   const report = await dependencies.reportRepository.findById(input.reportId);
 
   if (!report) {
@@ -209,5 +215,15 @@ export const resolveReportReadiness = async (
     input.baseUrl,
   );
 
-  return classifyReportReadiness({ report, snapshot });
+  return {
+    report,
+    snapshot,
+    readiness: classifyReportReadiness({ report, snapshot }),
+  };
 };
+
+export const resolveReportReadiness = async (
+  input: ResolveReportReadinessInput,
+  dependencies: ResolveReportReadinessDependencies,
+): Promise<ReportReadinessResult> =>
+  (await resolveReportReadinessSnapshot(input, dependencies)).readiness;

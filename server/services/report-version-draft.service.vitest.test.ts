@@ -140,6 +140,7 @@ const createVersionRepositoryFake = (
     findById,
     findByReportId,
     updateReportLatestVersion,
+    updateReportLatestVersionIfCurrent: vi.fn(async () => undefined),
   };
   const withTransactionCalls = vi.fn();
   const withTransaction: ReportVersionRepository['withTransaction'] =
@@ -154,9 +155,14 @@ const createVersionRepositoryFake = (
         throw error;
       }
     };
+  const withFinalisationTransaction: ReportVersionRepository['withFinalisationTransaction'] =
+    async () => {
+      throw new Error('Finalisation transaction is not used by draft tests.');
+    };
   const repository: ReportVersionRepository = {
     ...transactionRepository,
     withTransaction,
+    withFinalisationTransaction,
   };
 
   return {

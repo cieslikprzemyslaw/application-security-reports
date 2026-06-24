@@ -7,23 +7,59 @@ import {
   formatValidationErrors,
 } from '../../../src/validation/index.js';
 import { generateId } from '../../utils/id.js';
-import { mapPrismaError, RepositoryError } from '../errors.js';
+import {
+  mapPrismaError,
+  RepositoryConflictError,
+  RepositoryError,
+} from '../errors.js';
 import type {
   RepositoryClient,
   RepositoryTransactionClient,
 } from '../repository.types.js';
+import type { AssessmentRepository } from './assessment.repository.js';
+import { createAssessmentRepository } from './assessment.repository.js';
+import type { CompanyRepository } from './company.repository.js';
+import { createCompanyRepository } from './company.repository.js';
+import type { EvidenceLookupRepository } from './evidence.repository.js';
+import { createEvidenceLookupRepository } from './evidence.repository.js';
+import type { ReportLookupRepository } from './report.repository.js';
+import { createReportLookupRepository } from './report.repository.js';
 import { toOptionalText } from './repository.helpers.js';
+import type { SettingsRepository } from './settings.repository.js';
+import { createSettingsRepository } from './settings.repository.js';
+import type { ThreatRepository } from './threat.repository.js';
+import { createThreatRepository } from './threat.repository.js';
 
 export interface ReportVersionTransactionRepository {
   create(input: CreateReportVersionInput): Promise<ReportVersion>;
   findById(id: string): Promise<ReportVersion | null>;
   findByReportId(reportId: string): Promise<ReportVersion[]>;
   updateReportLatestVersion(reportId: string, version: number): Promise<void>;
+  updateReportLatestVersionIfCurrent(
+    reportId: string,
+    expectedLatestVersion: number,
+    version: number,
+  ): Promise<void>;
+}
+
+export interface ReportVersionFinalisationTransactionRepositories {
+  assessmentRepository: Pick<AssessmentRepository, 'findById'>;
+  companyRepository: Pick<CompanyRepository, 'findById'>;
+  evidenceRepository: EvidenceLookupRepository;
+  reportRepository: ReportLookupRepository;
+  reportVersionRepository: ReportVersionTransactionRepository;
+  settingsRepository: Pick<SettingsRepository, 'get'>;
+  threatRepository: Pick<ThreatRepository, 'findById'>;
 }
 
 export interface ReportVersionRepository extends ReportVersionTransactionRepository {
   withTransaction<T>(
     operation: (repository: ReportVersionTransactionRepository) => Promise<T>,
+  ): Promise<T>;
+  withFinalisationTransaction<T>(
+    operation: (
+      repositories: ReportVersionFinalisationTransactionRepositories,
+    ) => Promise<T>,
   ): Promise<T>;
 }
 
@@ -143,7 +179,61 @@ const createTransactionRepository = (
       throw mapPrismaError(error);
     }
   },
+
+  async updateReportLatestVersionIfCurrent(
+    reportId,
+    expectedLatestVersion,
+    version,
+  ) {
+    try {
+      const result = await db.report.updateMany({
+        where: { id: reportId, latestVersion: expectedLatestVersion },
+        data: { latestVersion: version },
+      });
+
+      if (result.count !== 1) {
+        throw new RepositoryConflictError(
+          'Report version changed before finalisation completed.',
+        );
+      }
+    } catch (error) {
+      throw mapPrismaError(error);
+    }
+  },
 });
+
+const createFinalisationTransactionRepositories = (
+  db: RepositoryTransactionClient,
+): ReportVersionFinalisationTransactionRepositories => ({
+  assessmentRepository: createAssessmentRepository(db),
+  companyRepository: createCompanyRepository(db),
+  evidenceRepository: createEvidenceLookupRepository(db),
+  reportRepository: createReportLookupRepository(db),
+  reportVersionRepository: createTransactionRepository(db),
+  settingsRepository: createSettingsRepository(db),
+  threatRepository: createThreatRepository(db),
+});
+
+const runTransaction = async <T>(
+  db: ReportVersionRepositoryDb,
+  operation: (transaction: RepositoryTransactionClient) => Promise<T>,
+): Promise<T> => {
+  try {
+    return await db.$transaction(async (tx: RepositoryTransactionClient) => {
+      try {
+        return await operation(tx);
+      } catch (error) {
+        throw new ReportVersionTransactionOperationError(error);
+      }
+    });
+  } catch (error) {
+    if (error instanceof ReportVersionTransactionOperationError) {
+      throw error.operationError;
+    }
+
+    throw mapPrismaError(error);
+  }
+};
 
 export function createReportVersionRepository(
   db: ReportVersionRepositoryDb,
@@ -152,23 +242,15 @@ export function createReportVersionRepository(
     ...createTransactionRepository(db),
 
     async withTransaction(operation) {
-      try {
-        return await db.$transaction(
-          async (tx: RepositoryTransactionClient) => {
-            try {
-              return await operation(createTransactionRepository(tx));
-            } catch (error) {
-              throw new ReportVersionTransactionOperationError(error);
-            }
-          },
-        );
-      } catch (error) {
-        if (error instanceof ReportVersionTransactionOperationError) {
-          throw error.operationError;
-        }
+      return runTransaction(db, transaction =>
+        operation(createTransactionRepository(transaction)),
+      );
+    },
 
-        throw mapPrismaError(error);
-      }
+    async withFinalisationTransaction(operation) {
+      return runTransaction(db, transaction =>
+        operation(createFinalisationTransactionRepositories(transaction)),
+      );
     },
   };
 }

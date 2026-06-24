@@ -25,6 +25,8 @@ export interface ReportRepository {
   detachThreat(reportId: string, threatId: string): Promise<void>;
 }
 
+export type ReportLookupRepository = Pick<ReportRepository, 'findById'>;
+
 type ReportRepositoryDb = Pick<
   RepositoryClient,
   'report' | 'reportThreat' | '$transaction'
@@ -85,6 +87,16 @@ const loadReportById = async (
   return report ? toReport(report) : null;
 };
 
+export function createReportLookupRepository(
+  db: ReportLookupDb,
+): ReportLookupRepository {
+  return {
+    async findById(id) {
+      return loadReportById(db, id);
+    },
+  };
+}
+
 const replaceReportThreatLinks = async (
   db: ReportLinkDb,
   reportId: string,
@@ -109,9 +121,7 @@ export function createReportRepository(
   db: ReportRepositoryDb,
 ): ReportRepository {
   return {
-    async findById(id) {
-      return loadReportById(db, id);
-    },
+    ...createReportLookupRepository(db),
 
     async findByAssessmentId(assessmentId) {
       const reports = await db.report.findMany({
