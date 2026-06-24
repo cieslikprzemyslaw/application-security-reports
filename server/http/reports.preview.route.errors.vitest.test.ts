@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { RepositoryError } from '../database/errors.js';
 import {
   assessment,
+  company,
   evidence,
   postPreview,
   previewRequest,
@@ -98,6 +99,15 @@ describe('POST /api/reports/preview errors', () => {
           },
         },
         path: 'selection.evidenceIds.0',
+      },
+      {
+        overrides: {
+          company: {
+            ...company,
+            archivedAt: '2026-06-24T12:00:00.000Z',
+          },
+        },
+        path: 'companyId',
       },
       {
         overrides: {

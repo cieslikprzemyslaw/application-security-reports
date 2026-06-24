@@ -79,6 +79,25 @@ const toPreviewBranding = (
   defaultBrandingMode: settings.defaultBrandingMode,
 });
 
+const requireActiveCompany = (
+  company: NonNullable<Awaited<ReturnType<CompanyRepository['findById']>>>,
+): void => {
+  if (company.archivedAt === null || company.archivedAt === undefined) {
+    return;
+  }
+
+  throw new ValidationError({
+    error: 'VALIDATION_ERROR',
+    fields: [
+      {
+        path: 'companyId',
+        message: 'Archived Companies are not selectable.',
+        code: 'custom',
+      },
+    ],
+  });
+};
+
 const requireAllowedBrandingMode = (
   request: ReportPreviewRequest,
   settings: NonNullable<Awaited<ReturnType<SettingsRepository['get']>>>,
@@ -119,6 +138,7 @@ export const generateReportPreviewSnapshot = async (
     throw new ReportPreviewGenerationNotFoundError('settings');
   }
 
+  requireActiveCompany(company);
   requireAllowedBrandingMode(request, settings);
 
   const records = validateReportPreviewSelectedRecords(

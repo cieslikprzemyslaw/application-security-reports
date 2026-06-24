@@ -115,19 +115,21 @@ export const previewRequest: ReportPreviewRequest = {
 };
 
 type Overrides = {
+  report?: Report | null;
   company?: Company | null;
   assessment?: Assessment | null;
   threat?: Threat | null;
   evidence?: Evidence | null;
   settings?: Settings | null;
   companyError?: Error;
+  reportError?: Error;
   settingsError?: Error;
 };
 
-const unusedReport: Report = {
+export const report: Report = {
   id: 'rpt_00000000-0000-0000-0000-000000000001',
   assessmentId,
-  title: 'Unused',
+  title: 'Application Security Assessment',
   status: 'draft',
   selectedThreatIds: [],
   latestVersion: 0,
@@ -152,6 +154,10 @@ export const createPreviewRepositories = (overrides: Overrides = {}) => {
   const settingsGet = vi.fn(async () => {
     if (overrides.settingsError) throw overrides.settingsError;
     return overrides.settings === undefined ? settings : overrides.settings;
+  });
+  const reportFindById = vi.fn(async () => {
+    if (overrides.reportError) throw overrides.reportError;
+    return overrides.report === undefined ? report : overrides.report;
   });
 
   const companyRepository = {
@@ -200,10 +206,10 @@ export const createPreviewRepositories = (overrides: Overrides = {}) => {
   } satisfies SettingsRepository;
 
   const reportRepository = {
-    findById: vi.fn(async () => unusedReport),
-    findByAssessmentId: vi.fn(async () => [unusedReport]),
-    create: vi.fn(async () => unusedReport),
-    update: vi.fn(async () => unusedReport),
+    findById: reportFindById,
+    findByAssessmentId: vi.fn(async () => [report]),
+    create: vi.fn(async () => report),
+    update: vi.fn(async () => report),
     delete: vi.fn(async () => undefined),
     attachThreat: vi.fn(async () => undefined),
     detachThreat: vi.fn(async () => undefined),
@@ -222,6 +228,7 @@ export const createPreviewRepositories = (overrides: Overrides = {}) => {
       assessmentFindById,
       companyFindById,
       evidenceFindById,
+      reportFindById,
       settingsGet,
       threatFindById,
     },
@@ -257,6 +264,17 @@ export const postPreview = (
   body: unknown = previewRequest,
 ): Promise<Response> =>
   fetch(`${baseUrl}/api/reports/preview`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+export const postReadiness = (
+  baseUrl: string,
+  reportId: string = report.id,
+  body: unknown = previewRequest,
+): Promise<Response> =>
+  fetch(`${baseUrl}/api/reports/${reportId}/readiness`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
