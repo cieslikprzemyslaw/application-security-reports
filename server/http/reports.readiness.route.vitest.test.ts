@@ -94,6 +94,36 @@ describe('POST /api/reports/:id/readiness', () => {
     }
   });
 
+  it('rejects archived Reports before readiness classification', async () => {
+    const server = await startPreviewServer({
+      report: {
+        ...report,
+        status: 'archived',
+      },
+      threat: completeThreat,
+    });
+
+    try {
+      const response = await postReadiness(server.baseUrl);
+
+      expect(response.status).toBe(400);
+      expect(await response.json()).toMatchObject({
+        error: {
+          code: 'VALIDATION_ERROR',
+          details: [
+            {
+              path: 'status',
+              message:
+                'Archived Reports are not eligible for readiness validation.',
+            },
+          ],
+        },
+      });
+      expect(server.calls.companyFindById).not.toHaveBeenCalled();
+    } finally {
+      await server.close();
+    }
+  });
   it('rejects a request for a different Assessment than the Report', async () => {
     const server = await startPreviewServer({
       report: {

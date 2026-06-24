@@ -64,6 +64,22 @@ const threatTarget = (
   field,
 });
 
+const requireActiveReport = (report: Report): void => {
+  if (report.status !== 'archived') {
+    return;
+  }
+
+  throw new ValidationError({
+    error: 'VALIDATION_ERROR',
+    fields: [
+      {
+        path: 'status',
+        message: 'Archived Reports are not eligible for readiness validation.',
+        code: 'custom',
+      },
+    ],
+  });
+};
 const requireReportAssessment = (
   reportAssessmentId: string,
   requestAssessmentId: string,
@@ -182,6 +198,8 @@ export const resolveReportReadiness = async (
   if (!report) {
     throw new ReportReadinessReportNotFoundError();
   }
+
+  requireActiveReport(report);
 
   requireReportAssessment(report.assessmentId, input.request.assessmentId);
 
