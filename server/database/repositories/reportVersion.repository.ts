@@ -1,7 +1,7 @@
 import type { ReportVersion } from '../../../src/domain/report.js';
 import type { CreateReportVersionInput } from '../../../src/domain/report.js';
 import type { ReportVersionStatus } from '../../../src/domain/common.js';
-import { reportSnapshotSchema } from '../../../src/domain/schemas/report.schema.js';
+import { reportPreviewSnapshotSchema } from '../../../src/domain/schemas/report-preview.schema.js';
 import {
   ValidationError,
   formatValidationErrors,
@@ -18,6 +18,7 @@ export interface ReportVersionTransactionRepository {
   create(input: CreateReportVersionInput): Promise<ReportVersion>;
   findById(id: string): Promise<ReportVersion | null>;
   findByReportId(reportId: string): Promise<ReportVersion[]>;
+  updateReportLatestVersion(reportId: string, version: number): Promise<void>;
 }
 
 export interface ReportVersionRepository extends ReportVersionTransactionRepository {
@@ -28,12 +29,12 @@ export interface ReportVersionRepository extends ReportVersionTransactionReposit
 
 type ReportVersionRepositoryDb = Pick<
   RepositoryClient,
-  'reportVersion' | '$transaction'
+  'report' | 'reportVersion' | '$transaction'
 >;
 
 type ReportVersionTransactionDb = Pick<
   RepositoryTransactionClient,
-  'reportVersion'
+  'report' | 'reportVersion'
 >;
 
 class ReportVersionTransactionOperationError extends Error {
@@ -64,7 +65,7 @@ const reportVersionSelect = {
 } as const;
 
 const toReportVersion = (row: ReportVersionRow): ReportVersion => {
-  const snapshotResult = reportSnapshotSchema.safeParse(row.snapshot);
+  const snapshotResult = reportPreviewSnapshotSchema.safeParse(row.snapshot);
 
   if (!snapshotResult.success) {
     throw new RepositoryError('Stored snapshot data is invalid.');
@@ -85,7 +86,9 @@ const createTransactionRepository = (
   db: ReportVersionTransactionDb,
 ): ReportVersionTransactionRepository => ({
   async create(input) {
-    const snapshotResult = reportSnapshotSchema.safeParse(input.snapshot);
+    const snapshotResult = reportPreviewSnapshotSchema.safeParse(
+      input.snapshot,
+    );
 
     if (!snapshotResult.success) {
       throw new ValidationError(formatValidationErrors(snapshotResult.error));
@@ -128,6 +131,17 @@ const createTransactionRepository = (
     });
 
     return rows.map(toReportVersion);
+  },
+
+  async updateReportLatestVersion(reportId, version) {
+    try {
+      await db.report.update({
+        where: { id: reportId },
+        data: { latestVersion: version },
+      });
+    } catch (error) {
+      throw mapPrismaError(error);
+    }
   },
 });
 

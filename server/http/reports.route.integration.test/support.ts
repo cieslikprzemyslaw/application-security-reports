@@ -13,6 +13,7 @@ import { createAssessmentRepository } from '../../database/repositories/assessme
 import { createCompanyRepository } from '../../database/repositories/company.repository.js';
 import { createEvidenceRepository } from '../../database/repositories/evidence.repository.js';
 import { createReportRepository } from '../../database/repositories/report.repository.js';
+import { createReportVersionRepository } from '../../database/repositories/reportVersion.repository.js';
 import { createSettingsRepository } from '../../database/repositories/settings.repository.js';
 import { createThreatRepository } from '../../database/repositories/threat.repository.js';
 import { createApiApp } from '../api-app.js';
@@ -94,6 +95,17 @@ const companyArchivedAtMigrationSql = readFileSync(
   companyArchivedAtMigrationPath,
   'utf8',
 );
+const reportVersionUniquenessMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260624101500_add_report_version_number_uniqueness',
+  'migration.sql',
+);
+const reportVersionUniquenessMigrationSql = readFileSync(
+  reportVersionUniquenessMigrationPath,
+  'utf8',
+);
 const allowedOrigin = 'http://localhost:5173';
 const config = loadServerConfig({
   FRONTEND_ORIGIN: allowedOrigin,
@@ -149,6 +161,7 @@ export type ReportsRouteIntegrationHarness = ReportsSeedData & {
   threatRepository: ReturnType<typeof createThreatRepository>;
   evidenceRepository: ReturnType<typeof createEvidenceRepository>;
   reportRepository: ReturnType<typeof createReportRepository>;
+  reportVersionRepository: ReturnType<typeof createReportVersionRepository>;
   settingsRepository: ReturnType<typeof createSettingsRepository>;
   cleanup: () => Promise<void>;
 };
@@ -160,6 +173,7 @@ export const createReportsApp = (
   threatRepository: ReturnType<typeof createThreatRepository>,
   evidenceRepository: ReturnType<typeof createEvidenceRepository>,
   settingsRepository: ReturnType<typeof createSettingsRepository>,
+  reportVersionRepository?: ReturnType<typeof createReportVersionRepository>,
 ) =>
   createApiApp(config, {
     reportRepository,
@@ -168,6 +182,7 @@ export const createReportsApp = (
     threatRepository,
     evidenceRepository,
     settingsRepository,
+    reportVersionRepository,
   });
 
 export const createReportsRouteIntegrationHarness =
@@ -186,6 +201,7 @@ export const createReportsRouteIntegrationHarness =
       bootstrapDb.exec(threatMigrationSql);
       bootstrapDb.exec(evidenceMigrationSql);
       bootstrapDb.exec(reportVersionMigrationSql);
+      bootstrapDb.exec(reportVersionUniquenessMigrationSql);
     } finally {
       bootstrapDb.close();
     }
@@ -203,6 +219,7 @@ export const createReportsRouteIntegrationHarness =
       const threatRepository = createThreatRepository(prisma);
       const evidenceRepository = createEvidenceRepository(prisma);
       const reportRepository = createReportRepository(prisma);
+      const reportVersionRepository = createReportVersionRepository(prisma);
       const settingsRepository = createSettingsRepository(prisma);
 
       const seeded = await seedReportsData(prisma, settingsRepository);
@@ -214,6 +231,7 @@ export const createReportsRouteIntegrationHarness =
         threatRepository,
         evidenceRepository,
         reportRepository,
+        reportVersionRepository,
         settingsRepository,
         ...seeded,
         cleanup: async () => {

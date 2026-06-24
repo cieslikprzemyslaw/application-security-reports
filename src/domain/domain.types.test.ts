@@ -74,45 +74,6 @@ const report: Report = {
   updatedAt: '2026-06-10',
 };
 
-const reportVersion: ReportVersion = {
-  id: 'repv_1',
-  reportId: report.id,
-  version: 1,
-  status: 'draft',
-  generatedAt: '2026-06-10',
-  filePath: '/tmp/report-v1.pdf',
-  snapshot: {
-    reportTitle: report.title,
-    companyName: 'Northstar Digital',
-    assessmentTitle: assessment.title,
-    executiveSummary: report.executiveSummary,
-    branding: {
-      brandingMode: 'issuer',
-      issuerName: 'Northstar Digital',
-      issuerContactName: 'Alex Mercer',
-      issuerContactEmail: 'alex.mercer@example.com',
-      issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
-      clientName: 'Northstar Digital',
-      reportFooterText: 'Confidential',
-      confidentialityLabel: 'Strictly confidential',
-      confidentialReports: true,
-    },
-    threats: [
-      {
-        threatId: threat.id,
-        title: threat.title,
-        description: threat.description,
-        severity: threat.severity,
-        status: threat.status,
-        strideCategories: threat.strideCategories,
-        affectedAsset: threat.affectedAsset,
-        impact: threat.impact,
-        recommendation: threat.recommendation,
-      },
-    ],
-  },
-};
-
 const {
   createdAt: previewThreatCreatedAt,
   updatedAt: previewThreatUpdatedAt,
@@ -192,6 +153,16 @@ const reportPreviewSnapshot: ReportPreviewSnapshot = {
     evidenceCount: 1,
   },
   warnings: ['Evidence selection is incomplete'],
+};
+
+const reportVersion: ReportVersion = {
+  id: 'repv_1',
+  reportId: report.id,
+  version: 1,
+  status: 'draft',
+  generatedAt: '2026-06-10',
+  filePath: '/tmp/report-v1.pdf',
+  snapshot: reportPreviewSnapshot,
 };
 
 const settings: Settings = {

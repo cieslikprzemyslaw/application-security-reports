@@ -12,6 +12,10 @@ import type {
   TimestampedEntity,
 } from './common.js';
 import type { ReportBrandingMode } from './settings.js';
+import type {
+  ReportPreviewRequest,
+  ReportPreviewSnapshot,
+} from './report-preview.js';
 
 export interface Report extends TimestampedEntity {
   id: ReportId;
@@ -59,6 +63,8 @@ export interface ReportSnapshot {
   threats: ReportThreatSnapshot[];
 }
 
+export type ReportVersionSnapshot = ReportPreviewSnapshot;
+
 export interface ReportVersion {
   id: ReportVersionId;
   reportId: ReportId;
@@ -66,10 +72,12 @@ export interface ReportVersion {
   status: ReportVersionStatus;
   generatedAt: ISODateString;
   filePath?: string;
-  snapshot: ReportSnapshot;
+  snapshot: ReportVersionSnapshot;
 }
 
 export type CreateReportVersionInput = Omit<ReportVersion, 'id'>;
+export type CreateDraftReportVersionRequest = ReportPreviewRequest;
+export type ReportVersionResponse = Omit<ReportVersion, 'filePath'>;
 
 export type CreateReportInput = Omit<Report, 'id' | 'createdAt' | 'updatedAt'>;
 

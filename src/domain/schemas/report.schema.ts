@@ -1,6 +1,16 @@
 import { z } from 'zod';
 
-import type { Report, ReportVersion } from '../report.js';
+import type {
+  CreateDraftReportVersionRequest,
+  Report,
+  ReportVersion,
+  ReportVersionResponse,
+} from '../report.js';
+
+import {
+  reportPreviewRequestSchema,
+  reportPreviewSnapshotSchema,
+} from './report-preview.schema.js';
 
 import {
   isoDateStringSchema,
@@ -75,7 +85,7 @@ export const reportVersionObjectSchema = z
     status: reportVersionStatusSchema,
     generatedAt: isoDateStringSchema,
     filePath: optionalTrimmedTextSchema,
-    snapshot: reportSnapshotSchema,
+    snapshot: reportPreviewSnapshotSchema,
   })
   .strict();
 
@@ -83,6 +93,26 @@ export const reportVersionSchema = reportVersionObjectSchema;
 
 type ReportVersionSchemaOutput = Required<z.output<typeof reportVersionSchema>>;
 const _reportVersionSchemaCompatibilityCheck: ReportVersionSchemaOutput extends ReportVersion
+  ? true
+  : never = true;
+
+export const createDraftReportVersionRequestSchema = reportPreviewRequestSchema;
+
+type CreateDraftReportVersionRequestSchemaOutput = z.output<
+  typeof createDraftReportVersionRequestSchema
+>;
+const _createDraftReportVersionRequestSchemaCompatibilityCheck: CreateDraftReportVersionRequestSchemaOutput extends CreateDraftReportVersionRequest
+  ? true
+  : never = true;
+
+export const reportVersionResponseSchema = reportVersionSchema.omit({
+  filePath: true,
+});
+
+type ReportVersionResponseSchemaOutput = Required<
+  z.output<typeof reportVersionResponseSchema>
+>;
+const _reportVersionResponseSchemaCompatibilityCheck: ReportVersionResponseSchemaOutput extends ReportVersionResponse
   ? true
   : never = true;
 

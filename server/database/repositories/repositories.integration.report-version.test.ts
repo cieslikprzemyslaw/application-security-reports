@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import { ValidationError } from '../../../src/validation/index.js';
+import { buildReportPreviewSnapshotFixture } from '../../test/report-preview.fixture.js';
 import { RepositoryConflictError } from '../errors.js';
 import { createAssessmentRepository } from './assessment.repository.js';
 import { createCompanyRepository } from './company.repository.js';
@@ -163,13 +164,7 @@ try {
     selectedThreatIds: [],
   });
 
-  const validSnapshot = {
-    reportTitle: 'Security Report',
-    companyName: 'Northstar Digital',
-    assessmentTitle: 'API review',
-    branding: { clientName: 'Northstar Digital' },
-    threats: [],
-  };
+  const validSnapshot = buildReportPreviewSnapshotFixture();
 
   const draftVersion = await reportVersionRepo.create({
     reportId: report.id,

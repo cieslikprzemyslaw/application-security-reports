@@ -1,4 +1,5 @@
 import { OWASP_TOP_10_CURRENT_VERSION } from '../../../src/domain/owaspTop10.js';
+import { buildReportPreviewSnapshotFixture } from '../../test/report-preview.fixture.js';
 
 import type { ActivityCreateInput } from './repository.helpers.js';
 import type {
@@ -329,13 +330,7 @@ export const reportVersionRow = {
   status: 'draft',
   generatedAt: '2026-06-21',
   filePath: null,
-  snapshot: {
-    reportTitle: 'Security Report',
-    companyName: 'Northstar Digital',
-    assessmentTitle: 'API review',
-    branding: { clientName: 'Northstar Digital' },
-    threats: [],
-  },
+  snapshot: buildReportPreviewSnapshotFixture(),
 };
 
 export const createReportVersionDb = (row = reportVersionRow) => {
@@ -354,7 +349,13 @@ export const createReportVersionDb = (row = reportVersionRow) => {
       return row;
     },
   } as RepositoryClient['reportVersion'];
-  const transaction = { reportVersion } as RepositoryTransactionClient;
+  const report = {
+    async update(args: unknown) {
+      calls.push({ method: 'report.update', args });
+      return reportRow;
+    },
+  } as RepositoryClient['report'];
+  const transaction = { report, reportVersion } as RepositoryTransactionClient;
   const $transaction = async <T>(
     operation: (tx: RepositoryTransactionClient) => Promise<T>,
   ): Promise<T> => {
@@ -364,6 +365,6 @@ export const createReportVersionDb = (row = reportVersionRow) => {
 
   return {
     calls,
-    db: { reportVersion, $transaction },
+    db: { report, reportVersion, $transaction },
   };
 };

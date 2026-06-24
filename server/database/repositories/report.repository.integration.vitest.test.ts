@@ -5,6 +5,7 @@ import {
   createTemporaryDatabase,
   type TemporaryDatabase,
 } from '../../test/temporaryDatabase.js';
+import { buildReportPreviewSnapshotFixture } from '../../test/report-preview.fixture.js';
 import { createReportRepository } from './report.repository.js';
 
 const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
@@ -152,13 +153,7 @@ describe('Report repository with temporary SQLite', () => {
         version: 1,
         status: 'draft',
         generatedAt: '2026-06-22',
-        snapshot: {
-          reportTitle: 'Versioned report',
-          companyName: 'Northstar Digital',
-          assessmentTitle: 'Customer Services Portal',
-          branding: { clientName: 'Northstar Digital' },
-          threats: [],
-        },
+        snapshot: buildReportPreviewSnapshotFixture(),
       },
     });
 
