@@ -1,4 +1,6 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
+
+export type ReportPreviewShellTab = 'preview' | 'data';
 
 export interface ReportPreviewShellProps {
   applicationName: string;
@@ -6,6 +8,10 @@ export interface ReportPreviewShellProps {
   autoSaved?: boolean;
   preview: ReactNode;
   dataView?: ReactNode;
+  activeTab?: ReportPreviewShellTab;
+  onActiveTabChange?: (tab: ReportPreviewShellTab) => void;
+  previewTabRef?: Ref<HTMLButtonElement>;
+  titleRef?: Ref<HTMLHeadingElement>;
   onPrint?: () => void;
   onDownloadPdf?: () => void;
 }

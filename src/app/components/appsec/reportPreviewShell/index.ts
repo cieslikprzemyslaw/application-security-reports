@@ -1,3 +1,6 @@
 export { default } from './reportPreviewShell.component';
 
-export type { ReportPreviewShellProps } from './reportPreviewShell.type';
+export type {
+  ReportPreviewShellProps,
+  ReportPreviewShellTab,
+} from './reportPreviewShell.type';

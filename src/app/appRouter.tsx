@@ -92,7 +92,11 @@ const createAppRouter = () =>
                 path="assessments"
                 element={<CompanyAssessmentsRouteElement />}
               />
-              <Route path="reports" element={<CompanyReportsRouteElement />} />
+              <Route path="reports" element={<CompanyReportsRouteElement />}>
+                <Route index element={null} />
+                <Route path="preview" element={null} />
+                <Route path="*" element={null} />
+              </Route>
               <Route
                 path="activity"
                 element={<CompanyActivityRouteElement />}

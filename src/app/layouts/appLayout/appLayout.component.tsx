@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { matchPath, Outlet, useLocation } from 'react-router-dom';
 import type { CompanyListItem } from '~/domain';
-import { routes } from '~/routes';
+import { routes, routePatterns } from '~/routes';
 import packageJson from '../../../../package.json';
 import {
   RouteLoadingView,
@@ -49,6 +49,14 @@ const AppLayout = ({
 }: AppLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
+  const reportPreviewMatch = matchPath(
+    { path: routePatterns.companyWorkspaceReportsPreview, end: true },
+    location.pathname,
+  );
+  const reportPreviewCompanyId = reportPreviewMatch?.params.companyId;
+  const routeBoundaryKey = reportPreviewCompanyId
+    ? routes.companyWorkspaceReports(reportPreviewCompanyId)
+    : location.pathname;
 
   const openSidebar = () => {
     setIsSidebarOpen(true);
@@ -104,7 +112,7 @@ const AppLayout = ({
       }
     >
       <PageContent maxWidth="wide" spacing="default">
-        <RouteStateErrorBoundary key={location.pathname}>
+        <RouteStateErrorBoundary key={routeBoundaryKey}>
           <Suspense fallback={<RouteLoadingView />}>
             <Outlet />
           </Suspense>

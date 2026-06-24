@@ -36,6 +36,7 @@ export const routePatterns = {
   companyWorkspaceOverview: '/companies/:companyId/overview',
   companyWorkspaceAssessments: '/companies/:companyId/assessments',
   companyWorkspaceReports: '/companies/:companyId/reports',
+  companyWorkspaceReportsPreview: '/companies/:companyId/reports/preview',
   companyWorkspaceActivity: '/companies/:companyId/activity',
   assessments: '/assessments',
   assessmentDetails: '/companies/:companyId/assessments/:assessmentId',
@@ -68,6 +69,8 @@ export const routes = {
     `${buildCompanyWorkspaceRoute(companyId, 'companyWorkspace')}/assessments`,
   companyWorkspaceReports: (companyId: string) =>
     `${buildCompanyWorkspaceRoute(companyId, 'companyWorkspace')}/reports`,
+  companyWorkspaceReportsPreview: (companyId: string) =>
+    `${buildCompanyWorkspaceRoute(companyId, 'companyWorkspace')}/reports/preview`,
   companyWorkspaceActivity: (companyId: string) =>
     `${buildCompanyWorkspaceRoute(companyId, 'companyWorkspace')}/activity`,
   assessments: routePatterns.assessments,

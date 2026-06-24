@@ -87,19 +87,32 @@ const mergeRouteState = (
     },
   });
 
+export const parseReportBuilderRouteState = (
+  companyId: string,
+  value: unknown,
+): ReportBuilderRouteState | undefined => {
+  const parsed = reportBuilderRouteStateSchema.safeParse(value);
+
+  if (!parsed.success || parsed.data.companyId !== companyId) {
+    return undefined;
+  }
+
+  return parsed.data;
+};
+
 export const restoreReportBuilderRouteState = (
   companyId: string,
   value: unknown,
 ): ReportBuilderState => {
-  const parsed = reportBuilderRouteStateSchema.safeParse(value);
+  const routeState = parseReportBuilderRouteState(companyId, value);
 
-  if (!parsed.success || parsed.data.companyId !== companyId) {
+  if (!routeState) {
     return createDefaultReportBuilderState(companyId);
   }
 
   return mergeRouteState(
     createDefaultReportBuilderState(companyId),
-    parsed.data,
+    routeState,
   );
 };
 

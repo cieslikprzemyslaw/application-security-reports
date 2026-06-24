@@ -1,5 +1,6 @@
 export {
   createDefaultReportBuilderState,
+  parseReportBuilderRouteState,
   restoreReportBuilderRouteState,
   restoreReportBuilderState,
   serializeReportBuilderRouteState,
