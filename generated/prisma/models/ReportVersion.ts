@@ -253,6 +253,7 @@ export type ReportVersionOrderByWithRelationInput = {
 
 export type ReportVersionWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  reportId_version?: Prisma.ReportVersionReportIdVersionCompoundUniqueInput
   AND?: Prisma.ReportVersionWhereInput | Prisma.ReportVersionWhereInput[]
   OR?: Prisma.ReportVersionWhereInput[]
   NOT?: Prisma.ReportVersionWhereInput | Prisma.ReportVersionWhereInput[]
@@ -264,7 +265,7 @@ export type ReportVersionWhereUniqueInput = Prisma.AtLeast<{
   snapshot?: Prisma.JsonFilter<"ReportVersion">
   createdAt?: Prisma.DateTimeFilter<"ReportVersion"> | Date | string
   report?: Prisma.XOR<Prisma.ReportScalarRelationFilter, Prisma.ReportWhereInput>
-}, "id">
+}, "id" | "reportId_version">
 
 export type ReportVersionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -380,6 +381,11 @@ export type ReportVersionListRelationFilter = {
 
 export type ReportVersionOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type ReportVersionReportIdVersionCompoundUniqueInput = {
+  reportId: string
+  version: number
 }
 
 export type ReportVersionCountOrderByAggregateInput = {

@@ -209,6 +209,7 @@ model ReportVersion {
 
   report Report @relation(fields: [reportId], references: [id], onDelete: Restrict)
 
+  @@unique([reportId, version])
   @@index([reportId])
   @@index([reportId, createdAt])
 }

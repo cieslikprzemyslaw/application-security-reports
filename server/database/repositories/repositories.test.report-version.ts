@@ -100,13 +100,21 @@ const validInput = {
 // findById returns null when not found
 {
   const calls: Array<{ method: string; args?: unknown }> = [];
+  const reportVersion = {
+    async findUnique(args: unknown) {
+      calls.push({ method: 'reportVersion.findUnique', args });
+      return null;
+    },
+  } as never;
   const db = {
-    reportVersion: {
-      async findUnique(args: unknown) {
-        calls.push({ method: 'reportVersion.findUnique', args });
-        return null;
-      },
-    } as never,
+    reportVersion,
+    async $transaction<T>(
+      operation: (transaction: {
+        reportVersion: typeof reportVersion;
+      }) => Promise<T>,
+    ) {
+      return operation({ reportVersion });
+    },
   };
   const repository = createReportVersionRepository(db);
   const version = await repository.findById(
@@ -126,6 +134,37 @@ const validInput = {
   assert.equal(versions.length, 1);
   assert.equal(versions[0]?.id, reportVersionRow.id);
   assert.equal(calls[0]?.method, 'reportVersion.findMany');
+}
+
+// withTransaction binds all operations to the same transaction client
+{
+  const { calls, db } = createReportVersionDb();
+  const repository = createReportVersionRepository(db);
+
+  const result = await repository.withTransaction(
+    async transactionRepository => {
+      assert.equal('withTransaction' in transactionRepository, false);
+      return transactionRepository.findByReportId('rpt_123');
+    },
+  );
+
+  assert.equal(result.length, 1);
+  assert.equal(calls[0]?.method, '$transaction');
+  assert.equal(calls[1]?.method, 'reportVersion.findMany');
+}
+
+// withTransaction preserves application errors raised by its operation
+{
+  const { db } = createReportVersionDb();
+  const repository = createReportVersionRepository(db);
+  const failure = new Error('numbering failed');
+
+  await assert.rejects(
+    repository.withTransaction(async () => {
+      throw failure;
+    }),
+    error => error === failure,
+  );
 }
 
 // no update or delete methods exist on the repository interface
