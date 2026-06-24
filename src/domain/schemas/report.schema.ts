@@ -2,12 +2,14 @@ import { z } from 'zod';
 
 import type {
   CreateDraftReportVersionRequest,
+  CreateFinalReportVersionRequest,
   Report,
   ReportVersion,
   ReportVersionResponse,
 } from '../report.js';
 
 import {
+  reportPreviewRequestObjectSchema,
   reportPreviewRequestSchema,
   reportPreviewSnapshotSchema,
 } from './report-preview.schema.js';
@@ -102,6 +104,18 @@ type CreateDraftReportVersionRequestSchemaOutput = z.output<
   typeof createDraftReportVersionRequestSchema
 >;
 const _createDraftReportVersionRequestSchemaCompatibilityCheck: CreateDraftReportVersionRequestSchemaOutput extends CreateDraftReportVersionRequest
+  ? true
+  : never = true;
+
+export const createFinalReportVersionRequestSchema =
+  reportPreviewRequestObjectSchema
+    .extend({ expectedLatestVersion: nonNegativeIntegerSchema })
+    .strict();
+
+type CreateFinalReportVersionRequestSchemaOutput = z.output<
+  typeof createFinalReportVersionRequestSchema
+>;
+const _createFinalReportVersionRequestSchemaCompatibilityCheck: CreateFinalReportVersionRequestSchemaOutput extends CreateFinalReportVersionRequest
   ? true
   : never = true;
 

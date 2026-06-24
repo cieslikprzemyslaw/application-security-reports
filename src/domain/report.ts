@@ -77,6 +77,9 @@ export interface ReportVersion {
 
 export type CreateReportVersionInput = Omit<ReportVersion, 'id'>;
 export type CreateDraftReportVersionRequest = ReportPreviewRequest;
+export type CreateFinalReportVersionRequest = ReportPreviewRequest & {
+  expectedLatestVersion: number;
+};
 export type ReportVersionResponse = Omit<ReportVersion, 'filePath'>;
 
 export type CreateReportInput = Omit<Report, 'id' | 'createdAt' | 'updatedAt'>;

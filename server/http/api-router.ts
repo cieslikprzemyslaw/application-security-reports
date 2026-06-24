@@ -20,6 +20,7 @@ import { createEvidenceRouter } from '../routes/evidence.route.js';
 import { registerHealthRoute } from '../routes/health.route.js';
 import { createCompaniesRouter } from '../routes/companies.route.js';
 import { createReportVersionsDraftRouter } from '../routes/report-versions.draft.route.js';
+import { createReportVersionsFinalRouter } from '../routes/report-versions.final.route.js';
 import { createReportsPreviewRouter } from '../routes/reports.preview.route.js';
 import { createReportsReadinessRouter } from '../routes/reports.readiness.route.js';
 import { createReportsRouter } from '../routes/reports.route.js';
@@ -135,6 +136,12 @@ export const createApiRouter = (
         threatRepository: options.threatRepository,
         evidenceRepository: options.evidenceRepository,
         settingsRepository: options.settingsRepository,
+      }),
+    );
+    router.use(
+      '/reports',
+      createReportVersionsFinalRouter({
+        reportVersionRepository: options.reportVersionRepository,
       }),
     );
   }
