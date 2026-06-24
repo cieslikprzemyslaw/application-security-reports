@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { RepositoryConflictError } from '../errors.js';
+
 import type {
   RepositoryClient,
   RepositoryTransactionClient,
@@ -21,6 +23,7 @@ const createDb = () => {
     report: {
       findUnique: vi.fn().mockResolvedValue(null),
       update: vi.fn(),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
     reportVersion: {
       create: vi.fn(),
@@ -55,6 +58,11 @@ describe('ReportVersion finalisation transaction repositories', () => {
       await repositories.reportRepository.findById(reportId);
       await repositories.settingsRepository.get();
       await repositories.reportVersionRepository.findByReportId(reportId);
+      await repositories.reportVersionRepository.updateReportLatestVersionIfCurrent(
+        reportId,
+        0,
+        10,
+      );
     });
 
     expect(db.$transaction).toHaveBeenCalledOnce();
@@ -65,6 +73,28 @@ describe('ReportVersion finalisation transaction repositories', () => {
     expect(transaction.report.findUnique).toHaveBeenCalledOnce();
     expect(transaction.settings.findFirst).toHaveBeenCalledOnce();
     expect(transaction.reportVersion.findMany).toHaveBeenCalledOnce();
+    expect(transaction.report.updateMany).toHaveBeenCalledWith({
+      where: { id: reportId, latestVersion: 0 },
+      data: { latestVersion: 10 },
+    });
+  });
+
+  it('rejects a stale latestVersion compare-and-set update', async () => {
+    const { db, transaction } = createDb();
+    vi.mocked(transaction.report.updateMany).mockResolvedValueOnce({
+      count: 0,
+    });
+    const repository = createReportVersionRepository(db);
+
+    await expect(
+      repository.withFinalisationTransaction(repositories =>
+        repositories.reportVersionRepository.updateReportLatestVersionIfCurrent(
+          reportId,
+          0,
+          10,
+        ),
+      ),
+    ).rejects.toBeInstanceOf(RepositoryConflictError);
   });
 
   it('preserves an operation error so callers can map conflicts without an automatic retry', async () => {

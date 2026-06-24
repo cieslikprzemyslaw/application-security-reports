@@ -140,6 +140,7 @@ const createVersionRepositoryFake = (
     findById,
     findByReportId,
     updateReportLatestVersion,
+    updateReportLatestVersionIfCurrent: vi.fn(async () => undefined),
   };
   const withTransactionCalls = vi.fn();
   const withTransaction: ReportVersionRepository['withTransaction'] =

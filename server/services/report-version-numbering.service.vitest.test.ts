@@ -228,6 +228,7 @@ describe('withNextReportVersionNumber', () => {
       create: vi.fn(),
       findById: vi.fn(),
       updateReportLatestVersion: vi.fn(),
+      updateReportLatestVersionIfCurrent: vi.fn(),
     } satisfies ReportVersionTransactionRepository;
     const transactionStarted = vi.fn();
     const withTransaction = async <T>(
@@ -270,6 +271,7 @@ describe('withNextReportVersionNumber', () => {
       create: vi.fn(),
       findById: vi.fn(),
       updateReportLatestVersion: vi.fn(),
+      updateReportLatestVersionIfCurrent: vi.fn(),
     } satisfies ReportVersionTransactionRepository;
     const transactionStarted = vi.fn();
     const withTransaction = async <T>(

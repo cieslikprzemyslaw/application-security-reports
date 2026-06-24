@@ -7,7 +7,11 @@ import {
   formatValidationErrors,
 } from '../../../src/validation/index.js';
 import { generateId } from '../../utils/id.js';
-import { mapPrismaError, RepositoryError } from '../errors.js';
+import {
+  mapPrismaError,
+  RepositoryConflictError,
+  RepositoryError,
+} from '../errors.js';
 import type {
   RepositoryClient,
   RepositoryTransactionClient,
@@ -31,6 +35,11 @@ export interface ReportVersionTransactionRepository {
   findById(id: string): Promise<ReportVersion | null>;
   findByReportId(reportId: string): Promise<ReportVersion[]>;
   updateReportLatestVersion(reportId: string, version: number): Promise<void>;
+  updateReportLatestVersionIfCurrent(
+    reportId: string,
+    expectedLatestVersion: number,
+    version: number,
+  ): Promise<void>;
 }
 
 export interface ReportVersionFinalisationTransactionRepositories {
@@ -166,6 +175,27 @@ const createTransactionRepository = (
         where: { id: reportId },
         data: { latestVersion: version },
       });
+    } catch (error) {
+      throw mapPrismaError(error);
+    }
+  },
+
+  async updateReportLatestVersionIfCurrent(
+    reportId,
+    expectedLatestVersion,
+    version,
+  ) {
+    try {
+      const result = await db.report.updateMany({
+        where: { id: reportId, latestVersion: expectedLatestVersion },
+        data: { latestVersion: version },
+      });
+
+      if (result.count !== 1) {
+        throw new RepositoryConflictError(
+          'Report version changed before finalisation completed.',
+        );
+      }
     } catch (error) {
       throw mapPrismaError(error);
     }

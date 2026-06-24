@@ -33,6 +33,7 @@ describe('final ReportVersion production integration', () => {
       const first = await finaliseReportVersion(
         {
           reportId: harness.report.id,
+          expectedLatestVersion: 0,
           request,
           baseUrl: 'http://localhost:3001',
         },
@@ -55,6 +56,7 @@ describe('final ReportVersion production integration', () => {
       const second = await finaliseReportVersion(
         {
           reportId: harness.report.id,
+          expectedLatestVersion: 10,
           request,
           baseUrl: 'http://localhost:3001',
         },
@@ -105,6 +107,7 @@ describe('final ReportVersion production integration', () => {
       const result = await finaliseReportVersion(
         {
           reportId: harness.report.id,
+          expectedLatestVersion: 0,
           request,
           baseUrl: 'http://localhost:3001',
         },
@@ -134,6 +137,49 @@ describe('final ReportVersion production integration', () => {
     }
   });
 
+  it('rejects a stale expectedLatestVersion without creating a second final', async () => {
+    const harness = await createReportsRouteIntegrationHarness();
+    const request = buildRequest(harness);
+
+    try {
+      await finaliseReportVersion(
+        {
+          reportId: harness.report.id,
+          expectedLatestVersion: 0,
+          request,
+          baseUrl: 'http://localhost:3001',
+        },
+        { reportVersionRepository: harness.reportVersionRepository },
+      );
+
+      await expect(
+        finaliseReportVersion(
+          {
+            reportId: harness.report.id,
+            expectedLatestVersion: 0,
+            request,
+            baseUrl: 'http://localhost:3001',
+          },
+          { reportVersionRepository: harness.reportVersionRepository },
+        ),
+      ).rejects.toMatchObject({ name: 'RepositoryConflictError' });
+
+      const versions = await harness.reportVersionRepository.findByReportId(
+        harness.report.id,
+      );
+      expect(versions.map(version => version.version)).toEqual([10]);
+      expect(
+        (
+          await harness.prisma.report.findUniqueOrThrow({
+            where: { id: harness.report.id },
+          })
+        ).latestVersion,
+      ).toBe(10);
+    } finally {
+      await harness.cleanup();
+    }
+  });
+
   it('rolls back the final version when the parent Report update fails', async () => {
     const harness = await createReportsRouteIntegrationHarness();
     const request = buildRequest(harness);
@@ -148,7 +194,7 @@ describe('final ReportVersion production integration', () => {
               ...repositories,
               reportVersionRepository: {
                 ...repositories.reportVersionRepository,
-                updateReportLatestVersion: async () => {
+                updateReportLatestVersionIfCurrent: async () => {
                   throw new Error('forced latestVersion update failure');
                 },
               },
@@ -161,6 +207,7 @@ describe('final ReportVersion production integration', () => {
         finaliseReportVersion(
           {
             reportId: harness.report.id,
+            expectedLatestVersion: 0,
             request,
             baseUrl: 'http://localhost:3001',
           },

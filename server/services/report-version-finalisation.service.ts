@@ -1,12 +1,14 @@
 import type { ReportReadinessResult } from '../../src/domain/report-readiness.js';
 import type { ReportPreviewRequest } from '../../src/domain/report-preview.js';
 import type { ReportVersionResponse } from '../../src/domain/report.js';
+import { RepositoryConflictError } from '../database/errors.js';
 import type { ReportVersionRepository } from '../database/repositories/reportVersion.repository.js';
 import { resolveReportReadinessSnapshot } from './report-readiness.service.js';
 import { getNextReportVersionNumber } from './report-version-numbering.service.js';
 
 export interface FinaliseReportVersionInput {
   reportId: string;
+  expectedLatestVersion: number;
   request: ReportPreviewRequest;
   baseUrl: string;
 }
@@ -41,10 +43,14 @@ export const finaliseReportVersion = async (
 ): Promise<FinaliseReportVersionResult> =>
   dependencies.reportVersionRepository.withFinalisationTransaction(
     async repositories => {
-      const { snapshot, readiness } = await resolveReportReadinessSnapshot(
-        input,
-        repositories,
-      );
+      const { report, snapshot, readiness } =
+        await resolveReportReadinessSnapshot(input, repositories);
+
+      if (report.latestVersion !== input.expectedLatestVersion) {
+        throw new RepositoryConflictError(
+          'Report version changed before finalisation started.',
+        );
+      }
 
       if (readiness.errors.length > 0) {
         return {
@@ -67,8 +73,9 @@ export const finaliseReportVersion = async (
         snapshot,
       });
 
-      await repositories.reportVersionRepository.updateReportLatestVersion(
+      await repositories.reportVersionRepository.updateReportLatestVersionIfCurrent(
         input.reportId,
+        input.expectedLatestVersion,
         version,
       );
 

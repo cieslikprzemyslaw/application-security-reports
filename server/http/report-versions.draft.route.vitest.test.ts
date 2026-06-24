@@ -56,6 +56,7 @@ const createVersionRepository = (
     findById: vi.fn(async () => null),
     findByReportId: vi.fn(async () => structuredClone(history)),
     updateReportLatestVersion: vi.fn(async () => undefined),
+    updateReportLatestVersionIfCurrent: vi.fn(async () => undefined),
   };
   const withTransactionCalls = vi.fn();
   const withTransaction: ReportVersionRepository['withTransaction'] =
