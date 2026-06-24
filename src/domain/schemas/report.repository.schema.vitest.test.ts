@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   createDraftReportVersionRequestSchema,
+  createFinalReportVersionRequestSchema,
   createReportRequestSchema,
   reportSchema,
   reportVersionResponseSchema,
@@ -94,6 +95,17 @@ describe('Report runtime schemas', () => {
     ).toBe(true);
 
     expect(
+      createFinalReportVersionRequestSchema.safeParse({
+        companyId: validReportVersionSnapshot.company.id,
+        assessmentId,
+        expectedLatestVersion: 0,
+        selection: { threatIds: [], evidenceIds: [] },
+        configuration: { includeEvidence: false },
+        brandingMode: 'issuer',
+      }).success,
+    ).toBe(true);
+
+    expect(
       reportVersionResponseSchema.safeParse({
         id: 'rptv_00000000-0000-0000-0000-000000000001',
         reportId: 'rpt_00000000-0000-0000-0000-000000000001',
@@ -114,6 +126,27 @@ describe('Report runtime schemas', () => {
         configuration: { includeEvidence: false },
         brandingMode: 'issuer',
         version: 99,
+      }).success,
+    ).toBe(false);
+
+    expect(
+      createFinalReportVersionRequestSchema.safeParse({
+        companyId: validReportVersionSnapshot.company.id,
+        assessmentId,
+        selection: { threatIds: [], evidenceIds: [] },
+        configuration: { includeEvidence: false },
+        brandingMode: 'issuer',
+      }).success,
+    ).toBe(false);
+
+    expect(
+      createFinalReportVersionRequestSchema.safeParse({
+        companyId: validReportVersionSnapshot.company.id,
+        assessmentId,
+        expectedLatestVersion: -1,
+        selection: { threatIds: [], evidenceIds: [] },
+        configuration: { includeEvidence: false },
+        brandingMode: 'issuer',
       }).success,
     ).toBe(false);
 
