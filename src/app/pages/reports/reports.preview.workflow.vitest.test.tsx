@@ -134,16 +134,8 @@ describe('Report Builder preview through the production route', () => {
       );
 
       await waitFor(() => {
-        assert.ok(textContent(container).includes('Select an assessment'));
-        assert.equal(textContent(container).includes('✓ Auto-saved'), false);
-      });
-
-      await act(async () => {
-        findButton(container, 'Data')?.click();
-      });
-
-      await waitFor(() => {
         assert.ok(textContent(container).includes('Selection tree'));
+        assert.equal(textContent(container).includes('✓ Auto-saved'), false);
       });
 
       const includeEvidenceCheckbox = container.querySelector(
@@ -198,9 +190,15 @@ describe('Report Builder preview through the production route', () => {
         findButton(container, 'Data')?.click();
       });
 
+      await waitFor(() => {
+        assert.ok(textContent(container).includes('Selection tree'));
+      });
+
       const refreshedIncludeEvidenceCheckbox = container.querySelector(
         '#report-builder-include-evidence',
-      ) as HTMLInputElement;
+      ) as HTMLInputElement | null;
+
+      assert.ok(refreshedIncludeEvidenceCheckbox);
 
       await act(async () => {
         refreshedIncludeEvidenceCheckbox.click();
@@ -225,8 +223,20 @@ describe('Report Builder preview through the production route', () => {
         findButton(container, 'Data')?.click();
       });
 
-      assert.equal(refreshedIncludeEvidenceCheckbox.checked, false);
-      assert.equal(assessmentCheckbox.checked, true);
+      await waitFor(() => {
+        assert.ok(textContent(container).includes('Selection tree'));
+      });
+
+      const restoredIncludeEvidenceCheckbox = container.querySelector(
+        '#report-builder-include-evidence',
+      ) as HTMLInputElement | null;
+      const restoredAssessmentCheckbox = findCheckbox(
+        container,
+        `assessment-${previewAssessmentId}`,
+      );
+
+      assert.equal(restoredIncludeEvidenceCheckbox?.checked, false);
+      assert.equal(restoredAssessmentCheckbox?.checked, true);
 
       await act(async () => {
         root.unmount();

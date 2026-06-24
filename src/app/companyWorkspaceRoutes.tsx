@@ -1,5 +1,12 @@
 import React from 'react';
-import { Navigate, Outlet, useParams } from 'react-router-dom';
+import {
+  Navigate,
+  Outlet,
+  useLocation,
+  useNavigate,
+  useNavigationType,
+  useParams,
+} from 'react-router-dom';
 
 import { ActivityFeed, PageHeader } from '~/app/components/common';
 import {
@@ -7,13 +14,18 @@ import {
   RouteLoadingView,
 } from '~/app/components/routeStateViews';
 import IconSVG from '~/app/components/ui/iconSVG';
-import type { CompanyListItem } from '~/domain';
+import type { CompanyListItem, ReportBuilderState } from '~/domain';
+import type { ReportPreviewShellTab } from '~/app/components/appsec/reportPreviewShell';
 import { routes } from '~/routes';
 
 import { recentActivity, reportCover } from './appData';
 import CompanyOverviewDashboard from './pages/dashboard/companyOverviewDashboard.component';
 import Assessments from './pages/assessments';
 import Reports from './pages/reports';
+import {
+  parseReportBuilderRouteState,
+  serializeReportBuilderRouteState,
+} from './pages/reports/reportBuilderState';
 
 import type { SidebarNavigationGroup } from './layouts/sidebar';
 
@@ -135,6 +147,67 @@ export const CompanyReportsRoute = ({
   companyName,
 }: CompanyWorkspaceRouteProps) => {
   const companyId = useCompanyId();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const navigationType = useNavigationType();
+
+  if (!companyId) {
+    return null;
+  }
+
+  const editorPath = routes.companyWorkspaceReports(companyId);
+  const previewPath = routes.companyWorkspaceReportsPreview(companyId);
+
+  if (location.pathname !== editorPath && location.pathname !== previewPath) {
+    return (
+      <EntityNotFoundView
+        entityName="Company workspace"
+        listHref={routes.companyWorkspaceOverview(companyId)}
+        listLabel="Return to overview"
+      />
+    );
+  }
+
+  const view: ReportPreviewShellTab =
+    location.pathname === previewPath ? 'preview' : 'data';
+  const routeState = parseReportBuilderRouteState(companyId, location.state);
+
+  if (view === 'preview' && !routeState) {
+    return <Navigate replace to={routes.companyWorkspaceReports(companyId)} />;
+  }
+
+  const handleViewChange = (
+    nextView: ReportPreviewShellTab,
+    builderState: ReportBuilderState,
+  ) => {
+    if (nextView === view) {
+      return;
+    }
+
+    if (nextView === 'data') {
+      navigate(-1);
+      return;
+    }
+
+    const serializedState = serializeReportBuilderRouteState(builderState);
+
+    void (async () => {
+      await navigate(routes.companyWorkspaceReports(companyId), {
+        replace: true,
+        state: serializedState,
+      });
+      await navigate(routes.companyWorkspaceReportsPreview(companyId), {
+        state: serializedState,
+      });
+    })();
+  };
+
+  const focusTarget =
+    view === 'preview'
+      ? 'preview-heading'
+      : navigationType === 'POP' && routeState
+        ? 'preview-tab'
+        : undefined;
 
   return (
     <Reports
@@ -142,6 +215,11 @@ export const CompanyReportsRoute = ({
       companyId={companyId}
       companyName={companyName}
       cover={reportCover}
+      builderRouteState={routeState}
+      builderView={view}
+      builderFocusTarget={focusTarget}
+      builderFocusKey={location.key}
+      onBuilderViewChange={handleViewChange}
     />
   );
 };

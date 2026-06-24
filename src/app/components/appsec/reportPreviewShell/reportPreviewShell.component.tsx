@@ -5,7 +5,10 @@ import { LightThemeProvider } from '~/theme';
 
 import StyledReportPreviewShell from './reportPreviewShell.styled';
 
-import type { ReportPreviewShellProps } from './reportPreviewShell.type';
+import type {
+  ReportPreviewShellProps,
+  ReportPreviewShellTab,
+} from './reportPreviewShell.type';
 
 const ReportPreviewShell = ({
   applicationName,
@@ -13,17 +16,37 @@ const ReportPreviewShell = ({
   autoSaved = true,
   preview,
   dataView,
+  activeTab,
+  onActiveTabChange,
+  previewTabRef,
+  titleRef,
   onPrint,
   onDownloadPdf,
 }: ReportPreviewShellProps) => {
-  const [activeTab, setActiveTab] = useState<'preview' | 'data'>('preview');
+  const [internalActiveTab, setInternalActiveTab] =
+    useState<ReportPreviewShellTab>('preview');
+  const resolvedActiveTab = activeTab ?? internalActiveTab;
+
+  const handleTabChange = (nextTab: ReportPreviewShellTab) => {
+    if (activeTab === undefined) {
+      setInternalActiveTab(nextTab);
+    }
+
+    onActiveTabChange?.(nextTab);
+  };
 
   return (
     <LightThemeProvider>
       <StyledReportPreviewShell>
         <header className="report-preview-shell-header">
           <div>
-            <h1 className="report-preview-shell-title">Report Preview</h1>
+            <h1
+              ref={titleRef}
+              className="report-preview-shell-title"
+              tabIndex={-1}
+            >
+              Report Preview
+            </h1>
 
             <p className="report-preview-shell-subtitle">
               {applicationName}
@@ -34,16 +57,23 @@ const ReportPreviewShell = ({
         </header>
 
         <div className="report-preview-shell-toolbar">
-          <div className="report-preview-shell-tabs">
+          <div
+            className="report-preview-shell-tabs"
+            role="tablist"
+            aria-label="Report view"
+          >
             <button
+              ref={previewTabRef}
               className={[
                 'report-preview-shell-tab-button',
-                activeTab === 'preview'
+                resolvedActiveTab === 'preview'
                   ? 'report-preview-shell-tab-button--active'
                   : 'report-preview-shell-tab-button--inactive',
               ].join(' ')}
               type="button"
-              onClick={() => setActiveTab('preview')}
+              role="tab"
+              aria-selected={resolvedActiveTab === 'preview'}
+              onClick={() => handleTabChange('preview')}
             >
               Preview
             </button>
@@ -51,12 +81,14 @@ const ReportPreviewShell = ({
             <button
               className={[
                 'report-preview-shell-tab-button',
-                activeTab === 'data'
+                resolvedActiveTab === 'data'
                   ? 'report-preview-shell-tab-button--active'
                   : 'report-preview-shell-tab-button--inactive',
               ].join(' ')}
               type="button"
-              onClick={() => setActiveTab('data')}
+              role="tab"
+              aria-selected={resolvedActiveTab === 'data'}
+              onClick={() => handleTabChange('data')}
             >
               Data
             </button>
@@ -81,7 +113,7 @@ const ReportPreviewShell = ({
 
         <div className="report-preview-shell-stage">
           <div className="report-preview-shell-paper">
-            {activeTab === 'preview' ? preview : dataView}
+            {resolvedActiveTab === 'preview' ? preview : dataView}
           </div>
         </div>
       </StyledReportPreviewShell>

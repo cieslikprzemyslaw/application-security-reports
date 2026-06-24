@@ -26,6 +26,10 @@ describe('routes', () => {
       '/companies/:companyId/reports',
     );
     assert.equal(
+      routePatterns.companyWorkspaceReportsPreview,
+      '/companies/:companyId/reports/preview',
+    );
+    assert.equal(
       routePatterns.companyWorkspaceActivity,
       '/companies/:companyId/activity',
     );
@@ -45,6 +49,10 @@ describe('routes', () => {
     assert.equal(
       routes.companyWorkspaceReports('cmp_123'),
       '/companies/cmp_123/reports',
+    );
+    assert.equal(
+      routes.companyWorkspaceReportsPreview('cmp_123'),
+      '/companies/cmp_123/reports/preview',
     );
     assert.equal(
       routes.companyWorkspaceActivity('cmp_123'),
