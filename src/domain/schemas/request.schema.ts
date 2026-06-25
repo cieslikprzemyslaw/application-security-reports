@@ -129,6 +129,13 @@ export const reportRouteParamsSchema = z
   })
   .strict();
 
+export const reportVersionRouteParamsSchema = z
+  .object({
+    id: prefixedUuidSchema('rpt_', 'Report'),
+    versionId: prefixedUuidSchema('rvs_', 'ReportVersion'),
+  })
+  .strict();
+
 export const assessmentCommandRequestSchema = z
   .object({
     recordVersion: nonNegativeIntegerSchema,
