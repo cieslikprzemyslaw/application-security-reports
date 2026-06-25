@@ -80,6 +80,14 @@ const StyledReportPreviewShell = styled.div.attrs({
       gap: ${spacing.xxs};
     }
 
+    .report-preview-shell-print-hint {
+      flex-basis: 100%;
+      max-width: 32rem;
+      color: ${colors.text.muted};
+      font-size: ${typography.body.small.size};
+      line-height: ${typography.body.small.lineHeight};
+    }
+
     .report-preview-shell-auto-saved {
       color: ${colors.feedback.success};
       font-size: ${typography.body.small.size};

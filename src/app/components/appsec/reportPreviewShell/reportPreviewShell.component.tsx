@@ -114,6 +114,14 @@ const ReportPreviewShell = ({
               onPrint={handlePrint}
               onGeneratePdf={onDownloadPdf}
             />
+
+            <span
+              className="report-preview-shell-print-hint no-print"
+              role="note"
+            >
+              For a clean PDF, open More settings and disable browser Headers
+              and footers.
+            </span>
           </div>
         </div>
 

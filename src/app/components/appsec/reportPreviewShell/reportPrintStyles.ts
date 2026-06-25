@@ -3,7 +3,7 @@ import { createGlobalStyle } from 'styled-components';
 const ReportPrintStyles = createGlobalStyle`
   @page {
     size: auto;
-    margin: 12mm;
+    margin: 12mm 12mm 20mm;
   }
 
   @media print {

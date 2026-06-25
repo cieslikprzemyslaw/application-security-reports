@@ -155,6 +155,12 @@ describe('reportPreviewShell', () => {
       '#FFFFFF',
     );
 
+    assert.ok(
+      container.textContent?.includes(
+        'For a clean PDF, open More settings and disable browser Headers and footers.',
+      ),
+    );
+
     await clickButton(container, 'Print');
 
     assert.equal(printSpy.mock.calls.length, 1);
