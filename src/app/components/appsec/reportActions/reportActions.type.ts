@@ -4,6 +4,6 @@ export interface ReportActionsProps extends HTMLAttributes<HTMLDivElement> {
   isGenerating?: boolean;
   onPreview?: () => void;
   onPrint?: () => void;
-  onDownloadPdf?: () => void;
+  onGeneratePdf?: () => void;
   onDownloadMarkdown?: () => void;
 }

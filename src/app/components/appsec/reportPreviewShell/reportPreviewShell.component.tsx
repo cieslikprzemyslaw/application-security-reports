@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import Button from '~/app/components/ui/button';
+import ReportActions from '~/app/components/appsec/reportActions';
 import { LightThemeProvider } from '~/theme';
 
 import ReportPrintStyles from './reportPrintStyles';
@@ -110,11 +110,10 @@ const ReportPreviewShell = ({
               </span>
             )}
 
-            <Button title="Print" variant="secondary" onClick={handlePrint} />
-
-            {onDownloadPdf && (
-              <Button title="Download PDF" onClick={onDownloadPdf} />
-            )}
+            <ReportActions
+              onPrint={handlePrint}
+              onGeneratePdf={onDownloadPdf}
+            />
           </div>
         </div>
 

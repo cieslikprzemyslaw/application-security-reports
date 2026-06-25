@@ -23,15 +23,18 @@ const findButton = (container: HTMLElement, label: string) =>
   );
 
 describe('Report printing through the production router', () => {
-  it('prints the saved Preview while the Data tab is active', async () => {
+  it('opens the PDF print flow for the saved Preview while the Data tab is active', async () => {
     const calls = setupReportDetailsFetchFixture();
     const originalPrint = window.print;
     let printCalls = 0;
+    let documentTitleAtPrint = '';
+    let originalDocumentTitle = '';
 
     Object.defineProperty(window, 'print', {
       configurable: true,
       value: () => {
         printCalls += 1;
+        documentTitleAtPrint = document.title;
       },
     });
 
@@ -39,6 +42,7 @@ describe('Report printing through the production router', () => {
       const { container, root } = await renderApp(
         routes.reportDetails(reportDetailsCompanyId, reportDetailsReportId),
       );
+      originalDocumentTitle = document.title;
 
       await waitFor(() => {
         assert.ok(textContent(container).includes('Current Customer Portal'));
@@ -62,11 +66,14 @@ describe('Report printing through the production router', () => {
       const dataPanel = container.querySelector(
         '.report-preview-shell-panel--data',
       );
-      const printButton = findButton(container, 'Print');
+      const generatePdfButton = findButton(container, 'Generate PDF');
 
       assert.ok(previewPanel, 'Expected the printable Preview panel');
       assert.ok(dataPanel, 'Expected the active Data panel');
-      assert.ok(printButton, 'Expected the browser Print action');
+      assert.ok(
+        generatePdfButton,
+        'Expected the saved-version Generate PDF action',
+      );
 
       assert.ok(
         previewPanel.classList.contains('report-preview-shell-panel--inactive'),
@@ -97,10 +104,17 @@ describe('Report printing through the production router', () => {
       );
 
       await act(async () => {
-        printButton.click();
+        generatePdfButton.click();
       });
 
       assert.equal(printCalls, 1);
+      assert.equal(
+        documentTitleAtPrint,
+        'Northstar Digital - Current Customer Portal - v1.1',
+      );
+      assert.equal(document.title, originalDocumentTitle);
+      assert.equal(calls.length, 2);
+      assert.ok(calls.includes('/api/companies'));
       assert.ok(
         calls.includes(`/api/reports/${reportDetailsReportId}/versions`),
       );

@@ -10,6 +10,10 @@ import ReportBuilderPreview from '~/app/pages/reports/reportBuilderPreview.compo
 import { routes } from '~/routes';
 
 import { useReportDetailsController } from './reportDetails.controller';
+import {
+  createReportPdfDocumentTitle,
+  openReportPdfPrintFlow,
+} from './reportPdf';
 
 import type { ReportDetailsProps } from './reportDetails.type';
 
@@ -65,6 +69,13 @@ const ReportDetails = ({
 
   const applicationName =
     snapshot.assessment.applicationName ?? snapshot.assessment.title;
+  const pdfDocumentTitle = createReportPdfDocumentTitle({
+    companyName: snapshot.company.name,
+    reportTitle: snapshot.assessment.title,
+    versionLabel: `v${formatReportVersionNumber(version.version)}`,
+  });
+  const handleGeneratePdf =
+    onDownloadPdf ?? (() => openReportPdfPrintFlow(pdfDocumentTitle));
 
   return (
     <ReportPreviewShell
@@ -82,7 +93,7 @@ const ReportDetails = ({
       }
       dataView={<pre>{JSON.stringify(version, null, 2)}</pre>}
       onPrint={onPrint}
-      onDownloadPdf={onDownloadPdf}
+      onDownloadPdf={handleGeneratePdf}
     />
   );
 };

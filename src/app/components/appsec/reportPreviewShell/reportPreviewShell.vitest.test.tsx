@@ -93,6 +93,7 @@ describe('reportPreviewShell', () => {
 
     const { container, window } = setupDom();
     const printSpy = vi.fn();
+    const generatePdfSpy = vi.fn();
     Object.defineProperty(window, 'print', {
       configurable: true,
       value: printSpy,
@@ -110,6 +111,7 @@ describe('reportPreviewShell', () => {
             assessmentCode="ASM-001"
             preview={<ThemeProbe label="Preview" />}
             dataView={<ThemeProbe label="Data" />}
+            onDownloadPdf={generatePdfSpy}
           />
         </ThemeProvider>,
       );
@@ -156,6 +158,10 @@ describe('reportPreviewShell', () => {
     await clickButton(container, 'Print');
 
     assert.equal(printSpy.mock.calls.length, 1);
+
+    await clickButton(container, 'Generate PDF');
+
+    assert.equal(generatePdfSpy.mock.calls.length, 1);
     assert.ok(container.textContent?.includes('Preview'));
 
     await act(async () => {
