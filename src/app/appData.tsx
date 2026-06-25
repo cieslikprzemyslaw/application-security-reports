@@ -323,14 +323,3 @@ export const reportCover: ReportCoverProps = {
   footerText: '© 2026 Northstar Digital. Confidential — do not distribute.',
   confidential: true,
 };
-
-export const reportDetailsById: Record<
-  string,
-  {
-    cover: ReportCoverProps;
-  }
-> = {
-  [reportCover.reportId]: {
-    cover: reportCover,
-  },
-};

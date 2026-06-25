@@ -13,61 +13,143 @@ import {
   waitFor,
 } from '~/app/appRouter.tests/support';
 
+import {
+  latestReportVersion,
+  missingReportId,
+  oldReportVersionId,
+  reportDetailsCompanyId,
+  reportDetailsReportId,
+  setupReportDetailsFetchFixture,
+} from '~/app/appRouter.tests/reportDetailsFixture';
+
 describe('Report workflow through the production router', () => {
-  it('supports direct Report navigation and observable Preview/Data state', async () => {
-    const { reportCover } = await import('~/app/appData');
-    const { container, root } = await renderApp(
-      routes.reportDetails(reportCover.reportId),
-    );
+  it('loads the latest immutable ReportVersion and preserves Preview/Data state', async () => {
+    const calls = setupReportDetailsFetchFixture();
 
-    await waitFor(() => {
-      assert.ok(textContent(container).includes('Report Preview'));
-      assert.ok(textContent(container).includes(reportCover.reportId));
-    });
-
-    const dataButton = Array.from(container.querySelectorAll('button')).find(
-      button => button.textContent?.trim() === 'Data',
-    );
-
-    assert.ok(dataButton, 'Expected the Report Data tab');
-
-    await act(async () => {
-      dataButton!.dispatchEvent(
-        new window.MouseEvent('click', {
-          bubbles: true,
-          cancelable: true,
-          button: 0,
-        }),
+    try {
+      const { container, root } = await renderApp(
+        routes.reportDetails(reportDetailsCompanyId, reportDetailsReportId),
       );
-    });
 
-    await waitFor(() => {
-      assert.ok(textContent(container).includes('"reportId"'));
-      assert.ok(textContent(container).includes(reportCover.reportId));
-    });
+      await waitFor(() => {
+        assert.ok(textContent(container).includes('Report Preview'));
+        assert.ok(textContent(container).includes('Current Customer Portal'));
+        assert.ok(textContent(container).includes('v1.1'));
+        assert.ok(container.querySelector('.risk-summary'));
+        assert.ok(container.querySelector('.severity-distribution'));
+        const metrics = Array.from(
+          container.querySelectorAll('.risk-summary-metric'),
+        );
+        const metricValue = (label: string) =>
+          metrics
+            .find(metric => metric.textContent?.includes(label))
+            ?.querySelector('strong')?.textContent;
+        assert.equal(metricValue('Total findings'), '3');
+        assert.equal(metricValue('Open threats'), '1');
+        assert.equal(metricValue('Retest required'), '2');
+        assert.ok(
+          container.querySelector(
+            '[aria-label="Severity distribution. 3 total findings."]',
+          ),
+        );
+      });
 
-    const previewButton = Array.from(container.querySelectorAll('button')).find(
-      button => button.textContent?.trim() === 'Preview',
-    );
-
-    await act(async () => {
-      previewButton?.dispatchEvent(
-        new window.MouseEvent('click', {
-          bubbles: true,
-          cancelable: true,
-          button: 0,
-        }),
+      assert.ok(
+        calls.includes(`/api/reports/${reportDetailsReportId}/versions`),
       );
-    });
 
-    await waitFor(() => {
-      assert.ok(textContent(container).includes(reportCover.applicationName));
-      assert.ok(textContent(container).includes('Executive Summary'));
-    });
+      const dataButton = Array.from(container.querySelectorAll('button')).find(
+        button => button.textContent?.trim() === 'Data',
+      );
 
-    await act(async () => {
-      root.unmount();
-    });
+      assert.ok(dataButton, 'Expected the Report Data tab');
+
+      await act(async () => {
+        dataButton!.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+      });
+
+      await waitFor(() => {
+        assert.ok(textContent(container).includes(latestReportVersion.id));
+        assert.ok(
+          textContent(container).includes(
+            `"version": ${latestReportVersion.version}`,
+          ),
+        );
+      });
+
+      const previewButton = Array.from(
+        container.querySelectorAll('button'),
+      ).find(button => button.textContent?.trim() === 'Preview');
+
+      await act(async () => {
+        previewButton?.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+      });
+
+      await waitFor(() => {
+        assert.ok(textContent(container).includes('Current Customer Portal'));
+        assert.ok(textContent(container).includes('Executive Summary'));
+      });
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
+  });
+
+  it('renders an explicitly selected historical version from its saved snapshot', async () => {
+    const calls = setupReportDetailsFetchFixture();
+
+    try {
+      const { container, root } = await renderApp(
+        routes.reportDetailsVersion(
+          reportDetailsCompanyId,
+          reportDetailsReportId,
+          oldReportVersionId,
+        ),
+      );
+
+      await waitFor(() => {
+        assert.ok(
+          textContent(container).includes('<img src=x onerror=alert(1)>'),
+        );
+        assert.ok(
+          textContent(container).includes(
+            'Saved attachment is no longer available.',
+          ),
+        );
+      });
+
+      assert.equal(container.querySelector('img'), null);
+      assert.ok(
+        calls.includes(
+          `/api/reports/${reportDetailsReportId}/versions/${oldReportVersionId}`,
+        ),
+      );
+      assert.equal(
+        calls.includes(`/api/reports/${reportDetailsReportId}/versions`),
+        false,
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
   });
 
   it('renders the Reports workspace through the production route', async () => {
@@ -282,20 +364,29 @@ describe('Report workflow through the production router', () => {
   });
 
   it('keeps a missing Report inside the safe route-level failure state', async () => {
-    const { container, root } = await renderApp(
-      routes.reportDetails('rpt_missing'),
-    );
+    setupReportDetailsFetchFixture();
 
-    await waitFor(() => {
-      assert.ok(textContent(container).includes('Report not found'));
-      assert.ok(textContent(container).includes('Return to reports'));
-      assert.equal(window.location.pathname, '/reports/rpt_missing');
-    });
+    try {
+      const { container, root } = await renderApp(
+        routes.reportDetails(reportDetailsCompanyId, missingReportId),
+      );
 
-    assert.equal(textContent(container).includes('Report Preview'), false);
+      await waitFor(() => {
+        assert.ok(textContent(container).includes('Report not found'));
+        assert.ok(textContent(container).includes('Return to reports'));
+        assert.equal(
+          window.location.pathname,
+          routes.reportDetails(reportDetailsCompanyId, missingReportId),
+        );
+      });
 
-    await act(async () => {
-      root.unmount();
-    });
+      assert.equal(textContent(container).includes('Report Preview'), false);
+
+      await act(async () => {
+        root.unmount();
+      });
+    } finally {
+      restoreFetch();
+    }
   });
 });

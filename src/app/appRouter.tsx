@@ -5,13 +5,13 @@ import {
   Route,
   RouterProvider,
   useParams,
+  useSearchParams,
 } from 'react-router-dom';
 
 import { EntityNotFoundView } from '~/app/components/routeStateViews';
 import NotFound from '~/app/pages/notFound';
 import { routes, routePatterns } from '~/routes';
 import type { AssessmentDetailSection } from './pages/assessmentDetails/assessmentDetails.type';
-import { reportDetailsById } from './appData';
 import {
   ApplicationRouteBoundary,
   AssessmentsRouteElement,
@@ -44,23 +44,34 @@ const AssessmentDetailsRoute = ({ section }: AssessmentDetailsRouteProps) => {
 };
 
 const ReportDetailsRoute = () => {
-  const { reportId } = useParams<{
+  const { companyId, reportId } = useParams<{
+    companyId?: string;
     reportId?: string;
   }>();
+  const [searchParams] = useSearchParams();
+  const versionId = searchParams.get('versionId')?.trim() || undefined;
 
-  if (!reportId || !reportDetailsById[reportId]) {
+  if (!companyId || !reportId) {
     return (
       <EntityNotFoundView
         entityName="Report"
-        listHref={routes.reports}
-        listLabel="Return to reports"
+        listHref={
+          companyId
+            ? routes.companyWorkspaceReports(companyId)
+            : routes.companies
+        }
+        listLabel={companyId ? 'Return to reports' : 'Return to companies'}
       />
     );
   }
 
-  const { cover } = reportDetailsById[reportId];
-
-  return <ReportDetails cover={cover} autoSaved={false} />;
+  return (
+    <ReportDetails
+      companyId={companyId}
+      reportId={reportId}
+      versionId={versionId}
+    />
+  );
 };
 
 const createAppRouter = () =>
@@ -91,6 +102,10 @@ const createAppRouter = () =>
               <Route
                 path="assessments"
                 element={<CompanyAssessmentsRouteElement />}
+              />
+              <Route
+                path={routePatterns.reportDetails}
+                element={<ReportDetailsRoute />}
               />
               <Route path="reports" element={<CompanyReportsRouteElement />}>
                 <Route index element={null} />
@@ -130,10 +145,6 @@ const createAppRouter = () =>
             <Route
               path={routePatterns.assessmentDetailsHistory}
               element={<AssessmentDetailsRoute section="history" />}
-            />
-            <Route
-              path={routePatterns.reportDetails}
-              element={<ReportDetailsRoute />}
             />
             <Route path={routePatterns.threats} element={<ThreatsRoute />} />
             <Route path={routePatterns.reports} element={<ReportsRoute />} />

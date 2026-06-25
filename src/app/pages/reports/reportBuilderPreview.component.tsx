@@ -1,6 +1,8 @@
 import React from 'react';
 
 import ReportCover from '~/app/components/appsec/reportCover';
+import RiskSummary from '~/app/components/appsec/riskSummary';
+import SeverityDistribution from '~/app/components/appsec/severityDistribution';
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import EmptyState from '~/app/components/ui/emptyState';
@@ -10,6 +12,8 @@ import { toReportPreviewPresentation } from './reportPreview.mapper';
 import StyledReportBuilderPreview from './reportBuilderPreview.styled';
 
 interface ReportBuilderPreviewProps extends ReportPreviewControllerState {
+  reportId?: string;
+  issuedDate?: string;
   onRetry: () => void;
 }
 
@@ -17,6 +21,8 @@ const ReportBuilderPreview = ({
   status,
   snapshot,
   errorMessage,
+  reportId,
+  issuedDate,
   onRetry,
 }: ReportBuilderPreviewProps) => {
   if (status === 'idle') {
@@ -61,7 +67,10 @@ const ReportBuilderPreview = ({
     return null;
   }
 
-  const presentation = toReportPreviewPresentation(snapshot);
+  const presentation = toReportPreviewPresentation(snapshot, {
+    reportId,
+    issuedDate,
+  });
 
   return (
     <StyledReportBuilderPreview className="report-builder-preview">
@@ -86,6 +95,20 @@ const ReportBuilderPreview = ({
         </Callout>
       )}
 
+      {snapshot.warnings.length > 0 && (
+        <Callout
+          className="report-builder-preview-warnings no-print"
+          variant="warning"
+          title="Report preview warnings"
+        >
+          <ul>
+            {snapshot.warnings.map((warning, index) => (
+              <li key={`${warning}:${index}`}>{warning}</li>
+            ))}
+          </ul>
+        </Callout>
+      )}
+
       <ReportCover
         {...presentation.cover}
         companyLogo={
@@ -98,6 +121,14 @@ const ReportBuilderPreview = ({
           ) : undefined
         }
       />
+
+      <section
+        className="report-builder-preview-risk-summary"
+        aria-label="Saved report risk summary"
+      >
+        <RiskSummary {...presentation.riskSummary} />
+        <SeverityDistribution items={presentation.severityDistribution} />
+      </section>
     </StyledReportBuilderPreview>
   );
 };

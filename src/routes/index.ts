@@ -13,6 +13,17 @@ const buildRouteWithId = (basePath: string, id: string, routeName: string) => {
 const buildCompanyWorkspaceRoute = (companyId: string, routeName: string) =>
   buildRouteWithId(routePatterns.companies, companyId, routeName);
 
+const buildReportDetailsRoute = (
+  companyId: string,
+  reportId: string,
+  routeName: string,
+) =>
+  buildRouteWithId(
+    `${buildCompanyWorkspaceRoute(companyId, routeName)}/reports`,
+    reportId,
+    routeName,
+  );
+
 const buildAssessmentWorkspaceRoute = (
   companyId: string,
   assessmentId: string,
@@ -52,7 +63,7 @@ export const routePatterns = {
     '/companies/:companyId/assessments/:assessmentId/history',
   threats: '/threats',
   reports: '/reports',
-  reportDetails: '/reports/:reportId',
+  reportDetails: '/companies/:companyId/reports/:reportId',
   settings: '/settings',
 } as const;
 
@@ -108,8 +119,23 @@ export const routes = {
     )}/history`,
   threats: routePatterns.threats,
   reports: routePatterns.reports,
-  reportDetails: (reportId: string) =>
-    buildRouteWithId(routePatterns.reports, reportId, 'reportDetails'),
+  reportDetails: (companyId: string, reportId: string) =>
+    buildReportDetailsRoute(companyId, reportId, 'reportDetails'),
+  reportDetailsVersion: (
+    companyId: string,
+    reportId: string,
+    versionId: string,
+  ) => {
+    assertNonEmptyId(versionId, 'reportDetailsVersion');
+
+    const query = new URLSearchParams({ versionId });
+
+    return `${buildReportDetailsRoute(
+      companyId,
+      reportId,
+      'reportDetailsVersion',
+    )}?${query.toString()}`;
+  },
   settings: routePatterns.settings,
 } as const;
 
