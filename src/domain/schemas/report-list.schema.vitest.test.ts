@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
+
 import {
   assessmentReportListResponseSchema,
   reportListQuerySchema,
-} from './report-list.schema';
+} from './report-list.schema.js';
 
 const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
 
