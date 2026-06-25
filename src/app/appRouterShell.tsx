@@ -13,10 +13,7 @@ import {
   useNavigate,
 } from 'react-router-dom';
 
-import {
-  ApplicationErrorBoundary,
-  EntityNotFoundView,
-} from '~/app/components/routeStateViews';
+import { ApplicationErrorBoundary } from '~/app/components/routeStateViews';
 import { AppLayout } from '~/app/layouts';
 import { routes, routePatterns } from '~/routes';
 import type { CompanyListItem } from '~/domain';
@@ -41,9 +38,6 @@ import {
   SettingsRoute,
   ThreatsRoute,
 } from './routerPages';
-import Reports from './pages/reports';
-
-import { reportDetailsById } from './appData';
 import Companies, { type CompanyIdentity } from './pages/companies';
 import CreateCompany from './pages/companies/createCompany.component';
 
@@ -70,26 +64,6 @@ const useRouterShellContext = () => {
   }
 
   return context;
-};
-
-interface ReportDetailsRouteProps {
-  reportId?: string;
-}
-
-const ReportDetailsRoute = ({ reportId }: ReportDetailsRouteProps) => {
-  if (!reportId || !reportDetailsById[reportId]) {
-    return (
-      <EntityNotFoundView
-        entityName="Report"
-        listHref={routes.reports}
-        listLabel="Return to reports"
-      />
-    );
-  }
-
-  const { cover } = reportDetailsById[reportId];
-
-  return <Reports cover={cover} autoSaved={false} />;
 };
 
 const RedirectToDashboard = () => <Navigate replace to={routes.dashboard} />;
@@ -329,7 +303,6 @@ export {
   CreateCompanyRouteElement,
   DashboardRouteElement,
   RedirectToDashboard,
-  ReportDetailsRoute,
   ReportsRoute,
   RouterShell,
   SettingsRoute,

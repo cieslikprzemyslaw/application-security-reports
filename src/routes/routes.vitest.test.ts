@@ -111,6 +111,14 @@ describe('routes', () => {
     );
     assert.equal(routes.reportDetails('rpt_123'), '/reports/rpt_123');
     assert.equal(
+      routes.reportDetailsVersion('rpt_123', 'rvs_123'),
+      '/reports/rpt_123?versionId=rvs_123',
+    );
+    assert.equal(
+      routes.reportDetailsVersion('rpt 123', 'rvs 123'),
+      '/reports/rpt%20123?versionId=rvs+123',
+    );
+    assert.equal(
       routes.assessmentDetails('cmp 123', 'asm 123'),
       '/companies/cmp%20123/assessments/asm%20123',
     );
@@ -123,6 +131,10 @@ describe('routes', () => {
       /non-empty id/,
     );
     assert.throws(() => routes.reportDetails(''), /non-empty id/);
+    assert.throws(
+      () => routes.reportDetailsVersion('rpt_123', '   '),
+      /non-empty id/,
+    );
 
     console.log('route configuration checks passed');
   });

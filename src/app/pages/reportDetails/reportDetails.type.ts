@@ -1,8 +1,6 @@
-import type { ReportCoverProps } from '~/app/components/appsec/reportCover';
-
 export interface ReportDetailsProps {
-  cover: ReportCoverProps;
-  autoSaved?: boolean;
+  reportId: string;
+  versionId?: string;
   onPrint?: () => void;
   onDownloadPdf?: () => void;
 }

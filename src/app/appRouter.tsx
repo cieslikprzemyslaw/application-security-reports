@@ -5,13 +5,13 @@ import {
   Route,
   RouterProvider,
   useParams,
+  useSearchParams,
 } from 'react-router-dom';
 
 import { EntityNotFoundView } from '~/app/components/routeStateViews';
 import NotFound from '~/app/pages/notFound';
 import { routes, routePatterns } from '~/routes';
 import type { AssessmentDetailSection } from './pages/assessmentDetails/assessmentDetails.type';
-import { reportDetailsById } from './appData';
 import {
   ApplicationRouteBoundary,
   AssessmentsRouteElement,
@@ -47,8 +47,10 @@ const ReportDetailsRoute = () => {
   const { reportId } = useParams<{
     reportId?: string;
   }>();
+  const [searchParams] = useSearchParams();
+  const versionId = searchParams.get('versionId')?.trim() || undefined;
 
-  if (!reportId || !reportDetailsById[reportId]) {
+  if (!reportId) {
     return (
       <EntityNotFoundView
         entityName="Report"
@@ -58,9 +60,7 @@ const ReportDetailsRoute = () => {
     );
   }
 
-  const { cover } = reportDetailsById[reportId];
-
-  return <ReportDetails cover={cover} autoSaved={false} />;
+  return <ReportDetails reportId={reportId} versionId={versionId} />;
 };
 
 const createAppRouter = () =>

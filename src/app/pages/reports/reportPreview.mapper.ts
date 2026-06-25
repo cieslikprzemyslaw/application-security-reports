@@ -7,6 +7,11 @@ export interface ReportPreviewPresentation {
   logoAlt: string;
 }
 
+export interface ReportPreviewPresentationMetadata {
+  reportId?: string;
+  issuedDate?: string;
+}
+
 const formatDate = (value?: string) => {
   if (!value) {
     return 'Not specified';
@@ -70,6 +75,7 @@ const resolveLogo = (snapshot: ReportPreviewSnapshot) => {
 
 export const toReportPreviewPresentation = (
   snapshot: ReportPreviewSnapshot,
+  metadata: ReportPreviewPresentationMetadata = {},
 ): ReportPreviewPresentation => {
   const logo = resolveLogo(snapshot);
   const overallRisk = snapshot.riskSummary.overallRisk ?? 'informational';
@@ -80,8 +86,10 @@ export const toReportPreviewPresentation = (
       companyName: snapshot.company.name,
       companyWebsite: snapshot.company.website ?? '',
       companyContactEmail: snapshot.company.contactEmail,
-      reportId: snapshot.assessment.id,
-      issuedDate: 'Preview',
+      reportId: metadata.reportId ?? snapshot.assessment.id,
+      issuedDate: metadata.issuedDate
+        ? formatDate(metadata.issuedDate)
+        : 'Preview',
       applicationName:
         snapshot.assessment.applicationName ?? snapshot.assessment.title,
       environment: snapshot.assessment.environment ?? 'Not specified',

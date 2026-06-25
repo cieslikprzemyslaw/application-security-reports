@@ -10,6 +10,8 @@ import { toReportPreviewPresentation } from './reportPreview.mapper';
 import StyledReportBuilderPreview from './reportBuilderPreview.styled';
 
 interface ReportBuilderPreviewProps extends ReportPreviewControllerState {
+  reportId?: string;
+  issuedDate?: string;
   onRetry: () => void;
 }
 
@@ -17,6 +19,8 @@ const ReportBuilderPreview = ({
   status,
   snapshot,
   errorMessage,
+  reportId,
+  issuedDate,
   onRetry,
 }: ReportBuilderPreviewProps) => {
   if (status === 'idle') {
@@ -61,7 +65,10 @@ const ReportBuilderPreview = ({
     return null;
   }
 
-  const presentation = toReportPreviewPresentation(snapshot);
+  const presentation = toReportPreviewPresentation(snapshot, {
+    reportId,
+    issuedDate,
+  });
 
   return (
     <StyledReportBuilderPreview className="report-builder-preview">
@@ -83,6 +90,20 @@ const ReportBuilderPreview = ({
           }
         >
           <p>{errorMessage ?? 'Unable to refresh the report preview.'}</p>
+        </Callout>
+      )}
+
+      {snapshot.warnings.length > 0 && (
+        <Callout
+          className="report-builder-preview-warnings no-print"
+          variant="warning"
+          title="Report preview warnings"
+        >
+          <ul>
+            {snapshot.warnings.map((warning, index) => (
+              <li key={`${warning}:${index}`}>{warning}</li>
+            ))}
+          </ul>
         </Callout>
       )}
 

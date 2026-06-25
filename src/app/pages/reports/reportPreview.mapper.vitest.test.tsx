@@ -44,6 +44,21 @@ describe('report preview presentation', () => {
     },
   );
 
+  it('uses saved ReportVersion metadata without rebuilding snapshot content', () => {
+    const presentation = toReportPreviewPresentation(previewSnapshot, {
+      reportId: 'rpt_00000000-0000-0000-0000-000000000029',
+      issuedDate: '2026-06-25',
+    });
+
+    expect(presentation.cover.reportId).toBe(
+      'rpt_00000000-0000-0000-0000-000000000029',
+    );
+    expect(presentation.cover.issuedDate).toBe('25 Jun 2026');
+    expect(presentation.cover.applicationName).toBe(
+      previewSnapshot.assessment.applicationName,
+    );
+  });
+
   it('includes Evidence only when configured and keeps its content as text', () => {
     const maliciousText = '<img src=x onerror=alert(1)>';
     const snapshot: ReportPreviewSnapshot = {

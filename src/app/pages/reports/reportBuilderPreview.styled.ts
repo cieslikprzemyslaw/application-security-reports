@@ -12,11 +12,22 @@ const StyledReportBuilderPreview = styled.div`
       text-align: center;
     }
 
+    .report-builder-preview-warnings ul {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+
     .report-builder-preview-logo {
       display: block;
       max-width: 8rem;
       max-height: 4rem;
       object-fit: contain;
+    }
+
+    @media print {
+      .report-builder-preview-warnings {
+        display: none !important;
+      }
     }
   `}
 `;
