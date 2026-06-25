@@ -36,13 +36,33 @@ const StyledReportBuilderPreview = styled.div`
     }
 
     @media print {
-      .report-builder-preview-warnings {
+      display: block;
+      color: ${colors.text.primary};
+      background-color: ${colors.neutral.white};
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+
+      .report-builder-preview-warnings,
+      .no-print {
         display: none !important;
       }
 
       .report-builder-preview-risk-summary {
+        margin-top: ${spacing.l};
         padding: 0;
+
         border: 0;
+        border-radius: 0;
+        background-color: ${colors.neutral.white};
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .risk-summary,
+      .severity-distribution,
+      .severity-distribution-legend-item {
+        break-inside: avoid;
+        page-break-inside: avoid;
       }
     }
   `}

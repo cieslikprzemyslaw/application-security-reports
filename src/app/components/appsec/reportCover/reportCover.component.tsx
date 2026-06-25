@@ -54,7 +54,7 @@ const ReportCover = ({
       </div>
     </div>
 
-    <div>
+    <div className="report-cover-title-block">
       <p className="report-cover-eyebrow">Application Security Assessment</p>
 
       <h1 className="report-cover-title">
@@ -91,7 +91,7 @@ const ReportCover = ({
       ))}
     </dl>
 
-    <section className="report-cover-section">
+    <section className="report-cover-section report-cover-section--summary">
       <h2 className="report-cover-section-title">1. Executive Summary</h2>
 
       <div className="report-cover-summary-box">
@@ -106,7 +106,7 @@ const ReportCover = ({
     </section>
 
     {scope.length > 0 && (
-      <section className="report-cover-section">
+      <section className="report-cover-section report-cover-section--scope">
         <h2 className="report-cover-section-title">2. Scope and Methodology</h2>
 
         <ul className="report-cover-scope-list">
@@ -118,7 +118,7 @@ const ReportCover = ({
     )}
 
     {findings.length > 0 && (
-      <section className="report-cover-section">
+      <section className="report-cover-section report-cover-section--findings">
         <h2 className="report-cover-section-title">3. Detailed Findings</h2>
 
         <div className="report-cover-findings-list">
@@ -162,7 +162,7 @@ const ReportCover = ({
                 </div>
 
                 {finding.evidence && (
-                  <div className="report-cover-finding-section">
+                  <div className="report-cover-finding-section report-cover-evidence">
                     <h4>Evidence</h4>
 
                     <div>{finding.evidence}</div>
