@@ -26,6 +26,25 @@ const uniquePrefixedUuidArraySchema = (
       `${entityName} IDs must not contain duplicates`,
     );
 
+export const reportEvidenceSelectionObjectSchema = z
+  .object({
+    threatId: prefixedUuidSchema('thr_', 'Threat'),
+    evidenceId: prefixedUuidSchema('evd_', 'Evidence'),
+  })
+  .strict();
+
+export const reportEvidenceSelectionSchema =
+  reportEvidenceSelectionObjectSchema;
+
+export const reportEvidenceSelectionListSchema = z
+  .array(reportEvidenceSelectionSchema)
+  .refine(
+    value =>
+      new Set(value.map(item => `${item.threatId}:${item.evidenceId}`)).size ===
+      value.length,
+    'Evidence selections must not contain duplicate Threat/Evidence pairs',
+  );
+
 export const reportPreviewSelectionObjectSchema = z
   .object({
     threatIds: uniquePrefixedUuidArraySchema(
@@ -36,6 +55,7 @@ export const reportPreviewSelectionObjectSchema = z
       prefixedUuidSchema('evd_', 'Evidence'),
       'Evidence',
     ),
+    evidenceSelections: reportEvidenceSelectionListSchema.optional(),
   })
   .strict();
 
@@ -129,6 +149,35 @@ export const reportPreviewThreatObjectSchema = threatObjectSchema
 
 export const reportPreviewThreatSchema = reportPreviewThreatObjectSchema;
 
+const reportPreviewAttachmentUrlSchema = z
+  .string()
+  .trim()
+  .refine(value => {
+    if (!value.startsWith('/uploads/evidence/')) {
+      return false;
+    }
+
+    try {
+      const decodedPath = decodeURIComponent(
+        value.slice('/uploads/evidence/'.length),
+      );
+      const segments = decodedPath.split('/');
+
+      return (
+        segments.length > 0 &&
+        segments.every(
+          segment =>
+            segment.length > 0 &&
+            segment !== '.' &&
+            segment !== '..' &&
+            !segment.includes('\\'),
+        )
+      );
+    } catch {
+      return false;
+    }
+  }, 'Evidence attachment URL must stay inside the public Evidence route');
+
 export const reportPreviewEvidenceObjectSchema = evidenceObjectSchema
   .pick({
     id: true,
@@ -143,6 +192,9 @@ export const reportPreviewEvidenceObjectSchema = evidenceObjectSchema
     attachmentSizeBytes: true,
     capturedAt: true,
     httpExchanges: true,
+  })
+  .extend({
+    attachmentUrl: reportPreviewAttachmentUrlSchema.optional(),
   })
   .strict();
 
@@ -204,6 +256,10 @@ export const reportPreviewSnapshotObjectSchema = z
   .strict();
 
 export const reportPreviewSnapshotSchema = reportPreviewSnapshotObjectSchema;
+
+export type ReportEvidenceSelection = z.output<
+  typeof reportEvidenceSelectionSchema
+>;
 
 export type ReportPreviewSelection = z.output<
   typeof reportPreviewSelectionSchema

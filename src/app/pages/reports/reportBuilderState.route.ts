@@ -58,6 +58,12 @@ const mergeRouteState = (
             selectedEvidenceIds: routeState.selection.selectedEvidenceIds,
           }
         : {}),
+      ...(routeState.selection?.selectedEvidenceSelections !== undefined
+        ? {
+            selectedEvidenceSelections:
+              routeState.selection.selectedEvidenceSelections,
+          }
+        : {}),
     },
     configuration: {
       ...baseState.configuration,
@@ -136,6 +142,11 @@ const createSelectionRouteState = (
 
   if (selection.selectedEvidenceIds.length > 0) {
     routeSelection.selectedEvidenceIds = selection.selectedEvidenceIds;
+  }
+
+  if (selection.selectedEvidenceSelections?.length) {
+    routeSelection.selectedEvidenceSelections =
+      selection.selectedEvidenceSelections;
   }
 
   return routeSelection;

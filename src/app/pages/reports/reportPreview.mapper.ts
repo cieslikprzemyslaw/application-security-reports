@@ -61,26 +61,30 @@ const formatDate = (value?: string) => {
   }).format(date);
 };
 
-const toEvidenceText = (
+const toEvidenceItems = (
   snapshot: ReportPreviewSnapshot,
   threatId: string,
-): string | undefined => {
-  if (!snapshot.configuration.includeEvidence) {
+): ReportPreviewSnapshot['selectedEvidence'] | undefined => {
+  if (snapshot.configuration.includeEvidence === false) {
     return undefined;
   }
 
-  const evidence = snapshot.selectedEvidence.filter(item =>
-    item.threatIds.includes(threatId),
+  const evidenceSelections = snapshot.selection.evidenceSelections ?? [];
+  const scopedEvidenceIds = new Set(
+    evidenceSelections.map(selection => selection.evidenceId),
   );
+  const evidence = snapshot.selectedEvidence.filter(item => {
+    if (!scopedEvidenceIds.has(item.id)) {
+      return item.threatIds.includes(threatId);
+    }
 
-  if (evidence.length === 0) {
-    return undefined;
-  }
+    return evidenceSelections.some(
+      selection =>
+        selection.evidenceId === item.id && selection.threatId === threatId,
+    );
+  });
 
-  return evidence
-    .map(item => item.content ?? item.description ?? item.title)
-    .filter(Boolean)
-    .join('\n\n');
+  return evidence.length > 0 ? evidence : undefined;
 };
 
 const resolveLogo = (snapshot: ReportPreviewSnapshot) => {
@@ -181,7 +185,7 @@ export const toReportPreviewPresentation = (
         risk: threat.risk ?? threat.impact ?? 'Not specified',
         recommendation:
           threat.recommendation ?? threat.remediation ?? 'Not specified',
-        evidence: toEvidenceText(snapshot, threat.id),
+        evidence: toEvidenceItems(snapshot, threat.id),
       })),
       footerText:
         snapshot.branding.brandingMode === 'client'

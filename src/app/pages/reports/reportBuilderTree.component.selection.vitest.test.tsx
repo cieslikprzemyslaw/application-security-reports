@@ -182,6 +182,67 @@ describe('ReportBuilderTree controlled selection', () => {
     });
   });
 
+  it('scopes shared Evidence selection to the chosen Threat branch', async () => {
+    const firstAssessment = populatedHierarchy.assessments[0]!;
+    const firstThreat = firstAssessment.threats[0]!;
+    const secondThreat = firstAssessment.threats[1]!;
+    const sharedEvidence = {
+      evidence: {
+        ...firstThreat.evidence[0]!.evidence,
+        threatIds: [threatOneId, threatTwoId],
+      },
+    };
+    const sharedEvidenceHierarchy: ReportBuilderHierarchy = {
+      ...populatedHierarchy,
+      assessments: [
+        {
+          ...firstAssessment,
+          threats: [
+            { ...firstThreat, evidence: [sharedEvidence] },
+            { ...secondThreat, evidence: [sharedEvidence] },
+          ],
+        },
+      ],
+    };
+    const { user } = renderWithProviders(
+      <ControlledTree loadHierarchy={async () => sharedEvidenceHierarchy} />,
+    );
+    const evidenceCheckboxes = (await screen.findAllByRole('checkbox', {
+      name: /Authorization note/,
+    })) as HTMLInputElement[];
+
+    assert.equal(evidenceCheckboxes.length, 2);
+
+    await user.click(evidenceCheckboxes[0]!);
+
+    await waitFor(() => {
+      assert.equal(evidenceCheckboxes[0]?.checked, true);
+      assert.equal(evidenceCheckboxes[1]?.checked, false);
+    });
+    assert.deepEqual(readControlledSelection(), {
+      selectedThreatIds: [],
+      selectedEvidenceIds: [evidenceOneId],
+      selectedEvidenceSelections: [
+        { threatId: threatOneId, evidenceId: evidenceOneId },
+      ],
+    });
+
+    await user.click(evidenceCheckboxes[1]!);
+
+    await waitFor(() => {
+      assert.equal(evidenceCheckboxes[0]?.checked, true);
+      assert.equal(evidenceCheckboxes[1]?.checked, true);
+    });
+    assert.deepEqual(readControlledSelection(), {
+      selectedThreatIds: [],
+      selectedEvidenceIds: [evidenceOneId],
+      selectedEvidenceSelections: [
+        { threatId: threatOneId, evidenceId: evidenceOneId },
+        { threatId: threatTwoId, evidenceId: evidenceOneId },
+      ],
+    });
+  });
+
   it('does not change rendered selection when the parent ignores the callback', async () => {
     const onSelectionChange = vi.fn();
     const { user } = renderWithProviders(

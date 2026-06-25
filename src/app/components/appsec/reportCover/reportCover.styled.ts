@@ -127,10 +127,6 @@ const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
       color: ${colors.text.primary};
     }
 
-    .report-cover-section {
-      break-inside: avoid;
-    }
-
     .report-cover-section-title {
       padding-bottom: ${spacing.xxs};
 
@@ -214,8 +210,6 @@ const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
     }
 
     .report-cover-finding {
-      break-inside: avoid;
-
       padding: ${spacing.m};
       border: 1px solid ${colors.border.subtle};
       border-radius: ${radii.md};
@@ -256,6 +250,59 @@ const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
 
       color: ${colors.text.muted};
       text-align: center;
+    }
+
+    @media print {
+      gap: ${spacing.l};
+      color: ${colors.text.primary};
+      background-color: ${colors.neutral.white};
+      color-scheme: light;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      orphans: 3;
+      widows: 3;
+
+      .report-cover-brand-row,
+      .report-cover-title-block,
+      .report-cover-meta-grid,
+      .report-cover-section--summary,
+      .report-cover-section--scope,
+      .report-cover-summary-box,
+      .report-cover-footer {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .report-cover-section--findings {
+        break-before: page;
+        page-break-before: always;
+      }
+
+      .report-cover-section-title,
+      .report-cover-finding-header,
+      .report-cover-finding-section h4 {
+        break-after: avoid;
+        page-break-after: avoid;
+      }
+
+      .report-cover-finding-grid {
+        display: block;
+      }
+
+      .report-cover-finding-section {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .report-cover-finding-section + .report-cover-finding-section {
+        margin-top: ${spacing.s};
+      }
+
+      .report-cover-finding {
+        break-inside: auto;
+        page-break-inside: auto;
+        box-shadow: none;
+      }
     }
   `}
 `;

@@ -201,6 +201,33 @@ describe('validateReportPreviewSelectedRecords', () => {
     );
   });
 
+  it('rejects Evidence assigned to a Threat it is not linked to', () => {
+    const secondThreat: Threat = {
+      ...threat,
+      id: secondThreatId,
+    };
+
+    expectValidationFields(
+      () =>
+        validateReportPreviewSelectedRecords(
+          buildRequest({
+            selection: {
+              threatIds: [threatId, secondThreatId],
+              evidenceIds: [evidenceId],
+              evidenceSelections: [{ threatId: secondThreatId, evidenceId }],
+            },
+          }),
+          buildRecords({ threats: [threat, secondThreat] }),
+        ),
+      [
+        {
+          path: 'selection.evidenceSelections.0',
+          message: 'Evidence is not linked to the selected Threat.',
+        },
+      ],
+    );
+  });
+
   it('rejects an archived Assessment', () => {
     expectValidationFields(
       () =>

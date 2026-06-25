@@ -14,12 +14,21 @@ export const createReportPreviewRequest = (
     return null;
   }
 
+  const evidenceSelections = state.selection.selectedEvidenceSelections;
+
   return reportPreviewRequestSchema.parse({
     companyId: state.companyId,
     assessmentId,
     selection: {
       threatIds: [...state.selection.selectedThreatIds],
       evidenceIds: [...state.selection.selectedEvidenceIds],
+      ...(evidenceSelections?.length
+        ? {
+            evidenceSelections: evidenceSelections.map(selection => ({
+              ...selection,
+            })),
+          }
+        : {}),
     },
     configuration: {
       methodology: state.configuration.methodology,

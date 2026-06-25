@@ -3,12 +3,15 @@ import React, { useState } from 'react';
 import Button from '~/app/components/ui/button';
 import { LightThemeProvider } from '~/theme';
 
+import ReportPrintStyles from './reportPrintStyles';
 import StyledReportPreviewShell from './reportPreviewShell.styled';
 
 import type {
   ReportPreviewShellProps,
   ReportPreviewShellTab,
 } from './reportPreviewShell.type';
+
+const printReport = () => window.print();
 
 const ReportPreviewShell = ({
   applicationName,
@@ -26,6 +29,7 @@ const ReportPreviewShell = ({
   const [internalActiveTab, setInternalActiveTab] =
     useState<ReportPreviewShellTab>('preview');
   const resolvedActiveTab = activeTab ?? internalActiveTab;
+  const handlePrint = onPrint ?? printReport;
 
   const handleTabChange = (nextTab: ReportPreviewShellTab) => {
     if (activeTab === undefined) {
@@ -37,6 +41,7 @@ const ReportPreviewShell = ({
 
   return (
     <LightThemeProvider>
+      <ReportPrintStyles />
       <StyledReportPreviewShell>
         <header className="report-preview-shell-header">
           <div>
@@ -63,6 +68,7 @@ const ReportPreviewShell = ({
             aria-label="Report view"
           >
             <button
+              id="report-preview-shell-preview-tab"
               ref={previewTabRef}
               className={[
                 'report-preview-shell-tab-button',
@@ -73,12 +79,14 @@ const ReportPreviewShell = ({
               type="button"
               role="tab"
               aria-selected={resolvedActiveTab === 'preview'}
+              aria-controls="report-preview-shell-preview-panel"
               onClick={() => handleTabChange('preview')}
             >
               Preview
             </button>
 
             <button
+              id="report-preview-shell-data-tab"
               className={[
                 'report-preview-shell-tab-button',
                 resolvedActiveTab === 'data'
@@ -88,6 +96,7 @@ const ReportPreviewShell = ({
               type="button"
               role="tab"
               aria-selected={resolvedActiveTab === 'data'}
+              aria-controls="report-preview-shell-data-panel"
               onClick={() => handleTabChange('data')}
             >
               Data
@@ -101,9 +110,7 @@ const ReportPreviewShell = ({
               </span>
             )}
 
-            {onPrint && (
-              <Button title="Print" variant="secondary" onClick={onPrint} />
-            )}
+            <Button title="Print" variant="secondary" onClick={handlePrint} />
 
             {onDownloadPdf && (
               <Button title="Download PDF" onClick={onDownloadPdf} />
@@ -113,7 +120,37 @@ const ReportPreviewShell = ({
 
         <div className="report-preview-shell-stage">
           <div className="report-preview-shell-paper">
-            {resolvedActiveTab === 'preview' ? preview : dataView}
+            <div
+              id="report-preview-shell-preview-panel"
+              className={[
+                'report-preview-shell-panel',
+                'report-preview-shell-panel--preview',
+                resolvedActiveTab === 'preview'
+                  ? 'report-preview-shell-panel--active'
+                  : 'report-preview-shell-panel--inactive',
+              ].join(' ')}
+              role="tabpanel"
+              aria-labelledby="report-preview-shell-preview-tab"
+              aria-hidden={resolvedActiveTab !== 'preview'}
+            >
+              {preview}
+            </div>
+
+            <div
+              id="report-preview-shell-data-panel"
+              className={[
+                'report-preview-shell-panel',
+                'report-preview-shell-panel--data',
+                resolvedActiveTab === 'data'
+                  ? 'report-preview-shell-panel--active'
+                  : 'report-preview-shell-panel--inactive',
+              ].join(' ')}
+              role="tabpanel"
+              aria-labelledby="report-preview-shell-data-tab"
+              aria-hidden={resolvedActiveTab !== 'data'}
+            >
+              {resolvedActiveTab === 'data' ? dataView : null}
+            </div>
           </div>
         </div>
       </StyledReportPreviewShell>

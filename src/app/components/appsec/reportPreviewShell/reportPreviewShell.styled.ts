@@ -103,29 +103,57 @@ const StyledReportPreviewShell = styled.div.attrs({
       border-radius: ${radii.md};
       background-color: ${colors.neutral.white};
       box-shadow: ${shadows.md};
+    }
 
-      @media print {
-        width: 100%;
-        max-width: none;
-        padding: 0;
-
-        border-top: 0;
-        box-shadow: none;
-      }
+    .report-preview-shell-panel--inactive {
+      display: none;
     }
 
     @media print {
+      display: block;
+      width: 100%;
+      color: ${colors.text.primary};
+      background-color: ${colors.neutral.white};
+      color-scheme: light;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+
       .report-preview-shell-header,
-      .report-preview-shell-toolbar {
+      .report-preview-shell-toolbar,
+      .no-print {
         display: none !important;
       }
 
       .report-preview-shell-stage {
+        display: block;
         min-height: auto;
         padding: 0;
 
         border: 0;
-        background: transparent;
+        border-radius: 0;
+        background-color: transparent;
+        overflow: visible;
+      }
+
+      .report-preview-shell-paper {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+
+        border: 0;
+        border-radius: 0;
+        background-color: ${colors.neutral.white};
+        box-shadow: none;
+        overflow: visible;
+      }
+
+      .report-preview-shell-panel--preview {
+        display: block !important;
+      }
+
+      .report-preview-shell-panel--data {
+        display: none !important;
       }
     }
   `}

@@ -151,6 +151,33 @@ export const validateReportPreviewSelectedRecords = (
     }
   });
 
+  if (request.selection.evidenceSelections) {
+    const selectedEvidenceIds = new Set(request.selection.evidenceIds);
+    const evidenceById = new Map(
+      records.evidence.map(evidence => [evidence.id, evidence]),
+    );
+
+    request.selection.evidenceSelections.forEach((selection, index) => {
+      if (!selectedEvidenceIds.has(selection.evidenceId)) {
+        addValidationError(
+          fields,
+          `selection.evidenceSelections.${index}.evidenceId`,
+          'Evidence selection must reference selected Evidence.',
+        );
+      }
+
+      const evidence = evidenceById.get(selection.evidenceId);
+
+      if (evidence && !evidence.threatIds.includes(selection.threatId)) {
+        addValidationError(
+          fields,
+          `selection.evidenceSelections.${index}`,
+          'Evidence is not linked to the selected Threat.',
+        );
+      }
+    });
+  }
+
   if (fields.length > 0) {
     throw new ValidationError({
       error: 'VALIDATION_ERROR',
