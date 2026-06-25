@@ -189,32 +189,63 @@ const StyledReportEvidence = styled.section`
     @media print {
       border-color: ${colors.brand.primary};
       background-color: ${colors.neutral.grey50};
+      overflow: visible;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
 
       .report-evidence-heading,
       .report-evidence-card-heading,
       .report-evidence-http-message > :first-child,
-      .report-evidence-http-headline {
+      .report-evidence-http-headline,
+      .report-evidence-http-part > span {
         break-after: avoid;
         page-break-after: avoid;
       }
 
+      .report-evidence-list,
+      .report-evidence-http-exchanges {
+        display: block;
+      }
+
+      .report-evidence-card + .report-evidence-card,
+      .report-evidence-http-exchange + .report-evidence-http-exchange {
+        margin-top: ${spacing.s};
+      }
+
       .report-evidence-card,
+      .report-evidence-http-exchange,
+      .report-evidence-http-message,
+      .report-evidence-http-part,
+      .report-evidence-description,
+      .report-evidence-text,
+      .report-evidence-code,
+      .report-evidence-http-part pre {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        break-inside: auto;
+        page-break-inside: auto;
+      }
+
+      .report-evidence-description,
+      .report-evidence-text,
+      .report-evidence-code,
+      .report-evidence-http-part pre,
+      .report-evidence-http-headline {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
       .report-evidence-image,
       .report-evidence-attachment {
         break-inside: avoid;
         page-break-inside: avoid;
       }
 
-      .report-evidence-http-exchange {
-        break-inside: auto;
-        page-break-inside: auto;
-      }
-
-      .report-evidence-code,
-      .report-evidence-http-part pre {
-        overflow: visible;
+      .report-evidence-image img {
+        max-height: none;
+        object-fit: contain;
       }
     }
   `}
