@@ -1,0 +1,138 @@
+[
+  {
+    "id": "rvs_00000000-0000-0000-0000-000000000001",
+    "reportId": "rpt_00000000-0000-0000-0000-000000000001",
+    "version": 10,
+    "status": "final",
+    "generatedAt": "2026-06-11",
+    "snapshot": {
+      "reportTitle": "Customer Services Portal Security Report",
+      "company": {
+        "id": "cmp_00000000-0000-0000-0000-000000000001",
+        "name": "Northstar Digital",
+        "description": "Security consulting and managed assessment services",
+        "website": "https://northstar.example",
+        "contactName": "Alex Mercer",
+        "contactEmail": "security@northstar.example",
+        "footerText": "Confidential - do not distribute."
+      },
+      "assessment": {
+        "id": "asm_00000000-0000-0000-0000-000000000001",
+        "companyId": "cmp_00000000-0000-0000-0000-000000000001",
+        "title": "Customer Services Portal Security Assessment",
+        "description": "Application security assessment of the customer portal.",
+        "scope": "Authenticated and unauthenticated web workflows",
+        "status": "in-progress",
+        "startedAt": "2026-05-12",
+        "applicationName": "Customer Services Portal",
+        "environment": "Production",
+        "assessmentType": "Web App",
+        "overallRisk": "high",
+        "owaspTaxonomyVersion": "2025"
+      },
+      "selection": {
+        "threatIds": [
+          "thr_00000000-0000-0000-0000-000000000001",
+          "thr_00000000-0000-0000-0000-000000000002"
+        ],
+        "evidenceIds": [
+          "evd_00000000-0000-0000-0000-000000000001",
+          "evd_00000000-0000-0000-0000-000000000002"
+        ]
+      },
+      "configuration": {
+        "methodology": "OWASP ASVS / WSTG",
+        "reportStyle": "Technical & structured",
+        "includeEvidence": true
+      },
+      "branding": {
+        "brandingMode": "issuer",
+        "companyName": "Northstar Digital",
+        "companyWebsite": "https://northstar.example",
+        "companyContactEmail": "security@northstar.example",
+        "companyLogoUrl": null,
+        "companyFooterText": "Confidential - do not distribute.",
+        "issuerName": "Northstar Digital",
+        "issuerContactName": "Alex Mercer",
+        "issuerContactEmail": "alex.mercer@appsec.io",
+        "issuerLogoUrl": "http://localhost/api/settings/issuer-logo",
+        "reportFooterText": "© 2026 Northstar Digital. Confidential - do not distribute.",
+        "reportConfidentialityLabel": "Confidential",
+        "confidentialReports": true,
+        "allowedBrandingModes": ["issuer", "client"],
+        "defaultBrandingMode": "issuer"
+      },
+      "selectedThreats": [
+        {
+          "id": "thr_00000000-0000-0000-0000-000000000001",
+          "assessmentId": "asm_00000000-0000-0000-0000-000000000001",
+          "title": "Missing Server-Side Authorization",
+          "description": "The endpoint returns order data without verifying that the authenticated user owns the requested object.",
+          "severity": "critical",
+          "strideCategories": ["elevation-of-privilege"],
+          "status": "open",
+          "affectedAsset": "/api/v1/orders/{id}",
+          "impact": "An authenticated attacker can access another customer's order information.",
+          "recommendation": "Apply object-level authorization to every request and deny access by default.",
+          "observation": "The API accepted a tampered identifier and returned a different customer's order details.",
+          "affectedComponent": "Orders API",
+          "affectedEndpoint": "/api/v1/orders/{id}",
+          "risk": "Sensitive customer data is exposed to any authenticated user.",
+          "evidenceCount": 2
+        },
+        {
+          "id": "thr_00000000-0000-0000-0000-000000000002",
+          "assessmentId": "asm_00000000-0000-0000-0000-000000000001",
+          "title": "Verbose Error Messages",
+          "description": "Unhandled errors expose internal implementation details to the client.",
+          "severity": "medium",
+          "strideCategories": ["information-disclosure"],
+          "status": "mitigated",
+          "affectedAsset": "/api/v1/orders",
+          "impact": "Attackers can use the leaked details to improve later attacks.",
+          "recommendation": "Return generic client-facing errors and log detailed diagnostics only on the server.",
+          "observation": "Stack traces and SQL fragments were visible in the response body during error handling.",
+          "affectedComponent": "Orders API",
+          "affectedEndpoint": "/api/v1/orders",
+          "risk": "Implementation details can be used for targeted exploitation.",
+          "evidenceCount": 1
+        }
+      ],
+      "selectedEvidence": [
+        {
+          "id": "evd_00000000-0000-0000-0000-000000000001",
+          "assessmentId": "asm_00000000-0000-0000-0000-000000000001",
+          "threatIds": [
+            "thr_00000000-0000-0000-0000-000000000001",
+            "thr_00000000-0000-0000-0000-000000000002"
+          ],
+          "type": "screenshot",
+          "title": "Authorization bypass proof",
+          "description": "Captured the customer record returned for a tampered identifier.",
+          "content": "Response body showing another customer's order details.",
+          "fileName": "authorization-bypass.png",
+          "mimeType": "image/png",
+          "capturedAt": "2026-05-20",
+          "httpExchanges": []
+        },
+        {
+          "id": "evd_00000000-0000-0000-0000-000000000002",
+          "assessmentId": "asm_00000000-0000-0000-0000-000000000001",
+          "threatIds": ["thr_00000000-0000-0000-0000-000000000001"],
+          "type": "note",
+          "title": "Reproduction notes",
+          "description": "Step-by-step notes from the manual test session.",
+          "content": "GET /api/v1/orders/123 returned data for a different customer account.",
+          "capturedAt": "2026-05-20",
+          "httpExchanges": []
+        }
+      ],
+      "riskSummary": {
+        "overallRisk": "high",
+        "threatCount": 2,
+        "evidenceCount": 2
+      },
+      "warnings": []
+    }
+  }
+]

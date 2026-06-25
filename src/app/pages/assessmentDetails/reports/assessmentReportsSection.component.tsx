@@ -149,57 +149,88 @@ const AssessmentReportsSection = ({
         </Callout>
 
         <ul className="assessment-reports-list">
-          {state.reports.map(report => (
-            <li key={report.id} className="assessment-report-item">
-              <div className="assessment-report-header">
-                <div>
-                  <h3 className="assessment-report-title">{report.title}</h3>
+          {state.reports.map(report => {
+            const latestVersion = report.versions[0];
 
-                  <p className="assessment-report-meta">
-                    Updated {formatDate(report.updatedAt)} ·{' '}
-                    {report.versions.length} saved{' '}
-                    {report.versions.length === 1 ? 'version' : 'versions'}
-                  </p>
+            return (
+              <li key={report.id} className="assessment-report-item">
+                <div className="assessment-report-header">
+                  <div>
+                    <h3 className="assessment-report-title">
+                      {latestVersion ? (
+                        <Link
+                          className="assessment-report-title-link"
+                          to={routes.reportDetailsVersion(
+                            companyId,
+                            report.id,
+                            latestVersion.id,
+                          )}
+                        >
+                          {report.title}
+                        </Link>
+                      ) : (
+                        report.title
+                      )}
+                    </h3>
+
+                    <p className="assessment-report-meta">
+                      Updated {formatDate(report.updatedAt)} ·{' '}
+                      {report.versions.length} saved{' '}
+                      {report.versions.length === 1 ? 'version' : 'versions'}
+                    </p>
+                  </div>
+
+                  <Badge
+                    label={reportStatusLabels[report.status]}
+                    variant={
+                      report.status === 'generated' ? 'success' : 'neutral'
+                    }
+                  />
                 </div>
 
-                <Badge
-                  label={reportStatusLabels[report.status]}
-                  variant={
-                    report.status === 'generated' ? 'success' : 'neutral'
-                  }
-                />
-              </div>
-
-              {report.versions.length > 0 ? (
-                <ul className="assessment-report-version-list">
-                  {report.versions.map(version => (
-                    <li key={version.id} className="assessment-report-version">
-                      <Link
-                        className="assessment-report-version-link"
-                        to={routes.reportDetailsVersion(
-                          companyId,
-                          report.id,
-                          version.id,
-                        )}
+                {report.versions.length > 0 ? (
+                  <ul className="assessment-report-version-list">
+                    {report.versions.map(version => (
+                      <li
+                        key={version.id}
+                        className="assessment-report-version"
                       >
-                        Open v{formatVersionNumber(version.version)}
-                      </Link>
+                        <Link
+                          className="assessment-report-version-link"
+                          to={routes.reportDetailsVersion(
+                            companyId,
+                            report.id,
+                            version.id,
+                          )}
+                          aria-label={`Open ${report.title} version ${formatVersionNumber(
+                            version.version,
+                          )} preview`}
+                        >
+                          <span className="assessment-report-version-name">
+                            v{formatVersionNumber(version.version)}
+                          </span>
 
-                      <span className="assessment-report-meta">
-                        {version.status === 'final' ? 'Final' : 'Draft'} ·{' '}
-                        {formatDate(version.generatedAt)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="assessment-report-empty">
-                  No saved versions yet. Browser PDF export becomes available
-                  after a version is saved.
-                </p>
-              )}
-            </li>
-          ))}
+                          <span className="assessment-report-meta">
+                            {version.status === 'final' ? 'Final' : 'Draft'} ·{' '}
+                            {formatDate(version.generatedAt)}
+                          </span>
+
+                          <span className="assessment-report-version-action">
+                            Open preview
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="assessment-report-empty">
+                    No saved versions yet. Browser PDF export becomes available
+                    after a version is saved.
+                  </p>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </Card>
     </StyledAssessmentReportsSection>

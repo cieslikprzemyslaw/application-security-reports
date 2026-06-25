@@ -39,6 +39,22 @@ const StyledAssessmentReportsSection = styled.section`
       color: ${colors.text.primary};
     }
 
+    .assessment-report-title-link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .assessment-report-title-link:hover {
+      color: ${colors.text.linkHover};
+      text-decoration: underline;
+    }
+
+    .assessment-report-title-link:focus-visible,
+    .assessment-report-version-link:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: 0.25rem;
+    }
+
     .assessment-report-meta,
     .assessment-report-empty {
       color: ${colors.text.secondary};
@@ -53,36 +69,52 @@ const StyledAssessmentReportsSection = styled.section`
     }
 
     .assessment-report-version {
-      display: flex;
-      flex-direction: column;
-      gap: ${spacing.xxs};
-      padding-top: ${spacing.xs};
       border-top: 1px solid ${colors.border.subtle};
+      padding-top: ${spacing.xs};
     }
 
     .assessment-report-version-link {
-      width: fit-content;
-      color: ${colors.text.link};
-      font-weight: ${typography.fontWeights.semibold};
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: ${spacing.xxs};
+      width: 100%;
+      padding: ${spacing.xs};
+      border-radius: ${radii.sm};
+      color: ${colors.text.primary};
       text-decoration: none;
     }
 
     .assessment-report-version-link:hover {
+      background-color: ${colors.surface.subtle};
+    }
+
+    .assessment-report-version-name,
+    .assessment-report-version-action {
+      font-weight: ${typography.fontWeights.semibold};
+    }
+
+    .assessment-report-version-action {
+      color: ${colors.text.link};
+    }
+
+    .assessment-report-version-link:hover .assessment-report-version-action {
       color: ${colors.text.linkHover};
       text-decoration: underline;
     }
 
-    .assessment-report-version-link:focus-visible {
-      outline: 2px solid ${colors.border.focus};
-      outline-offset: 0.25rem;
-    }
-
     @container (min-width: 40rem) {
-      .assessment-report-header,
-      .assessment-report-version {
+      .assessment-report-header {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
+      }
+
+      .assessment-report-version-link {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: ${spacing.m};
       }
     }
   `}
