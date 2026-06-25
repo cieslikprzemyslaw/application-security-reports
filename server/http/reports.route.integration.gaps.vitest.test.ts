@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 
 import { describe, it, vi } from 'vitest';
 
+import { buildReportPreviewSnapshotFixture } from '../test/report-preview.fixture.js';
+
 import {
   createReportsApp,
   createReportsRouteIntegrationHarness,
@@ -50,6 +52,35 @@ const withHarness = async (
 };
 
 describe('Report API integration gaps', () => {
+  it('lists assessment reports with immutable version summaries', async () => {
+    await withHarness(
+      async ({ server, report, assessment, reportVersionRepository }) => {
+        await reportVersionRepository.create({
+          reportId: report.id,
+          version: 1,
+          status: 'draft',
+          generatedAt: '2026-06-25',
+          snapshot: buildReportPreviewSnapshotFixture(),
+        });
+
+        const response = await fetch(
+          `${server.baseUrl}/api/reports?assessmentId=${assessment.id}`,
+        );
+        assert.equal(response.status, 200);
+        const body = (await response.json()) as {
+          data: Array<{
+            id: string;
+            versions: Array<{ id: string; version: number; status: string }>;
+          }>;
+        };
+
+        assert.equal(body.data[0]?.id, report.id);
+        assert.equal(body.data[0]?.versions[0]?.version, 1);
+        assert.equal(body.data[0]?.versions[0]?.status, 'draft');
+      },
+    );
+  });
+
   it('returns safe malformed and missing Report errors', async () => {
     await withHarness(async ({ server, prisma }) => {
       const countBefore = await prisma.report.count();

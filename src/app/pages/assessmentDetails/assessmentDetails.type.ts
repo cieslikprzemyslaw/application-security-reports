@@ -55,6 +55,7 @@ export interface AssessmentDetailsViewProps {
   overviewHref: string;
   findingsContent?: ReactNode;
   evidenceContent?: ReactNode;
+  reportsContent?: ReactNode;
   onSectionChange: (section: AssessmentDetailSection) => void;
   onBack?: () => void;
   onAction: (action: AssessmentDetailAction) => void;

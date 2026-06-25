@@ -12,6 +12,10 @@ import { mapPrismaError, RepositoryError } from '../errors.js';
 import type { RepositoryClient } from '../repository.types.js';
 import { toIsoString, toOptionalText } from './repository.helpers.js';
 
+export interface AssessmentListRecord extends Assessment {
+  findingsCount: number;
+}
+
 export interface AssessmentRepository {
   findAll(): Promise<Assessment[]>;
   findById(id: string): Promise<Assessment | null>;
@@ -41,6 +45,12 @@ type AssessmentRow = {
   updatedAt: Date;
 };
 
+type AssessmentListRow = AssessmentRow & {
+  _count: {
+    threats: number;
+  };
+};
+
 const assessmentSelect = {
   id: true,
   companyId: true,
@@ -57,6 +67,13 @@ const assessmentSelect = {
   owaspTaxonomyVersion: true,
   createdAt: true,
   updatedAt: true,
+} as const;
+
+const assessmentListSelect = {
+  ...assessmentSelect,
+  _count: {
+    select: { threats: true },
+  },
 } as const;
 
 const toAssessment = (row: AssessmentRow): Assessment => ({
@@ -83,6 +100,13 @@ const toAssessment = (row: AssessmentRow): Assessment => ({
   updatedAt: toIsoString(row.updatedAt),
 });
 
+const toAssessmentListRecord = (
+  row: AssessmentListRow,
+): AssessmentListRecord => ({
+  ...toAssessment(row),
+  findingsCount: row._count.threats,
+});
+
 export function createAssessmentRepository(
   db: AssessmentRepositoryDb,
 ): AssessmentRepository {
@@ -90,10 +114,10 @@ export function createAssessmentRepository(
     async findAll() {
       const assessments = await db.assessment.findMany({
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
-        select: assessmentSelect,
+        select: assessmentListSelect,
       });
 
-      return assessments.map(toAssessment);
+      return assessments.map(toAssessmentListRecord);
     },
 
     async findById(id) {
@@ -109,10 +133,10 @@ export function createAssessmentRepository(
       const assessments = await db.assessment.findMany({
         where: { companyId },
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
-        select: assessmentSelect,
+        select: assessmentListSelect,
       });
 
-      return assessments.map(toAssessment);
+      return assessments.map(toAssessmentListRecord);
     },
 
     async create(input) {

@@ -106,13 +106,25 @@ describe.sequential('Assessments API integration', () => {
     expect(allBody.data).toHaveLength(2);
     expect(allBody.data[0]?.id).toBe(createBody.data.id);
 
+    await prisma.threat.create({
+      data: {
+        id: 'thr_00000000-0000-0000-0000-000000000077',
+        assessmentId: createBody.data.id,
+        title: 'Missing authorization',
+        description: 'Object-level authorization is missing.',
+        severity: 'high',
+        strideCategories: ['information-disclosure'],
+        status: 'open',
+      },
+    });
+
     const listResponse = await fetch(
       `${server.baseUrl}/api/assessments?companyId=${company.id}`,
     );
     expect(listResponse.status).toBe(200);
 
     const listBody = await readJson<{
-      data: Array<{ id: string; companyId: string }>;
+      data: Array<{ id: string; companyId: string; findingsCount: number }>;
     }>(listResponse);
 
     expect(listBody.data).toEqual(
@@ -120,6 +132,7 @@ describe.sequential('Assessments API integration', () => {
         expect.objectContaining({
           id: createBody.data.id,
           companyId: company.id,
+          findingsCount: 1,
         }),
       ]),
     );

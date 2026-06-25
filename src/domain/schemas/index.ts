@@ -4,6 +4,7 @@ export * from './assessment.schema.js';
 export * from './threat.schema.js';
 export * from './evidence.schema.js';
 export * from './report.schema.js';
+export * from './report-list.schema.js';
 export * from './report-view.schema.js';
 export * from './report-preview.schema.js';
 export * from './report-readiness.schema.js';

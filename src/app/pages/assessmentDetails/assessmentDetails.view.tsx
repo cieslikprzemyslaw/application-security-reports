@@ -92,6 +92,7 @@ const AssessmentDetailsView = ({
   overviewHref,
   findingsContent,
   evidenceContent,
+  reportsContent,
   onSectionChange,
   onBack,
   onAction,
@@ -303,7 +304,7 @@ const AssessmentDetailsView = ({
             id: 'reports',
             label: 'Reports',
             count: assessment.reportVersionCount,
-            content: renderPlaceholderPanel('reports'),
+            content: reportsContent ?? renderPlaceholderPanel('reports'),
           },
           {
             id: 'history',

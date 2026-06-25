@@ -13,6 +13,7 @@ import { useAssessmentFindings } from './hooks/useAssessmentFindings';
 import { useAssessmentEvidence } from './evidence/hooks/useAssessmentEvidence';
 import AssessmentFindingsSection from './components/assessmentFindingsSection.component';
 import AssessmentEvidenceSection from './evidence/section/EvidenceSection';
+import AssessmentReportsSection from './reports/assessmentReportsSection.component';
 
 import type { AssessmentDetailSection } from './assessmentDetails.type';
 
@@ -150,6 +151,12 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
           assessment={assessmentView}
           threats={findingsController.threats}
           controller={evidenceController}
+        />
+      }
+      reportsContent={
+        <AssessmentReportsSection
+          companyId={companyId}
+          assessmentId={assessmentId}
         />
       }
       onSectionChange={handleSectionChange}
