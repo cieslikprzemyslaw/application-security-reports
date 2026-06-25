@@ -285,13 +285,22 @@ const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
         page-break-after: avoid;
       }
 
-      .report-cover-finding,
-      .report-cover-evidence {
+      .report-cover-finding-grid {
+        display: block;
+      }
+
+      .report-cover-finding-section {
         break-inside: avoid;
         page-break-inside: avoid;
       }
 
+      .report-cover-finding-section + .report-cover-finding-section {
+        margin-top: ${spacing.s};
+      }
+
       .report-cover-finding {
+        break-inside: auto;
+        page-break-inside: auto;
         box-shadow: none;
       }
     }

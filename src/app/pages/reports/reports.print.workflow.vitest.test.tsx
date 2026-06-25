@@ -85,6 +85,16 @@ describe('Report printing through the production router', () => {
         ),
         'Expected saved Evidence in the printable Preview',
       );
+      assert.ok(
+        previewPanel.querySelector('.report-evidence-card'),
+        'Expected a distinct Evidence card in the printable Preview',
+      );
+      assert.ok(
+        textContent(previewPanel as HTMLElement).includes(
+          'Supporting material',
+        ),
+        'Expected the printable Evidence section heading',
+      );
 
       await act(async () => {
         printButton.click();

@@ -136,7 +136,9 @@ describe('report preview presentation', () => {
     };
 
     const included = toReportPreviewPresentation(snapshot);
-    expect(included.cover.findings?.[0]?.evidence).toBe(maliciousText);
+    expect(included.cover.findings?.[0]?.evidence?.[0]?.content).toBe(
+      maliciousText,
+    );
 
     const legacySnapshot: ReportPreviewSnapshot = {
       ...snapshot,
@@ -146,7 +148,8 @@ describe('report preview presentation', () => {
       },
     };
     expect(
-      toReportPreviewPresentation(legacySnapshot).cover.findings?.[0]?.evidence,
+      toReportPreviewPresentation(legacySnapshot).cover.findings?.[0]
+        ?.evidence?.[0]?.content,
     ).toBe(maliciousText);
 
     const hidden = toReportPreviewPresentation({
@@ -167,6 +170,10 @@ describe('report preview presentation', () => {
     );
 
     expect(screen.getByText(maliciousText)).toBeInTheDocument();
+    expect(screen.getByText('Supporting material')).toBeInTheDocument();
+    expect(
+      container.querySelector('.report-evidence-card'),
+    ).toBeInTheDocument();
     expect(container.querySelector('img')).toBeNull();
   });
 
@@ -203,8 +210,8 @@ describe('report preview presentation', () => {
 
     const presentation = toReportPreviewPresentation(snapshot);
 
-    expect(presentation.cover.findings?.[0]?.evidence).toBe(
-      sharedEvidence.content,
+    expect(presentation.cover.findings?.[0]?.evidence?.[0]?.id).toBe(
+      sharedEvidence.id,
     );
     expect(presentation.cover.findings?.[1]?.evidence).toBeUndefined();
   });

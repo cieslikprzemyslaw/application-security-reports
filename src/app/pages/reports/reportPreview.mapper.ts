@@ -61,10 +61,10 @@ const formatDate = (value?: string) => {
   }).format(date);
 };
 
-const toEvidenceText = (
+const toEvidenceItems = (
   snapshot: ReportPreviewSnapshot,
   threatId: string,
-): string | undefined => {
+): ReportPreviewSnapshot['selectedEvidence'] | undefined => {
   if (snapshot.configuration.includeEvidence === false) {
     return undefined;
   }
@@ -84,16 +84,7 @@ const toEvidenceText = (
     );
   });
 
-  if (evidence.length === 0) {
-    return undefined;
-  }
-
-  return evidence
-    .map(
-      item => item.content ?? item.description ?? item.fileName ?? item.title,
-    )
-    .filter(Boolean)
-    .join('\n\n');
+  return evidence.length > 0 ? evidence : undefined;
 };
 
 const resolveLogo = (snapshot: ReportPreviewSnapshot) => {
@@ -194,7 +185,7 @@ export const toReportPreviewPresentation = (
         risk: threat.risk ?? threat.impact ?? 'Not specified',
         recommendation:
           threat.recommendation ?? threat.remediation ?? 'Not specified',
-        evidence: toEvidenceText(snapshot, threat.id),
+        evidence: toEvidenceItems(snapshot, threat.id),
       })),
       footerText:
         snapshot.branding.brandingMode === 'client'

@@ -100,6 +100,40 @@ const copyHttpExchange = (
   },
 });
 
+const evidenceRootPrefix = 'uploads/evidence/';
+
+const toPublicEvidenceAttachmentUrl = (evidence: Evidence) => {
+  for (const candidate of [evidence.storageKey, evidence.filePath]) {
+    if (!candidate) {
+      continue;
+    }
+
+    const normalizedPath = candidate.replace(/\\/g, '/').replace(/^\/+/, '');
+
+    if (!normalizedPath.startsWith(evidenceRootPrefix)) {
+      continue;
+    }
+
+    const relativePath = normalizedPath.slice(evidenceRootPrefix.length);
+    const segments = relativePath.split('/');
+
+    if (
+      segments.length === 0 ||
+      segments.some(
+        segment => segment.length === 0 || segment === '.' || segment === '..',
+      )
+    ) {
+      continue;
+    }
+
+    return `/uploads/evidence/${segments
+      .map(segment => encodeURIComponent(segment))
+      .join('/')}`;
+  }
+
+  return undefined;
+};
+
 const toReportPreviewEvidence = (
   evidence: Evidence,
 ): ReportPreviewEvidence => ({
@@ -115,6 +149,7 @@ const toReportPreviewEvidence = (
   attachmentSizeBytes: evidence.attachmentSizeBytes,
   capturedAt: evidence.capturedAt,
   httpExchanges: evidence.httpExchanges?.map(copyHttpExchange),
+  attachmentUrl: toPublicEvidenceAttachmentUrl(evidence),
 });
 
 const copyReportPreviewBranding = (

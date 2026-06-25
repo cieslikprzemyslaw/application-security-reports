@@ -149,6 +149,35 @@ export const reportPreviewThreatObjectSchema = threatObjectSchema
 
 export const reportPreviewThreatSchema = reportPreviewThreatObjectSchema;
 
+const reportPreviewAttachmentUrlSchema = z
+  .string()
+  .trim()
+  .refine(value => {
+    if (!value.startsWith('/uploads/evidence/')) {
+      return false;
+    }
+
+    try {
+      const decodedPath = decodeURIComponent(
+        value.slice('/uploads/evidence/'.length),
+      );
+      const segments = decodedPath.split('/');
+
+      return (
+        segments.length > 0 &&
+        segments.every(
+          segment =>
+            segment.length > 0 &&
+            segment !== '.' &&
+            segment !== '..' &&
+            !segment.includes('\\'),
+        )
+      );
+    } catch {
+      return false;
+    }
+  }, 'Evidence attachment URL must stay inside the public Evidence route');
+
 export const reportPreviewEvidenceObjectSchema = evidenceObjectSchema
   .pick({
     id: true,
@@ -163,6 +192,9 @@ export const reportPreviewEvidenceObjectSchema = evidenceObjectSchema
     attachmentSizeBytes: true,
     capturedAt: true,
     httpExchanges: true,
+  })
+  .extend({
+    attachmentUrl: reportPreviewAttachmentUrlSchema.optional(),
   })
   .strict();
 

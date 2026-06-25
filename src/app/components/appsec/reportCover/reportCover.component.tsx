@@ -1,5 +1,6 @@
 import React from 'react';
 
+import ReportEvidence from '~/app/components/appsec/reportEvidence';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
 
@@ -160,15 +161,14 @@ const ReportCover = ({
 
                   <p>{finding.recommendation}</p>
                 </div>
-
-                {finding.evidence && (
-                  <div className="report-cover-finding-section report-cover-evidence">
-                    <h4>Evidence</h4>
-
-                    <div>{finding.evidence}</div>
-                  </div>
-                )}
               </div>
+
+              {finding.evidence && finding.evidence.length > 0 && (
+                <ReportEvidence
+                  findingTitle={finding.title}
+                  items={finding.evidence}
+                />
+              )}
             </article>
           ))}
         </div>

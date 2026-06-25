@@ -205,6 +205,30 @@ describe('buildReportPreviewSnapshot', () => {
     });
   });
 
+  it('derives a public attachment URL only from an Evidence-root storage path', () => {
+    const snapshot = buildSnapshot({
+      records: {
+        assessment,
+        threats: [selectedThreat],
+        evidence: [
+          {
+            ...selectedEvidence,
+            filePath:
+              'uploads/evidence/evd_00000000-0000-0000-0000-000000000001/capture image.png',
+            storageKey: undefined,
+            mimeType: 'image/png',
+          },
+        ],
+      },
+    });
+
+    expect(snapshot.selectedEvidence[0].attachmentUrl).toBe(
+      '/uploads/evidence/evd_00000000-0000-0000-0000-000000000001/capture%20image.png',
+    );
+    expect(JSON.stringify(snapshot)).not.toContain('filePath');
+    expect(JSON.stringify(snapshot)).not.toContain('storageKey');
+  });
+
   it('copies mutable snapshot input instead of retaining source references', () => {
     const warnings = ['Evidence selection is incomplete'];
     const snapshot = buildSnapshot({ warnings });
