@@ -124,12 +124,20 @@ Evidence rules include:
 ### Reports
 
 ```http
-GET /api/reports/:id
+POST /api/reports/preview
+GET  /api/reports/:id
+POST /api/reports/:id/readiness
+GET  /api/reports/:id/versions
+GET  /api/reports/:id/versions/:versionId
+POST /api/reports/:id/versions/draft
+POST /api/reports/:id/versions/final
 ```
 
-The response is a validated ReportView assembled from Report, Assessment, Company, Threat, Evidence, and Settings data.
+`GET /api/reports/:id` returns a validated ReportView assembled from Report, Assessment, Company, Threat, Evidence, and Settings data.
 
-No public Report create/update/delete or ReportVersion endpoint is currently registered.
+ReportVersion list and single-read responses contain validated immutable snapshots and omit internal filesystem paths. A nested single-version read returns the version only when it belongs to the requested Report.
+
+There is no public Report create/update/delete endpoint. ReportVersion creation is exposed only through the backend-owned draft and final routes.
 
 ### Settings
 
