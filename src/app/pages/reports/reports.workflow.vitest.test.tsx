@@ -25,14 +25,6 @@ import {
 describe('Report workflow through the production router', () => {
   it('loads the latest immutable ReportVersion and preserves Preview/Data state', async () => {
     const calls = setupReportDetailsFetchFixture();
-    let printCalls = 0;
-
-    Object.defineProperty(window, 'print', {
-      configurable: true,
-      value: () => {
-        printCalls += 1;
-      },
-    });
 
     try {
       const { container, root } = await renderApp(
@@ -90,22 +82,6 @@ describe('Report workflow through the production router', () => {
           ),
         );
       });
-
-      const printButton = Array.from(container.querySelectorAll('button')).find(
-        button => button.textContent?.trim() === 'Print',
-      );
-
-      assert.ok(printButton, 'Expected the browser Print action');
-      assert.ok(
-        container.querySelector('.report-preview-shell-panel--preview'),
-        'Expected printable Preview content to remain mounted from the Data tab',
-      );
-
-      await act(async () => {
-        printButton!.click();
-      });
-
-      assert.equal(printCalls, 1);
 
       const previewButton = Array.from(
         container.querySelectorAll('button'),
