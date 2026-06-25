@@ -5,6 +5,7 @@ import {
   createFinalReportVersionRequestSchema,
   createReportRequestSchema,
   reportSchema,
+  reportVersionListResponseSchema,
   reportVersionResponseSchema,
   reportVersionSchema,
   updateReportRequestSchema,
@@ -75,7 +76,7 @@ describe('Report runtime schemas', () => {
 
     expect(
       reportVersionSchema.safeParse({
-        id: 'rptv_00000000-0000-0000-0000-000000000001',
+        id: 'rvs_00000000-0000-0000-0000-000000000001',
         reportId: 'rpt_00000000-0000-0000-0000-000000000001',
         version: 1,
         status: 'draft',
@@ -107,13 +108,26 @@ describe('Report runtime schemas', () => {
 
     expect(
       reportVersionResponseSchema.safeParse({
-        id: 'rptv_00000000-0000-0000-0000-000000000001',
+        id: 'rvs_00000000-0000-0000-0000-000000000001',
         reportId: 'rpt_00000000-0000-0000-0000-000000000001',
         version: 1,
         status: 'draft',
         generatedAt: '2026-06-22',
         snapshot: validReportVersionSnapshot,
       }).success,
+    ).toBe(true);
+
+    expect(
+      reportVersionListResponseSchema.safeParse([
+        {
+          id: 'rvs_00000000-0000-0000-0000-000000000001',
+          reportId: 'rpt_00000000-0000-0000-0000-000000000001',
+          version: 1,
+          status: 'draft',
+          generatedAt: '2026-06-22',
+          snapshot: validReportVersionSnapshot,
+        },
+      ]).success,
     ).toBe(true);
   });
 
@@ -180,6 +194,42 @@ describe('Report runtime schemas', () => {
     ).toBe(false);
   });
 
+  it('rejects malformed public ReportVersion identifiers and internal paths', () => {
+    const validResponse = {
+      id: 'rvs_00000000-0000-0000-0000-000000000001',
+      reportId: 'rpt_00000000-0000-0000-0000-000000000001',
+      version: 1,
+      status: 'draft',
+      generatedAt: '2026-06-22',
+      snapshot: validReportVersionSnapshot,
+    };
+
+    expect(
+      reportVersionResponseSchema.safeParse({
+        ...validResponse,
+        id: 'wrong-id',
+      }).success,
+    ).toBe(false);
+    expect(
+      reportVersionResponseSchema.safeParse({
+        ...validResponse,
+        reportId: 'wrong-id',
+      }).success,
+    ).toBe(false);
+    expect(
+      reportVersionResponseSchema.safeParse({
+        ...validResponse,
+        filePath: '/private/report.json',
+      }).success,
+    ).toBe(false);
+    expect(
+      reportVersionListResponseSchema.safeParse([
+        validResponse,
+        { ...validResponse, id: 'wrong-id' },
+      ]).success,
+    ).toBe(false);
+  });
+
   it('requires relationships and a non-empty PATCH', () => {
     expect(
       createReportRequestSchema.safeParse({
@@ -193,7 +243,7 @@ describe('Report runtime schemas', () => {
   it('rejects malformed report snapshots', () => {
     expect(
       reportVersionSchema.safeParse({
-        id: 'rptv_00000000-0000-0000-0000-000000000001',
+        id: 'rvs_00000000-0000-0000-0000-000000000001',
         reportId: 'rpt_00000000-0000-0000-0000-000000000001',
         version: 1,
         status: 'draft',

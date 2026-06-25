@@ -119,14 +119,29 @@ const _createFinalReportVersionRequestSchemaCompatibilityCheck: CreateFinalRepor
   ? true
   : never = true;
 
-export const reportVersionResponseSchema = reportVersionSchema.omit({
-  filePath: true,
-});
+export const reportVersionResponseSchema = reportVersionSchema
+  .omit({ filePath: true })
+  .extend({
+    id: prefixedUuidSchema('rvs_', 'ReportVersion'),
+    reportId: prefixedUuidSchema('rpt_', 'Report'),
+  })
+  .strict();
+
+export const reportVersionListResponseSchema = z.array(
+  reportVersionResponseSchema,
+);
 
 type ReportVersionResponseSchemaOutput = Required<
   z.output<typeof reportVersionResponseSchema>
 >;
 const _reportVersionResponseSchemaCompatibilityCheck: ReportVersionResponseSchemaOutput extends ReportVersionResponse
+  ? true
+  : never = true;
+
+type ReportVersionListResponseSchemaOutput = z.output<
+  typeof reportVersionListResponseSchema
+>;
+const _reportVersionListResponseSchemaCompatibilityCheck: ReportVersionListResponseSchemaOutput extends ReportVersionResponse[]
   ? true
   : never = true;
 
