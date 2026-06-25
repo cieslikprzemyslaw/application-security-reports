@@ -43,7 +43,6 @@ const ReportBuilderTree = ({
   companyId,
   companyName,
   includeEvidence,
-  selection,
   selectionState,
   onSelectionChange,
   onIncludeEvidenceChange,
@@ -160,7 +159,6 @@ const ReportBuilderTree = ({
         ) : hierarchy?.assessments.length ? (
           <ReportBuilderTreeContent
             hierarchy={hierarchy}
-            selectedEvidenceIds={selection.selectedEvidenceIds}
             selectionState={selectionState}
             onAssessmentChange={(assessmentId, checked) => {
               commitSelection(
@@ -180,10 +178,11 @@ const ReportBuilderTree = ({
                 ),
               );
             }}
-            onEvidenceChange={(evidenceId, checked) => {
+            onEvidenceChange={(threatId, evidenceId, checked) => {
               commitSelection(
                 toggleReportBuilderEvidenceSelection(
                   selectionState,
+                  threatId,
                   evidenceId,
                   checked,
                 ),

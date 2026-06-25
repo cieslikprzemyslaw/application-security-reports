@@ -62,6 +62,10 @@ const latestSnapshot = {
     title: 'Current Customer Portal',
     applicationName: 'Current Customer Portal',
   },
+  configuration: {
+    methodology: previewSnapshot.configuration.methodology,
+    reportStyle: previewSnapshot.configuration.reportStyle,
+  },
   selection: {
     ...previewSnapshot.selection,
     threatIds: [

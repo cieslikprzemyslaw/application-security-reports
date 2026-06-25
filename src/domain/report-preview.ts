@@ -1,4 +1,5 @@
 export type {
+  ReportEvidenceSelection,
   ReportPreviewAssessment,
   ReportPreviewBranding,
   ReportPreviewCompany,

@@ -1,5 +1,6 @@
 import {
   type ReportBuilderConfiguration,
+  type ReportEvidenceSelection,
   type ReportBuilderSelection,
   type ReportBuilderState,
 } from '~/domain';
@@ -17,6 +18,28 @@ const normalizeSelectedIds = (value?: readonly string[]) => {
   }
 
   return Array.from(new Set(value.map(item => item.trim()).filter(Boolean)));
+};
+
+const normalizeEvidenceSelections = (
+  value?: readonly ReportEvidenceSelection[],
+) => {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const selections = value
+    .map(item => ({
+      threatId: item.threatId.trim(),
+      evidenceId: item.evidenceId.trim(),
+    }))
+    .filter(item => item.threatId && item.evidenceId);
+  const uniqueSelections = new Map(
+    selections.map(item => [`${item.threatId}:${item.evidenceId}`, item]),
+  );
+
+  const normalizedSelections = Array.from(uniqueSelections.values());
+
+  return normalizedSelections.length > 0 ? normalizedSelections : undefined;
 };
 
 export const updateReportBuilderConfiguration = (
@@ -78,6 +101,13 @@ export const updateReportBuilderSelection = (
         : {
             selectedEvidenceIds:
               normalizeSelectedIds(patch.selectedEvidenceIds) ?? [],
+          }),
+      ...(patch.selectedEvidenceSelections === undefined
+        ? {}
+        : {
+            selectedEvidenceSelections: normalizeEvidenceSelections(
+              patch.selectedEvidenceSelections,
+            ),
           }),
     },
   });

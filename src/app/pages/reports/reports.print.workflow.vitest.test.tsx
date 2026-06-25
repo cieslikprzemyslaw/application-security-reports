@@ -79,6 +79,12 @@ describe('Report printing through the production router', () => {
           'Current Customer Portal',
         ),
       );
+      assert.ok(
+        textContent(previewPanel as HTMLElement).includes(
+          'The request returned another user’s order.',
+        ),
+        'Expected saved Evidence in the printable Preview',
+      );
 
       await act(async () => {
         printButton.click();

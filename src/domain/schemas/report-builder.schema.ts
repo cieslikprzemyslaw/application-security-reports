@@ -8,6 +8,7 @@ import {
   reportBrandingModeSchema,
   urlSchema,
 } from './common.schema.js';
+import { reportEvidenceSelectionListSchema } from './report-preview.schema.js';
 
 const uniquePrefixedUuidArraySchema = (
   itemSchema: z.ZodString,
@@ -39,6 +40,7 @@ export const reportBuilderSelectionObjectSchema = z
       prefixedUuidSchema('evd_', 'Evidence'),
       'Evidence',
     ).default([]),
+    selectedEvidenceSelections: reportEvidenceSelectionListSchema.optional(),
   })
   .strict();
 
@@ -99,6 +101,7 @@ export const reportBuilderRouteSelectionObjectSchema = z
       prefixedUuidSchema('evd_', 'Evidence'),
       'Evidence',
     ).optional(),
+    selectedEvidenceSelections: reportEvidenceSelectionListSchema.optional(),
   })
   .strict();
 

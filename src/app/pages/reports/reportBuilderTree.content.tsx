@@ -3,6 +3,7 @@ import Checkbox from '~/app/components/ui/checkbox';
 
 import {
   getAssessmentSelectionState,
+  getEvidenceSelectionState,
   getThreatSelectionState,
   type ReportBuilderSelectionTreeState,
 } from './reportBuilderSelectionTree';
@@ -15,11 +16,14 @@ import type {
 
 interface ReportBuilderTreeContentProps {
   hierarchy: ReportBuilderHierarchy;
-  selectedEvidenceIds: string[];
   selectionState: ReportBuilderSelectionTreeState;
   onAssessmentChange: (assessmentId: string, checked: boolean) => void;
   onThreatChange: (threatId: string, checked: boolean) => void;
-  onEvidenceChange: (evidenceId: string, checked: boolean) => void;
+  onEvidenceChange: (
+    threatId: string,
+    evidenceId: string,
+    checked: boolean,
+  ) => void;
 }
 
 const formatAssessmentSubtitle = (
@@ -57,38 +61,44 @@ const countAssessmentDescendants = (
 
 const ReportBuilderTreeContent = ({
   hierarchy,
-  selectedEvidenceIds,
   selectionState,
   onAssessmentChange,
   onThreatChange,
   onEvidenceChange,
 }: ReportBuilderTreeContentProps) => {
-  const selectedEvidenceIdSet = new Set(selectedEvidenceIds);
-
   function renderEvidenceNode(
-    assessmentId: string,
-    threatId: string,
+    assessment: ReportBuilderHierarchyAssessmentNode,
+    threat: ReportBuilderHierarchyThreatNode,
     node: ReportBuilderHierarchyEvidenceNode,
   ) {
-    const checked = selectedEvidenceIdSet.has(node.evidence.id);
+    const branchState = getEvidenceSelectionState(
+      assessment,
+      threat,
+      node,
+      selectionState,
+    );
 
     return (
       <li key={node.evidence.id} className="report-builder-tree-item">
         <Checkbox
-          id={`report-builder-evidence-${node.evidence.id}-${assessmentId}-${threatId}`}
+          id={`report-builder-evidence-${node.evidence.id}-${assessment.assessment.id}-${threat.threat.id}`}
           label={node.evidence.title}
           description={formatEvidenceSubtitle(node)}
           labelAddon={
             <Badge
-              label={checked ? 'Selected' : 'Evidence'}
-              variant={checked ? 'success' : 'neutral'}
+              label={branchState.checked ? 'Selected' : 'Evidence'}
+              variant={branchState.checked ? 'success' : 'neutral'}
               size="small"
             />
           }
-          checked={checked}
+          checked={branchState.checked}
           indeterminate={false}
           onChange={event =>
-            onEvidenceChange(node.evidence.id, event.target.checked)
+            onEvidenceChange(
+              threat.threat.id,
+              node.evidence.id,
+              event.target.checked,
+            )
           }
         />
       </li>
@@ -138,11 +148,7 @@ const ReportBuilderTreeContent = ({
           <ul className="report-builder-tree-children report-builder-tree-node-subtree">
             {node.evidence.length > 0 ? (
               node.evidence.map(evidenceNode =>
-                renderEvidenceNode(
-                  assessment.assessment.id,
-                  node.threat.id,
-                  evidenceNode,
-                ),
+                renderEvidenceNode(assessment, node, evidenceNode),
               )
             ) : (
               <li className="report-builder-tree-empty-node">

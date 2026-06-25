@@ -146,6 +146,8 @@ const ReportBuilderReports = ({
         selectedAssessmentId: exactSelection.selectedAssessmentId ?? null,
         selectedThreatIds: exactSelection.selectedThreatIds,
         selectedEvidenceIds: exactSelection.selectedEvidenceIds,
+        selectedEvidenceSelections:
+          exactSelection.selectedEvidenceSelections ?? [],
       });
 
       builderStateRef.current = nextState;

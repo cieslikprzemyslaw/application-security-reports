@@ -107,6 +107,7 @@ const request: ReportPreviewRequest = {
   selection: {
     threatIds: [threatId],
     evidenceIds: [evidenceId],
+    evidenceSelections: [{ threatId, evidenceId }],
   },
   configuration: {
     methodology: 'OWASP ASVS / WSTG',
@@ -213,6 +214,9 @@ describe('buildReportPreviewSnapshot', () => {
       branding.allowedBrandingModes,
     );
     expect(snapshot.selection.threatIds).not.toBe(request.selection.threatIds);
+    expect(snapshot.selection.evidenceSelections).not.toBe(
+      request.selection.evidenceSelections,
+    );
     expect(snapshot.selectedThreats[0].strideCategories).not.toBe(
       selectedThreat.strideCategories,
     );

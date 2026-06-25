@@ -26,6 +26,25 @@ const uniquePrefixedUuidArraySchema = (
       `${entityName} IDs must not contain duplicates`,
     );
 
+export const reportEvidenceSelectionObjectSchema = z
+  .object({
+    threatId: prefixedUuidSchema('thr_', 'Threat'),
+    evidenceId: prefixedUuidSchema('evd_', 'Evidence'),
+  })
+  .strict();
+
+export const reportEvidenceSelectionSchema =
+  reportEvidenceSelectionObjectSchema;
+
+export const reportEvidenceSelectionListSchema = z
+  .array(reportEvidenceSelectionSchema)
+  .refine(
+    value =>
+      new Set(value.map(item => `${item.threatId}:${item.evidenceId}`)).size ===
+      value.length,
+    'Evidence selections must not contain duplicate Threat/Evidence pairs',
+  );
+
 export const reportPreviewSelectionObjectSchema = z
   .object({
     threatIds: uniquePrefixedUuidArraySchema(
@@ -36,6 +55,7 @@ export const reportPreviewSelectionObjectSchema = z
       prefixedUuidSchema('evd_', 'Evidence'),
       'Evidence',
     ),
+    evidenceSelections: reportEvidenceSelectionListSchema.optional(),
   })
   .strict();
 
@@ -204,6 +224,10 @@ export const reportPreviewSnapshotObjectSchema = z
   .strict();
 
 export const reportPreviewSnapshotSchema = reportPreviewSnapshotObjectSchema;
+
+export type ReportEvidenceSelection = z.output<
+  typeof reportEvidenceSelectionSchema
+>;
 
 export type ReportPreviewSelection = z.output<
   typeof reportPreviewSelectionSchema

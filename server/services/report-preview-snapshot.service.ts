@@ -153,6 +153,13 @@ export const buildReportPreviewSnapshot = ({
     selection: {
       threatIds: [...request.selection.threatIds],
       evidenceIds: [...request.selection.evidenceIds],
+      ...(request.selection.evidenceSelections
+        ? {
+            evidenceSelections: request.selection.evidenceSelections.map(
+              selection => ({ ...selection }),
+            ),
+          }
+        : {}),
     },
     configuration: {
       methodology: request.configuration.methodology,

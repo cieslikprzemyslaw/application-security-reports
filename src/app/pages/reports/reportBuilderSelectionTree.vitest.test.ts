@@ -111,7 +111,12 @@ describe('reportBuilderSelectionTree helpers', () => {
       selectedEvidenceIds: [evidenceOneId, evidenceTwoId],
     });
 
-    state = toggleReportBuilderEvidenceSelection(state, evidenceOneId, false);
+    state = toggleReportBuilderEvidenceSelection(
+      state,
+      threatOneId,
+      evidenceOneId,
+      false,
+    );
     assert.deepEqual(getReportBuilderExactSelection(state, hierarchy), {
       selectedAssessmentId,
       selectedThreatIds: [threatOneId, threatTwoId],
@@ -175,6 +180,7 @@ describe('reportBuilderSelectionTree helpers', () => {
     );
     state = toggleReportBuilderEvidenceSelection(
       state,
+      threat.threat.id,
       evidence.evidence.id,
       false,
     );

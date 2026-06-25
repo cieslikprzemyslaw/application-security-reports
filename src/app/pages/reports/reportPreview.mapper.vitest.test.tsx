@@ -2,7 +2,6 @@ import React from 'react';
 import { describe, expect, it } from 'vitest';
 
 import { renderWithProviders, screen } from '~/test/render';
-
 import ReportBuilderPreview from './reportBuilderPreview.component';
 import { toReportPreviewPresentation } from './reportPreview.mapper';
 import { previewSnapshot } from './reportPreview.testFixtures';
@@ -124,7 +123,7 @@ describe('report preview presentation', () => {
     ).toBeInTheDocument();
   });
 
-  it('includes Evidence only when configured and keeps its content as text', () => {
+  it('includes Evidence unless it is explicitly disabled and keeps content as text', () => {
     const maliciousText = '<img src=x onerror=alert(1)>';
     const snapshot: ReportPreviewSnapshot = {
       ...withBrandingMode('none'),
@@ -138,6 +137,17 @@ describe('report preview presentation', () => {
 
     const included = toReportPreviewPresentation(snapshot);
     expect(included.cover.findings?.[0]?.evidence).toBe(maliciousText);
+
+    const legacySnapshot: ReportPreviewSnapshot = {
+      ...snapshot,
+      configuration: {
+        methodology: snapshot.configuration.methodology,
+        reportStyle: snapshot.configuration.reportStyle,
+      },
+    };
+    expect(
+      toReportPreviewPresentation(legacySnapshot).cover.findings?.[0]?.evidence,
+    ).toBe(maliciousText);
 
     const hidden = toReportPreviewPresentation({
       ...snapshot,
@@ -158,5 +168,44 @@ describe('report preview presentation', () => {
 
     expect(screen.getByText(maliciousText)).toBeInTheDocument();
     expect(container.querySelector('img')).toBeNull();
+  });
+
+  it('renders shared Evidence only under the selected Threat branch', () => {
+    const firstThreat = previewSnapshot.selectedThreats[0];
+    const secondThreatId = 'thr_00000000-0000-0000-0000-000000000002';
+    const sharedEvidence = {
+      ...previewSnapshot.selectedEvidence[0],
+      threatIds: [firstThreat.id, secondThreatId],
+    };
+    const snapshot: ReportPreviewSnapshot = {
+      ...previewSnapshot,
+      selection: {
+        threatIds: [firstThreat.id, secondThreatId],
+        evidenceIds: [sharedEvidence.id],
+        evidenceSelections: [
+          { threatId: firstThreat.id, evidenceId: sharedEvidence.id },
+        ],
+      },
+      selectedThreats: [
+        firstThreat,
+        {
+          ...firstThreat,
+          id: secondThreatId,
+          title: 'Second selected Threat',
+        },
+      ],
+      selectedEvidence: [sharedEvidence],
+      riskSummary: {
+        ...previewSnapshot.riskSummary,
+        threatCount: 2,
+      },
+    };
+
+    const presentation = toReportPreviewPresentation(snapshot);
+
+    expect(presentation.cover.findings?.[0]?.evidence).toBe(
+      sharedEvidence.content,
+    );
+    expect(presentation.cover.findings?.[1]?.evidence).toBeUndefined();
   });
 });

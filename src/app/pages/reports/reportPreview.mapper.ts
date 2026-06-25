@@ -65,20 +65,33 @@ const toEvidenceText = (
   snapshot: ReportPreviewSnapshot,
   threatId: string,
 ): string | undefined => {
-  if (!snapshot.configuration.includeEvidence) {
+  if (snapshot.configuration.includeEvidence === false) {
     return undefined;
   }
 
-  const evidence = snapshot.selectedEvidence.filter(item =>
-    item.threatIds.includes(threatId),
+  const evidenceSelections = snapshot.selection.evidenceSelections ?? [];
+  const scopedEvidenceIds = new Set(
+    evidenceSelections.map(selection => selection.evidenceId),
   );
+  const evidence = snapshot.selectedEvidence.filter(item => {
+    if (!scopedEvidenceIds.has(item.id)) {
+      return item.threatIds.includes(threatId);
+    }
+
+    return evidenceSelections.some(
+      selection =>
+        selection.evidenceId === item.id && selection.threatId === threatId,
+    );
+  });
 
   if (evidence.length === 0) {
     return undefined;
   }
 
   return evidence
-    .map(item => item.content ?? item.description ?? item.title)
+    .map(
+      item => item.content ?? item.description ?? item.fileName ?? item.title,
+    )
     .filter(Boolean)
     .join('\n\n');
 };
