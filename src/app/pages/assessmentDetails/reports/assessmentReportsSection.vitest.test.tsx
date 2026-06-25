@@ -75,10 +75,13 @@ describe('AssessmentReportsSection', () => {
     const container = await renderSection();
 
     expect(container.textContent).toContain('Customer Portal Security Report');
-    expect(container.textContent).toContain('Open v0.1');
+    expect(container.textContent).toContain('v0.1');
+    expect(container.textContent).toContain('Open preview');
     expect(container.textContent).toContain('not stored by the application');
-    expect(
-      container.querySelector<HTMLAnchorElement>('a')?.getAttribute('href'),
-    ).toContain('versionId=rvs_');
+    const versionLink = container.querySelector<HTMLAnchorElement>(
+      'a[aria-label="Open Customer Portal Security Report version 0.1 preview"]',
+    );
+
+    expect(versionLink?.getAttribute('href')).toContain('versionId=rvs_');
   });
 });

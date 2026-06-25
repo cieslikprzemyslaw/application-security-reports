@@ -67,6 +67,11 @@ export const assessmentRow = {
   updatedAt,
 };
 
+export const assessmentListRow = {
+  ...assessmentRow,
+  _count: { threats: 0 },
+};
+
 export const threatRow = {
   id: 'thr_123',
   assessmentId: 'asm_123',
@@ -195,7 +200,7 @@ export const createAssessmentDb = () => {
   const assessment = {
     async findMany(args: unknown) {
       calls.push({ method: 'findMany', args });
-      return [assessmentRow];
+      return [assessmentListRow];
     },
     async findUnique(args: unknown) {
       calls.push({ method: 'findUnique', args });

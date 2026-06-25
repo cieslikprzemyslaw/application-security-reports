@@ -78,11 +78,12 @@ describe('assessment Reports tab workflow', () => {
         assert.ok(
           textContent(container).includes('Customer Portal Security Report'),
         );
-        assert.ok(textContent(container).includes('Open v0.1'));
+        assert.ok(textContent(container).includes('v0.1'));
+        assert.ok(textContent(container).includes('Open preview'));
       });
 
-      const versionLink = Array.from(container.querySelectorAll('a')).find(
-        link => link.textContent?.includes('Open v0.1'),
+      const versionLink = container.querySelector<HTMLAnchorElement>(
+        'a[aria-label="Open Customer Portal Security Report version 0.1 preview"]',
       );
 
       assert.equal(
