@@ -63,7 +63,10 @@ export interface ReportSnapshot {
   threats: ReportThreatSnapshot[];
 }
 
-export type ReportVersionSnapshot = ReportPreviewSnapshot;
+export type ReportVersionSnapshot = ReportPreviewSnapshot & {
+  /** Present on snapshots created after report-title persistence was added. */
+  reportTitle?: string;
+};
 
 export interface ReportVersion {
   id: ReportVersionId;

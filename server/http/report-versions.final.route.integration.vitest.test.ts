@@ -76,6 +76,7 @@ describe('final ReportVersion route production integration', () => {
         version: 10,
         status: 'final',
       });
+      expect(version.snapshot.reportTitle).toBe(harness.report.title);
       expect(version.snapshot.selection).toEqual(request.selection);
       expect(
         (

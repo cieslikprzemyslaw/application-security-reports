@@ -1,7 +1,7 @@
 import type { ReportVersion } from '../../../src/domain/report.js';
 import type { CreateReportVersionInput } from '../../../src/domain/report.js';
 import type { ReportVersionStatus } from '../../../src/domain/common.js';
-import { reportPreviewSnapshotSchema } from '../../../src/domain/schemas/report-preview.schema.js';
+import { reportVersionSnapshotSchema } from '../../../src/domain/schemas/report.schema.js';
 import {
   ValidationError,
   formatValidationErrors,
@@ -101,7 +101,7 @@ const reportVersionSelect = {
 } as const;
 
 const toReportVersion = (row: ReportVersionRow): ReportVersion => {
-  const snapshotResult = reportPreviewSnapshotSchema.safeParse(row.snapshot);
+  const snapshotResult = reportVersionSnapshotSchema.safeParse(row.snapshot);
 
   if (!snapshotResult.success) {
     throw new RepositoryError('Stored snapshot data is invalid.');
@@ -122,7 +122,7 @@ const createTransactionRepository = (
   db: ReportVersionTransactionDb,
 ): ReportVersionTransactionRepository => ({
   async create(input) {
-    const snapshotResult = reportPreviewSnapshotSchema.safeParse(
+    const snapshotResult = reportVersionSnapshotSchema.safeParse(
       input.snapshot,
     );
 

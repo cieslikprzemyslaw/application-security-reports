@@ -71,7 +71,7 @@ const ReportDetails = ({
     snapshot.assessment.applicationName ?? snapshot.assessment.title;
   const pdfDocumentTitle = createReportPdfDocumentTitle({
     companyName: snapshot.company.name,
-    reportTitle: snapshot.assessment.title,
+    reportTitle: snapshot.reportTitle ?? 'Security report',
     versionLabel: `v${formatReportVersionNumber(version.version)}`,
   });
   const handleGeneratePdf =

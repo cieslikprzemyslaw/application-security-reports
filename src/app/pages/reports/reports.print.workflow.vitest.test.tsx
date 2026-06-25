@@ -110,7 +110,7 @@ describe('Report printing through the production router', () => {
       assert.equal(printCalls, 1);
       assert.equal(
         documentTitleAtPrint,
-        'Northstar Digital - Current Customer Portal - v1.1',
+        'Northstar Digital - Customer Portal Security Report - v1.1',
       );
       assert.equal(document.title, originalDocumentTitle);
       assert.equal(calls.length, 2);

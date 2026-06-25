@@ -11,7 +11,7 @@ import type {
 import {
   reportPreviewRequestObjectSchema,
   reportPreviewRequestSchema,
-  reportPreviewSnapshotSchema,
+  reportPreviewSnapshotObjectSchema,
 } from './report-preview.schema.js';
 
 import {
@@ -79,6 +79,17 @@ export const reportSnapshotObjectSchema = z
 
 export const reportSnapshotSchema = reportSnapshotObjectSchema;
 
+export const reportVersionSnapshotObjectSchema =
+  reportPreviewSnapshotObjectSchema
+    .extend({
+      // Optional only for backwards compatibility with snapshots saved before
+      // report-title persistence was introduced. New versions always set it.
+      reportTitle: nonEmptyTextSchema.optional(),
+    })
+    .strict();
+
+export const reportVersionSnapshotSchema = reportVersionSnapshotObjectSchema;
+
 export const reportVersionObjectSchema = z
   .object({
     id: nonEmptyIdSchema,
@@ -87,7 +98,7 @@ export const reportVersionObjectSchema = z
     status: reportVersionStatusSchema,
     generatedAt: isoDateStringSchema,
     filePath: optionalTrimmedTextSchema,
-    snapshot: reportPreviewSnapshotSchema,
+    snapshot: reportVersionSnapshotSchema,
   })
   .strict();
 

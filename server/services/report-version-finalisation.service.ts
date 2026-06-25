@@ -70,7 +70,10 @@ export const finaliseReportVersion = async (
         version,
         status: 'final',
         generatedAt,
-        snapshot,
+        snapshot: {
+          ...snapshot,
+          reportTitle: report.title,
+        },
       });
 
       await repositories.reportVersionRepository.updateReportLatestVersionIfCurrent(
