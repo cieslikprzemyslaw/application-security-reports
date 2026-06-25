@@ -75,6 +75,17 @@ const reportVersionMigrationSql = readFileSync(
   reportVersionMigrationPath,
   'utf8',
 );
+const reportThreatPositionMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260625193000_add_report_threat_position',
+  'migration.sql',
+);
+const reportThreatPositionMigrationSql = readFileSync(
+  reportThreatPositionMigrationPath,
+  'utf8',
+);
 
 const nodeRequire = createRequire(import.meta.url);
 const Database = nodeRequire('better-sqlite3') as new (
@@ -141,6 +152,7 @@ export const createIntegrationDatabase = async (prefix: string) => {
     bootstrapDb.exec(evidenceMigrationSql);
     bootstrapDb.exec(reportVersionMigrationSql);
     bootstrapDb.exec(companyArchivedAtMigrationSql);
+    bootstrapDb.exec(reportThreatPositionMigrationSql);
   } finally {
     bootstrapDb.close();
   }

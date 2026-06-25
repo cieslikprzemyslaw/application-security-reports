@@ -81,6 +81,152 @@ describe('Report API integration gaps', () => {
     );
   });
 
+  it('creates a draft Report once with ordered deduplicated Threat links', async () => {
+    await withHarness(
+      async ({ server, prisma, assessment, threatA, threatB }) => {
+        const reportCountBefore = await prisma.report.count();
+        const versionCountBefore = await prisma.reportVersion.count();
+
+        const response = await fetch(`${server.baseUrl}/api/reports`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            assessmentId: assessment.id,
+            title: 'Customer Services Portal Security Report',
+            selectedThreatIds: [threatB.id, threatA.id, threatB.id],
+            executiveSummary: 'Initial executive summary',
+          }),
+        });
+
+        assert.equal(response.status, 201);
+
+        const body = (await response.json()) as {
+          data: {
+            id: string;
+            assessmentId: string;
+            title: string;
+            status: string;
+            selectedThreatIds: string[];
+            latestVersion: number;
+            executiveSummary?: string;
+            createdAt: string;
+            updatedAt: string;
+          };
+        };
+
+        assert.match(body.data.id, /^rpt_/);
+        assert.equal(
+          response.headers.get('location'),
+          `/api/reports/${body.data.id}`,
+        );
+        assert.equal(body.data.assessmentId, assessment.id);
+        assert.equal(
+          body.data.title,
+          'Customer Services Portal Security Report',
+        );
+        assert.equal(body.data.status, 'draft');
+        assert.equal(body.data.latestVersion, 0);
+        assert.deepEqual(body.data.selectedThreatIds, [threatB.id, threatA.id]);
+        assert.equal(body.data.executiveSummary, 'Initial executive summary');
+        assert.equal(Number.isNaN(Date.parse(body.data.createdAt)), false);
+        assert.equal(Number.isNaN(Date.parse(body.data.updatedAt)), false);
+
+        assert.equal(await prisma.report.count(), reportCountBefore + 1);
+        assert.equal(await prisma.reportVersion.count(), versionCountBefore);
+
+        assert.deepEqual(
+          await prisma.reportThreat.findMany({
+            where: { reportId: body.data.id },
+            orderBy: { position: 'asc' },
+            select: { threatId: true, position: true },
+          }),
+          [
+            { threatId: threatB.id, position: 0 },
+            { threatId: threatA.id, position: 1 },
+          ],
+        );
+      },
+    );
+  });
+
+  it('rejects malformed, missing, cross-Assessment, and archived create requests', async () => {
+    await withHarness(async ({ server, prisma, assessment, foreignThreat }) => {
+      const countBefore = await prisma.report.count();
+
+      const malformed = await fetch(`${server.baseUrl}/api/reports`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId: assessment.id,
+          title: 'Malformed',
+          selectedThreatIds: [],
+          status: 'generated',
+        }),
+      });
+
+      assert.equal(malformed.status, 400);
+      assert.equal((await readError(malformed)).error.code, 'VALIDATION_ERROR');
+      assert.equal(await prisma.report.count(), countBefore);
+
+      const missingAssessment = await fetch(`${server.baseUrl}/api/reports`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId: 'asm_00000000-0000-0000-0000-000000000098',
+          title: 'Missing Assessment',
+          selectedThreatIds: [],
+        }),
+      });
+
+      assert.equal(missingAssessment.status, 404);
+      assert.equal(
+        (await readError(missingAssessment)).error.code,
+        'ASSESSMENT_NOT_FOUND',
+      );
+      assert.equal(await prisma.report.count(), countBefore);
+
+      const crossAssessment = await fetch(`${server.baseUrl}/api/reports`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId: assessment.id,
+          title: 'Cross Assessment',
+          selectedThreatIds: [foreignThreat.id],
+        }),
+      });
+
+      assert.equal(crossAssessment.status, 400);
+      const crossAssessmentError = await readError(crossAssessment);
+      assert.equal(crossAssessmentError.error.code, 'VALIDATION_ERROR');
+      assert.equal(
+        crossAssessmentError.error.details[0]?.path,
+        'selectedThreatIds.0',
+      );
+      assert.equal(await prisma.report.count(), countBefore);
+
+      await prisma.assessment.update({
+        where: { id: assessment.id },
+        data: { status: 'archived' },
+      });
+
+      const archivedAssessment = await fetch(`${server.baseUrl}/api/reports`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId: assessment.id,
+          title: 'Archived Assessment',
+          selectedThreatIds: [],
+        }),
+      });
+
+      assert.equal(archivedAssessment.status, 400);
+      const archivedError = await readError(archivedAssessment);
+      assert.equal(archivedError.error.code, 'VALIDATION_ERROR');
+      assert.equal(archivedError.error.details[0]?.path, 'assessmentId');
+      assert.equal(await prisma.report.count(), countBefore);
+    });
+  });
+
   it('returns safe malformed and missing Report errors', async () => {
     await withHarness(async ({ server, prisma }) => {
       const countBefore = await prisma.report.count();
@@ -197,6 +343,30 @@ describe('Report API integration gaps', () => {
         assert.equal(JSON.stringify(body).includes('no such table'), false);
         assert.equal(JSON.stringify(body).includes('ReportUnavailable'), false);
         assert.equal(consoleError.mock.calls.length > 0, true);
+
+        const createResponse = await fetch(`${server.baseUrl}/api/reports`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            assessmentId: 'asm_00000000-0000-0000-0000-000000000001',
+            title: 'Repository failure',
+            selectedThreatIds: [],
+          }),
+        });
+        const createBody = await readError(createResponse);
+
+        assert.equal(createResponse.status, 500);
+        assert.deepEqual(createBody, {
+          error: {
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Unexpected server error',
+            details: [],
+          },
+        });
+        assert.equal(
+          JSON.stringify(createBody).includes('ReportUnavailable'),
+          false,
+        );
       } finally {
         consoleError.mockRestore();
       }

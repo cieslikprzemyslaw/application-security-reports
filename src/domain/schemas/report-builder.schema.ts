@@ -82,6 +82,7 @@ export const reportBuilderBrandingSchema = reportBuilderBrandingObjectSchema;
 export const reportBuilderStateObjectSchema = z
   .object({
     companyId: prefixedUuidSchema('cmp_', 'Company'),
+    reportId: prefixedUuidSchema('rpt_', 'Report').optional(),
     selection: reportBuilderSelectionSchema,
     configuration: reportBuilderConfigurationSchema,
     branding: reportBuilderBrandingSchema,
@@ -131,6 +132,7 @@ export const reportBuilderRouteBrandingSchema =
 export const reportBuilderRouteStateObjectSchema = z
   .object({
     companyId: prefixedUuidSchema('cmp_', 'Company'),
+    reportId: prefixedUuidSchema('rpt_', 'Report').optional(),
     selection: reportBuilderRouteSelectionSchema.optional(),
     configuration: reportBuilderRouteConfigurationSchema.optional(),
     branding: reportBuilderRouteBrandingSchema.optional(),

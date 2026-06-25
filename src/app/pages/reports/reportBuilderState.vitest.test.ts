@@ -7,11 +7,13 @@ import {
   restoreReportBuilderRouteState,
   serializeReportBuilderRouteState,
   updateReportBuilderConfiguration,
+  updateReportBuilderReportId,
   updateReportBuilderSelection,
 } from './reportBuilderState.js';
 
 const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
 const otherCompanyId = 'cmp_00000000-0000-0000-0000-000000000002';
+const reportId = 'rpt_00000000-0000-0000-0000-000000000001';
 const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
 const threatId = 'thr_00000000-0000-0000-0000-000000000001';
 const evidenceId = 'evd_00000000-0000-0000-0000-000000000001';
@@ -55,6 +57,7 @@ describe('Report builder state helpers', () => {
 
     const completeState = restoreReportBuilderRouteState(companyId, {
       companyId,
+      reportId,
       selection: {
         selectedAssessmentId: assessmentId,
         selectedThreatIds: [threatId],
@@ -72,6 +75,7 @@ describe('Report builder state helpers', () => {
 
     assert.deepEqual(serializeReportBuilderRouteState(completeState), {
       companyId,
+      reportId,
       selection: {
         selectedAssessmentId: assessmentId,
         selectedThreatIds: [threatId],
@@ -189,6 +193,48 @@ describe('Report builder state helpers', () => {
     assert.equal(nextSelection.configuration.includeEvidence, false);
     assert.equal(nextSelection.branding.brandingMode, 'issuer');
   });
+  it('retains a returned Report ID without losing builder state', () => {
+    const initialState = restoreReportBuilderRouteState(companyId, {
+      companyId,
+      selection: {
+        selectedAssessmentId: assessmentId,
+        selectedThreatIds: [threatId],
+        selectedEvidenceIds: [evidenceId],
+      },
+      configuration: {
+        methodology: 'OWASP ASVS / WSTG',
+        includeEvidence: true,
+      },
+      branding: {
+        brandingMode: 'client',
+      },
+    });
+
+    const nextState = updateReportBuilderReportId(initialState, reportId);
+
+    assert.equal(nextState.reportId, reportId);
+    assert.deepEqual(nextState.selection, initialState.selection);
+    assert.deepEqual(nextState.configuration, initialState.configuration);
+    assert.deepEqual(nextState.branding, initialState.branding);
+
+    assert.deepEqual(serializeReportBuilderRouteState(nextState), {
+      companyId,
+      reportId,
+      selection: {
+        selectedAssessmentId: assessmentId,
+        selectedThreatIds: [threatId],
+        selectedEvidenceIds: [evidenceId],
+      },
+      configuration: {
+        methodology: 'OWASP ASVS / WSTG',
+        includeEvidence: true,
+      },
+      branding: {
+        brandingMode: 'client',
+      },
+    });
+  });
+
   it('clears the selected assessment without changing descendant selections', () => {
     const initialState = restoreReportBuilderRouteState(companyId, {
       companyId,

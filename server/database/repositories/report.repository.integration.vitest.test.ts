@@ -10,7 +10,8 @@ import { createReportRepository } from './report.repository.js';
 
 const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
 const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
-const threatId = 'thr_00000000-0000-0000-0000-000000000001';
+const firstThreatId = 'thr_00000000-0000-0000-0000-000000000001';
+const secondThreatId = 'thr_00000000-0000-0000-0000-000000000002';
 
 describe('Report repository with temporary SQLite', () => {
   let database: TemporaryDatabase | undefined;
@@ -30,18 +31,24 @@ describe('Report repository with temporary SQLite', () => {
         owaspTaxonomyVersion: '2025',
       },
     });
-    await database.prisma.threat.create({
-      data: {
-        id: threatId,
-        assessmentId,
-        title: 'Missing authorization',
-        description: 'Another customer record can be loaded.',
-        severity: 'high',
-        strideCategories: ['spoofing'],
-        status: 'open',
-        owaspCategoryCode: 'A01:2025',
-      },
-    });
+
+    for (const [id, title] of [
+      [firstThreatId, 'Missing authorization'],
+      [secondThreatId, 'Sensitive data exposure'],
+    ] as const) {
+      await database.prisma.threat.create({
+        data: {
+          id,
+          assessmentId,
+          title,
+          description: `${title} description.`,
+          severity: 'high',
+          strideCategories: ['spoofing'],
+          status: 'open',
+          owaspCategoryCode: 'A01:2025',
+        },
+      });
+    }
   });
 
   afterEach(async () => {
@@ -57,7 +64,7 @@ describe('Report repository with temporary SQLite', () => {
     return database;
   };
 
-  it('creates, reads, filters, and patches a Report with Threat links', async () => {
+  it('creates, reads, filters, and patches an ordered Report Threat selection', async () => {
     const { prisma } = getDatabase();
     const repository = createReportRepository(prisma);
 
@@ -66,24 +73,37 @@ describe('Report repository with temporary SQLite', () => {
       title: 'Application Security Assessment',
       status: 'draft',
       latestVersion: 0,
-      selectedThreatIds: [threatId, threatId],
+      selectedThreatIds: [secondThreatId, firstThreatId, secondThreatId],
       executiveSummary: 'Initial summary',
     });
 
     expect(created.id).toMatch(/^rpt_/);
-    expect(created.selectedThreatIds).toEqual([threatId]);
+    expect(created.selectedThreatIds).toEqual([secondThreatId, firstThreatId]);
     await expect(repository.findById(created.id)).resolves.toEqual(created);
     await expect(repository.findByAssessmentId(assessmentId)).resolves.toEqual([
       { ...created, versions: [] },
     ]);
+    await expect(
+      prisma.reportThreat.findMany({
+        where: { reportId: created.id },
+        orderBy: { position: 'asc' },
+        select: { threatId: true, position: true },
+      }),
+    ).resolves.toEqual([
+      { threatId: secondThreatId, position: 0 },
+      { threatId: firstThreatId, position: 1 },
+    ]);
 
     const updated = await repository.update(created.id, {
       title: 'Updated report',
-      selectedThreatIds: [],
+      selectedThreatIds: [firstThreatId, secondThreatId],
     });
 
     expect(updated.title).toBe('Updated report');
-    expect(updated.selectedThreatIds).toEqual([]);
+    expect(updated.selectedThreatIds).toEqual([firstThreatId, secondThreatId]);
+
+    await repository.update(created.id, { selectedThreatIds: [] });
+
     await expect(prisma.reportThreat.count()).resolves.toBe(0);
   });
 
@@ -105,6 +125,29 @@ describe('Report repository with temporary SQLite', () => {
     await expect(prisma.report.count()).resolves.toBe(before);
   });
 
+  it('rolls back Report creation when a selected Threat relation fails', async () => {
+    const { prisma } = getDatabase();
+    const repository = createReportRepository(prisma);
+    const reportCountBefore = await prisma.report.count();
+    const linkCountBefore = await prisma.reportThreat.count();
+
+    await expect(
+      repository.create({
+        assessmentId,
+        title: 'Invalid selected Threat',
+        status: 'draft',
+        latestVersion: 0,
+        selectedThreatIds: [
+          firstThreatId,
+          'thr_00000000-0000-0000-0000-000000000099',
+        ],
+      }),
+    ).rejects.toBeInstanceOf(RepositoryConstraintError);
+
+    await expect(prisma.report.count()).resolves.toBe(reportCountBefore);
+    await expect(prisma.reportThreat.count()).resolves.toBe(linkCountBefore);
+  });
+
   it('rolls back field and relationship changes when a PATCH link fails', async () => {
     const { prisma } = getDatabase();
     const repository = createReportRepository(prisma);
@@ -113,7 +156,7 @@ describe('Report repository with temporary SQLite', () => {
       title: 'Original report',
       status: 'draft',
       latestVersion: 0,
-      selectedThreatIds: [threatId],
+      selectedThreatIds: [firstThreatId],
     });
     const before = await prisma.report.findUnique({
       where: { id: created.id },
@@ -148,7 +191,7 @@ describe('Report repository with temporary SQLite', () => {
 
     await prisma.reportVersion.create({
       data: {
-        id: 'rpv_00000000-0000-0000-0000-000000000001',
+        id: 'rvs_00000000-0000-0000-0000-000000000001',
         reportId: created.id,
         version: 1,
         status: 'draft',

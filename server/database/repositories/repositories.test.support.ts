@@ -113,7 +113,7 @@ export const evidenceRow = {
 export const reportRow = {
   id: 'rpt_123',
   assessmentId: 'asm_123',
-  selectedThreats: [{ threatId: 'thr_123' }],
+  selectedThreats: [{ threatId: 'thr_123', position: 0 }],
   title: 'Report',
   status: 'draft',
   latestVersion: 1,

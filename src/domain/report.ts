@@ -87,4 +87,9 @@ export type ReportVersionResponse = Omit<ReportVersion, 'filePath'>;
 
 export type CreateReportInput = Omit<Report, 'id' | 'createdAt' | 'updatedAt'>;
 
+export type CreateReportRequest = Omit<
+  CreateReportInput,
+  'status' | 'latestVersion'
+>;
+
 export type UpdateReportInput = Partial<CreateReportInput>;

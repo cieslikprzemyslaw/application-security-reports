@@ -79,21 +79,21 @@ model Company {
 }
 
 model Assessment {
-  id              String    @id
-  companyId       String
-  title           String
-  description     String?
-  scope           String?
-  status          String
-  startedAt       String?
-  completedAt     String?
-  applicationName String?
-  environment     String?
-  assessmentType  String?
-  overallRisk     Severity?
-  owaspTaxonomyVersion String @default("2025")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                   String    @id
+  companyId            String
+  title                String
+  description          String?
+  scope                String?
+  status               String
+  startedAt            String?
+  completedAt          String?
+  applicationName      String?
+  environment          String?
+  assessmentType       String?
+  overallRisk          Severity?
+  owaspTaxonomyVersion String    @default("2025")
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   company  Company    @relation(fields: [companyId], references: [id], onDelete: Restrict)
   threats  Threat[]
@@ -139,23 +139,23 @@ model Threat {
 }
 
 model Evidence {
-  id                 String             @id
-  assessmentId       String
-  type               EvidenceType
-  title              String
-  description        String?
-  content            String?
-  fileName           String?
-  filePath           String?
-  storageKey         String?
-  mimeType           String?
+  id                  String       @id
+  assessmentId        String
+  type                EvidenceType
+  title               String
+  description         String?
+  content             String?
+  fileName            String?
+  filePath            String?
+  storageKey          String?
+  mimeType            String?
   attachmentSizeBytes Int?
-  capturedAt         String?
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  capturedAt          String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
 
-  assessment   Assessment        @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  threatLinks  EvidenceThreat[]
+  assessment    Assessment         @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  threatLinks   EvidenceThreat[]
   httpExchanges EvidenceExchange[]
 
   @@index([assessmentId])
@@ -228,11 +228,13 @@ model EvidenceThreat {
 model ReportThreat {
   reportId String
   threatId String
+  position Int
 
   report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
   threat Threat @relation(fields: [threatId], references: [id], onDelete: Restrict)
 
   @@id([reportId, threatId])
+  @@unique([reportId, position])
   @@index([threatId])
 }
 

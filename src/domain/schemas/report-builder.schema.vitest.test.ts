@@ -9,6 +9,7 @@ import {
 } from './report-builder.schema.js';
 
 const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
+const reportId = 'rpt_00000000-0000-0000-0000-000000000001';
 const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
 const threatId = 'thr_00000000-0000-0000-0000-000000000001';
 const evidenceId = 'evd_00000000-0000-0000-0000-000000000001';
@@ -27,6 +28,7 @@ describe('Report builder runtime schemas', () => {
     expect(
       reportBuilderRouteStateSchema.safeParse({
         companyId,
+        reportId,
         configuration: { includeEvidence: true },
       }).success,
     ).toBe(true);
@@ -34,6 +36,7 @@ describe('Report builder runtime schemas', () => {
     expect(
       reportBuilderStateSchema.safeParse({
         companyId,
+        reportId,
         selection: {
           selectedAssessmentId: assessmentId,
           selectedThreatIds: [threatId],
@@ -69,6 +72,16 @@ describe('Report builder runtime schemas', () => {
     expect(
       reportBuilderStateSchema.safeParse({
         companyId: assessmentId,
+        selection: {},
+        configuration: {},
+        branding: {},
+      }).success,
+    ).toBe(false);
+
+    expect(
+      reportBuilderStateSchema.safeParse({
+        companyId,
+        reportId: 'asm_00000000-0000-0000-0000-000000000001',
         selection: {},
         configuration: {},
         branding: {},
@@ -121,6 +134,7 @@ describe('Report builder runtime schemas', () => {
     expect(
       reportBuilderStateSchema.safeParse({
         companyId,
+        reportId,
         selection: {
           selectedAssessmentId: assessmentId,
           selectedThreatIds: [threatId],

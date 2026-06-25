@@ -8,14 +8,18 @@ import { RepositoryError } from '../errors.js';
 import { createReportRepository } from './report.repository.js';
 
 const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
-const threatId = 'thr_00000000-0000-0000-0000-000000000001';
+const firstThreatId = 'thr_00000000-0000-0000-0000-000000000001';
+const secondThreatId = 'thr_00000000-0000-0000-0000-000000000002';
 const reportId = 'rpt_00000000-0000-0000-0000-000000000001';
 const createdAt = new Date('2026-06-22T09:00:00.000Z');
 
 const row = {
   id: reportId,
   assessmentId,
-  selectedThreats: [{ threatId }],
+  selectedThreats: [
+    { threatId: secondThreatId, position: 0 },
+    { threatId: firstThreatId, position: 1 },
+  ],
   title: 'Application Security Assessment',
   status: 'draft',
   latestVersion: 1,
@@ -34,7 +38,13 @@ const createDb = () => {
     },
     reportThreat: {
       deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
-      createMany: vi.fn().mockResolvedValue({ count: 1 }),
+      createMany: vi.fn().mockResolvedValue({ count: 2 }),
+      findFirst: vi.fn().mockResolvedValue({ position: 3 }),
+      create: vi.fn().mockResolvedValue({
+        reportId,
+        threatId: firstThreatId,
+        position: 4,
+      }),
     },
   } as unknown as RepositoryTransactionClient;
 
@@ -45,7 +55,6 @@ const createDb = () => {
       delete: vi.fn().mockResolvedValue(row),
     },
     reportThreat: {
-      create: vi.fn(),
       delete: vi.fn(),
     },
     $transaction: vi.fn(async callback => callback(tx)),
@@ -58,7 +67,7 @@ const createDb = () => {
 };
 
 describe('createReportRepository', () => {
-  it('maps rows and applies stable Assessment ordering', async () => {
+  it('maps selected Threats in persisted position order', async () => {
     const { db } = createDb();
     const repository = createReportRepository(db);
 
@@ -66,7 +75,7 @@ describe('createReportRepository', () => {
       expect.objectContaining({
         id: reportId,
         assessmentId,
-        selectedThreatIds: [threatId],
+        selectedThreatIds: [secondThreatId, firstThreatId],
         executiveSummary: undefined,
         createdAt: createdAt.toISOString(),
         versions: [],
@@ -75,11 +84,16 @@ describe('createReportRepository', () => {
     expect(db.report.findMany).toHaveBeenCalledWith({
       where: { assessmentId },
       orderBy: [{ createdAt: 'desc' }],
-      select: expect.any(Object),
+      select: expect.objectContaining({
+        selectedThreats: {
+          select: { threatId: true, position: true },
+          orderBy: [{ position: 'asc' }, { threatId: 'asc' }],
+        },
+      }),
     });
   });
 
-  it('deduplicates selected Threat links on create', async () => {
+  it('deduplicates selected Threat links without changing request order', async () => {
     const { db, tx } = createDb();
     const repository = createReportRepository(db);
 
@@ -88,7 +102,7 @@ describe('createReportRepository', () => {
       title: 'Application Security Assessment',
       status: 'draft',
       latestVersion: 0,
-      selectedThreatIds: [threatId, threatId],
+      selectedThreatIds: [secondThreatId, firstThreatId, secondThreatId],
     });
 
     expect(tx.report.create).toHaveBeenCalledWith({
@@ -96,7 +110,10 @@ describe('createReportRepository', () => {
         id: expect.stringMatching(/^rpt_/),
         assessmentId,
         selectedThreats: {
-          create: [{ threatId }],
+          create: [
+            { threatId: secondThreatId, position: 0 },
+            { threatId: firstThreatId, position: 1 },
+          ],
         },
       }),
       select: expect.any(Object),
@@ -111,12 +128,42 @@ describe('createReportRepository', () => {
 
     expect(tx.reportThreat.deleteMany).not.toHaveBeenCalled();
 
+    await repository.update(reportId, {
+      selectedThreatIds: [secondThreatId, firstThreatId, secondThreatId],
+    });
+
+    expect(tx.reportThreat.createMany).toHaveBeenCalledWith({
+      data: [
+        { reportId, threatId: secondThreatId, position: 0 },
+        { reportId, threatId: firstThreatId, position: 1 },
+      ],
+    });
+
     await repository.update(reportId, { selectedThreatIds: [] });
 
-    expect(tx.reportThreat.deleteMany).toHaveBeenCalledWith({
+    expect(tx.reportThreat.deleteMany).toHaveBeenLastCalledWith({
       where: { reportId },
     });
-    expect(tx.reportThreat.createMany).not.toHaveBeenCalled();
+  });
+
+  it('appends an attached Threat after the current final position', async () => {
+    const { db, tx } = createDb();
+    const repository = createReportRepository(db);
+
+    await repository.attachThreat(reportId, firstThreatId);
+
+    expect(tx.reportThreat.findFirst).toHaveBeenCalledWith({
+      where: { reportId },
+      orderBy: { position: 'desc' },
+      select: { position: true },
+    });
+    expect(tx.reportThreat.create).toHaveBeenCalledWith({
+      data: {
+        reportId,
+        threatId: firstThreatId,
+        position: 4,
+      },
+    });
   });
 
   it('maps a failed transaction without returning success', async () => {

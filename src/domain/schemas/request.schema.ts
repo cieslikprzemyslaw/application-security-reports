@@ -6,13 +6,13 @@ import type {
 } from '../assessment.js';
 import type { CreateCompanyInput, UpdateCompanyInput } from '../company.js';
 import type { CreateEvidenceInput, UpdateEvidenceInput } from '../evidence.js';
-import type { CreateReportInput, UpdateReportInput } from '../report.js';
+import type { CreateReportRequest, UpdateReportInput } from '../report.js';
 import type { CreateSettingsInput, UpdateSettingsInput } from '../settings.js';
 import type { CreateThreatInput, UpdateThreatInput } from '../threat.js';
 
 import { assessmentObjectSchema } from './assessment.schema.js';
 import { companyObjectSchema } from './company.schema.js';
-import { reportObjectSchema } from './report.schema.js';
+import { reportResponseSchema } from './report.schema.js';
 import {
   settingsObjectBaseSchema,
   validateSettingsBrandingModes,
@@ -219,18 +219,13 @@ const _updateEvidenceRequestSchemaCompatibilityCheck: UpdateEvidenceRequestSchem
   ? true
   : never = true;
 
-const createReportBaseSchema = reportObjectSchema.omit({
+const createReportBaseSchema = reportResponseSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
   latestVersion: true,
   status: true,
 });
-
-type CreateReportRequestInput = Omit<
-  CreateReportInput,
-  'latestVersion' | 'status'
->;
 
 type UpdateReportRequestInput = Omit<
   UpdateReportInput,
@@ -241,7 +236,7 @@ export const createReportRequestSchema = createReportBaseSchema;
 type CreateReportRequestSchemaOutput = Required<
   z.output<typeof createReportRequestSchema>
 >;
-const _createReportRequestSchemaCompatibilityCheck: CreateReportRequestSchemaOutput extends CreateReportRequestInput
+const _createReportRequestSchemaCompatibilityCheck: CreateReportRequestSchemaOutput extends CreateReportRequest
   ? true
   : never = true;
 

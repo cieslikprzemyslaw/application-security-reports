@@ -106,6 +106,17 @@ const reportVersionUniquenessMigrationSql = readFileSync(
   reportVersionUniquenessMigrationPath,
   'utf8',
 );
+const reportThreatPositionMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260625193000_add_report_threat_position',
+  'migration.sql',
+);
+const reportThreatPositionMigrationSql = readFileSync(
+  reportThreatPositionMigrationPath,
+  'utf8',
+);
 const allowedOrigin = 'http://localhost:5173';
 const config = loadServerConfig({
   FRONTEND_ORIGIN: allowedOrigin,
@@ -202,6 +213,7 @@ export const createReportsRouteIntegrationHarness =
       bootstrapDb.exec(evidenceMigrationSql);
       bootstrapDb.exec(reportVersionMigrationSql);
       bootstrapDb.exec(reportVersionUniquenessMigrationSql);
+      bootstrapDb.exec(reportThreatPositionMigrationSql);
     } finally {
       bootstrapDb.close();
     }

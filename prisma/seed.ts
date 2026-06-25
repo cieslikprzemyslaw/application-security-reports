@@ -340,11 +340,12 @@ const insertReports = async (
 
     const uniqueThreatIds = dedupeStrings(selectedThreatIds);
 
-    for (const threatId of uniqueThreatIds) {
+    for (const [position, threatId] of uniqueThreatIds.entries()) {
       await db.reportThreat.create({
         data: {
           reportId: row.id,
           threatId,
+          position,
         },
       });
     }

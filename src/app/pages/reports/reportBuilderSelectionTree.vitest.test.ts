@@ -2,154 +2,166 @@ import assert from 'node:assert/strict';
 
 import { describe, it } from 'vitest';
 
-import type { ReportBuilderHierarchy } from './reportBuilderTree.service';
 import {
   createReportBuilderSelectionTreeState,
-  getReportBuilderExactSelection,
   getAssessmentSelectionState,
+  getReportBuilderExactSelection,
   getThreatSelectionState,
   toggleReportBuilderAssessmentSelection,
   toggleReportBuilderEvidenceSelection,
   toggleReportBuilderThreatSelection,
 } from './reportBuilderSelectionTree';
-
-const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
-
-const hierarchy: ReportBuilderHierarchy = {
-  companyId,
-  assessments: [
-    {
-      assessment: {
-        id: 'asm_00000000-0000-0000-0000-000000000001',
-        companyId,
-        name: 'Customer Services Portal',
-        applicationName: 'Customer Services Portal',
-        type: 'Web App',
-        status: 'in-progress',
-        findingsCount: 2,
-        updatedAt: '2026-06-10T00:00:00.000Z',
-        description: 'Assessment of the customer portal',
-        scope: 'Web application',
-      },
-      threats: [
-        {
-          threat: {
-            id: 'thr_00000000-0000-0000-0000-000000000001',
-            assessmentId: 'asm_00000000-0000-0000-0000-000000000001',
-            title: 'Missing Server-Side Authorization',
-            description:
-              'Authorization is missing on the order lookup endpoint.',
-            severity: 'critical',
-            strideCategories: ['elevation-of-privilege'],
-            status: 'open',
-            createdAt: '2026-06-03T00:00:00.000Z',
-            updatedAt: '2026-06-12T00:00:00.000Z',
-          },
-          evidence: [
-            {
-              evidence: {
-                id: 'evd_00000000-0000-0000-0000-000000000001',
-                assessmentId: 'asm_00000000-0000-0000-0000-000000000001',
-                threatIds: ['thr_00000000-0000-0000-0000-000000000001'],
-                type: 'text',
-                title: 'Authorization note',
-                createdAt: '2026-06-05T00:00:00.000Z',
-                updatedAt: '2026-06-05T00:00:00.000Z',
-              },
-            },
-          ],
-        },
-        {
-          threat: {
-            id: 'thr_00000000-0000-0000-0000-000000000002',
-            assessmentId: 'asm_00000000-0000-0000-0000-000000000001',
-            title: 'Verbose Error Messages',
-            description: 'Unhandled errors disclose stack traces.',
-            severity: 'medium',
-            strideCategories: ['information-disclosure'],
-            status: 'mitigated',
-            createdAt: '2026-06-04T00:00:00.000Z',
-            updatedAt: '2026-06-12T00:00:00.000Z',
-          },
-          evidence: [
-            {
-              evidence: {
-                id: 'evd_00000000-0000-0000-0000-000000000002',
-                assessmentId: 'asm_00000000-0000-0000-0000-000000000001',
-                threatIds: ['thr_00000000-0000-0000-0000-000000000002'],
-                type: 'http',
-                title: 'HTTP exchange evidence',
-                createdAt: '2026-06-06T00:00:00.000Z',
-                updatedAt: '2026-06-06T00:00:00.000Z',
-              },
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
+import {
+  assessmentId,
+  evidenceOneId,
+  evidenceTwoId,
+  otherHierarchy,
+  populatedHierarchy,
+  threatOneId,
+  threatTwoId,
+} from './reportBuilderTree.testFixtures';
 
 describe('reportBuilderSelectionTree helpers', () => {
   it('propagates parent selection and preserves explicit exclusions across parent changes', () => {
-    const selectedAssessmentId = 'asm_00000000-0000-0000-0000-000000000001';
-    const threatOneId = 'thr_00000000-0000-0000-0000-000000000001';
-    const threatTwoId = 'thr_00000000-0000-0000-0000-000000000002';
-    const evidenceOneId = 'evd_00000000-0000-0000-0000-000000000001';
-    const evidenceTwoId = 'evd_00000000-0000-0000-0000-000000000002';
-
+    const assessment = populatedHierarchy.assessments[0]!;
     let state = createReportBuilderSelectionTreeState();
 
-    state = toggleReportBuilderAssessmentSelection(
-      state,
-      selectedAssessmentId,
-      true,
+    state = toggleReportBuilderAssessmentSelection(state, assessment, true);
+    assert.deepEqual(
+      getReportBuilderExactSelection(state, populatedHierarchy),
+      {
+        selectedAssessmentId: assessmentId,
+        selectedThreatIds: [threatOneId, threatTwoId],
+        selectedEvidenceIds: [evidenceOneId, evidenceTwoId],
+      },
     );
-    assert.deepEqual(getReportBuilderExactSelection(state, hierarchy), {
-      selectedAssessmentId,
-      selectedThreatIds: [threatOneId, threatTwoId],
-      selectedEvidenceIds: [evidenceOneId, evidenceTwoId],
-    });
 
     state = toggleReportBuilderEvidenceSelection(
       state,
+      assessmentId,
       threatOneId,
       evidenceOneId,
       false,
     );
-    assert.deepEqual(getReportBuilderExactSelection(state, hierarchy), {
-      selectedAssessmentId,
-      selectedThreatIds: [threatOneId, threatTwoId],
-      selectedEvidenceIds: [evidenceTwoId],
-    });
+    assert.deepEqual(
+      getReportBuilderExactSelection(state, populatedHierarchy),
+      {
+        selectedAssessmentId: assessmentId,
+        selectedThreatIds: [threatOneId, threatTwoId],
+        selectedEvidenceIds: [evidenceTwoId],
+      },
+    );
 
-    state = toggleReportBuilderThreatSelection(state, threatTwoId, false);
-    assert.deepEqual(getReportBuilderExactSelection(state, hierarchy), {
-      selectedAssessmentId,
-      selectedThreatIds: [threatOneId],
-      selectedEvidenceIds: [],
-    });
-
-    state = toggleReportBuilderAssessmentSelection(
+    state = toggleReportBuilderThreatSelection(
       state,
-      selectedAssessmentId,
+      assessmentId,
+      threatTwoId,
       false,
     );
-    assert.deepEqual(getReportBuilderExactSelection(state, hierarchy), {
-      selectedThreatIds: [],
-      selectedEvidenceIds: [],
-    });
+    assert.deepEqual(
+      getReportBuilderExactSelection(state, populatedHierarchy),
+      {
+        selectedAssessmentId: assessmentId,
+        selectedThreatIds: [threatOneId],
+        selectedEvidenceIds: [],
+      },
+    );
 
-    state = toggleReportBuilderAssessmentSelection(
-      state,
-      selectedAssessmentId,
+    state = toggleReportBuilderAssessmentSelection(state, assessment, false);
+    assert.deepEqual(
+      getReportBuilderExactSelection(state, populatedHierarchy),
+      {
+        selectedThreatIds: [],
+        selectedEvidenceIds: [],
+      },
+    );
+
+    state = toggleReportBuilderAssessmentSelection(state, assessment, true);
+    assert.deepEqual(
+      getReportBuilderExactSelection(state, populatedHierarchy),
+      {
+        selectedAssessmentId: assessmentId,
+        selectedThreatIds: [threatOneId],
+        selectedEvidenceIds: [],
+      },
+    );
+  });
+
+  it('keeps a persisted Report locked to its original Assessment', () => {
+    const assessment = populatedHierarchy.assessments[0]!;
+    const otherAssessment = otherHierarchy.assessments[0]!;
+    const selectedState = toggleReportBuilderThreatSelection(
+      createReportBuilderSelectionTreeState(),
+      assessmentId,
+      threatOneId,
       true,
     );
-    assert.deepEqual(getReportBuilderExactSelection(state, hierarchy), {
-      selectedAssessmentId,
-      selectedThreatIds: [threatOneId],
-      selectedEvidenceIds: [],
-    });
+
+    assert.equal(
+      toggleReportBuilderAssessmentSelection(
+        selectedState,
+        assessment,
+        false,
+        assessmentId,
+      ),
+      selectedState,
+    );
+    assert.equal(
+      toggleReportBuilderAssessmentSelection(
+        selectedState,
+        otherAssessment,
+        true,
+        assessmentId,
+      ),
+      selectedState,
+    );
+    assert.equal(
+      toggleReportBuilderThreatSelection(
+        selectedState,
+        otherAssessment.assessment.id,
+        'thr_00000000-0000-0000-0000-000000000099',
+        true,
+        assessmentId,
+      ),
+      selectedState,
+    );
+  });
+
+  it('establishes Assessment context from a selected Threat without selecting siblings', () => {
+    const state = toggleReportBuilderThreatSelection(
+      createReportBuilderSelectionTreeState(),
+      assessmentId,
+      threatOneId,
+      true,
+    );
+
+    assert.deepEqual(
+      getReportBuilderExactSelection(state, populatedHierarchy),
+      {
+        selectedAssessmentId: assessmentId,
+        selectedThreatIds: [threatOneId],
+        selectedEvidenceIds: [evidenceOneId],
+      },
+    );
+  });
+
+  it('establishes Assessment context from selected Evidence without selecting its Threat or siblings', () => {
+    const state = toggleReportBuilderEvidenceSelection(
+      createReportBuilderSelectionTreeState(),
+      assessmentId,
+      threatOneId,
+      evidenceOneId,
+      true,
+    );
+
+    assert.deepEqual(
+      getReportBuilderExactSelection(state, populatedHierarchy),
+      {
+        selectedAssessmentId: assessmentId,
+        selectedThreatIds: [],
+        selectedEvidenceIds: [evidenceOneId],
+      },
+    );
   });
 
   it('ignores unknown ids that are not present in the loaded hierarchy', () => {
@@ -162,24 +174,25 @@ describe('reportBuilderSelectionTree helpers', () => {
       selectedEvidenceIds: ['evd_00000000-0000-0000-0000-000000000099'],
     });
 
-    assert.deepEqual(getReportBuilderExactSelection(state, hierarchy), {
-      selectedThreatIds: [],
-      selectedEvidenceIds: [],
-    });
+    assert.deepEqual(
+      getReportBuilderExactSelection(state, populatedHierarchy),
+      {
+        selectedThreatIds: [],
+        selectedEvidenceIds: [],
+      },
+    );
   });
+
   it('marks a selected branch as partial when evidence is explicitly excluded', () => {
-    const assessment = hierarchy.assessments[0]!;
+    const assessment = populatedHierarchy.assessments[0]!;
     const threat = assessment.threats[0]!;
     const evidence = threat.evidence[0]!;
 
     let state = createReportBuilderSelectionTreeState();
-    state = toggleReportBuilderAssessmentSelection(
-      state,
-      assessment.assessment.id,
-      true,
-    );
+    state = toggleReportBuilderAssessmentSelection(state, assessment, true);
     state = toggleReportBuilderEvidenceSelection(
       state,
+      assessment.assessment.id,
       threat.threat.id,
       evidence.evidence.id,
       false,

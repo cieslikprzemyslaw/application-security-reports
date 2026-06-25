@@ -203,6 +203,11 @@ const ReportBuilderReports = ({
           includeEvidence={builderState.configuration.includeEvidence}
           selection={builderState.selection}
           selectionState={selectionState}
+          lockedAssessmentId={
+            builderState.reportId
+              ? builderState.selection.selectedAssessmentId
+              : undefined
+          }
           onSelectionChange={handleSelectionChange}
           onIncludeEvidenceChange={handleIncludeEvidenceChange}
         />
