@@ -1,9 +1,36 @@
 import type { HTMLAttributes } from 'react';
 
-export interface ReportActionsProps extends HTMLAttributes<HTMLDivElement> {
+export type ReportActionName =
+  | 'backToEditor'
+  | 'generatePreview'
+  | 'saveDraft'
+  | 'saveAsFinal'
+  | 'generatePdf';
+
+export interface ReportActionConfig {
+  onActivate: () => void;
+  isPending?: boolean;
+  isDisabled?: boolean;
+  disabledReason?: string;
+}
+
+export interface ReportActionsProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'children'
+> {
+  backToEditor?: ReportActionConfig;
+  generatePreview?: ReportActionConfig;
+  saveDraft?: ReportActionConfig;
+  saveAsFinal?: ReportActionConfig;
+  generatePdf?: ReportActionConfig;
+  primaryAction?: ReportActionName;
+
+  /** @deprecated Temporary #31 compatibility. Replace through issue #233. */
   isGenerating?: boolean;
-  onPreview?: () => void;
+
+  /** @deprecated Temporary #31 compatibility. Replace through issue #233. */
   onPrint?: () => void;
+
+  /** @deprecated Temporary #31 compatibility. Replace through issue #233. */
   onGeneratePdf?: () => void;
-  onDownloadMarkdown?: () => void;
 }

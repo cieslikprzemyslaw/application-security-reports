@@ -8,6 +8,14 @@ export { default as GlobalThreatTable } from './globalThreatTable';
 
 export { default as ReportCover } from './reportCover';
 
+export { default as ReportActions } from './reportActions';
+
+export type {
+  ReportActionConfig,
+  ReportActionName,
+  ReportActionsProps,
+} from './reportActions';
+
 export { default as ReportPreviewShell } from './reportPreviewShell';
 
 export { default as ReportReadinessChecklist } from './reportReadinessChecklist';
