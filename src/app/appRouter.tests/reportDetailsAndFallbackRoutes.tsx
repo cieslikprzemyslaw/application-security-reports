@@ -10,6 +10,7 @@ import {
 import {
   missingReportId,
   oldReportVersionId,
+  reportDetailsCompanyId,
   reportDetailsReportId,
   setupReportDetailsFetchFixture,
 } from './reportDetailsFixture';
@@ -20,16 +21,22 @@ export const runReportDetailsAndFallbackRouteTests = async () => {
 
     try {
       const { container, root } = await renderApp(
-        routes.reportDetails(reportDetailsReportId),
+        routes.reportDetails(reportDetailsCompanyId, reportDetailsReportId),
       );
 
       await waitFor(() => {
         assert.ok(textContent(container).includes('Report Preview'));
         assert.ok(textContent(container).includes('Current Customer Portal'));
         assert.ok(textContent(container).includes('v1.1'));
+        assert.ok(container.querySelector('.risk-summary'));
+        assert.ok(container.querySelector('.severity-distribution'));
         assert.equal(
           window.location.pathname,
-          routes.reportDetails(reportDetailsReportId),
+          routes.reportDetails(reportDetailsCompanyId, reportDetailsReportId),
+        );
+        assert.equal(
+          window.location.pathname,
+          routes.reportDetails(reportDetailsCompanyId, reportDetailsReportId),
         );
       });
 
@@ -50,7 +57,11 @@ export const runReportDetailsAndFallbackRouteTests = async () => {
 
     try {
       const { container, root } = await renderApp(
-        routes.reportDetailsVersion(reportDetailsReportId, oldReportVersionId),
+        routes.reportDetailsVersion(
+          reportDetailsCompanyId,
+          reportDetailsReportId,
+          oldReportVersionId,
+        ),
       );
 
       await waitFor(() => {
@@ -95,7 +106,7 @@ export const runReportDetailsAndFallbackRouteTests = async () => {
 
     try {
       const { container, root } = await renderApp(
-        routes.reportDetails(reportDetailsReportId),
+        routes.reportDetails(reportDetailsCompanyId, reportDetailsReportId),
       );
 
       await waitFor(() => {
@@ -116,7 +127,7 @@ export const runReportDetailsAndFallbackRouteTests = async () => {
 
     try {
       const { container, root } = await renderApp(
-        routes.reportDetails(reportDetailsReportId),
+        routes.reportDetails(reportDetailsCompanyId, reportDetailsReportId),
       );
 
       await waitFor(() => {
@@ -140,7 +151,7 @@ export const runReportDetailsAndFallbackRouteTests = async () => {
 
     try {
       const { container, root } = await renderApp(
-        routes.reportDetails(missingReportId),
+        routes.reportDetails(reportDetailsCompanyId, missingReportId),
       );
 
       await waitFor(() => {
@@ -148,7 +159,7 @@ export const runReportDetailsAndFallbackRouteTests = async () => {
         assert.ok(textContent(container).includes('Return to reports'));
         assert.equal(
           window.location.pathname,
-          routes.reportDetails(missingReportId),
+          routes.reportDetails(reportDetailsCompanyId, missingReportId),
         );
       });
 

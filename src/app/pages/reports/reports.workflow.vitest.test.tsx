@@ -17,6 +17,7 @@ import {
   latestReportVersion,
   missingReportId,
   oldReportVersionId,
+  reportDetailsCompanyId,
   reportDetailsReportId,
   setupReportDetailsFetchFixture,
 } from '~/app/appRouter.tests/reportDetailsFixture';
@@ -27,13 +28,30 @@ describe('Report workflow through the production router', () => {
 
     try {
       const { container, root } = await renderApp(
-        routes.reportDetails(reportDetailsReportId),
+        routes.reportDetails(reportDetailsCompanyId, reportDetailsReportId),
       );
 
       await waitFor(() => {
         assert.ok(textContent(container).includes('Report Preview'));
         assert.ok(textContent(container).includes('Current Customer Portal'));
         assert.ok(textContent(container).includes('v1.1'));
+        assert.ok(container.querySelector('.risk-summary'));
+        assert.ok(container.querySelector('.severity-distribution'));
+        const metrics = Array.from(
+          container.querySelectorAll('.risk-summary-metric'),
+        );
+        const metricValue = (label: string) =>
+          metrics
+            .find(metric => metric.textContent?.includes(label))
+            ?.querySelector('strong')?.textContent;
+        assert.equal(metricValue('Total findings'), '3');
+        assert.equal(metricValue('Open threats'), '1');
+        assert.equal(metricValue('Retest required'), '2');
+        assert.ok(
+          container.querySelector(
+            '[aria-label="Severity distribution. 3 total findings."]',
+          ),
+        );
       });
 
       assert.ok(
@@ -97,7 +115,11 @@ describe('Report workflow through the production router', () => {
 
     try {
       const { container, root } = await renderApp(
-        routes.reportDetailsVersion(reportDetailsReportId, oldReportVersionId),
+        routes.reportDetailsVersion(
+          reportDetailsCompanyId,
+          reportDetailsReportId,
+          oldReportVersionId,
+        ),
       );
 
       await waitFor(() => {
@@ -346,7 +368,7 @@ describe('Report workflow through the production router', () => {
 
     try {
       const { container, root } = await renderApp(
-        routes.reportDetails(missingReportId),
+        routes.reportDetails(reportDetailsCompanyId, missingReportId),
       );
 
       await waitFor(() => {
@@ -354,7 +376,7 @@ describe('Report workflow through the production router', () => {
         assert.ok(textContent(container).includes('Return to reports'));
         assert.equal(
           window.location.pathname,
-          routes.reportDetails(missingReportId),
+          routes.reportDetails(reportDetailsCompanyId, missingReportId),
         );
       });
 

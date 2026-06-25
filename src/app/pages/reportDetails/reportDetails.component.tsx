@@ -23,12 +23,14 @@ const formatReportVersionNumber = (version: number): string => {
 const ignoreRetry = () => undefined;
 
 const ReportDetails = ({
+  companyId,
   reportId,
   versionId,
   onPrint,
   onDownloadPdf,
 }: ReportDetailsProps) => {
   const state = useReportDetailsController(reportId, versionId);
+  const reportsHref = routes.companyWorkspaceReports(companyId);
 
   if (state.status === 'pending') {
     return <RouteLoadingView />;
@@ -38,7 +40,7 @@ const ReportDetails = ({
     return (
       <EntityNotFoundView
         entityName={state.notFoundEntity ?? 'Report version'}
-        listHref={routes.reports}
+        listHref={reportsHref}
         listLabel="Return to reports"
       />
     );
@@ -50,6 +52,17 @@ const ReportDetails = ({
 
   const { version } = state;
   const { snapshot } = version;
+
+  if (snapshot.company.id !== companyId) {
+    return (
+      <EntityNotFoundView
+        entityName="Report"
+        listHref={reportsHref}
+        listLabel="Return to reports"
+      />
+    );
+  }
+
   const applicationName =
     snapshot.assessment.applicationName ?? snapshot.assessment.title;
 

@@ -202,7 +202,7 @@ const CompanyOverviewDashboardView = ({
             <ReportTable
               reports={recentReports}
               onReportClick={report =>
-                navigate(routes.reportDetails(report.id))
+                navigate(routes.reportDetails(companyId, report.id))
               }
             />
           ) : (

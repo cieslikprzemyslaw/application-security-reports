@@ -59,6 +59,71 @@ describe('report preview presentation', () => {
     );
   });
 
+  it('derives reusable risk and severity presentation from the immutable snapshot', () => {
+    const snapshot: ReportPreviewSnapshot = {
+      ...previewSnapshot,
+      selection: {
+        ...previewSnapshot.selection,
+        threatIds: [
+          previewSnapshot.selectedThreats[0].id,
+          'thr_00000000-0000-0000-0000-000000000002',
+          'thr_00000000-0000-0000-0000-000000000003',
+        ],
+      },
+      selectedThreats: [
+        previewSnapshot.selectedThreats[0],
+        {
+          ...previewSnapshot.selectedThreats[0],
+          id: 'thr_00000000-0000-0000-0000-000000000002',
+          severity: 'high',
+          status: 'mitigated',
+        },
+        {
+          ...previewSnapshot.selectedThreats[0],
+          id: 'thr_00000000-0000-0000-0000-000000000003',
+          severity: 'low',
+          status: 'resolved',
+        },
+      ],
+      riskSummary: {
+        ...previewSnapshot.riskSummary,
+        threatCount: 3,
+      },
+    };
+
+    const presentation = toReportPreviewPresentation(snapshot);
+
+    expect(presentation.riskSummary).toMatchObject({
+      overallRisk: 'critical',
+      totalFindings: 3,
+      openThreats: 1,
+      retestRequired: 2,
+    });
+    expect(presentation.severityDistribution).toEqual([
+      { severity: 'critical', count: 1 },
+      { severity: 'high', count: 1 },
+      { severity: 'medium', count: 0 },
+      { severity: 'low', count: 1 },
+      { severity: 'informational', count: 0 },
+    ]);
+
+    const { container } = renderWithProviders(
+      <ReportBuilderPreview
+        status="success"
+        snapshot={snapshot}
+        onRetry={() => undefined}
+      />,
+    );
+
+    expect(container.querySelector('.risk-summary')).toBeInTheDocument();
+    expect(
+      container.querySelector('.severity-distribution'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Severity distribution. 3 total findings.'),
+    ).toBeInTheDocument();
+  });
+
   it('includes Evidence only when configured and keeps its content as text', () => {
     const maliciousText = '<img src=x onerror=alert(1)>';
     const snapshot: ReportPreviewSnapshot = {

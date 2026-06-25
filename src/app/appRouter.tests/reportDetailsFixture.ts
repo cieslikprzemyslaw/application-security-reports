@@ -1,12 +1,25 @@
-import type { ReportVersionResponse } from '~/domain';
+import type { CompanyListItem, ReportVersionResponse } from '~/domain';
 import { previewSnapshot } from '~/app/pages/reports/reportPreview.testFixtures';
 
 import { createJsonResponse, setFetch } from './support';
 
+export const reportDetailsCompanyId = previewSnapshot.company.id;
 export const reportDetailsReportId = 'rpt_00000000-0000-0000-0000-000000000029';
 export const missingReportId = 'rpt_00000000-0000-0000-0000-000000000999';
 export const oldReportVersionId = 'rvs_00000000-0000-0000-0000-000000000029';
 export const latestReportVersionId = 'rvs_00000000-0000-0000-0000-000000000030';
+
+const reportDetailsCompany: CompanyListItem = {
+  id: reportDetailsCompanyId,
+  name: previewSnapshot.company.name,
+  website: previewSnapshot.company.website,
+  contactEmail: previewSnapshot.company.contactEmail,
+  logoUrl: previewSnapshot.company.logoUrl ?? null,
+  archivedAt: null,
+  assessmentCount: 1,
+  createdAt: '2026-06-01T00:00:00.000Z',
+  updatedAt: '2026-06-25T00:00:00.000Z',
+};
 
 const oldSnapshot = {
   ...previewSnapshot,
@@ -24,12 +37,43 @@ const oldSnapshot = {
   warnings: ['Saved attachment is no longer available.'],
 };
 
+const highThreat = {
+  ...previewSnapshot.selectedThreats[0],
+  id: 'thr_00000000-0000-0000-0000-000000000002',
+  title: 'Stored High Severity Threat',
+  severity: 'high' as const,
+  status: 'mitigated' as const,
+  evidenceCount: 0,
+};
+
+const lowThreat = {
+  ...previewSnapshot.selectedThreats[0],
+  id: 'thr_00000000-0000-0000-0000-000000000003',
+  title: 'Stored Low Severity Threat',
+  severity: 'low' as const,
+  status: 'resolved' as const,
+  evidenceCount: 0,
+};
+
 const latestSnapshot = {
   ...previewSnapshot,
   assessment: {
     ...previewSnapshot.assessment,
     title: 'Current Customer Portal',
     applicationName: 'Current Customer Portal',
+  },
+  selection: {
+    ...previewSnapshot.selection,
+    threatIds: [
+      previewSnapshot.selectedThreats[0].id,
+      highThreat.id,
+      lowThreat.id,
+    ],
+  },
+  selectedThreats: [previewSnapshot.selectedThreats[0], highThreat, lowThreat],
+  riskSummary: {
+    ...previewSnapshot.riskSummary,
+    threatCount: 3,
   },
 };
 
@@ -66,7 +110,7 @@ export const setupReportDetailsFetchFixture = (
     calls.push(path);
 
     if (path === '/api/companies') {
-      return createJsonResponse({ data: [] });
+      return createJsonResponse({ data: [reportDetailsCompany] });
     }
 
     if (path === `/api/reports/${reportDetailsReportId}/versions`) {

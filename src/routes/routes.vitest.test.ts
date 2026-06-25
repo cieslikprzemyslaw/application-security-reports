@@ -83,7 +83,10 @@ describe('routes', () => {
       routePatterns.assessmentDetailsHistory,
       '/companies/:companyId/assessments/:assessmentId/history',
     );
-    assert.equal(routePatterns.reportDetails, '/reports/:reportId');
+    assert.equal(
+      routePatterns.reportDetails,
+      '/companies/:companyId/reports/:reportId',
+    );
 
     assert.equal(
       routes.assessmentDetails('cmp_123', 'asm_123'),
@@ -109,14 +112,17 @@ describe('routes', () => {
       routes.assessmentDetailsHistory('cmp_123', 'asm_123'),
       '/companies/cmp_123/assessments/asm_123/history',
     );
-    assert.equal(routes.reportDetails('rpt_123'), '/reports/rpt_123');
     assert.equal(
-      routes.reportDetailsVersion('rpt_123', 'rvs_123'),
-      '/reports/rpt_123?versionId=rvs_123',
+      routes.reportDetails('cmp_123', 'rpt_123'),
+      '/companies/cmp_123/reports/rpt_123',
     );
     assert.equal(
-      routes.reportDetailsVersion('rpt 123', 'rvs 123'),
-      '/reports/rpt%20123?versionId=rvs+123',
+      routes.reportDetailsVersion('cmp_123', 'rpt_123', 'rvs_123'),
+      '/companies/cmp_123/reports/rpt_123?versionId=rvs_123',
+    );
+    assert.equal(
+      routes.reportDetailsVersion('cmp 123', 'rpt 123', 'rvs 123'),
+      '/companies/cmp%20123/reports/rpt%20123?versionId=rvs+123',
     );
     assert.equal(
       routes.assessmentDetails('cmp 123', 'asm 123'),
@@ -130,9 +136,10 @@ describe('routes', () => {
       () => routes.assessmentDetails('cmp_123', '   '),
       /non-empty id/,
     );
-    assert.throws(() => routes.reportDetails(''), /non-empty id/);
+    assert.throws(() => routes.reportDetails('', 'rpt_123'), /non-empty id/);
+    assert.throws(() => routes.reportDetails('cmp_123', ''), /non-empty id/);
     assert.throws(
-      () => routes.reportDetailsVersion('rpt_123', '   '),
+      () => routes.reportDetailsVersion('cmp_123', 'rpt_123', '   '),
       /non-empty id/,
     );
 

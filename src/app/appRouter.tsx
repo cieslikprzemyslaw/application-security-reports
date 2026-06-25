@@ -44,23 +44,34 @@ const AssessmentDetailsRoute = ({ section }: AssessmentDetailsRouteProps) => {
 };
 
 const ReportDetailsRoute = () => {
-  const { reportId } = useParams<{
+  const { companyId, reportId } = useParams<{
+    companyId?: string;
     reportId?: string;
   }>();
   const [searchParams] = useSearchParams();
   const versionId = searchParams.get('versionId')?.trim() || undefined;
 
-  if (!reportId) {
+  if (!companyId || !reportId) {
     return (
       <EntityNotFoundView
         entityName="Report"
-        listHref={routes.reports}
-        listLabel="Return to reports"
+        listHref={
+          companyId
+            ? routes.companyWorkspaceReports(companyId)
+            : routes.companies
+        }
+        listLabel={companyId ? 'Return to reports' : 'Return to companies'}
       />
     );
   }
 
-  return <ReportDetails reportId={reportId} versionId={versionId} />;
+  return (
+    <ReportDetails
+      companyId={companyId}
+      reportId={reportId}
+      versionId={versionId}
+    />
+  );
 };
 
 const createAppRouter = () =>
@@ -91,6 +102,10 @@ const createAppRouter = () =>
               <Route
                 path="assessments"
                 element={<CompanyAssessmentsRouteElement />}
+              />
+              <Route
+                path={routePatterns.reportDetails}
+                element={<ReportDetailsRoute />}
               />
               <Route path="reports" element={<CompanyReportsRouteElement />}>
                 <Route index element={null} />
@@ -130,10 +145,6 @@ const createAppRouter = () =>
             <Route
               path={routePatterns.assessmentDetailsHistory}
               element={<AssessmentDetailsRoute section="history" />}
-            />
-            <Route
-              path={routePatterns.reportDetails}
-              element={<ReportDetailsRoute />}
             />
             <Route path={routePatterns.threats} element={<ThreatsRoute />} />
             <Route path={routePatterns.reports} element={<ReportsRoute />} />

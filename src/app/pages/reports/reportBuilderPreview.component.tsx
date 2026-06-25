@@ -1,6 +1,8 @@
 import React from 'react';
 
 import ReportCover from '~/app/components/appsec/reportCover';
+import RiskSummary from '~/app/components/appsec/riskSummary';
+import SeverityDistribution from '~/app/components/appsec/severityDistribution';
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import EmptyState from '~/app/components/ui/emptyState';
@@ -119,6 +121,14 @@ const ReportBuilderPreview = ({
           ) : undefined
         }
       />
+
+      <section
+        className="report-builder-preview-risk-summary"
+        aria-label="Saved report risk summary"
+      >
+        <RiskSummary {...presentation.riskSummary} />
+        <SeverityDistribution items={presentation.severityDistribution} />
+      </section>
     </StyledReportBuilderPreview>
   );
 };
