@@ -6,6 +6,7 @@ import {
   routes,
   setupAssessmentWorkspaceFetchFixture,
   textContent,
+  waitFor,
 } from './support';
 
 export const runAssessmentWorkspaceReportsAndMissingTests = async () => {
@@ -35,7 +36,12 @@ export const runAssessmentWorkspaceReportsAndMissingTests = async () => {
         routes.assessmentDetailsReports('cmp_1', 'asm_1'),
       );
 
-      assert.ok(textContent(container).includes('Assessment report details'));
+      await waitFor(() => {
+        assert.ok(
+          textContent(container).includes('Customer Portal Security Report'),
+        );
+        assert.ok(textContent(container).includes('Open preview'));
+      });
       assert.equal(
         window.location.pathname,
         routes.assessmentDetailsReports('cmp_1', 'asm_1'),

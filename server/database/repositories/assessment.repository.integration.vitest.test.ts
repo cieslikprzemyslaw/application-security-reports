@@ -66,9 +66,26 @@ describe('Assessment repository with temporary SQLite', () => {
 
     await expect(repository.findById(created.id)).resolves.toEqual(created);
 
+    await prisma.threat.create({
+      data: {
+        id: 'thr_00000000-0000-0000-0000-000000000001',
+        assessmentId: created.id,
+        title: 'Missing authorization',
+        description: 'Object-level authorization is missing.',
+        severity: 'high',
+        strideCategories: ['information-disclosure'],
+        status: 'open',
+      },
+    });
+
     const companyAssessments = await repository.findByCompanyId(companyId);
-    expect(companyAssessments.map(assessment => assessment.id)).toContain(
-      created.id,
+    expect(companyAssessments).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: created.id,
+          findingsCount: 1,
+        }),
+      ]),
     );
 
     const updated = await repository.update(created.id, {

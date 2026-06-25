@@ -3,10 +3,11 @@ import { css, styled } from 'styled-components';
 const StyledReportBuilderTree = styled.section.attrs({
   className: 'report-builder-tree',
 })`
-  ${({ theme: { colors, spacing, typography } }) => css`
+  ${({ theme: { colors, radii, spacing, typography } }) => css`
     display: flex;
     flex-direction: column;
     gap: ${spacing.l};
+    color: ${colors.text.primary};
 
     .report-builder-tree-header {
       display: flex;
@@ -23,6 +24,7 @@ const StyledReportBuilderTree = styled.section.attrs({
     }
 
     .report-builder-tree-title {
+      color: ${colors.text.primary};
       font-size: ${typography.headings.h4.size};
     }
 
@@ -77,6 +79,64 @@ const StyledReportBuilderTree = styled.section.attrs({
 
     .report-builder-tree-item {
       margin: 0;
+    }
+
+    .report-builder-tree-assessment {
+      overflow: hidden;
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.md};
+      background-color: ${colors.surface.card};
+    }
+
+    .report-builder-tree-assessment-header {
+      display: flex;
+      align-items: flex-start;
+      gap: ${spacing.xs};
+      padding: ${spacing.m};
+    }
+
+    .report-builder-tree-assessment-selection {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .report-builder-tree-assessment-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: ${radii.sm};
+      background: transparent;
+      color: ${colors.text.secondary};
+      cursor: pointer;
+    }
+
+    .report-builder-tree-assessment-toggle:hover {
+      border-color: ${colors.border.subtle};
+      background-color: ${colors.surface.subtle};
+      color: ${colors.text.primary};
+    }
+
+    .report-builder-tree-assessment-toggle:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: 0.125rem;
+    }
+
+    .report-builder-tree-assessment-panel {
+      padding: 0 ${spacing.m} ${spacing.m};
+      border-top: 1px solid ${colors.border.subtle};
+    }
+
+    .report-builder-tree-assessment-panel[hidden] {
+      display: none;
+    }
+
+    .report-builder-tree-assessment-panel > .report-builder-tree-node-subtree {
+      margin-top: ${spacing.m};
     }
 
     .report-builder-tree-node-subtree {

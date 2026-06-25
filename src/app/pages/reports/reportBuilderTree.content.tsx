@@ -1,5 +1,8 @@
+import { useState } from 'react';
+
 import Badge from '~/app/components/ui/badge';
 import Checkbox from '~/app/components/ui/checkbox';
+import IconSVG from '~/app/components/ui/iconSVG';
 
 import {
   getAssessmentSelectionState,
@@ -59,6 +62,26 @@ const countAssessmentDescendants = (
     { threatCount: 0, evidenceCount: 0 },
   );
 
+const createInitialExpandedAssessmentIds = (
+  hierarchy: ReportBuilderHierarchy,
+  selectionState: ReportBuilderSelectionTreeState,
+): Set<string> => {
+  const selectedAssessmentId = selectionState.selectedAssessmentId;
+
+  if (
+    selectedAssessmentId &&
+    hierarchy.assessments.some(
+      node => node.assessment.id === selectedAssessmentId,
+    )
+  ) {
+    return new Set([selectedAssessmentId]);
+  }
+
+  const firstAssessmentId = hierarchy.assessments[0]?.assessment.id;
+
+  return firstAssessmentId ? new Set([firstAssessmentId]) : new Set<string>();
+};
+
 const ReportBuilderTreeContent = ({
   hierarchy,
   selectionState,
@@ -66,6 +89,24 @@ const ReportBuilderTreeContent = ({
   onThreatChange,
   onEvidenceChange,
 }: ReportBuilderTreeContentProps) => {
+  const [expandedAssessmentIds, setExpandedAssessmentIds] = useState<
+    Set<string>
+  >(() => createInitialExpandedAssessmentIds(hierarchy, selectionState));
+
+  const setAssessmentExpanded = (assessmentId: string, expanded: boolean) => {
+    setExpandedAssessmentIds(current => {
+      const next = new Set(current);
+
+      if (expanded) {
+        next.add(assessmentId);
+      } else {
+        next.delete(assessmentId);
+      }
+
+      return next;
+    });
+  };
+
   function renderEvidenceNode(
     assessment: ReportBuilderHierarchyAssessmentNode,
     threat: ReportBuilderHierarchyThreatNode,
@@ -162,50 +203,86 @@ const ReportBuilderTreeContent = ({
   }
 
   function renderAssessmentNode(node: ReportBuilderHierarchyAssessmentNode) {
+    const assessmentId = node.assessment.id;
     const branchState = getAssessmentSelectionState(node, selectionState);
     const { threatCount, evidenceCount } = countAssessmentDescendants(node);
+    const isExpanded = expandedAssessmentIds.has(assessmentId);
+    const panelId = `report-builder-assessment-panel-${assessmentId}`;
 
     return (
-      <li key={node.assessment.id} className="report-builder-tree-item">
-        <Checkbox
-          id={`report-builder-assessment-${node.assessment.id}`}
-          label={node.assessment.name}
-          description={formatAssessmentSubtitle(node)}
-          labelAddon={
-            <Badge
-              label={
-                branchState.checked
-                  ? 'Selected'
-                  : branchState.indeterminate
-                    ? 'Partial'
-                    : `${threatCount + evidenceCount} descendants`
+      <li
+        key={assessmentId}
+        className="report-builder-tree-item report-builder-tree-assessment"
+      >
+        <div className="report-builder-tree-assessment-header">
+          <div className="report-builder-tree-assessment-selection">
+            <Checkbox
+              id={`report-builder-assessment-${assessmentId}`}
+              label={node.assessment.name}
+              description={formatAssessmentSubtitle(node)}
+              labelAddon={
+                <Badge
+                  label={
+                    branchState.checked
+                      ? 'Selected'
+                      : branchState.indeterminate
+                        ? 'Partial'
+                        : `${threatCount + evidenceCount} descendants`
+                  }
+                  variant={
+                    branchState.checked
+                      ? 'success'
+                      : branchState.indeterminate
+                        ? 'warning'
+                        : 'neutral'
+                  }
+                  size="small"
+                />
               }
-              variant={
-                branchState.checked
-                  ? 'success'
-                  : branchState.indeterminate
-                    ? 'warning'
-                    : 'neutral'
-              }
+              checked={branchState.checked}
+              indeterminate={branchState.indeterminate}
+              onChange={event => {
+                const checked = event.target.checked;
+
+                if (checked) {
+                  setAssessmentExpanded(assessmentId, true);
+                }
+
+                onAssessmentChange(assessmentId, checked);
+              }}
+            />
+          </div>
+
+          <button
+            className="report-builder-tree-assessment-toggle"
+            type="button"
+            aria-expanded={isExpanded}
+            aria-controls={panelId}
+            aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${node.assessment.name}`}
+            onClick={() => setAssessmentExpanded(assessmentId, !isExpanded)}
+          >
+            <IconSVG
+              name={isExpanded ? 'chevronUp' : 'chevronDown'}
               size="small"
             />
-          }
-          checked={branchState.checked}
-          indeterminate={branchState.indeterminate}
-          onChange={event =>
-            onAssessmentChange(node.assessment.id, event.target.checked)
-          }
-        />
+          </button>
+        </div>
 
-        <ul className="report-builder-tree-children report-builder-tree-node-subtree">
-          {node.threats.length > 0 ? (
-            node.threats.map(renderThreatNode(node))
-          ) : (
-            <li className="report-builder-tree-empty-node">
-              No threats in this assessment yet.
-            </li>
-          )}
-        </ul>
+        <div
+          className="report-builder-tree-assessment-panel"
+          id={panelId}
+          hidden={!isExpanded}
+        >
+          <ul className="report-builder-tree-children report-builder-tree-node-subtree">
+            {node.threats.length > 0 ? (
+              node.threats.map(renderThreatNode(node))
+            ) : (
+              <li className="report-builder-tree-empty-node">
+                No threats in this assessment yet.
+              </li>
+            )}
+          </ul>
+        </div>
       </li>
     );
   }

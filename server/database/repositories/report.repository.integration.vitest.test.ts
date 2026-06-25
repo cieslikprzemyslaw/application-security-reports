@@ -74,7 +74,7 @@ describe('Report repository with temporary SQLite', () => {
     expect(created.selectedThreatIds).toEqual([threatId]);
     await expect(repository.findById(created.id)).resolves.toEqual(created);
     await expect(repository.findByAssessmentId(assessmentId)).resolves.toEqual([
-      created,
+      { ...created, versions: [] },
     ]);
 
     const updated = await repository.update(created.id, {

@@ -30,6 +30,11 @@ export const runReportDetailsAndFallbackRouteTests = async () => {
         assert.ok(textContent(container).includes('v1.1'));
         assert.ok(container.querySelector('.risk-summary'));
         assert.ok(container.querySelector('.severity-distribution'));
+        assert.ok(
+          Array.from(container.querySelectorAll('button')).some(
+            button => button.textContent?.trim() === 'Generate PDF',
+          ),
+        );
         assert.equal(
           window.location.pathname,
           routes.reportDetails(reportDetailsCompanyId, reportDetailsReportId),
@@ -84,6 +89,12 @@ export const runReportDetailsAndFallbackRouteTests = async () => {
         container.querySelector('.report-builder-preview-warnings.no-print'),
       );
       assert.ok(
+        Array.from(container.querySelectorAll('button')).some(
+          button => button.textContent?.trim() === 'Generate PDF',
+        ),
+        'Expected final saved versions to support PDF generation',
+      );
+      assert.ok(
         calls.includes(
           `/api/reports/${reportDetailsReportId}/versions/${oldReportVersionId}`,
         ),
@@ -112,6 +123,12 @@ export const runReportDetailsAndFallbackRouteTests = async () => {
       await waitFor(() => {
         assert.ok(textContent(container).includes('Report version not found'));
         assert.ok(textContent(container).includes('Return to reports'));
+        assert.equal(
+          Array.from(container.querySelectorAll('button')).some(
+            button => button.textContent?.trim() === 'Generate PDF',
+          ),
+          false,
+        );
       });
 
       await act(async () => {

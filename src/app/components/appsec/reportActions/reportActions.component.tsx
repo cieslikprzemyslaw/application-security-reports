@@ -10,7 +10,7 @@ const ReportActions = ({
   isGenerating = false,
   onPreview,
   onPrint,
-  onDownloadPdf,
+  onGeneratePdf,
   onDownloadMarkdown,
   ...rest
 }: ReportActionsProps) => (
@@ -29,11 +29,11 @@ const ReportActions = ({
       />
     )}
 
-    {onDownloadPdf && (
+    {onGeneratePdf && (
       <Button
-        title={isGenerating ? 'Generating PDF' : 'Download PDF'}
+        title={isGenerating ? 'Opening print dialog' : 'Generate PDF'}
         isLoading={isGenerating}
-        onClick={onDownloadPdf}
+        onClick={onGeneratePdf}
       />
     )}
   </StyledReportActions>

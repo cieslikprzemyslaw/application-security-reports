@@ -26,6 +26,11 @@ const assessmentRow = {
   updatedAt,
 };
 
+const assessmentListRow = {
+  ...assessmentRow,
+  _count: { threats: 2 },
+};
+
 type AssessmentDelegateMock = {
   findMany: ReturnType<typeof vi.fn>;
   findUnique: ReturnType<typeof vi.fn>;
@@ -36,7 +41,7 @@ type AssessmentDelegateMock = {
 
 const createDb = (overrides: Partial<AssessmentDelegateMock> = {}) => {
   const assessment: AssessmentDelegateMock = {
-    findMany: vi.fn().mockResolvedValue([assessmentRow]),
+    findMany: vi.fn().mockResolvedValue([assessmentListRow]),
     findUnique: vi.fn().mockResolvedValue(assessmentRow),
     create: vi.fn().mockResolvedValue(assessmentRow),
     update: vi.fn().mockResolvedValue(assessmentRow),
@@ -67,6 +72,7 @@ describe('createAssessmentRepository', () => {
         owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
         createdAt: createdAt.toISOString(),
         updatedAt: updatedAt.toISOString(),
+        findingsCount: 2,
       }),
     ]);
     expect(assessment.findMany).toHaveBeenCalledWith({

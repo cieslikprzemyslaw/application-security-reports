@@ -11,6 +11,8 @@ import type {
 } from '../../src/domain/report-view.js';
 import type { ReportSnapshot } from '../../src/domain/report.js';
 import {
+  assessmentReportListResponseSchema,
+  reportListQuerySchema,
   reportRouteParamsSchema,
   reportViewSchema,
 } from '../../src/domain/schemas/index.js';
@@ -25,7 +27,7 @@ import type { SettingsRepository } from '../database/repositories/settings.repos
 import type { ThreatRepository } from '../database/repositories/threat.repository.js';
 import type { Evidence } from '../../src/domain/evidence.js';
 
-type ReportRepositoryOperation = 'retrieve';
+type ReportRepositoryOperation = 'list' | 'retrieve';
 
 const asyncRoute =
   (
@@ -101,6 +103,41 @@ export const createReportsRouter = (
   settingsRepository: SettingsRepository,
 ): Router => {
   const router = Router();
+
+  router.get(
+    '/',
+    createRequestValidationMiddleware({
+      query: reportListQuerySchema,
+    }),
+    asyncRoute(async (_req, res) => {
+      const { assessmentId } = res.locals.validatedRequest?.query as {
+        assessmentId: string;
+      };
+
+      try {
+        const assessment = await assessmentRepository.findById(assessmentId);
+
+        if (!assessment) {
+          sendApiError(
+            res,
+            404,
+            'ASSESSMENT_NOT_FOUND',
+            'Assessment not found',
+          );
+          return;
+        }
+
+        const reports = await reportRepository.findByAssessmentId(assessmentId);
+        const parsedReports = assessmentReportListResponseSchema.parse(reports);
+
+        res.status(200).json({ data: parsedReports });
+      } catch (error) {
+        if (!handleReportRepositoryError(error, res, 'list')) {
+          throw error;
+        }
+      }
+    }),
+  );
 
   router.get(
     '/:id',

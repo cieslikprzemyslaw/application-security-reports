@@ -31,7 +31,10 @@ const reportVersion: ReportVersionResponse = {
   version: 1,
   status: 'draft',
   generatedAt: '2026-06-25',
-  snapshot: previewSnapshot,
+  snapshot: {
+    ...previewSnapshot,
+    reportTitle: 'Application Security Report',
+  },
 };
 
 const finalRequest: CreateFinalReportVersionRequest = {

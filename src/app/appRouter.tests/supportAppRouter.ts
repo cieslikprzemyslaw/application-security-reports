@@ -116,6 +116,31 @@ export const setupAssessmentWorkspaceFetchFixture = () => {
       });
     }
 
+    if (path === '/api/reports?assessmentId=asm_1') {
+      return createJsonResponse({
+        data: [
+          {
+            id: 'rpt_00000000-0000-0000-0000-000000000001',
+            assessmentId: 'asm_1',
+            title: 'Customer Portal Security Report',
+            status: 'draft',
+            selectedThreatIds: [],
+            latestVersion: 1,
+            createdAt: '2026-06-25T10:00:00.000Z',
+            updatedAt: '2026-06-25T11:00:00.000Z',
+            versions: [
+              {
+                id: 'rvs_00000000-0000-0000-0000-000000000001',
+                version: 1,
+                status: 'draft',
+                generatedAt: '2026-06-25',
+              },
+            ],
+          },
+        ],
+      });
+    }
+
     if (
       path === '/api/companies/cmp_1/assessments/asm_missing/overview' ||
       path === '/api/companies/cmp_1/assessments/asm_missing'

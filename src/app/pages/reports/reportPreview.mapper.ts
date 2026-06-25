@@ -189,7 +189,8 @@ export const toReportPreviewPresentation = (
       })),
       footerText:
         snapshot.branding.brandingMode === 'client'
-          ? snapshot.branding.companyFooterText
+          ? (snapshot.branding.companyFooterText ??
+            snapshot.branding.reportFooterText)
           : (snapshot.branding.reportFooterText ??
             snapshot.branding.companyFooterText),
       confidential: snapshot.branding.confidentialReports ?? false,

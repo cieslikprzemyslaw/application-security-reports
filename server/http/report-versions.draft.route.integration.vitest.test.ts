@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import type { ReportVersionRepository } from '../database/repositories/reportVersion.repository.js';
 import {
-  reportPreviewSnapshotSchema,
   reportVersionResponseSchema,
+  reportVersionSnapshotSchema,
 } from '../../src/domain/schemas/index.js';
 import {
   createReportsApp,
@@ -65,6 +65,7 @@ describe('draft ReportVersion production integration', () => {
       const first = reportVersionResponseSchema.parse(firstBody.data);
 
       expect(first.version).toBe(1);
+      expect(first.snapshot.reportTitle).toBe(harness.report.title);
       expect(first.snapshot.selection).toEqual(request.selection);
 
       await harness.prisma.threat.update({
@@ -94,7 +95,7 @@ describe('draft ReportVersion production integration', () => {
         persisted.map((item: { version: number }) => item.version),
       ).toEqual([1, 2]);
       expect(
-        reportPreviewSnapshotSchema.parse(persisted[0]?.snapshot)
+        reportVersionSnapshotSchema.parse(persisted[0]?.snapshot)
           .selectedThreats[0]?.title,
       ).not.toBe('Changed after first draft');
 

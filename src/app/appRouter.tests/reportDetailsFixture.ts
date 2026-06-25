@@ -23,6 +23,7 @@ const reportDetailsCompany: CompanyListItem = {
 
 const oldSnapshot = {
   ...previewSnapshot,
+  reportTitle: 'Legacy Customer Portal Security Report',
   assessment: {
     ...previewSnapshot.assessment,
     title: '<img src=x onerror=alert(1)>',
@@ -57,6 +58,7 @@ const lowThreat = {
 
 const latestSnapshot = {
   ...previewSnapshot,
+  reportTitle: 'Customer Portal Security Report',
   assessment: {
     ...previewSnapshot.assessment,
     title: 'Current Customer Portal',

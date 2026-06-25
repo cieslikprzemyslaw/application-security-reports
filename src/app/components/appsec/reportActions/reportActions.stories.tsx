@@ -16,8 +16,8 @@ const meta = {
     onPrint: {
       action: 'print',
     },
-    onDownloadPdf: {
-      action: 'download pdf',
+    onGeneratePdf: {
+      action: 'generate pdf',
     },
     onDownloadMarkdown: {
       action: 'download markdown',
@@ -30,5 +30,8 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+    onPrint: () => undefined,
+    onGeneratePdf: () => undefined,
+  },
 };

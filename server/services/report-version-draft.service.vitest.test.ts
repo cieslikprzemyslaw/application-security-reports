@@ -238,6 +238,7 @@ describe('createDraftReportVersion', () => {
       expect(created.status).toBe('draft');
       expect(created.generatedAt).toBe('2026-06-24');
       expect(created.filePath).toBeUndefined();
+      expect(created.snapshot.reportTitle).toBe(report.title);
       expect(created.snapshot.selection).toEqual(selectedRequest.selection);
       expect(created.snapshot.selectedThreats[0]?.id).toBe(threatId);
       expect(created.snapshot.selectedEvidence[0]?.id).toBe(evidenceId);

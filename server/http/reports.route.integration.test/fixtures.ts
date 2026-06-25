@@ -13,6 +13,7 @@ export type ReportsSeedData = {
   };
   report: {
     id: string;
+    title: string;
   };
   threatA: {
     id: string;
@@ -302,6 +303,7 @@ export const seedReportsData = async (
     },
     report: {
       id: report.id,
+      title: 'Application Security Assessment',
     },
     threatA: {
       id: threatA.id,

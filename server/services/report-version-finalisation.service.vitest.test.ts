@@ -211,6 +211,9 @@ describe('finaliseReportVersion', () => {
           generatedAt: '2026-06-24',
         },
       });
+      if (result.status === 'created') {
+        expect(result.reportVersion.snapshot.reportTitle).toBe(report.title);
+      }
       expect(harness.updateReportLatestVersionIfCurrent).toHaveBeenCalledWith(
         report.id,
         expectedLatestVersion,

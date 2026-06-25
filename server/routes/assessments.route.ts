@@ -27,7 +27,7 @@ import {
 import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
 
-const assessmentResponse = (assessment: Assessment): Assessment => ({
+const assessmentResponse = <T extends Assessment>(assessment: T): T => ({
   ...assessment,
 });
 

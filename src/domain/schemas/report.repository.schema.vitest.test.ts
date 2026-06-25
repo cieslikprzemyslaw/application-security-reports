@@ -15,6 +15,7 @@ const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
 const threatId = 'thr_00000000-0000-0000-0000-000000000001';
 
 const validReportVersionSnapshot = {
+  reportTitle: 'Application Security Assessment',
   company: {
     id: 'cmp_00000000-0000-0000-0000-000000000001',
     name: 'Northstar Digital',
@@ -128,6 +129,22 @@ describe('Report runtime schemas', () => {
           snapshot: validReportVersionSnapshot,
         },
       ]).success,
+    ).toBe(true);
+  });
+
+  it('accepts legacy saved snapshots that predate report-title persistence', () => {
+    const { reportTitle: _reportTitle, ...legacySnapshot } =
+      validReportVersionSnapshot;
+
+    expect(
+      reportVersionSchema.safeParse({
+        id: 'rvs_00000000-0000-0000-0000-000000000001',
+        reportId: 'rpt_00000000-0000-0000-0000-000000000001',
+        version: 1,
+        status: 'draft',
+        generatedAt: '2026-06-22',
+        snapshot: legacySnapshot,
+      }).success,
     ).toBe(true);
   });
 

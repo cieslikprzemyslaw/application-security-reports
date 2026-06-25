@@ -81,6 +81,7 @@ const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
       margin-top: ${spacing.xxs};
       font-size: ${typography.headings.h1.size};
       line-height: ${typography.headings.h1.lineHeight};
+      color: ${colors.text.primary};
     }
 
     .report-cover-subtitle {
@@ -132,6 +133,7 @@ const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
 
       border-bottom: 2px solid ${colors.brand.primary};
       font-size: ${typography.headings.h4.size};
+      color: ${colors.text.primary};
     }
 
     .report-cover-summary-box {
@@ -145,6 +147,10 @@ const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
       border: 1px solid ${colors.border.subtle};
       border-radius: ${radii.md};
       background-color: ${colors.neutral.grey50};
+    }
+
+    .report-cover-summary-box > p {
+      color: ${colors.text.secondary};
     }
 
     .report-cover-risk-box {
@@ -202,6 +208,10 @@ const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
       color: ${colors.text.secondary};
     }
 
+    .report-cover-scope-list li {
+      color: ${colors.text.secondary};
+    }
+
     .report-cover-findings-list {
       display: flex;
       flex-direction: column;
@@ -226,6 +236,7 @@ const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
 
     .report-cover-finding-title {
       font-size: ${typography.headings.h5.size};
+      color: ${colors.text.primary};
     }
 
     .report-cover-finding-grid {
@@ -237,6 +248,7 @@ const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
     .report-cover-finding-section h4 {
       margin-bottom: 0.25rem;
       font-size: ${typography.headings.h6.size};
+      color: ${colors.text.primary};
     }
 
     .report-cover-finding-section p,
@@ -267,8 +279,7 @@ const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
       .report-cover-meta-grid,
       .report-cover-section--summary,
       .report-cover-section--scope,
-      .report-cover-summary-box,
-      .report-cover-footer {
+      .report-cover-summary-box {
         break-inside: avoid;
         page-break-inside: avoid;
       }
@@ -302,6 +313,22 @@ const StyledReportCover = styled.article.attrs({ className: 'report-cover' })`
         break-inside: auto;
         page-break-inside: auto;
         box-shadow: none;
+      }
+
+      .report-cover-footer {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1;
+
+        min-height: 8mm;
+        margin: 0;
+        padding: 2mm 0 0;
+
+        border-top: 1px solid ${colors.border.subtle};
+        background-color: ${colors.neutral.white};
+        color: ${colors.text.muted};
       }
     }
   `}

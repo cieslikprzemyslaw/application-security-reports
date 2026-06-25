@@ -43,6 +43,24 @@ describe('report preview presentation', () => {
     },
   );
 
+  it('falls back to the report footer for client branding when the company footer is missing', () => {
+    const snapshot: ReportPreviewSnapshot = {
+      ...withBrandingMode('client'),
+      branding: {
+        ...previewSnapshot.branding,
+        brandingMode: 'client',
+        companyFooterText: undefined,
+        reportFooterText: 'Confidential - do not distribute.',
+      },
+    };
+
+    const presentation = toReportPreviewPresentation(snapshot);
+
+    expect(presentation.cover.footerText).toBe(
+      'Confidential - do not distribute.',
+    );
+  });
+
   it('uses saved ReportVersion metadata without rebuilding snapshot content', () => {
     const presentation = toReportPreviewPresentation(previewSnapshot, {
       reportId: 'rpt_00000000-0000-0000-0000-000000000029',

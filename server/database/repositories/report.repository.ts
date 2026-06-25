@@ -1,5 +1,9 @@
 import type { Report } from '../../../src/domain/report.js';
 import type {
+  AssessmentReportListItem,
+  ReportVersionSummary,
+} from '../../../src/domain/report-list.js';
+import type {
   CreateReportInput,
   UpdateReportInput,
 } from '../../../src/domain/report.js';
@@ -17,7 +21,7 @@ import {
 
 export interface ReportRepository {
   findById(id: string): Promise<Report | null>;
-  findByAssessmentId(assessmentId: string): Promise<Report[]>;
+  findByAssessmentId(assessmentId: string): Promise<AssessmentReportListItem[]>;
   create(input: CreateReportInput): Promise<Report>;
   update(id: string, input: UpdateReportInput): Promise<Report>;
   delete(id: string): Promise<void>;
@@ -48,6 +52,15 @@ type ReportRow = {
   updatedAt: Date;
 };
 
+type ReportListRow = ReportRow & {
+  versions: Array<{
+    id: string;
+    version: number;
+    status: string;
+    generatedAt: string;
+  }>;
+};
+
 const reportSelect = {
   id: true,
   assessmentId: true,
@@ -63,6 +76,19 @@ const reportSelect = {
   updatedAt: true,
 } as const;
 
+const reportListSelect = {
+  ...reportSelect,
+  versions: {
+    select: {
+      id: true,
+      version: true,
+      status: true,
+      generatedAt: true,
+    },
+    orderBy: { version: 'desc' as const },
+  },
+} as const;
+
 const toReport = (row: ReportRow): Report => ({
   id: row.id,
   assessmentId: row.assessmentId,
@@ -73,6 +99,22 @@ const toReport = (row: ReportRow): Report => ({
   executiveSummary: toOptionalText(row.executiveSummary),
   createdAt: toIsoString(row.createdAt),
   updatedAt: toIsoString(row.updatedAt),
+});
+
+const toReportVersionSummary = (
+  version: ReportListRow['versions'][number],
+): ReportVersionSummary => ({
+  id: version.id,
+  version: version.version,
+  status: version.status as ReportVersionSummary['status'],
+  generatedAt: version.generatedAt as ReportVersionSummary['generatedAt'],
+});
+
+const toAssessmentReportListItem = (
+  row: ReportListRow,
+): AssessmentReportListItem => ({
+  ...toReport(row),
+  versions: row.versions.map(toReportVersionSummary),
 });
 
 const loadReportById = async (
@@ -127,10 +169,10 @@ export function createReportRepository(
       const reports = await db.report.findMany({
         where: { assessmentId },
         orderBy: [{ createdAt: 'desc' }],
-        select: reportSelect,
+        select: reportListSelect,
       });
 
-      return reports.map(toReport);
+      return reports.map(toAssessmentReportListItem);
     },
 
     async create(input) {

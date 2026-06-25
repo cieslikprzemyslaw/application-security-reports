@@ -65,11 +65,15 @@ export const createDraftReportVersion = async (
 
   requireReportAssessment(report.assessmentId, input.request.assessmentId);
 
-  const snapshot = await generateReportPreviewSnapshot(
+  const previewSnapshot = await generateReportPreviewSnapshot(
     input.request,
     dependencies,
     input.baseUrl,
   );
+  const snapshot = {
+    ...previewSnapshot,
+    reportTitle: report.title,
+  };
   const generatedAt = toIsoDate((dependencies.now ?? (() => new Date()))());
 
   return withNextReportVersionNumber(

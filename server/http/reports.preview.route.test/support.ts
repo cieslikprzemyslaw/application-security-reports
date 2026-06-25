@@ -207,7 +207,7 @@ export const createPreviewRepositories = (overrides: Overrides = {}) => {
 
   const reportRepository = {
     findById: reportFindById,
-    findByAssessmentId: vi.fn(async () => [report]),
+    findByAssessmentId: vi.fn(async () => [{ ...report, versions: [] }]),
     create: vi.fn(async () => report),
     update: vi.fn(async () => report),
     delete: vi.fn(async () => undefined),

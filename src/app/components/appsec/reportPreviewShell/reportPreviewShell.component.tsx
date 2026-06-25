@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import Button from '~/app/components/ui/button';
+import ReportActions from '~/app/components/appsec/reportActions';
 import { LightThemeProvider } from '~/theme';
 
 import ReportPrintStyles from './reportPrintStyles';
@@ -110,11 +110,18 @@ const ReportPreviewShell = ({
               </span>
             )}
 
-            <Button title="Print" variant="secondary" onClick={handlePrint} />
+            <ReportActions
+              onPrint={handlePrint}
+              onGeneratePdf={onDownloadPdf}
+            />
 
-            {onDownloadPdf && (
-              <Button title="Download PDF" onClick={onDownloadPdf} />
-            )}
+            <span
+              className="report-preview-shell-print-hint no-print"
+              role="note"
+            >
+              For a clean PDF, open More settings and disable browser Headers
+              and footers.
+            </span>
           </div>
         </div>
 

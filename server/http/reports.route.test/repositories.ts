@@ -56,7 +56,7 @@ const createReportRepository = (overrides: ReportRepositoryOverrides = {}) => {
       return overrides.findById?.(id) ?? report;
     },
     async findByAssessmentId() {
-      return [report];
+      return [{ ...report, versions: [] }];
     },
     async create() {
       return report;
