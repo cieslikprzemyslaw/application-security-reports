@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import ReportActions from '~/app/components/appsec/reportActions';
 import { LightThemeProvider } from '~/theme';
@@ -10,8 +10,6 @@ import type {
   ReportPreviewShellProps,
   ReportPreviewShellTab,
 } from './reportPreviewShell.type';
-
-const printReport = () => window.print();
 
 const ReportPreviewShell = ({
   applicationName,
@@ -25,13 +23,10 @@ const ReportPreviewShell = ({
   titleRef,
   reportActions,
   reportActionStatus,
-  onPrint,
-  onDownloadPdf,
 }: ReportPreviewShellProps) => {
   const [internalActiveTab, setInternalActiveTab] =
     useState<ReportPreviewShellTab>('preview');
   const resolvedActiveTab = activeTab ?? internalActiveTab;
-  const handlePrint = onPrint ?? printReport;
 
   const handleTabChange = (nextTab: ReportPreviewShellTab) => {
     if (activeTab === undefined) {
@@ -123,19 +118,17 @@ const ReportPreviewShell = ({
               </span>
             )}
 
-            <ReportActions
-              {...reportActions}
-              onPrint={reportActions?.onPrint ?? handlePrint}
-              onGeneratePdf={reportActions?.onGeneratePdf ?? onDownloadPdf}
-            />
+            {reportActions && <ReportActions {...reportActions} />}
 
-            <span
-              className="report-preview-shell-print-hint no-print"
-              role="note"
-            >
-              For a clean PDF, open More settings and disable browser Headers
-              and footers.
-            </span>
+            {reportActions?.generatePdf && (
+              <span
+                className="report-preview-shell-print-hint no-print"
+                role="note"
+              >
+                For a clean PDF, open More settings and disable browser Headers
+                and footers.
+              </span>
+            )}
           </div>
         </div>
 

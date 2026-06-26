@@ -111,7 +111,12 @@ describe('reportPreviewShell', () => {
             assessmentCode="ASM-001"
             preview={<ThemeProbe label="Preview" />}
             dataView={<ThemeProbe label="Data" />}
-            onDownloadPdf={generatePdfSpy}
+            reportActions={{
+              generatePdf: {
+                onActivate: generatePdfSpy,
+              },
+              primaryAction: 'generatePdf',
+            }}
           />
         </ThemeProvider>,
       );
@@ -161,9 +166,13 @@ describe('reportPreviewShell', () => {
       ),
     );
 
-    await clickButton(container, 'Print');
-
-    assert.equal(printSpy.mock.calls.length, 1);
+    assert.equal(
+      Array.from(container.querySelectorAll('button')).some(
+        button => button.textContent === 'Print',
+      ),
+      false,
+    );
+    assert.equal(printSpy.mock.calls.length, 0);
 
     await clickButton(container, 'Generate PDF');
 

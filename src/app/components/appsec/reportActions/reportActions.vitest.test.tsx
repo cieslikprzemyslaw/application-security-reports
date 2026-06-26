@@ -199,23 +199,6 @@ describe('ReportActions', () => {
     ).toEqual(['Back to editor', 'Save draft', 'Generate PDF']);
   });
 
-  it('preserves the existing preview-shell print and PDF callbacks during migration', async () => {
-    const user = userEvent.setup();
-    const onPrint = vi.fn();
-    const onGeneratePdf = vi.fn();
-
-    renderActions({
-      onPrint,
-      onGeneratePdf,
-    });
-
-    await user.click(screen.getByRole('button', { name: 'Print' }));
-    await user.click(screen.getByRole('button', { name: 'Generate PDF' }));
-
-    expect(onPrint).toHaveBeenCalledTimes(1);
-    expect(onGeneratePdf).toHaveBeenCalledTimes(1);
-  });
-
   it('is responsive and excluded from print output', () => {
     const sheet = new ServerStyleSheet();
 

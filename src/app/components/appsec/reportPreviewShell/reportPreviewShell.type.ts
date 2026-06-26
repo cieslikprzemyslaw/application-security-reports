@@ -21,6 +21,4 @@ export interface ReportPreviewShellProps {
   titleRef?: Ref<HTMLHeadingElement>;
   reportActions?: ReportActionsProps;
   reportActionStatus?: ReportPreviewShellActionStatus;
-  onPrint?: () => void;
-  onDownloadPdf?: () => void;
 }

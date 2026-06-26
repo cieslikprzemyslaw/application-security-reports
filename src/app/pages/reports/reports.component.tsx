@@ -11,6 +11,7 @@ import {
   updateReportBuilderConfiguration,
   updateReportBuilderSelection,
 } from './reportBuilderState';
+import { useReportActionsController } from './reportActions.controller';
 import { useReportBootstrapController } from './reportBootstrap.controller';
 import ReportBuilderPreview from './reportBuilderPreview.component';
 import { useReportDraftSaveController } from './reportDraftSave.controller';
@@ -23,10 +24,7 @@ import ReportsShell, {
 } from './reportsShell.component';
 
 import type { ReportBuilderSelection, ReportBuilderState } from '~/domain';
-import type {
-  ReportPreviewShellActionStatus,
-  ReportPreviewShellTab,
-} from '~/app/components/appsec/reportPreviewShell';
+import type { ReportPreviewShellTab } from '~/app/components/appsec/reportPreviewShell';
 import type { ReportBuilderFocusTarget, ReportsProps } from './reports.type';
 
 const formatReportVersionNumber = (version: number): string => {
@@ -63,8 +61,6 @@ const ReportBuilderReports = ({
   focusKey,
   onViewChange,
   onStateChange,
-  onPrint,
-  onDownloadPdf,
 }: ReportBuilderReportsProps) => {
   const [builderState, setBuilderState] = useState(() =>
     restoreReportBuilderRouteState(companyId, routeState),
@@ -212,42 +208,20 @@ const ReportBuilderReports = ({
   const selectedAssessmentId = builderState.selection.selectedAssessmentId;
   const hasCurrentAssessmentPreview =
     previewController.snapshot?.assessment.id === selectedAssessmentId;
-  const saveDraftDisabledReason =
-    finalSaveController.status === 'pending'
-      ? 'Wait for the final version save to finish.'
-      : !selectedAssessmentId
-        ? 'Select an Assessment before saving a draft.'
-        : !hasCurrentAssessmentPreview
-          ? previewController.status === 'pending'
-            ? 'Wait for the report preview before saving a draft.'
-            : 'Generate a report preview before saving a draft.'
-          : undefined;
-  const saveFinalDisabledReason =
-    draftSaveController.status === 'pending'
-      ? 'Wait for the draft save to finish.'
-      : !selectedAssessmentId
-        ? 'Select an Assessment before saving a final version.'
-        : !hasCurrentAssessmentPreview
-          ? previewController.status === 'pending'
-            ? 'Wait for the report preview before saving a final version.'
-            : 'Generate a report preview before saving a final version.'
-          : undefined;
-  const activeSaveController = finalSaveController.message
-    ? finalSaveController
-    : draftSaveController;
-
-  const reportActionStatus: ReportPreviewShellActionStatus | undefined =
-    activeSaveController.message
-      ? {
-          message: activeSaveController.message,
-          role:
-            activeSaveController.status === 'conflict' ||
-            activeSaveController.status === 'readiness' ||
-            activeSaveController.status === 'error'
-              ? 'alert'
-              : 'status',
-        }
-      : undefined;
+  const reportActionsController = useReportActionsController({
+    activeView,
+    builderState,
+    previewStatus: previewController.status,
+    hasCurrentAssessmentPreview,
+    selectedVersion,
+    draftSaveController,
+    finalSaveController,
+    clearDraftSelectedVersion,
+    clearFinalSelectedVersion,
+    clearSelectedVersions,
+    retryPreview: previewController.retry,
+    onViewChange,
+  });
 
   const assessmentCode = selectedVersion
     ? `${selectedVersion.reportId} · v${formatReportVersionNumber(
@@ -264,28 +238,8 @@ const ReportBuilderReports = ({
       onActiveTabChange={nextView => onViewChange?.(nextView, builderState)}
       previewTabRef={previewTabRef}
       titleRef={previewHeadingRef}
-      reportActions={{
-        saveDraft: {
-          onActivate: () => {
-            clearFinalSelectedVersion();
-            void draftSaveController.save();
-          },
-          isPending: draftSaveController.status === 'pending',
-          isDisabled: Boolean(saveDraftDisabledReason),
-          disabledReason: saveDraftDisabledReason,
-        },
-        saveAsFinal: {
-          onActivate: () => {
-            clearDraftSelectedVersion();
-            void finalSaveController.save();
-          },
-          isPending: finalSaveController.status === 'pending',
-          isDisabled: Boolean(saveFinalDisabledReason),
-          disabledReason: saveFinalDisabledReason,
-        },
-        primaryAction: 'saveDraft',
-      }}
-      reportActionStatus={reportActionStatus}
+      reportActions={reportActionsController.reportActions}
+      reportActionStatus={reportActionsController.reportActionStatus}
       preview={
         <ReportBuilderPreview
           status={displayedStatus}
@@ -299,8 +253,6 @@ const ReportBuilderReports = ({
           }}
         />
       }
-      onPrint={onPrint}
-      onDownloadPdf={onDownloadPdf}
       dataView={
         <ReportBuilderTree
           companyId={companyId}
@@ -333,18 +285,10 @@ const Reports = ({
   builderFocusKey,
   onBuilderViewChange,
   onBuilderStateChange,
-  onPrint,
-  onDownloadPdf,
 }: ReportsProps) => {
   if (dataView != null) {
     return (
-      <ReportsShell
-        cover={cover}
-        dataView={dataView}
-        autoSaved={autoSaved}
-        onPrint={onPrint}
-        onDownloadPdf={onDownloadPdf}
-      />
+      <ReportsShell cover={cover} dataView={dataView} autoSaved={autoSaved} />
     );
   }
 
@@ -362,8 +306,6 @@ const Reports = ({
         focusKey={builderFocusKey}
         onViewChange={onBuilderViewChange}
         onStateChange={onBuilderStateChange}
-        onPrint={onPrint}
-        onDownloadPdf={onDownloadPdf}
       />
     );
   }
@@ -373,8 +315,6 @@ const Reports = ({
       cover={cover}
       dataView={<pre>{JSON.stringify(cover, null, 2)}</pre>}
       autoSaved={autoSaved}
-      onPrint={onPrint}
-      onDownloadPdf={onDownloadPdf}
     />
   );
 };

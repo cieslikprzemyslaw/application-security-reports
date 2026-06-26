@@ -120,7 +120,7 @@ const installReportBuilderFetchFixture = (reportRequests: RequestInit[]) => {
 };
 
 describe('Report Builder preview navigation state', () => {
-  it('restores exact state and focus through Browser Back and Forward without saving a version', async () => {
+  it('uses Generate preview and Back to editor without saving a version or losing state', async () => {
     const reportRequests: RequestInit[] = [];
     installReportBuilderFetchFixture(reportRequests);
 
@@ -154,11 +154,25 @@ describe('Report Builder preview navigation state', () => {
         assert.ok(reportRequests.length > 0);
       });
 
-      const previewButton = findButton(container, 'Preview');
-      assert.ok(previewButton);
+      await waitFor(() => {
+        const generatePreviewButton = findButton(
+          container,
+          'Generate preview',
+        ) as HTMLButtonElement | undefined;
+
+        assert.ok(generatePreviewButton);
+        assert.equal(generatePreviewButton.disabled, false);
+      });
+
+      const generatePreviewButton = findButton(
+        container,
+        'Generate preview',
+      ) as HTMLButtonElement | undefined;
+
+      assert.ok(generatePreviewButton);
 
       await act(async () => {
-        previewButton.click();
+        generatePreviewButton.click();
         await renderTick();
         await renderTick();
       });
@@ -188,8 +202,11 @@ describe('Report Builder preview navigation state', () => {
         'Report Preview',
       );
 
+      const backToEditorButton = findButton(container, 'Back to editor');
+      assert.ok(backToEditorButton);
+
       await act(async () => {
-        window.history.back();
+        backToEditorButton.click();
         await renderTick();
         await renderTick();
       });

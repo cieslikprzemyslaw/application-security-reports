@@ -37,6 +37,17 @@ describe('Save draft through the production Report Builder route', () => {
   it('bootstraps once, saves once, selects the returned version, and preserves builder state', async () => {
     const reportBodies: unknown[] = [];
     const draftBodies: unknown[] = [];
+    const originalPrint = window.print;
+    let printCalls = 0;
+    let documentTitleAtPrint = '';
+
+    Object.defineProperty(window, 'print', {
+      configurable: true,
+      value: () => {
+        printCalls += 1;
+        documentTitleAtPrint = document.title;
+      },
+    });
 
     setFetch(async (input, init) => {
       const path = String(input);
@@ -253,6 +264,24 @@ describe('Save draft through the production Report Builder route', () => {
         },
       });
 
+      const generatePdfButton = findButton(container, 'Generate PDF');
+
+      assert.ok(generatePdfButton, 'Expected the Generate PDF action');
+      assert.equal(generatePdfButton.disabled, false);
+      assert.equal(findButton(container, 'Print'), undefined);
+
+      await act(async () => {
+        generatePdfButton.click();
+      });
+
+      assert.equal(printCalls, 1);
+      assert.equal(
+        documentTitleAtPrint,
+        'Northstar Digital - Customer Services Portal Security Report - v0.1',
+      );
+      assert.equal(reportBodies.length, 1);
+      assert.equal(draftBodies.length, 1);
+
       await act(async () => {
         findButton(container, 'Data')?.click();
       });
@@ -270,6 +299,10 @@ describe('Save draft through the production Report Builder route', () => {
         root.unmount();
       });
     } finally {
+      Object.defineProperty(window, 'print', {
+        configurable: true,
+        value: originalPrint,
+      });
       restoreFetch();
     }
   });

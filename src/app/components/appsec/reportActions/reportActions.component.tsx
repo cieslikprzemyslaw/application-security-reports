@@ -66,9 +66,6 @@ const ReportActions = ({
   saveAsFinal,
   generatePdf,
   primaryAction,
-  isGenerating = false,
-  onPrint,
-  onGeneratePdf,
   className,
   onKeyDown,
   ...rest
@@ -198,27 +195,6 @@ const ReportActions = ({
           </Fragment>
         );
       })}
-
-      {onPrint && (
-        <Button
-          className="report-actions__action report-actions__action--legacyPrint"
-          data-report-action="legacyPrint"
-          title="Print"
-          variant="secondary"
-          onClick={onPrint}
-        />
-      )}
-
-      {onGeneratePdf && !generatePdf && (
-        <Button
-          className="report-actions__action report-actions__action--generatePdf"
-          data-report-action="generatePdf"
-          title={isGenerating ? 'Opening print dialog' : 'Generate PDF'}
-          variant={primaryAction ? 'secondary' : 'primary'}
-          isLoading={isGenerating}
-          onClick={onGeneratePdf}
-        />
-      )}
     </StyledReportActions>
   );
 };
