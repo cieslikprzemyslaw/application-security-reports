@@ -137,7 +137,7 @@ describe('useReportBootstrapController', () => {
     expect(result.current.reportId).toBe(reportId);
   });
 
-  it('does not attach the created Report to builder state changed while pending', async () => {
+  it('retains the created Report and restores request selection after a pending change', async () => {
     const deferred = createDeferred<Report>();
     const createReport = vi.fn(() => deferred.promise);
     const onBuilderStateChange = vi.fn();
@@ -172,17 +172,29 @@ describe('useReportBootstrapController', () => {
 
     await act(async () => {
       deferred.resolve(createdReport);
-      await expect(request).rejects.toThrow(
-        'Builder selection changed while creating the Report.',
-      );
+      await expect(request).resolves.toBe(reportId);
     });
 
-    expect(onBuilderStateChange).not.toHaveBeenCalled();
-    expect(changedBuilderState.reportId).toBeUndefined();
-    expect(result.current.status).toBe('error');
-    expect(result.current.errorMessage).toBe('Unable to create the Report.');
-  });
+    expect(onBuilderStateChange).toHaveBeenCalledTimes(1);
 
+    const persistedState = onBuilderStateChange.mock.calls[0]?.[0] as
+      | ReportBuilderState
+      | undefined;
+
+    expect(persistedState?.reportId).toBe(reportId);
+    expect(persistedState?.selection).toEqual(initialBuilderState.selection);
+    expect(persistedState?.configuration).toEqual(
+      changedBuilderState.configuration,
+    );
+    expect(persistedState?.branding).toEqual(changedBuilderState.branding);
+    expect(result.current.status).toBe('success');
+    expect(result.current.reportId).toBe(reportId);
+
+    rerender({ builderState: persistedState! });
+
+    await expect(result.current.bootstrap(assessment)).resolves.toBe(reportId);
+    expect(createReport).toHaveBeenCalledTimes(1);
+  });
   it('preserves builder state and exposes a safe error when creation fails', async () => {
     const builderState = createUnsavedBuilderState();
     const createReport = vi.fn(() =>

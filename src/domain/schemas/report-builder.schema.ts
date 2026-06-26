@@ -21,6 +21,23 @@ const uniquePrefixedUuidArraySchema = (
       `${entityName} IDs must not contain duplicates`,
     );
 
+const requirePersistedAssessmentContext = (
+  value: {
+    reportId?: string;
+    selection?: {
+      selectedAssessmentId?: string;
+    };
+  },
+  context: z.RefinementCtx,
+) => {
+  if (value.reportId && !value.selection?.selectedAssessmentId) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['selection', 'selectedAssessmentId'],
+      message: 'A persisted Report requires a selected Assessment.',
+    });
+  }
+};
 const reportBuilderBrandingModeListSchema = z
   .array(reportBrandingModeSchema)
   .min(1, 'At least one branding mode is required')
@@ -89,7 +106,8 @@ export const reportBuilderStateObjectSchema = z
   })
   .strict();
 
-export const reportBuilderStateSchema = reportBuilderStateObjectSchema;
+export const reportBuilderStateSchema =
+  reportBuilderStateObjectSchema.superRefine(requirePersistedAssessmentContext);
 
 export const reportBuilderRouteSelectionObjectSchema = z
   .object({
@@ -140,7 +158,9 @@ export const reportBuilderRouteStateObjectSchema = z
   .strict();
 
 export const reportBuilderRouteStateSchema =
-  reportBuilderRouteStateObjectSchema;
+  reportBuilderRouteStateObjectSchema.superRefine(
+    requirePersistedAssessmentContext,
+  );
 
 export type ReportBuilderSelection = z.output<
   typeof reportBuilderSelectionSchema

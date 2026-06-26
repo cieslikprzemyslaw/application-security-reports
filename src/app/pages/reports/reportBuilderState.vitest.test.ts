@@ -145,6 +145,15 @@ describe('Report builder state helpers', () => {
 
     assert.deepEqual(
       restoreReportBuilderRouteState(companyId, {
+        companyId,
+        reportId,
+      }),
+      defaultState,
+    );
+
+    assert.throws(() => updateReportBuilderReportId(defaultState, reportId));
+    assert.deepEqual(
+      restoreReportBuilderRouteState(companyId, {
         unexpected: true,
       }),
       defaultState,

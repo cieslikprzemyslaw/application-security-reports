@@ -29,6 +29,7 @@ describe('Report builder runtime schemas', () => {
       reportBuilderRouteStateSchema.safeParse({
         companyId,
         reportId,
+        selection: { selectedAssessmentId: assessmentId },
         configuration: { includeEvidence: true },
       }).success,
     ).toBe(true);
@@ -88,6 +89,40 @@ describe('Report builder runtime schemas', () => {
       }).success,
     ).toBe(false);
 
+    const canonicalWithoutAssessment = reportBuilderStateSchema.safeParse({
+      companyId,
+      reportId,
+      selection: {},
+      configuration: {},
+      branding: {},
+    });
+
+    expect(canonicalWithoutAssessment.success).toBe(false);
+
+    if (!canonicalWithoutAssessment.success) {
+      expect(canonicalWithoutAssessment.error.issues).toContainEqual(
+        expect.objectContaining({
+          path: ['selection', 'selectedAssessmentId'],
+          message: 'A persisted Report requires a selected Assessment.',
+        }),
+      );
+    }
+
+    const routeWithoutAssessment = reportBuilderRouteStateSchema.safeParse({
+      companyId,
+      reportId,
+    });
+
+    expect(routeWithoutAssessment.success).toBe(false);
+
+    if (!routeWithoutAssessment.success) {
+      expect(routeWithoutAssessment.error.issues).toContainEqual(
+        expect.objectContaining({
+          path: ['selection', 'selectedAssessmentId'],
+          message: 'A persisted Report requires a selected Assessment.',
+        }),
+      );
+    }
     expect(
       reportBuilderSelectionSchema.safeParse({
         selectedAssessmentId: assessmentId,

@@ -42,16 +42,6 @@ type ReportBootstrapSelectionTarget = Pick<
   'selectedAssessmentId' | 'selectedThreatIds'
 >;
 
-const hasSameReportSelection = (
-  left: ReportBootstrapSelectionTarget,
-  right: ReportBootstrapSelectionTarget,
-) =>
-  left.selectedAssessmentId === right.selectedAssessmentId &&
-  left.selectedThreatIds.length === right.selectedThreatIds.length &&
-  left.selectedThreatIds.every(
-    (threatId, index) => threatId === right.selectedThreatIds[index],
-  );
-
 const replaceUnsafeControlCharacters = (value: string) =>
   Array.from(value, character => {
     const codePoint = character.codePointAt(0) ?? 0;
@@ -178,27 +168,16 @@ export const useReportBootstrapController = ({
         .then(report => {
           const latestBuilderState = builderStateRef.current;
 
-          if (
-            !latestBuilderState.reportId &&
-            !hasSameReportSelection(
-              latestBuilderState.selection,
-              requestSelection,
-            )
-          ) {
-            throw new Error(
-              'Builder selection changed while creating the Report.',
-            );
-          }
-
-          const nextBuilderState = latestBuilderState.reportId
-            ? latestBuilderState
-            : updateReportBuilderReportId(latestBuilderState, report.id);
+          const nextBuilderState = updateReportBuilderReportId(
+            {
+              ...latestBuilderState,
+              selection: currentState.selection,
+            },
+            report.id,
+          );
 
           builderStateRef.current = nextBuilderState;
-
-          if (!latestBuilderState.reportId) {
-            onBuilderStateChangeRef.current(nextBuilderState);
-          }
+          onBuilderStateChangeRef.current(nextBuilderState);
 
           setState({
             status: 'success',
