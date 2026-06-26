@@ -1,12 +1,5 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import ReportCover from '~/app/components/appsec/reportCover';
 import ReportPreviewShell from '~/app/components/appsec/reportPreviewShell';
 
 import {
@@ -24,32 +17,17 @@ import { useReportDraftSaveController } from './reportDraftSave.controller';
 import { useReportFinalSaveController } from './reportFinalSave.controller';
 import { useReportPreviewController } from './reportPreview.controller';
 import ReportBuilderTree from './reportBuilderTree.component';
+import ReportsShell, {
+  fallbackReportCover,
+  type ReportsShellProps,
+} from './reportsShell.component';
 
 import type { ReportBuilderSelection, ReportBuilderState } from '~/domain';
-import type { ReportCoverProps } from '~/app/components/appsec/reportCover';
 import type {
   ReportPreviewShellActionStatus,
   ReportPreviewShellTab,
 } from '~/app/components/appsec/reportPreviewShell';
 import type { ReportBuilderFocusTarget, ReportsProps } from './reports.type';
-
-const fallbackCover: ReportCoverProps = {
-  companyName: 'Company name',
-  companyWebsite: 'company.example',
-  reportId: 'REPORT-DRAFT',
-  issuedDate: 'Draft',
-  applicationName: 'Application name',
-  environment: 'Environment',
-  engagementDate: 'Not specified',
-  testerName: 'Not assigned',
-  methodology: 'OWASP ASVS / WSTG',
-  findingsCount: 0,
-  overallRisk: 'informational',
-  executiveSummary: 'Add assessment data to generate the report preview.',
-  scope: [],
-  findings: [],
-  confidential: true,
-};
 
 const formatReportVersionNumber = (version: number): string => {
   const major = Math.floor(version / 10);
@@ -57,32 +35,6 @@ const formatReportVersionNumber = (version: number): string => {
 
   return `${major}.${minor}`;
 };
-
-interface ReportsShellProps {
-  cover: ReportCoverProps;
-  dataView: React.ReactNode;
-  autoSaved: boolean;
-  onPrint?: () => void;
-  onDownloadPdf?: () => void;
-}
-
-const ReportsShell = ({
-  cover,
-  dataView,
-  autoSaved,
-  onPrint,
-  onDownloadPdf,
-}: ReportsShellProps) => (
-  <ReportPreviewShell
-    applicationName={cover.applicationName}
-    assessmentCode={cover.reportId}
-    autoSaved={autoSaved}
-    preview={<ReportCover {...cover} />}
-    dataView={dataView}
-    onPrint={onPrint}
-    onDownloadPdf={onDownloadPdf}
-  />
-);
 
 interface ReportBuilderReportsProps extends Omit<
   ReportsShellProps,
@@ -370,7 +322,7 @@ const ReportBuilderReports = ({
 };
 
 const Reports = ({
-  cover = fallbackCover,
+  cover = fallbackReportCover,
   companyId,
   companyName,
   dataView,
