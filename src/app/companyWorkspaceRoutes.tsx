@@ -14,7 +14,11 @@ import {
   RouteLoadingView,
 } from '~/app/components/routeStateViews';
 import IconSVG from '~/app/components/ui/iconSVG';
-import type { CompanyListItem, ReportBuilderState } from '~/domain';
+import type {
+  CompanyListItem,
+  ReportBuilderState,
+  ReportReadinessTarget,
+} from '~/domain';
 import type { ReportPreviewShellTab } from '~/app/components/appsec/reportPreviewShell';
 import { routes } from '~/routes';
 
@@ -209,6 +213,28 @@ export const CompanyReportsRoute = ({
     });
   };
 
+  const handleReadinessTargetNavigate = (
+    target: ReportReadinessTarget,
+    builderState: ReportBuilderState,
+  ) => {
+    if (target.resourceType !== 'report' || target.field !== 'brandingMode') {
+      return;
+    }
+
+    const serializedState = serializeReportBuilderRouteState(builderState);
+
+    void (async () => {
+      await navigate(location.pathname, {
+        replace: true,
+        state: serializedState,
+      });
+      await navigate({
+        pathname: routes.settings,
+        hash: '#organisationName',
+      });
+    })();
+  };
+
   const focusTarget =
     view === 'preview'
       ? 'preview-heading'
@@ -228,6 +254,7 @@ export const CompanyReportsRoute = ({
       builderFocusKey={location.key}
       onBuilderViewChange={handleViewChange}
       onBuilderStateChange={handleBuilderStateChange}
+      onReadinessTargetNavigate={handleReadinessTargetNavigate}
     />
   );
 };

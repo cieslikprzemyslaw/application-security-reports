@@ -17,6 +17,9 @@ import ReportBuilderPreview from './reportBuilderPreview.component';
 import { useReportDraftSaveController } from './reportDraftSave.controller';
 import { useReportFinalSaveController } from './reportFinalSave.controller';
 import { useReportPreviewController } from './reportPreview.controller';
+import { useReportReadinessController } from './reportReadiness.controller';
+import ReportReadinessPanel from './reportReadinessPanel.component';
+import { useReportReadinessTargetNavigation } from './reportReadinessTargetNavigation';
 import ReportBuilderTree from './reportBuilderTree.component';
 import ReportsShell, {
   fallbackReportCover,
@@ -49,6 +52,7 @@ interface ReportBuilderReportsProps extends Omit<
     state: ReportBuilderState,
   ) => void;
   onStateChange?: (state: ReportBuilderState) => void;
+  onReadinessTargetNavigate?: ReportsProps['onReadinessTargetNavigate'];
 }
 
 const ReportBuilderReports = ({
@@ -61,6 +65,7 @@ const ReportBuilderReports = ({
   focusKey,
   onViewChange,
   onStateChange,
+  onReadinessTargetNavigate,
 }: ReportBuilderReportsProps) => {
   const [builderState, setBuilderState] = useState(() =>
     restoreReportBuilderRouteState(companyId, routeState),
@@ -106,6 +111,11 @@ const ReportBuilderReports = ({
     bootstrapReport: bootstrapController.bootstrap,
   });
   const finalSaveController = useReportFinalSaveController({
+    builderState,
+    assessment: bootstrapAssessment,
+    bootstrapReport: bootstrapController.bootstrap,
+  });
+  const readinessController = useReportReadinessController({
     builderState,
     assessment: bootstrapAssessment,
     bootstrapReport: bootstrapController.bootstrap,
@@ -208,12 +218,19 @@ const ReportBuilderReports = ({
   const selectedAssessmentId = builderState.selection.selectedAssessmentId;
   const hasCurrentAssessmentPreview =
     previewController.snapshot?.assessment.id === selectedAssessmentId;
+  const readinessTargetNavigation = useReportReadinessTargetNavigation({
+    activeView,
+    builderState,
+    onViewChange,
+    onExternalNavigate: onReadinessTargetNavigate,
+  });
   const reportActionsController = useReportActionsController({
     activeView,
     builderState,
     previewStatus: previewController.status,
     hasCurrentAssessmentPreview,
     selectedVersion,
+    readinessController,
     draftSaveController,
     finalSaveController,
     clearDraftSelectedVersion,
@@ -240,6 +257,16 @@ const ReportBuilderReports = ({
       titleRef={previewHeadingRef}
       reportActions={reportActionsController.reportActions}
       reportActionStatus={reportActionsController.reportActionStatus}
+      readiness={
+        readinessController.status === 'idle' ? undefined : (
+          <ReportReadinessPanel
+            status={readinessController.status}
+            result={readinessController.result}
+            message={readinessController.message}
+            onTargetActivate={readinessTargetNavigation.activateTarget}
+          />
+        )
+      }
       preview={
         <ReportBuilderPreview
           status={displayedStatus}
@@ -265,6 +292,7 @@ const ReportBuilderReports = ({
               ? builderState.selection.selectedAssessmentId
               : undefined
           }
+          focusTarget={readinessTargetNavigation.focusTarget}
           onSelectionChange={handleSelectionChange}
           onIncludeEvidenceChange={handleIncludeEvidenceChange}
         />
@@ -285,6 +313,7 @@ const Reports = ({
   builderFocusKey,
   onBuilderViewChange,
   onBuilderStateChange,
+  onReadinessTargetNavigate,
 }: ReportsProps) => {
   if (dataView != null) {
     return (
@@ -306,6 +335,7 @@ const Reports = ({
         focusKey={builderFocusKey}
         onViewChange={onBuilderViewChange}
         onStateChange={onBuilderStateChange}
+        onReadinessTargetNavigate={onReadinessTargetNavigate}
       />
     );
   }

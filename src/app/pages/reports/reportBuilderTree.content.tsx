@@ -10,6 +10,7 @@ import {
   getThreatSelectionState,
   type ReportBuilderSelectionTreeState,
 } from './reportBuilderSelectionTree';
+import type { ReportReadinessTarget } from '~/domain';
 import type {
   ReportBuilderHierarchy,
   ReportBuilderHierarchyAssessmentNode,
@@ -21,6 +22,7 @@ interface ReportBuilderTreeContentProps {
   hierarchy: ReportBuilderHierarchy;
   selectionState: ReportBuilderSelectionTreeState;
   lockedAssessmentId?: string;
+  focusTarget?: ReportReadinessTarget;
   onAssessmentChange: (
     assessment: ReportBuilderHierarchyAssessmentNode,
     checked: boolean,
@@ -91,10 +93,38 @@ const createInitialExpandedAssessmentIds = (
   return firstAssessmentId ? new Set([firstAssessmentId]) : new Set<string>();
 };
 
+const getReadinessAssessmentId = (
+  hierarchy: ReportBuilderHierarchy,
+  focusTarget?: ReportReadinessTarget,
+): string | undefined => {
+  if (!focusTarget) {
+    return undefined;
+  }
+
+  if (focusTarget.resourceType === 'assessment') {
+    return focusTarget.resourceId;
+  }
+
+  return hierarchy.assessments.find(assessment =>
+    focusTarget.resourceType === 'threat'
+      ? assessment.threats.some(
+          threat => threat.threat.id === focusTarget.resourceId,
+        )
+      : focusTarget.resourceType === 'evidence'
+        ? assessment.threats.some(threat =>
+            threat.evidence.some(
+              evidence => evidence.evidence.id === focusTarget.resourceId,
+            ),
+          )
+        : false,
+  )?.assessment.id;
+};
+
 const ReportBuilderTreeContent = ({
   hierarchy,
   selectionState,
   lockedAssessmentId,
+  focusTarget,
   onAssessmentChange,
   onThreatChange,
   onEvidenceChange,
@@ -102,6 +132,10 @@ const ReportBuilderTreeContent = ({
   const [expandedAssessmentIds, setExpandedAssessmentIds] = useState<
     Set<string>
   >(() => createInitialExpandedAssessmentIds(hierarchy, selectionState));
+  const readinessAssessmentId = getReadinessAssessmentId(
+    hierarchy,
+    focusTarget,
+  );
 
   const setAssessmentExpanded = (assessmentId: string, expanded: boolean) => {
     setExpandedAssessmentIds(current => {
@@ -144,6 +178,8 @@ const ReportBuilderTreeContent = ({
           }
           checked={branchState.checked}
           indeterminate={false}
+          data-readiness-resource-type="evidence"
+          data-readiness-resource-id={node.evidence.id}
           disabled={
             lockedAssessmentId !== undefined &&
             lockedAssessmentId !== assessment.assessment.id
@@ -196,6 +232,8 @@ const ReportBuilderTreeContent = ({
             }
             checked={branchState.checked}
             indeterminate={branchState.indeterminate}
+            data-readiness-resource-type="threat"
+            data-readiness-resource-id={node.threat.id}
             disabled={
               lockedAssessmentId !== undefined &&
               lockedAssessmentId !== assessment.assessment.id
@@ -229,7 +267,9 @@ const ReportBuilderTreeContent = ({
     const assessmentId = node.assessment.id;
     const branchState = getAssessmentSelectionState(node, selectionState);
     const { threatCount, evidenceCount } = countAssessmentDescendants(node);
-    const isExpanded = expandedAssessmentIds.has(assessmentId);
+    const isExpanded =
+      expandedAssessmentIds.has(assessmentId) ||
+      readinessAssessmentId === assessmentId;
     const panelId = `report-builder-assessment-panel-${assessmentId}`;
 
     return (
@@ -264,6 +304,8 @@ const ReportBuilderTreeContent = ({
               }
               checked={branchState.checked}
               indeterminate={branchState.indeterminate}
+              data-readiness-resource-type="assessment"
+              data-readiness-resource-id={assessmentId}
               disabled={lockedAssessmentId !== undefined}
               onChange={event => {
                 const checked = event.target.checked;

@@ -100,6 +100,11 @@ const StyledReportPreviewShell = styled.div.attrs({
       font-size: ${typography.body.small.size};
     }
 
+    .report-preview-shell-readiness {
+      width: min(100%, 72rem);
+      margin: 0 auto;
+    }
+
     .report-preview-shell-stage {
       min-height: 60rem;
       padding: ${spacing.xl};

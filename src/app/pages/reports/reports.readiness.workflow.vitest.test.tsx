@@ -6,6 +6,7 @@ import {
   act,
   createJsonResponse,
   renderApp,
+  renderTick,
   restoreFetch,
   routes,
   setFetch,
@@ -20,8 +21,7 @@ import {
   previewThreatId,
 } from './reportPreview.testFixtures';
 
-const reportId = 'rpt_00000000-0000-0000-0000-000000000198';
-const versionId = 'rvs_00000000-0000-0000-0000-000000000198';
+const reportId = 'rpt_00000000-0000-0000-0000-000000000232';
 
 const findButton = (container: HTMLElement, label: string) =>
   Array.from(container.querySelectorAll('button')).find(
@@ -33,12 +33,10 @@ const findCheckbox = (container: HTMLElement, value: string) =>
     input.getAttribute('id')?.includes(value),
   ) as HTMLInputElement | undefined;
 
-describe('Save final through the production Report Builder route', () => {
-  it('bootstraps once, loads the current version, saves once, and selects the returned final version', async () => {
+describe('Report readiness through the production Report Builder route', () => {
+  it('renders backend blockers and warnings, blocks Final, keeps Draft, and focuses the returned target', async () => {
     const reportBodies: unknown[] = [];
     const readinessBodies: unknown[] = [];
-    const finalBodies: unknown[] = [];
-    let reportReadCount = 0;
 
     setFetch(async (input, init) => {
       const path = String(input);
@@ -85,11 +83,10 @@ describe('Save final through the production Report Builder route', () => {
               id: previewThreatId,
               assessmentId: previewAssessmentId,
               title: 'Missing Server-Side Authorization',
-              description: 'Authorization is missing.',
+              description: '',
               severity: 'critical',
               strideCategories: ['elevation-of-privilege'],
               status: 'open',
-              impact: 'Customer data may be exposed.',
               createdAt: '2026-06-03T00:00:00.000Z',
               updatedAt: '2026-06-12T00:00:00.000Z',
             },
@@ -98,9 +95,7 @@ describe('Save final through the production Report Builder route', () => {
       }
 
       if (path === `/api/evidence?assessmentId=${previewAssessmentId}`) {
-        return createJsonResponse({
-          data: [],
-        });
+        return createJsonResponse({ data: [] });
       }
 
       if (path === '/api/reports/preview') {
@@ -112,12 +107,12 @@ describe('Save final through the production Report Builder route', () => {
               evidenceIds: [],
             },
             configuration: {
-              includeEvidence: false,
+              includeEvidence: true,
             },
             selectedThreats: [
               {
                 ...previewSnapshot.selectedThreats[0]!,
-                impact: 'Customer data may be exposed.',
+                description: '',
               },
             ],
             selectedEvidence: [],
@@ -141,8 +136,8 @@ describe('Save final through the production Report Builder route', () => {
               status: 'draft',
               selectedThreatIds: [previewThreatId],
               latestVersion: 0,
-              createdAt: '2026-06-26T08:00:00.000Z',
-              updatedAt: '2026-06-26T08:00:00.000Z',
+              createdAt: '2026-06-26T10:00:00.000Z',
+              updatedAt: '2026-06-26T10:00:00.000Z',
             },
           },
           { status: 201 },
@@ -157,7 +152,17 @@ describe('Save final through the production Report Builder route', () => {
 
         return createJsonResponse({
           data: {
-            errors: [],
+            errors: [
+              {
+                code: 'THREAT_DESCRIPTION_REQUIRED',
+                message: 'Threat description is required.',
+                target: {
+                  resourceType: 'threat',
+                  resourceId: previewThreatId,
+                  field: 'description',
+                },
+              },
+            ],
             warnings: [
               {
                 code: 'EVIDENCE_SELECTION_EMPTY',
@@ -173,78 +178,18 @@ describe('Save final through the production Report Builder route', () => {
         });
       }
 
-      if (path === `/api/reports/${reportId}` && init?.method === 'GET') {
-        reportReadCount += 1;
-
-        return createJsonResponse({
-          data: {
-            report: {
-              id: reportId,
-              assessmentId: previewAssessmentId,
-              title: 'Customer Services Portal Security Report',
-              status: 'draft',
-              selectedThreatIds: [previewThreatId],
-              latestVersion: 0,
-              createdAt: '2026-06-26T08:00:00.000Z',
-              updatedAt: '2026-06-26T08:00:00.000Z',
-            },
-          },
-        });
-      }
-
-      if (
-        path === `/api/reports/${reportId}/versions/final` &&
-        init?.method === 'POST'
-      ) {
-        finalBodies.push(JSON.parse(String(init.body)));
-
-        return createJsonResponse(
-          {
-            data: {
-              id: versionId,
-              reportId,
-              version: 10,
-              status: 'final',
-              generatedAt: '2026-06-26',
-              snapshot: {
-                ...previewSnapshot,
-                reportTitle: 'Customer Services Portal Security Report',
-                assessment: {
-                  ...previewSnapshot.assessment,
-                  applicationName: 'Final Customer Portal',
-                },
-                selection: {
-                  threatIds: [previewThreatId],
-                  evidenceIds: [],
-                },
-                configuration: {
-                  includeEvidence: false,
-                },
-                selectedThreats: [
-                  {
-                    ...previewSnapshot.selectedThreats[0]!,
-                    impact: 'Customer data may be exposed.',
-                  },
-                ],
-                selectedEvidence: [],
-                riskSummary: {
-                  ...previewSnapshot.riskSummary,
-                  evidenceCount: 0,
-                },
-              },
-            },
-          },
-          { status: 201 },
-        );
+      if (path.includes('/versions/final')) {
+        throw new Error('Blocked readiness must not create a final version.');
       }
 
       throw new Error(`Unexpected request: ${path}`);
     });
 
     try {
-      const { container, root } = await renderApp(
-        routes.companyWorkspaceReports(previewCompanyId),
-      );
+      const editorPath = routes.companyWorkspaceReports(previewCompanyId);
+      const previewPath =
+        routes.companyWorkspaceReportsPreview(previewCompanyId);
+      const { container, root } = await renderApp(editorPath);
 
       await waitFor(() => {
         assert.ok(textContent(container).includes('Selection tree'));
@@ -254,46 +199,60 @@ describe('Save final through the production Report Builder route', () => {
         container,
         `threat-${previewThreatId}`,
       );
+      const includeEvidenceCheckbox = container.querySelector(
+        '#report-builder-include-evidence',
+      ) as HTMLInputElement | null;
 
-      assert.ok(threatCheckbox, 'Expected the Threat checkbox');
+      assert.ok(threatCheckbox);
+      assert.ok(includeEvidenceCheckbox);
 
       await act(async () => {
+        includeEvidenceCheckbox.click();
         threatCheckbox.click();
       });
 
       await waitFor(() => {
-        const saveButton = findButton(container, 'Save as final');
+        const generatePreviewButton = findButton(container, 'Generate preview');
 
-        assert.ok(saveButton, 'Expected the Save as final button');
-        assert.equal(saveButton.disabled, false);
+        assert.ok(generatePreviewButton);
+        assert.equal(generatePreviewButton.disabled, false);
       });
 
-      const saveButton = findButton(container, 'Save as final');
+      await act(async () => {
+        findButton(container, 'Generate preview')?.click();
+        await renderTick();
+        await renderTick();
+      });
 
-      assert.ok(saveButton);
+      await waitFor(() => {
+        assert.equal(window.location.pathname, previewPath);
+      });
 
       await act(async () => {
-        saveButton.click();
-        saveButton.click();
+        findButton(container, 'Save as final')?.click();
       });
 
       await waitFor(() => {
         assert.ok(
-          textContent(container).includes('Final version saved as v1.0.'),
+          textContent(container).includes('Threat description is required.'),
         );
-        assert.ok(textContent(container).includes('Final Customer Portal'));
-        assert.ok(textContent(container).includes(`${reportId} · v1.0`));
+        assert.ok(textContent(container).includes('No Evidence is selected.'));
       });
+
+      const checklist = container.querySelector('.report-readiness-checklist');
+      const finalButton = findButton(container, 'Save as final');
+      const draftButton = findButton(container, 'Save draft');
+
+      assert.ok(checklist);
+      assert.equal(checklist.getAttribute('data-print-hidden'), 'true');
+      assert.equal(checklist.closest('.report-preview-shell-paper'), null);
+      assert.ok(finalButton);
+      assert.equal(finalButton.disabled, true);
+      assert.ok(draftButton);
+      assert.equal(draftButton.disabled, false);
 
       assert.equal(reportBodies.length, 1);
       assert.equal(readinessBodies.length, 1);
-      assert.equal(reportReadCount, 1);
-      assert.equal(finalBodies.length, 1);
-      assert.deepEqual(reportBodies[0], {
-        assessmentId: previewAssessmentId,
-        title: 'Customer Services Portal Security Report',
-        selectedThreatIds: [previewThreatId],
-      });
       assert.deepEqual(readinessBodies[0], {
         companyId: previewCompanyId,
         assessmentId: previewAssessmentId,
@@ -302,43 +261,34 @@ describe('Save final through the production Report Builder route', () => {
           evidenceIds: [],
         },
         configuration: {
-          includeEvidence: false,
+          includeEvidence: true,
         },
         brandingMode: 'issuer',
-      });
-      assert.deepEqual(finalBodies[0], {
-        companyId: previewCompanyId,
-        assessmentId: previewAssessmentId,
-        selection: {
-          threatIds: [previewThreatId],
-          evidenceIds: [],
-        },
-        configuration: {
-          includeEvidence: false,
-        },
-        brandingMode: 'issuer',
-        expectedLatestVersion: 0,
-      });
-      assert.deepEqual(window.history.state.usr, {
-        companyId: previewCompanyId,
-        reportId,
-        selection: {
-          selectedAssessmentId: previewAssessmentId,
-          selectedThreatIds: [previewThreatId],
-        },
       });
 
+      const targetButton = Array.from(
+        container.querySelectorAll('button'),
+      ).find(button =>
+        button.textContent?.includes('Threat description is required.'),
+      );
+
+      assert.ok(targetButton);
+
       await act(async () => {
-        findButton(container, 'Data')?.click();
+        targetButton.click();
+        await renderTick();
+        await renderTick();
       });
 
       await waitFor(() => {
-        const restoredThreatCheckbox = findCheckbox(
+        assert.equal(window.location.pathname, editorPath);
+        const focusedThreat = findCheckbox(
           container,
           `threat-${previewThreatId}`,
         );
 
-        assert.equal(restoredThreatCheckbox?.checked, true);
+        assert.ok(focusedThreat);
+        assert.equal(document.activeElement, focusedThreat);
       });
 
       await act(async () => {

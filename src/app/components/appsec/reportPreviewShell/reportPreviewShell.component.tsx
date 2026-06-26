@@ -17,6 +17,7 @@ const ReportPreviewShell = ({
   autoSaved = true,
   preview,
   dataView,
+  readiness,
   activeTab,
   onActiveTabChange,
   previewTabRef,
@@ -43,6 +44,7 @@ const ReportPreviewShell = ({
         <header className="report-preview-shell-header">
           <div>
             <h1
+              id="report-preview-shell-title"
               ref={titleRef}
               className="report-preview-shell-title"
               tabIndex={-1}
@@ -131,6 +133,15 @@ const ReportPreviewShell = ({
             )}
           </div>
         </div>
+
+        {readiness && (
+          <div
+            className="report-preview-shell-readiness no-print"
+            data-print-hidden="true"
+          >
+            {readiness}
+          </div>
+        )}
 
         <div className="report-preview-shell-stage">
           <div className="report-preview-shell-paper">

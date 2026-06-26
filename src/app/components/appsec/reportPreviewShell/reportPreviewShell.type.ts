@@ -15,6 +15,7 @@ export interface ReportPreviewShellProps {
   autoSaved?: boolean;
   preview: ReactNode;
   dataView?: ReactNode;
+  readiness?: ReactNode;
   activeTab?: ReportPreviewShellTab;
   onActiveTabChange?: (tab: ReportPreviewShellTab) => void;
   previewTabRef?: Ref<HTMLButtonElement>;

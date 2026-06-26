@@ -4,6 +4,7 @@ import type {
   Report,
   ReportPreviewRequest,
   ReportPreviewSnapshot,
+  ReportReadinessResult,
   ReportView,
 } from '~/domain';
 import {
@@ -11,6 +12,7 @@ import {
   createReportRequestSchema,
   reportPreviewRequestSchema,
   reportPreviewSnapshotSchema,
+  reportReadinessResultSchema,
   reportResponseSchema,
 } from '~/domain/schemas';
 
@@ -28,6 +30,11 @@ export interface ReportService {
     input: ReportPreviewRequest,
     signal?: AbortSignal,
   ): Promise<ReportPreviewSnapshot>;
+  readiness(
+    reportId: string,
+    input: ReportPreviewRequest,
+    signal?: AbortSignal,
+  ): Promise<ReportReadinessResult>;
 }
 
 export const createReportService = (
@@ -92,6 +99,28 @@ export const createReportService = (
     if (!parsed.success) {
       throw new ApiResponseParseError(
         'Unable to validate the report preview response.',
+      );
+    }
+
+    return parsed.data;
+  },
+
+  async readiness(reportId, input, signal) {
+    const validatedRequest = reportPreviewRequestSchema.parse(input);
+    const response = await requestData<unknown>(
+      request,
+      `/api/reports/${reportId}/readiness`,
+      {
+        method: 'POST',
+        body: validatedRequest,
+        signal,
+      },
+    );
+    const parsed = reportReadinessResultSchema.safeParse(response);
+
+    if (!parsed.success) {
+      throw new ApiResponseParseError(
+        'Unable to validate the Report readiness response.',
       );
     }
 
