@@ -1,8 +1,12 @@
 import type {
+  DateFormat,
   ReportBrandingMode,
   Settings,
 } from '../../../src/domain/settings.js';
-import { REPORT_BRANDING_MODES } from '../../../src/domain/settings.js';
+import {
+  DATE_FORMATS,
+  REPORT_BRANDING_MODES,
+} from '../../../src/domain/settings.js';
 import type { CreateSettingsInput } from '../../../src/domain/settings.js';
 import { generateId } from '../../utils/id.js';
 import { mapPrismaError, RepositoryNotFoundError } from '../errors.js';
@@ -26,7 +30,7 @@ type SettingsRow = {
   defaultReportTitle: string | null;
   defaultSeverity: Settings['defaultSeverity'];
   theme: Settings['theme'];
-  dateFormat: Settings['dateFormat'];
+  dateFormat: string;
   reportFooterText: string | null;
   reportConfidentialityLabel: string | null;
   methodology: string | null;
@@ -37,6 +41,20 @@ type SettingsRow = {
   defaultBrandingMode: string | null;
   createdAt: Date;
   updatedAt: Date;
+};
+
+type SettingsWriteData = Omit<
+  SettingsRow,
+  | 'id'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'dateFormat'
+  | 'allowedBrandingModes'
+  | 'defaultBrandingMode'
+> & {
+  dateFormat: DateFormat;
+  allowedBrandingModes?: ReportBrandingMode[];
+  defaultBrandingMode: ReportBrandingMode | null;
 };
 
 const settingsSelect = {
@@ -61,6 +79,9 @@ const settingsSelect = {
   updatedAt: true,
 } as const;
 
+const isDateFormat = (value: string): value is DateFormat =>
+  DATE_FORMATS.includes(value as DateFormat);
+
 const isReportBrandingMode = (value: unknown): value is ReportBrandingMode =>
   typeof value === 'string' &&
   REPORT_BRANDING_MODES.includes(value as ReportBrandingMode);
@@ -75,60 +96,78 @@ const toBrandingModes = (value: unknown): ReportBrandingMode[] | undefined => {
   return modes.length === value.length ? modes : undefined;
 };
 
-const toSettings = (row: SettingsRow): Settings => ({
-  id: row.id,
-  organisationName: toOptionalText(row.organisationName),
-  consultantName: toOptionalText(row.consultantName),
-  consultantEmail: toOptionalText(row.consultantEmail),
-  issuerLogoId: toOptionalText(row.issuerLogoId),
-  defaultReportTitle: toOptionalText(row.defaultReportTitle),
-  defaultSeverity: row.defaultSeverity,
-  theme: row.theme,
-  dateFormat: row.dateFormat,
-  reportFooterText: toOptionalText(row.reportFooterText),
-  reportConfidentialityLabel: toOptionalText(row.reportConfidentialityLabel),
-  methodology: toOptionalText(row.methodology),
-  reportStyle: toOptionalText(row.reportStyle),
-  includeEvidence: row.includeEvidence ?? undefined,
-  confidentialReports: row.confidentialReports ?? undefined,
-  allowedBrandingModes: toBrandingModes(row.allowedBrandingModes),
-  defaultBrandingMode: isReportBrandingMode(row.defaultBrandingMode)
-    ? row.defaultBrandingMode
-    : undefined,
-  createdAt: toIsoString(row.createdAt),
-  updatedAt: toIsoString(row.updatedAt),
-});
+const toSettings = (row: SettingsRow): Settings => {
+  if (!isDateFormat(row.dateFormat)) {
+    throw new Error(
+      `Unsupported date format stored in database: ${row.dateFormat}`,
+    );
+  }
+
+  return {
+    id: row.id,
+    organisationName: toOptionalText(row.organisationName),
+    consultantName: toOptionalText(row.consultantName),
+    consultantEmail: toOptionalText(row.consultantEmail),
+    issuerLogoId: toOptionalText(row.issuerLogoId),
+    defaultReportTitle: toOptionalText(row.defaultReportTitle),
+    defaultSeverity: row.defaultSeverity,
+    theme: row.theme,
+    dateFormat: row.dateFormat,
+    reportFooterText: toOptionalText(row.reportFooterText),
+    reportConfidentialityLabel: toOptionalText(row.reportConfidentialityLabel),
+    methodology: toOptionalText(row.methodology),
+    reportStyle: toOptionalText(row.reportStyle),
+    includeEvidence: row.includeEvidence ?? undefined,
+    confidentialReports: row.confidentialReports ?? undefined,
+    allowedBrandingModes: toBrandingModes(row.allowedBrandingModes),
+    defaultBrandingMode: isReportBrandingMode(row.defaultBrandingMode)
+      ? row.defaultBrandingMode
+      : undefined,
+    createdAt: toIsoString(row.createdAt),
+    updatedAt: toIsoString(row.updatedAt),
+  };
+};
 
 const mergeSettingsInput = (
   input: CreateSettingsInput,
   existing?: SettingsRow | null,
-): Omit<SettingsRow, 'id' | 'createdAt' | 'updatedAt'> => ({
-  organisationName:
-    input.organisationName ?? existing?.organisationName ?? null,
-  consultantName: input.consultantName ?? existing?.consultantName ?? null,
-  consultantEmail: input.consultantEmail ?? existing?.consultantEmail ?? null,
-  issuerLogoId: input.issuerLogoId ?? existing?.issuerLogoId ?? null,
-  defaultReportTitle:
-    input.defaultReportTitle ?? existing?.defaultReportTitle ?? null,
-  defaultSeverity: input.defaultSeverity,
-  theme: input.theme,
-  dateFormat: input.dateFormat,
-  reportFooterText:
-    input.reportFooterText ?? existing?.reportFooterText ?? null,
-  reportConfidentialityLabel:
-    input.reportConfidentialityLabel ??
-    existing?.reportConfidentialityLabel ??
-    null,
-  methodology: input.methodology ?? existing?.methodology ?? null,
-  reportStyle: input.reportStyle ?? existing?.reportStyle ?? null,
-  includeEvidence: input.includeEvidence ?? existing?.includeEvidence ?? null,
-  confidentialReports:
-    input.confidentialReports ?? existing?.confidentialReports ?? null,
-  allowedBrandingModes:
-    input.allowedBrandingModes ?? existing?.allowedBrandingModes ?? null,
-  defaultBrandingMode:
-    input.defaultBrandingMode ?? existing?.defaultBrandingMode ?? null,
-});
+): SettingsWriteData => {
+  const allowedBrandingModes =
+    input.allowedBrandingModes ??
+    toBrandingModes(existing?.allowedBrandingModes);
+
+  return {
+    organisationName:
+      input.organisationName ?? existing?.organisationName ?? null,
+    consultantName: input.consultantName ?? existing?.consultantName ?? null,
+    consultantEmail: input.consultantEmail ?? existing?.consultantEmail ?? null,
+    issuerLogoId: input.issuerLogoId ?? existing?.issuerLogoId ?? null,
+    defaultReportTitle:
+      input.defaultReportTitle ?? existing?.defaultReportTitle ?? null,
+    defaultSeverity: input.defaultSeverity,
+    theme: input.theme,
+    dateFormat: input.dateFormat,
+    reportFooterText:
+      input.reportFooterText ?? existing?.reportFooterText ?? null,
+    reportConfidentialityLabel:
+      input.reportConfidentialityLabel ??
+      existing?.reportConfidentialityLabel ??
+      null,
+    methodology: input.methodology ?? existing?.methodology ?? null,
+    reportStyle: input.reportStyle ?? existing?.reportStyle ?? null,
+    includeEvidence: input.includeEvidence ?? existing?.includeEvidence ?? null,
+    confidentialReports:
+      input.confidentialReports ?? existing?.confidentialReports ?? null,
+    ...(allowedBrandingModes !== undefined
+      ? { allowedBrandingModes: [...allowedBrandingModes] }
+      : {}),
+    defaultBrandingMode:
+      input.defaultBrandingMode ??
+      (isReportBrandingMode(existing?.defaultBrandingMode)
+        ? existing.defaultBrandingMode
+        : null),
+  };
+};
 
 export function createSettingsRepository(
   db: SettingsRepositoryDb,

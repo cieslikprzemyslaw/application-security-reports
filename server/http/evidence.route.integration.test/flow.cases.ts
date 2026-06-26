@@ -2,6 +2,20 @@ import assert from 'node:assert/strict';
 
 import type { EvidenceRouteIntegrationHarness } from './support.js';
 
+const readStoredRequestMethod = (value: unknown): string => {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error('Stored HTTP request must be a JSON object.');
+  }
+
+  const method = (value as Record<string, unknown>).method;
+
+  if (typeof method !== 'string') {
+    throw new Error('Stored HTTP request method must be a string.');
+  }
+
+  return method;
+};
+
 export const runEvidenceRouteIntegrationCases = async ({
   assessment,
   primaryThreat,
@@ -194,11 +208,9 @@ export const runEvidenceRouteIntegrationCases = async ({
     },
   });
   assert.deepEqual(
-    storedHttpEvidence?.httpExchanges.map(
-      (exchange: {
-        request: { method: string };
-        response: { statusCode: number };
-      }) => exchange.request.method,
+    // eslint-disable-next-line prettier/prettier
+    storedHttpEvidence?.httpExchanges.map((exchange: { request: unknown }) =>
+      readStoredRequestMethod(exchange.request),
     ),
     ['GET', 'POST'],
   );
@@ -240,11 +252,10 @@ export const runEvidenceRouteIntegrationCases = async ({
     },
   });
   assert.deepEqual(
+    // eslint-disable-next-line prettier/prettier
     storedAfterFailedClear?.httpExchanges.map(
-      (exchange: {
-        request: { method: string };
-        response: { statusCode: number };
-      }) => exchange.request.method,
+      (exchange: { request: unknown }) =>
+        readStoredRequestMethod(exchange.request),
     ),
     ['GET', 'POST'],
   );

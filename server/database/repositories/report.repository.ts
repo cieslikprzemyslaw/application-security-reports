@@ -66,7 +66,7 @@ const reportSelect = {
   assessmentId: true,
   selectedThreats: {
     select: { threatId: true, position: true },
-    orderBy: [{ position: 'asc' as const }, { threatId: 'asc' as const }],
+    orderBy: { position: 'asc' as const },
   },
   title: true,
   status: true,
