@@ -5,7 +5,11 @@ import {
 } from '~/app/components/routeStateViews';
 import { ApiError } from '~/services/apiClient';
 import { settingsService } from '~/services';
-import { useBeforeUnload, unstable_usePrompt } from 'react-router-dom';
+import {
+  useBeforeUnload,
+  useLocation,
+  unstable_usePrompt,
+} from 'react-router-dom';
 
 import { useThemePreference } from '~/theme';
 
@@ -26,6 +30,7 @@ import type {
 
 const SettingsRoute = () => {
   const { resolvedTheme, setThemePreference } = useThemePreference();
+  const location = useLocation();
   const [value, setValue] = useState<SettingsValue>(createEmptySettingsValue);
   const [baselineValue, setBaselineValue] = useState<SettingsValue>(
     createEmptySettingsValue,
@@ -37,6 +42,7 @@ const SettingsRoute = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | undefined>();
   const focusFieldNameRef = useRef<SettingsFieldName | undefined>();
+  const readinessFocusRequestRef = useRef<string>();
   const [focusRequestId, setFocusRequestId] = useState(0);
 
   useEffect(() => {
@@ -113,6 +119,39 @@ const SettingsRoute = () => {
     const focusTarget = document.getElementById(focusFieldName);
     focusTarget?.focus();
   }, [focusRequestId]);
+
+  useLayoutEffect(() => {
+    if (isLoading || !location.hash.startsWith('#')) {
+      return;
+    }
+
+    const requestKey = `${location.key}:${location.hash}`;
+
+    if (readinessFocusRequestRef.current === requestKey) {
+      return;
+    }
+
+    let targetId: string;
+
+    try {
+      targetId = decodeURIComponent(location.hash.slice(1));
+    } catch {
+      return;
+    }
+
+    const focusTarget = document.getElementById(targetId);
+
+    if (!focusTarget) {
+      return;
+    }
+
+    focusTarget.focus();
+    focusTarget.scrollIntoView?.({
+      block: 'center',
+      inline: 'nearest',
+    });
+    readinessFocusRequestRef.current = requestKey;
+  }, [isLoading, location.hash, location.key]);
 
   if (isLoading) {
     return <RouteLoadingView />;

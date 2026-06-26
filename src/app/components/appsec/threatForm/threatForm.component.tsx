@@ -28,6 +28,7 @@ const ThreatForm = ({
   owaspTaxonomyVersion,
   errors = {},
   isSubmitting = false,
+  focusField,
   submitLabel = 'Save finding',
   onChange,
   onSubmit,
@@ -65,18 +66,21 @@ const ThreatForm = ({
     return errorField ? fieldIdMap[errorField] : undefined;
   }, [errors]);
 
+  const requestedFocusFieldId = focusField ? fieldIdMap[focusField] : undefined;
+  const focusTargetFieldId = firstErrorFieldId ?? requestedFocusFieldId;
+
   useEffect(() => {
-    if (!firstErrorFieldId) {
+    if (!focusTargetFieldId) {
       return;
     }
 
     const field = formRef.current?.querySelector<HTMLElement>(
-      `#${firstErrorFieldId}`,
+      `#${focusTargetFieldId}`,
     );
 
     field?.scrollIntoView({ block: 'center' });
     field?.focus();
-  }, [firstErrorFieldId]);
+  }, [focusTargetFieldId]);
 
   return (
     <StyledThreatForm ref={formRef} onSubmit={onSubmit} noValidate>

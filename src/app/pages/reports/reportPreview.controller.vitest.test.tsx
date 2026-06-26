@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { act, renderWithProviders, screen, waitFor } from '~/test/render';
 
+import { ApiError } from '~/services/apiClient';
+
 import { useReportPreviewController } from './reportPreview.controller';
 import {
   previewAssessmentId,
@@ -171,6 +173,52 @@ describe('useReportPreviewController', () => {
     expect(screen.getByTestId('title')).toHaveTextContent(
       'Administration Portal',
     );
+  });
+
+  it('shows safe validation paths returned by the Preview API', async () => {
+    const loadPreview = vi.fn<ReportPreviewLoader>().mockRejectedValue(
+      new ApiError(
+        'Report preview data contains invalid values.',
+        422,
+        [
+          {
+            path: 'branding.issuerContactEmail',
+            message: 'Invalid email address',
+          },
+          {
+            path: 'selectedThreats.0.impact',
+            message: 'Text is required',
+          },
+          {
+            path: 'selectedThreats.0.impact',
+            message: 'Text is required',
+          },
+        ],
+        'VALIDATION_ERROR',
+      ),
+    );
+
+    renderWithProviders(
+      <Harness builderState={previewBuilderState} loadPreview={loadPreview} />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('status')).toHaveTextContent('error');
+      expect(screen.getByTestId('error')).toHaveTextContent(
+        'Report preview data contains invalid values.',
+      );
+      expect(screen.getByTestId('error')).toHaveTextContent(
+        'branding.issuerContactEmail: Invalid email address',
+      );
+      expect(screen.getByTestId('error')).toHaveTextContent(
+        'selectedThreats.0.impact: Text is required',
+      );
+      expect(
+        screen
+          .getByTestId('error')
+          .textContent?.match(/selectedThreats\.0\.impact: Text is required/g),
+      ).toHaveLength(1);
+    });
   });
 
   it('supports Retry for initial and same-Assessment refresh failures', async () => {

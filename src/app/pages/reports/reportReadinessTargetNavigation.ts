@@ -18,41 +18,20 @@ interface UseReportReadinessTargetNavigationOptions {
   onExternalNavigate?: ReportReadinessExternalNavigator;
 }
 
-const findResourceElement = (
-  target: ReportReadinessTarget,
-): HTMLElement | undefined =>
-  Array.from(
-    document.querySelectorAll<HTMLElement>(
-      '[data-readiness-resource-type][data-readiness-resource-id]',
-    ),
-  ).find(
-    element =>
-      element.dataset.readinessResourceType === target.resourceType &&
-      element.dataset.readinessResourceId === target.resourceId,
-  );
-
 export const findReportReadinessTargetElement = (
   target: ReportReadinessTarget,
 ): HTMLElement | undefined => {
-  if (target.resourceType === 'report') {
-    if (target.field === 'selection.evidenceIds') {
-      return (
-        document.getElementById('report-builder-include-evidence') ?? undefined
-      );
-    }
-
-    if (target.field === 'selection.threatIds') {
-      return document.getElementById('report-builder-tree-title') ?? undefined;
-    }
-
-    return document.getElementById('report-preview-shell-title') ?? undefined;
+  if (target.field === 'selection.evidenceIds') {
+    return (
+      document.getElementById('report-builder-include-evidence') ?? undefined
+    );
   }
 
-  if (target.resourceType === 'company') {
+  if (target.field === 'selection.threatIds') {
     return document.getElementById('report-builder-tree-title') ?? undefined;
   }
 
-  return findResourceElement(target);
+  return document.getElementById('report-preview-shell-title') ?? undefined;
 };
 
 export const useReportReadinessTargetNavigation = ({
@@ -65,7 +44,10 @@ export const useReportReadinessTargetNavigation = ({
 
   const activateTarget = useCallback(
     (target: ReportReadinessTarget) => {
-      if (target.resourceType === 'report' && target.field === 'brandingMode') {
+      const requiresExternalNavigation =
+        target.resourceType !== 'report' || target.field === 'brandingMode';
+
+      if (requiresExternalNavigation) {
         onExternalNavigate?.(target, builderState);
         return;
       }
@@ -96,6 +78,11 @@ export const useReportReadinessTargetNavigation = ({
       }
     };
 
+    const finish = () => {
+      cleanup();
+      setFocusTarget(undefined);
+    };
+
     const tryFocus = () => {
       if (!isActive) {
         return false;
@@ -116,7 +103,7 @@ export const useReportReadinessTargetNavigation = ({
         });
       }
 
-      cleanup();
+      finish();
       return true;
     };
 
@@ -130,9 +117,7 @@ export const useReportReadinessTargetNavigation = ({
         attributes: true,
         attributeFilter: ['hidden'],
       });
-      timeoutId = window.setTimeout(() => {
-        cleanup();
-      }, 5000);
+      timeoutId = window.setTimeout(finish, 5000);
     }
 
     return () => {

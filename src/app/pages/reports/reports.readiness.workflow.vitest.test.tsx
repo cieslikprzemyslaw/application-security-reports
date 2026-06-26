@@ -76,6 +76,39 @@ describe('Report readiness through the production Report Builder route', () => {
         });
       }
 
+      if (
+        path ===
+        `/api/companies/${previewCompanyId}/assessments/${previewAssessmentId}/overview`
+      ) {
+        return createJsonResponse({
+          data: {
+            company: {
+              id: previewCompanyId,
+              name: 'Northstar Digital',
+            },
+            assessment: {
+              id: previewAssessmentId,
+              companyId: previewCompanyId,
+              title: 'Customer Services Portal',
+              status: 'in-progress',
+              applicationName: 'Customer Services Portal',
+              environment: 'Production',
+              assessmentType: 'Web App',
+              overallRisk: 'high',
+              owaspTaxonomyVersion: '2025',
+              createdAt: '2026-06-01T00:00:00.000Z',
+              updatedAt: '2026-06-12T00:00:00.000Z',
+              recordVersion: 1,
+              findingsCount: 1,
+              evidenceCount: 0,
+              reportVersionCount: 0,
+              testerName: 'Alex Mercer',
+              availableActions: ['complete', 'archive'],
+            },
+          },
+        });
+      }
+
       if (path === `/api/threats?assessmentId=${previewAssessmentId}`) {
         return createJsonResponse({
           data: [
@@ -190,6 +223,10 @@ describe('Report readiness through the production Report Builder route', () => {
       const previewPath =
         routes.companyWorkspaceReportsPreview(previewCompanyId);
       const { container, root } = await renderApp(editorPath);
+      const findingsPath = routes.assessmentDetailsFindings(
+        previewCompanyId,
+        previewAssessmentId,
+      );
 
       await waitFor(() => {
         assert.ok(textContent(container).includes('Selection tree'));
@@ -281,14 +318,13 @@ describe('Report readiness through the production Report Builder route', () => {
       });
 
       await waitFor(() => {
-        assert.equal(window.location.pathname, editorPath);
-        const focusedThreat = findCheckbox(
-          container,
-          `threat-${previewThreatId}`,
-        );
+        assert.equal(window.location.pathname, findingsPath);
 
-        assert.ok(focusedThreat);
-        assert.equal(document.activeElement, focusedThreat);
+        const descriptionField = document.getElementById('threat-observation');
+
+        assert.ok(descriptionField);
+        assert.equal(document.activeElement, descriptionField);
+        assert.ok(document.body.textContent?.includes('Edit threat'));
       });
 
       await act(async () => {

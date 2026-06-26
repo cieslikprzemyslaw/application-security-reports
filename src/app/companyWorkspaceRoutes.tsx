@@ -6,6 +6,7 @@ import {
   useNavigate,
   useNavigationType,
   useParams,
+  type To,
 } from 'react-router-dom';
 
 import { ActivityFeed, PageHeader } from '~/app/components/common';
@@ -213,14 +214,11 @@ export const CompanyReportsRoute = ({
     });
   };
 
-  const handleReadinessTargetNavigate = (
-    target: ReportReadinessTarget,
+  const navigateFromReportBuilder = (
+    destination: To,
     builderState: ReportBuilderState,
+    state?: unknown,
   ) => {
-    if (target.resourceType !== 'report' || target.field !== 'brandingMode') {
-      return;
-    }
-
     const serializedState = serializeReportBuilderRouteState(builderState);
 
     void (async () => {
@@ -228,11 +226,65 @@ export const CompanyReportsRoute = ({
         replace: true,
         state: serializedState,
       });
-      await navigate({
-        pathname: routes.settings,
-        hash: '#organisationName',
-      });
+      await navigate(destination, { state });
     })();
+  };
+
+  const handleReadinessTargetNavigate = (
+    target: ReportReadinessTarget,
+    builderState: ReportBuilderState,
+  ) => {
+    const assessmentId = builderState.selection.selectedAssessmentId;
+
+    if (target.resourceType === 'threat' && assessmentId) {
+      const destination =
+        target.field === 'evidence'
+          ? routes.assessmentDetailsEvidence(companyId, assessmentId)
+          : routes.assessmentDetailsFindings(companyId, assessmentId);
+
+      navigateFromReportBuilder(
+        destination,
+        builderState,
+        target.field === 'evidence'
+          ? undefined
+          : { reportReadinessTarget: target },
+      );
+      return;
+    }
+
+    if (target.resourceType === 'assessment' && assessmentId) {
+      navigateFromReportBuilder(
+        routes.assessmentDetailsOverview(companyId, assessmentId),
+        builderState,
+      );
+      return;
+    }
+
+    if (target.resourceType === 'evidence' && assessmentId) {
+      navigateFromReportBuilder(
+        routes.assessmentDetailsEvidence(companyId, assessmentId),
+        builderState,
+      );
+      return;
+    }
+
+    if (target.resourceType === 'company') {
+      navigateFromReportBuilder(
+        routes.companyWorkspaceOverview(companyId),
+        builderState,
+      );
+      return;
+    }
+
+    if (target.resourceType === 'report' && target.field === 'brandingMode') {
+      navigateFromReportBuilder(
+        {
+          pathname: routes.settings,
+          hash: '#organisationName',
+        },
+        builderState,
+      );
+    }
   };
 
   const focusTarget =

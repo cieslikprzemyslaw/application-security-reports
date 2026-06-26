@@ -1,4 +1,5 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useCallback, useMemo } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import {
   EntityNotFoundView,
@@ -11,11 +12,14 @@ import { useAssessmentOverview } from './hooks/useAssessmentOverview';
 import { useAssessmentActions } from './hooks/useAssessmentActions';
 import { useAssessmentFindings } from './hooks/useAssessmentFindings';
 import { useAssessmentEvidence } from './evidence/hooks/useAssessmentEvidence';
-import AssessmentFindingsSection from './components/assessmentFindingsSection.component';
+import AssessmentFindingsSection, {
+  type AssessmentFindingsInitialEditTarget,
+} from './components/assessmentFindingsSection.component';
 import AssessmentEvidenceSection from './evidence/section/EvidenceSection';
 import AssessmentReportsSection from './reports/assessmentReportsSection.component';
 
 import type { AssessmentDetailSection } from './assessmentDetails.type';
+import type { ReportReadinessTarget } from '~/domain';
 
 interface AssessmentDetailsRouteProps {
   activeSection: AssessmentDetailSection;
@@ -32,12 +36,56 @@ const sectionHrefMap: Record<
   history: routes.assessmentDetailsHistory,
 };
 
+const threatReadinessFieldMap: Record<
+  string,
+  AssessmentFindingsInitialEditTarget['focusField']
+> = {
+  description: 'observation',
+  impact: 'risk',
+  recommendation: 'recommendation',
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const parseInitialThreatEditTarget = (
+  state: unknown,
+): AssessmentFindingsInitialEditTarget | undefined => {
+  if (!isRecord(state) || !isRecord(state.reportReadinessTarget)) {
+    return undefined;
+  }
+
+  const target = state.reportReadinessTarget as Partial<ReportReadinessTarget>;
+
+  if (
+    target.resourceType !== 'threat' ||
+    typeof target.resourceId !== 'string' ||
+    typeof target.field !== 'string'
+  ) {
+    return undefined;
+  }
+
+  const focusField = threatReadinessFieldMap[target.field];
+
+  return focusField
+    ? {
+        threatId: target.resourceId,
+        focusField,
+      }
+    : undefined;
+};
+
 const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { companyId, assessmentId } = useParams<{
     companyId?: string;
     assessmentId?: string;
   }>();
+  const initialThreatEditTarget = useMemo(
+    () => parseInitialThreatEditTarget(location.state),
+    [location.state],
+  );
 
   const {
     overview,
@@ -103,6 +151,13 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
     navigate(sectionHrefMap[section](companyId, assessmentId));
   };
 
+  const handleInitialThreatEditTargetHandled = useCallback(() => {
+    void navigate(location.pathname, {
+      replace: true,
+      state: null,
+    });
+  }, [location.pathname, navigate]);
+
   if (isLoading) {
     return <RouteLoadingView />;
   }
@@ -143,6 +198,8 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
       findingsContent={
         <AssessmentFindingsSection
           assessment={assessmentView}
+          initialEditTarget={initialThreatEditTarget}
+          onInitialEditTargetHandled={handleInitialThreatEditTargetHandled}
           {...findingsController}
         />
       }

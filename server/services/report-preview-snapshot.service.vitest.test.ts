@@ -229,6 +229,111 @@ describe('buildReportPreviewSnapshot', () => {
     expect(JSON.stringify(snapshot)).not.toContain('storageKey');
   });
 
+  it('normalizes legacy blank optional values at the public Preview boundary', () => {
+    const snapshot = buildSnapshot({
+      company: {
+        ...company,
+        description: '',
+        website: '',
+        contactName: '',
+        contactEmail: '',
+        footerText: '',
+      },
+      records: {
+        assessment: {
+          ...assessment,
+          description: '',
+          scope: '',
+          startedAt: '',
+          completedAt: '',
+          applicationName: '',
+          environment: '',
+          assessmentType: '',
+        },
+        threats: [
+          {
+            ...selectedThreat,
+            owaspCategoryCode: '',
+            customCategory: '',
+            affectedAsset: '',
+            impact: '',
+            recommendation: '',
+            remediation: '',
+            observation: '',
+            reproductionSteps: '',
+            affectedComponent: '',
+            affectedEndpoint: '',
+            risk: '',
+            references: '',
+            resolutionNote: '',
+            acceptedRiskJustification: '',
+          },
+        ],
+        evidence: [
+          {
+            ...selectedEvidence,
+            description: '',
+            content: '',
+            fileName: '',
+            mimeType: '',
+            capturedAt: '',
+            httpExchanges: [
+              {
+                ...selectedEvidence.httpExchanges![0]!,
+                response: {
+                  ...selectedEvidence.httpExchanges![0]!.response,
+                  statusText: '',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      branding: {
+        ...branding,
+        companyWebsite: '',
+        companyContactEmail: '',
+        companyFooterText: '',
+        issuerName: '',
+        issuerContactName: '',
+        issuerContactEmail: '',
+        reportFooterText: '',
+        reportConfidentialityLabel: '',
+      },
+    });
+
+    expect(snapshot.company.description).toBeUndefined();
+    expect(snapshot.company.website).toBeUndefined();
+    expect(snapshot.company.contactEmail).toBeUndefined();
+    expect(snapshot.assessment.applicationName).toBeNull();
+    expect(snapshot.assessment.startedAt).toBeUndefined();
+    expect(snapshot.selectedThreats[0]?.impact).toBeUndefined();
+    expect(snapshot.selectedThreats[0]?.recommendation).toBeUndefined();
+    expect(snapshot.selectedEvidence[0]?.fileName).toBeUndefined();
+    expect(
+      snapshot.selectedEvidence[0]?.httpExchanges?.[0]?.response.statusText,
+    ).toBeUndefined();
+    expect(snapshot.branding.issuerName).toBeUndefined();
+    expect(snapshot.branding.issuerContactEmail).toBeUndefined();
+  });
+
+  it('normalizes legacy Assessment datetimes to ISO date strings', () => {
+    const snapshot = buildSnapshot({
+      records: {
+        assessment: {
+          ...assessment,
+          startedAt: '2026-06-01T00:00:00.000Z',
+          completedAt: '2026-06-20T15:30:00.000+00:00',
+        },
+        threats: [selectedThreat],
+        evidence: [selectedEvidence],
+      },
+    });
+
+    expect(snapshot.assessment.startedAt).toBe('2026-06-01');
+    expect(snapshot.assessment.completedAt).toBe('2026-06-20');
+  });
+
   it('copies mutable snapshot input instead of retaining source references', () => {
     const warnings = ['Evidence selection is incomplete'];
     const snapshot = buildSnapshot({ warnings });

@@ -5,7 +5,7 @@ import type {
   ReportPreviewRequest,
   ReportPreviewSnapshot,
 } from '~/domain';
-import { ApiAbortError } from '~/services/apiClient';
+import { ApiAbortError, ApiError } from '~/services/apiClient';
 import { reportService } from '~/services/reportService';
 
 import { createReportPreviewRequest } from './reportPreviewRequest';
@@ -34,6 +34,38 @@ const initialState: ReportPreviewControllerState = {
 
 const createRequestKey = (request: ReportPreviewRequest | null) =>
   request ? JSON.stringify(request) : undefined;
+
+const toPreviewErrorMessage = (error: unknown): string => {
+  if (error instanceof ApiError && error.details.length > 0) {
+    const uniqueDetails = Array.from(
+      new Map(
+        error.details.map(detail => [
+          `${detail.path ?? ''}:${detail.message}`,
+          detail,
+        ]),
+      ).values(),
+    );
+    const visibleDetails = uniqueDetails.slice(0, 3);
+    const detailMessage = visibleDetails
+      .map(detail =>
+        detail.path ? `${detail.path}: ${detail.message}` : detail.message,
+      )
+      .join(' ');
+    const hiddenCount = uniqueDetails.length - visibleDetails.length;
+    const hiddenSuffix =
+      hiddenCount > 0
+        ? ` (+${hiddenCount} more validation ${
+            hiddenCount === 1 ? 'issue' : 'issues'
+          })`
+        : '';
+
+    return `${error.message} ${detailMessage}${hiddenSuffix}`;
+  }
+
+  return error instanceof Error
+    ? error.message
+    : 'Unable to generate the report preview.';
+};
 
 const toPendingState = (
   current: StoredReportPreviewControllerState,
@@ -93,10 +125,7 @@ export const useReportPreviewController = (
             current.snapshot?.assessment.id === request.assessmentId
               ? current.snapshot
               : undefined,
-          errorMessage:
-            error instanceof Error
-              ? error.message
-              : 'Unable to generate the report preview.',
+          errorMessage: toPreviewErrorMessage(error),
         }));
       });
 

@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react';
+
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import Card from '~/app/components/ui/card';
@@ -10,6 +12,12 @@ import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
 import { threatToTableRow } from '../assessmentDetails.mapper';
 import type { AssessmentDetailsAssessment } from '../assessmentDetails.type';
 import type { AssessmentFindingsController } from '../hooks/useAssessmentFindings';
+import type { ThreatFormValue } from '~/app/components/appsec/threatForm';
+
+export interface AssessmentFindingsInitialEditTarget {
+  threatId: string;
+  focusField: keyof ThreatFormValue;
+}
 
 interface AssessmentFindingsSectionProps extends Pick<
   AssessmentFindingsController,
@@ -34,6 +42,8 @@ interface AssessmentFindingsSectionProps extends Pick<
   | 'handleFindingDelete'
 > {
   assessment: AssessmentDetailsAssessment;
+  initialEditTarget?: AssessmentFindingsInitialEditTarget;
+  onInitialEditTargetHandled?: () => void;
 }
 
 const AssessmentFindingsSection = ({
@@ -57,9 +67,54 @@ const AssessmentFindingsSection = ({
   handleFindingChange,
   handleFindingSave,
   handleFindingDelete,
+  initialEditTarget,
+  onInitialEditTargetHandled,
 }: AssessmentFindingsSectionProps) => {
   const owaspTaxonomyVersion =
     assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION;
+  const handledTargetRef = useRef<string>();
+  const [readinessFocusField] = useState(initialEditTarget?.focusField);
+
+  useEffect(() => {
+    if (!initialEditTarget || isLoading) {
+      return undefined;
+    }
+
+    const targetKey = `${initialEditTarget.threatId}:${initialEditTarget.focusField}`;
+
+    if (handledTargetRef.current === targetKey) {
+      return undefined;
+    }
+
+    handledTargetRef.current = targetKey;
+    const targetThreat = threats.find(
+      threat => threat.id === initialEditTarget.threatId,
+    );
+    const frameId = window.requestAnimationFrame(() => {
+      if (targetThreat) {
+        if (canEditFindings) {
+          openEditFinding(targetThreat);
+        } else {
+          openFindingDetails(targetThreat);
+        }
+      }
+
+      onInitialEditTargetHandled?.();
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [
+    canEditFindings,
+    initialEditTarget,
+    isLoading,
+    onInitialEditTargetHandled,
+    openEditFinding,
+    openFindingDetails,
+    threats,
+  ]);
+
   const tableEmptyState =
     !isLoading && threats.length === 0 ? (
       <EmptyState
@@ -88,6 +143,7 @@ const AssessmentFindingsSection = ({
           owaspTaxonomyVersion={owaspTaxonomyVersion}
           errors={fieldErrors}
           isSubmitting={isSubmitting}
+          focusField={readinessFocusField}
           submitLabel={
             drawerMode === 'create' ? 'Create threat' : 'Save threat'
           }
