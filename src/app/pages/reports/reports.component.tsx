@@ -1,12 +1,5 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import ReportCover from '~/app/components/appsec/reportCover';
 import ReportPreviewShell from '~/app/components/appsec/reportPreviewShell';
 
 import {
@@ -21,34 +14,20 @@ import {
 import { useReportBootstrapController } from './reportBootstrap.controller';
 import ReportBuilderPreview from './reportBuilderPreview.component';
 import { useReportDraftSaveController } from './reportDraftSave.controller';
+import { useReportFinalSaveController } from './reportFinalSave.controller';
 import { useReportPreviewController } from './reportPreview.controller';
 import ReportBuilderTree from './reportBuilderTree.component';
+import ReportsShell, {
+  fallbackReportCover,
+  type ReportsShellProps,
+} from './reportsShell.component';
 
 import type { ReportBuilderSelection, ReportBuilderState } from '~/domain';
-import type { ReportCoverProps } from '~/app/components/appsec/reportCover';
 import type {
   ReportPreviewShellActionStatus,
   ReportPreviewShellTab,
 } from '~/app/components/appsec/reportPreviewShell';
 import type { ReportBuilderFocusTarget, ReportsProps } from './reports.type';
-
-const fallbackCover: ReportCoverProps = {
-  companyName: 'Company name',
-  companyWebsite: 'company.example',
-  reportId: 'REPORT-DRAFT',
-  issuedDate: 'Draft',
-  applicationName: 'Application name',
-  environment: 'Environment',
-  engagementDate: 'Not specified',
-  testerName: 'Not assigned',
-  methodology: 'OWASP ASVS / WSTG',
-  findingsCount: 0,
-  overallRisk: 'informational',
-  executiveSummary: 'Add assessment data to generate the report preview.',
-  scope: [],
-  findings: [],
-  confidential: true,
-};
 
 const formatReportVersionNumber = (version: number): string => {
   const major = Math.floor(version / 10);
@@ -56,32 +35,6 @@ const formatReportVersionNumber = (version: number): string => {
 
   return `${major}.${minor}`;
 };
-
-interface ReportsShellProps {
-  cover: ReportCoverProps;
-  dataView: React.ReactNode;
-  autoSaved: boolean;
-  onPrint?: () => void;
-  onDownloadPdf?: () => void;
-}
-
-const ReportsShell = ({
-  cover,
-  dataView,
-  autoSaved,
-  onPrint,
-  onDownloadPdf,
-}: ReportsShellProps) => (
-  <ReportPreviewShell
-    applicationName={cover.applicationName}
-    assessmentCode={cover.reportId}
-    autoSaved={autoSaved}
-    preview={<ReportCover {...cover} />}
-    dataView={dataView}
-    onPrint={onPrint}
-    onDownloadPdf={onDownloadPdf}
-  />
-);
 
 interface ReportBuilderReportsProps extends Omit<
   ReportsShellProps,
@@ -156,7 +109,19 @@ const ReportBuilderReports = ({
     assessment: bootstrapAssessment,
     bootstrapReport: bootstrapController.bootstrap,
   });
-  const { clearSelectedVersion } = draftSaveController;
+  const finalSaveController = useReportFinalSaveController({
+    builderState,
+    assessment: bootstrapAssessment,
+    bootstrapReport: bootstrapController.bootstrap,
+  });
+  const { clearSelectedVersion: clearDraftSelectedVersion } =
+    draftSaveController;
+  const { clearSelectedVersion: clearFinalSelectedVersion } =
+    finalSaveController;
+  const clearSelectedVersions = useCallback(() => {
+    clearDraftSelectedVersion();
+    clearFinalSelectedVersion();
+  }, [clearDraftSelectedVersion, clearFinalSelectedVersion]);
 
   useEffect(() => {
     builderStateRef.current = builderState;
@@ -171,13 +136,13 @@ const ReportBuilderReports = ({
       return;
     }
 
-    clearSelectedVersion();
+    clearSelectedVersions();
     builderStateRef.current = restoredState;
     setBuilderState(restoredState);
     setSelectionState(
       createReportBuilderSelectionTreeState(restoredState.selection),
     );
-  }, [clearSelectedVersion, companyId, routeState]);
+  }, [clearSelectedVersions, companyId, routeState]);
 
   useEffect(() => {
     if (focusTarget === 'preview-tab') {
@@ -194,7 +159,7 @@ const ReportBuilderReports = ({
     nextSelectionState: ReportBuilderSelectionTreeState,
     exactSelection: ReportBuilderSelection,
   ) => {
-    clearSelectedVersion();
+    clearSelectedVersions();
     setSelectionState(nextSelectionState);
     setBuilderState(current => {
       const nextState = updateReportBuilderSelection(current, {
@@ -211,7 +176,7 @@ const ReportBuilderReports = ({
   };
 
   const handleIncludeEvidenceChange = (includeEvidence: boolean) => {
-    clearSelectedVersion();
+    clearSelectedVersions();
     setBuilderState(current => {
       const nextState = updateReportBuilderConfiguration(current, {
         includeEvidence,
@@ -223,7 +188,8 @@ const ReportBuilderReports = ({
     });
   };
 
-  const selectedVersion = draftSaveController.selectedVersion;
+  const selectedVersion =
+    finalSaveController.selectedVersion ?? draftSaveController.selectedVersion;
   const displayedSnapshot =
     selectedVersion?.snapshot ?? previewController.snapshot;
   const displayedStatus = selectedVersion
@@ -246,22 +212,38 @@ const ReportBuilderReports = ({
   const selectedAssessmentId = builderState.selection.selectedAssessmentId;
   const hasCurrentAssessmentPreview =
     previewController.snapshot?.assessment.id === selectedAssessmentId;
-  const saveDraftDisabledReason = !selectedAssessmentId
-    ? 'Select an Assessment before saving a draft.'
-    : !hasCurrentAssessmentPreview
-      ? previewController.status === 'pending'
-        ? 'Wait for the report preview before saving a draft.'
-        : 'Generate a report preview before saving a draft.'
-      : undefined;
+  const saveDraftDisabledReason =
+    finalSaveController.status === 'pending'
+      ? 'Wait for the final version save to finish.'
+      : !selectedAssessmentId
+        ? 'Select an Assessment before saving a draft.'
+        : !hasCurrentAssessmentPreview
+          ? previewController.status === 'pending'
+            ? 'Wait for the report preview before saving a draft.'
+            : 'Generate a report preview before saving a draft.'
+          : undefined;
+  const saveFinalDisabledReason =
+    draftSaveController.status === 'pending'
+      ? 'Wait for the draft save to finish.'
+      : !selectedAssessmentId
+        ? 'Select an Assessment before saving a final version.'
+        : !hasCurrentAssessmentPreview
+          ? previewController.status === 'pending'
+            ? 'Wait for the report preview before saving a final version.'
+            : 'Generate a report preview before saving a final version.'
+          : undefined;
+  const activeSaveController = finalSaveController.message
+    ? finalSaveController
+    : draftSaveController;
 
   const reportActionStatus: ReportPreviewShellActionStatus | undefined =
-    draftSaveController.message
+    activeSaveController.message
       ? {
-          message: draftSaveController.message,
+          message: activeSaveController.message,
           role:
-            draftSaveController.status === 'conflict' ||
-            draftSaveController.status === 'readiness' ||
-            draftSaveController.status === 'error'
+            activeSaveController.status === 'conflict' ||
+            activeSaveController.status === 'readiness' ||
+            activeSaveController.status === 'error'
               ? 'alert'
               : 'status',
         }
@@ -285,11 +267,21 @@ const ReportBuilderReports = ({
       reportActions={{
         saveDraft: {
           onActivate: () => {
+            clearFinalSelectedVersion();
             void draftSaveController.save();
           },
           isPending: draftSaveController.status === 'pending',
           isDisabled: Boolean(saveDraftDisabledReason),
           disabledReason: saveDraftDisabledReason,
+        },
+        saveAsFinal: {
+          onActivate: () => {
+            clearDraftSelectedVersion();
+            void finalSaveController.save();
+          },
+          isPending: finalSaveController.status === 'pending',
+          isDisabled: Boolean(saveFinalDisabledReason),
+          disabledReason: saveFinalDisabledReason,
         },
         primaryAction: 'saveDraft',
       }}
@@ -302,7 +294,7 @@ const ReportBuilderReports = ({
           reportId={selectedVersion?.reportId ?? builderState.reportId}
           issuedDate={selectedVersion?.generatedAt}
           onRetry={() => {
-            clearSelectedVersion();
+            clearSelectedVersions();
             previewController.retry();
           }}
         />
@@ -330,7 +322,7 @@ const ReportBuilderReports = ({
 };
 
 const Reports = ({
-  cover = fallbackCover,
+  cover = fallbackReportCover,
   companyId,
   companyName,
   dataView,
