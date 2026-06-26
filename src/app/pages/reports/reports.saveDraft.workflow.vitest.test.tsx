@@ -244,6 +244,14 @@ describe('Save draft through the production Report Builder route', () => {
         },
         brandingMode: 'issuer',
       });
+      assert.deepEqual(window.history.state.usr, {
+        companyId: previewCompanyId,
+        reportId,
+        selection: {
+          selectedAssessmentId: previewAssessmentId,
+          selectedThreatIds: [previewThreatId],
+        },
+      });
 
       await act(async () => {
         findButton(container, 'Data')?.click();

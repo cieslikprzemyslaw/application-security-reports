@@ -137,7 +137,7 @@ describe('useReportBootstrapController', () => {
     expect(result.current.reportId).toBe(reportId);
   });
 
-  it('retains the created Report and restores request selection after a pending change', async () => {
+  it('retains the created Report and preserves same-Assessment edits made while pending', async () => {
     const deferred = createDeferred<Report>();
     const createReport = vi.fn(() => deferred.promise);
     const onBuilderStateChange = vi.fn();
@@ -182,7 +182,7 @@ describe('useReportBootstrapController', () => {
       | undefined;
 
     expect(persistedState?.reportId).toBe(reportId);
-    expect(persistedState?.selection).toEqual(initialBuilderState.selection);
+    expect(persistedState?.selection).toEqual(changedBuilderState.selection);
     expect(persistedState?.configuration).toEqual(
       changedBuilderState.configuration,
     );

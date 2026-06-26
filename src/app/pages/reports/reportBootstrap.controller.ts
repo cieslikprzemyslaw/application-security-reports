@@ -167,11 +167,16 @@ export const useReportBootstrapController = ({
       const pendingRequest = createRequest
         .then(report => {
           const latestBuilderState = builderStateRef.current;
+          const latestSelection =
+            latestBuilderState.selection.selectedAssessmentId ===
+            currentState.selection.selectedAssessmentId
+              ? latestBuilderState.selection
+              : currentState.selection;
 
           const nextBuilderState = updateReportBuilderReportId(
             {
               ...latestBuilderState,
-              selection: currentState.selection,
+              selection: latestSelection,
             },
             report.id,
           );

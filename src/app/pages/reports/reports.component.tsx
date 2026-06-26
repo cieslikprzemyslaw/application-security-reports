@@ -97,6 +97,7 @@ interface ReportBuilderReportsProps extends Omit<
     view: ReportPreviewShellTab,
     state: ReportBuilderState,
   ) => void;
+  onStateChange?: (state: ReportBuilderState) => void;
 }
 
 const ReportBuilderReports = ({
@@ -108,6 +109,7 @@ const ReportBuilderReports = ({
   focusTarget,
   focusKey,
   onViewChange,
+  onStateChange,
   onPrint,
   onDownloadPdf,
 }: ReportBuilderReportsProps) => {
@@ -127,8 +129,9 @@ const ReportBuilderReports = ({
     (nextState: ReportBuilderState) => {
       builderStateRef.current = nextState;
       setBuilderState(nextState);
+      onStateChange?.(nextState);
     },
-    [],
+    [onStateChange],
   );
 
   const bootstrapController = useReportBootstrapController({
@@ -337,6 +340,7 @@ const Reports = ({
   builderFocusTarget,
   builderFocusKey,
   onBuilderViewChange,
+  onBuilderStateChange,
   onPrint,
   onDownloadPdf,
 }: ReportsProps) => {
@@ -365,6 +369,7 @@ const Reports = ({
         focusTarget={builderFocusTarget}
         focusKey={builderFocusKey}
         onViewChange={onBuilderViewChange}
+        onStateChange={onBuilderStateChange}
         onPrint={onPrint}
         onDownloadPdf={onDownloadPdf}
       />

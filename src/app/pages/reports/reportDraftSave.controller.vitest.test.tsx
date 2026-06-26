@@ -97,6 +97,54 @@ describe('useReportDraftSaveController', () => {
     expect(builderState).toEqual(createPersistedState());
   });
 
+  it('does not select a stale saved version after the builder changes while pending', async () => {
+    const deferred = createDeferred<ReportVersionResponse>();
+    const createDraft = vi.fn(() => deferred.promise);
+    const initialBuilderState = createPersistedState();
+    const changedBuilderState = updateReportBuilderSelection(
+      initialBuilderState,
+      {
+        selectedThreatIds: [],
+      },
+    );
+    const { result, rerender } = renderHook(
+      ({ builderState }: { builderState: ReportBuilderState }) =>
+        useReportDraftSaveController({
+          builderState,
+          assessment,
+          bootstrapReport: vi.fn(),
+          createDraft,
+        }),
+      {
+        initialProps: {
+          builderState: initialBuilderState,
+        },
+      },
+    );
+
+    let request!: Promise<ReportVersionResponse | undefined>;
+
+    act(() => {
+      request = result.current.save();
+    });
+
+    act(() => {
+      result.current.clearSelectedVersion();
+    });
+    rerender({ builderState: changedBuilderState });
+
+    await act(async () => {
+      deferred.resolve(savedVersion);
+      await request;
+    });
+
+    expect(result.current.status).toBe('success');
+    expect(result.current.selectedVersion).toBeUndefined();
+    expect(result.current.message).toBe(
+      'Draft saved as v0.1. The builder changed while saving, so the saved version is not selected.',
+    );
+    expect(changedBuilderState.selection.selectedThreatIds).toEqual([]);
+  });
   it('bootstraps an unsaved Report once before creating its first draft', async () => {
     const bootstrapReport = vi.fn().mockResolvedValue(reportId);
     const createDraft = vi.fn().mockResolvedValue(savedVersion);

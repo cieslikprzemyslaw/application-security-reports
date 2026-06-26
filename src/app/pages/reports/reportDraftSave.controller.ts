@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { ReportBuilderState, ReportVersionResponse } from '~/domain';
+import type {
+  ReportBuilderState,
+  ReportPreviewRequest,
+  ReportVersionResponse,
+} from '~/domain';
 import { ApiAbortError, ApiError } from '~/services/apiClient';
 import {
   reportVersionService,
@@ -48,6 +52,9 @@ const formatReportVersionNumber = (version: number): string => {
 
   return `${major}.${minor}`;
 };
+
+const createRequestKey = (request: ReportPreviewRequest): string =>
+  JSON.stringify(request);
 
 const isConflictError = (error: unknown): error is ApiError =>
   error instanceof ApiError &&
@@ -101,7 +108,7 @@ export const useReportDraftSaveController = ({
 
       const currentBuilderState = builderStateRef.current;
       const currentAssessment = assessmentRef.current;
-      let request;
+      let request: ReportPreviewRequest | null;
 
       try {
         request = createReportPreviewRequest(currentBuilderState);
@@ -136,6 +143,8 @@ export const useReportDraftSaveController = ({
         return Promise.resolve(undefined);
       }
 
+      const requestKey = createRequestKey(request);
+
       setState(current => ({
         status: 'pending',
         selectedVersion: current.selectedVersion,
@@ -150,12 +159,32 @@ export const useReportDraftSaveController = ({
         )
         .then(reportId => createDraft(reportId, request, signal))
         .then(version => {
+          let latestRequest: ReportPreviewRequest | null;
+
+          try {
+            latestRequest = createReportPreviewRequest(builderStateRef.current);
+          } catch {
+            latestRequest = null;
+          }
+
+          const versionLabel = `v${formatReportVersionNumber(version.version)}`;
+
+          if (
+            !latestRequest ||
+            createRequestKey(latestRequest) !== requestKey
+          ) {
+            setState({
+              status: 'success',
+              message: `Draft saved as ${versionLabel}. The builder changed while saving, so the saved version is not selected.`,
+            });
+
+            return version;
+          }
+
           setState({
             status: 'success',
             selectedVersion: version,
-            message: `Draft saved as v${formatReportVersionNumber(
-              version.version,
-            )}.`,
+            message: `Draft saved as ${versionLabel}.`,
           });
 
           return version;
@@ -211,6 +240,10 @@ export const useReportDraftSaveController = ({
 
   const clearSelectedVersion = useCallback(() => {
     if (pendingRequestRef.current) {
+      setState(current => ({
+        status: 'pending',
+        message: current.message ?? 'Saving draft…',
+      }));
       return;
     }
 
