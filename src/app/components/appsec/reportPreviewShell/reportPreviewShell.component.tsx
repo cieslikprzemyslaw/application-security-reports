@@ -23,6 +23,8 @@ const ReportPreviewShell = ({
   onActiveTabChange,
   previewTabRef,
   titleRef,
+  reportActions,
+  reportActionStatus,
   onPrint,
   onDownloadPdf,
 }: ReportPreviewShellProps) => {
@@ -110,9 +112,21 @@ const ReportPreviewShell = ({
               </span>
             )}
 
+            {reportActionStatus && (
+              <span
+                className="report-preview-shell-action-status"
+                role={reportActionStatus.role ?? 'status'}
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                {reportActionStatus.message}
+              </span>
+            )}
+
             <ReportActions
-              onPrint={handlePrint}
-              onGeneratePdf={onDownloadPdf}
+              {...reportActions}
+              onPrint={reportActions?.onPrint ?? handlePrint}
+              onGeneratePdf={reportActions?.onGeneratePdf ?? onDownloadPdf}
             />
 
             <span
