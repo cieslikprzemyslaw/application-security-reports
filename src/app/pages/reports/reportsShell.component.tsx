@@ -27,25 +27,15 @@ export interface ReportsShellProps {
   cover: ReportCoverProps;
   dataView: ReactNode;
   autoSaved: boolean;
-  onPrint?: () => void;
-  onDownloadPdf?: () => void;
 }
 
-const ReportsShell = ({
-  cover,
-  dataView,
-  autoSaved,
-  onPrint,
-  onDownloadPdf,
-}: ReportsShellProps) => (
+const ReportsShell = ({ cover, dataView, autoSaved }: ReportsShellProps) => (
   <ReportPreviewShell
     applicationName={cover.applicationName}
     assessmentCode={cover.reportId}
     autoSaved={autoSaved}
     preview={<ReportCover {...cover} />}
     dataView={dataView}
-    onPrint={onPrint}
-    onDownloadPdf={onDownloadPdf}
   />
 );
 

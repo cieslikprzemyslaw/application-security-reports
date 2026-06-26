@@ -21,6 +21,4 @@ export interface ReportsProps {
     state: ReportBuilderState,
   ) => void;
   onBuilderStateChange?: (state: ReportBuilderState) => void;
-  onPrint?: () => void;
-  onDownloadPdf?: () => void;
 }

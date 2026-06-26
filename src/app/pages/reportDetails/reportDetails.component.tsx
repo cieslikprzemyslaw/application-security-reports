@@ -30,8 +30,6 @@ const ReportDetails = ({
   companyId,
   reportId,
   versionId,
-  onPrint,
-  onDownloadPdf,
 }: ReportDetailsProps) => {
   const state = useReportDetailsController(reportId, versionId);
   const reportsHref = routes.companyWorkspaceReports(companyId);
@@ -74,8 +72,7 @@ const ReportDetails = ({
     reportTitle: snapshot.reportTitle ?? 'Security report',
     versionLabel: `v${formatReportVersionNumber(version.version)}`,
   });
-  const handleGeneratePdf =
-    onDownloadPdf ?? (() => openReportPdfPrintFlow(pdfDocumentTitle));
+  const handleGeneratePdf = () => openReportPdfPrintFlow(pdfDocumentTitle);
 
   return (
     <ReportPreviewShell
@@ -92,8 +89,12 @@ const ReportDetails = ({
         />
       }
       dataView={<pre>{JSON.stringify(version, null, 2)}</pre>}
-      onPrint={onPrint}
-      onDownloadPdf={handleGeneratePdf}
+      reportActions={{
+        generatePdf: {
+          onActivate: handleGeneratePdf,
+        },
+        primaryAction: 'generatePdf',
+      }}
     />
   );
 };

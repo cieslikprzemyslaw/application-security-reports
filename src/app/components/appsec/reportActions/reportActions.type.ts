@@ -24,13 +24,4 @@ export interface ReportActionsProps extends Omit<
   saveAsFinal?: ReportActionConfig;
   generatePdf?: ReportActionConfig;
   primaryAction?: ReportActionName;
-
-  /** @deprecated Temporary #31 compatibility. Replace through issue #233. */
-  isGenerating?: boolean;
-
-  /** @deprecated Temporary #31 compatibility. Replace through issue #233. */
-  onPrint?: () => void;
-
-  /** @deprecated Temporary #31 compatibility. Replace through issue #233. */
-  onGeneratePdf?: () => void;
 }
