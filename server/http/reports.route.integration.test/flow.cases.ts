@@ -71,22 +71,22 @@ export const runReportsRouteIntegrationCases = async ({
     assert.equal(body.data.report.id, report.id);
     assert.equal(body.data.company.id, company.id);
     assert.deepEqual(body.data.report.selectedThreatIds, [
-      threatA.id,
       threatB.id,
+      threatA.id,
     ]);
     assert.equal(body.data.assessments.length, 1);
     assert.equal(body.data.assessments[0]?.assessment.id, assessment.id);
     assert.deepEqual(
       body.data.assessments[0]?.findings.map(finding => finding.threat.id),
-      [threatA.id, threatB.id],
+      [threatB.id, threatA.id],
     );
     assert.deepEqual(
       body.data.assessments[0]?.findings[0]?.evidence.map(item => item.id),
-      ['evd_00000000-0000-0000-0000-000000000003'],
+      [evidenceRequest.id, evidenceResponse.id],
     );
     assert.deepEqual(
       body.data.assessments[0]?.findings[1]?.evidence.map(item => item.id),
-      [evidenceRequest.id, evidenceResponse.id],
+      ['evd_00000000-0000-0000-0000-000000000003'],
     );
     assert.equal(
       'filePath' in (body.data.assessments[0]?.findings[0]?.evidence[0] ?? {}),
@@ -126,7 +126,7 @@ export const runReportsRouteIntegrationCases = async ({
       title: 'Broken report',
       status: 'draft',
       selectedThreats: {
-        create: [{ threatId: foreignThreat.id }],
+        create: [{ threatId: foreignThreat.id, position: 0 }],
       },
     },
   });

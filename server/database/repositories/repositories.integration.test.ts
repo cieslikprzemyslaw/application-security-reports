@@ -108,6 +108,19 @@ const companyArchivedAtMigrationSql = readFileSync(
   companyArchivedAtMigrationPath,
   'utf8',
 );
+const reportThreatPositionMigrationPath = path.resolve(
+  buildDir,
+  '..',
+  '..',
+  'prisma',
+  'migrations',
+  '20260625193000_add_report_threat_position',
+  'migration.sql',
+);
+const reportThreatPositionMigrationSql = readFileSync(
+  reportThreatPositionMigrationPath,
+  'utf8',
+);
 const adapterUrl = databaseUrl.startsWith('file:')
   ? `file:${databasePath}`
   : databasePath;
@@ -128,6 +141,7 @@ const Database = require('better-sqlite3') as new (databasePath: string) => {
     bootstrapDb.exec(threatMigrationSql);
     bootstrapDb.exec(evidenceMigrationSql);
     bootstrapDb.exec(companyArchivedAtMigrationSql);
+    bootstrapDb.exec(reportThreatPositionMigrationSql);
   } finally {
     bootstrapDb.close();
   }

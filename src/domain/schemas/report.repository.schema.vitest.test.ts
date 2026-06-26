@@ -4,6 +4,7 @@ import {
   createDraftReportVersionRequestSchema,
   createFinalReportVersionRequestSchema,
   createReportRequestSchema,
+  reportResponseSchema,
   reportSchema,
   reportVersionListResponseSchema,
   reportVersionResponseSchema,
@@ -65,6 +66,20 @@ describe('Report runtime schemas', () => {
         title: 'Application Security Assessment',
         selectedThreatIds: [threatId],
         executiveSummary: 'Summary',
+      }).success,
+    ).toBe(true);
+
+    expect(
+      reportResponseSchema.safeParse({
+        id: 'rpt_00000000-0000-0000-0000-000000000001',
+        assessmentId,
+        title: 'Application Security Assessment',
+        status: 'draft',
+        selectedThreatIds: [threatId],
+        latestVersion: 0,
+        executiveSummary: 'Summary',
+        createdAt: '2026-06-22T09:00:00.000Z',
+        updatedAt: '2026-06-22T09:00:00.000Z',
       }).success,
     ).toBe(true);
 
@@ -195,6 +210,31 @@ describe('Report runtime schemas', () => {
         title: 'Server-owned version',
         selectedThreatIds: [],
         latestVersion: 4,
+      }).success,
+    ).toBe(false);
+
+    expect(
+      createReportRequestSchema.safeParse({
+        assessmentId: 'wrong-assessment-id',
+        title: 'Malformed Assessment',
+        selectedThreatIds: [],
+      }).success,
+    ).toBe(false);
+
+    expect(
+      createReportRequestSchema.safeParse({
+        assessmentId,
+        title: 'Malformed Threat',
+        selectedThreatIds: ['wrong-threat-id'],
+      }).success,
+    ).toBe(false);
+
+    expect(
+      createReportRequestSchema.safeParse({
+        assessmentId,
+        title: 'Unknown field',
+        selectedThreatIds: [],
+        unknown: true,
       }).success,
     ).toBe(false);
     expect(

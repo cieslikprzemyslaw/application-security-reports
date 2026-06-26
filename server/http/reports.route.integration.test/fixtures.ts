@@ -115,7 +115,7 @@ export const seedReportsData = async (
           status: string;
           executiveSummary: string;
           selectedThreats: {
-            create: Array<{ threatId: string }>;
+            create: Array<{ threatId: string; position: number }>;
           };
         };
       }) => Promise<{ id: string }>;
@@ -266,7 +266,10 @@ export const seedReportsData = async (
       status: 'draft',
       executiveSummary: 'Executive summary',
       selectedThreats: {
-        create: [{ threatId: threatB.id }, { threatId: threatA.id }],
+        create: [
+          { threatId: threatB.id, position: 0 },
+          { threatId: threatA.id, position: 1 },
+        ],
       },
     },
   });

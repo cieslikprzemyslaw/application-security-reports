@@ -38,12 +38,12 @@ type ReportRepositoryDb = Pick<
 
 type ReportLookupDb = Pick<RepositoryClient, 'report'>;
 
-type ReportLinkDb = Pick<RepositoryClient, 'reportThreat'>;
+type ReportLinkDb = Pick<RepositoryTransactionClient, 'reportThreat'>;
 
 type ReportRow = {
   id: string;
   assessmentId: string;
-  selectedThreats: Array<{ threatId: string }>;
+  selectedThreats: Array<{ threatId: string; position: number }>;
   title: string;
   status: string;
   latestVersion: number;
@@ -65,8 +65,8 @@ const reportSelect = {
   id: true,
   assessmentId: true,
   selectedThreats: {
-    select: { threatId: true },
-    orderBy: { threatId: 'asc' },
+    select: { threatId: true, position: true },
+    orderBy: [{ position: 'asc' as const }, { threatId: 'asc' as const }],
   },
   title: true,
   status: true,
@@ -139,6 +139,16 @@ export function createReportLookupRepository(
   };
 }
 
+const toOrderedReportThreatLinks = (
+  reportId: string,
+  threatIds: readonly string[],
+) =>
+  dedupeStrings(threatIds).map((threatId, position) => ({
+    reportId,
+    threatId,
+    position,
+  }));
+
 const replaceReportThreatLinks = async (
   db: ReportLinkDb,
   reportId: string,
@@ -148,14 +158,14 @@ const replaceReportThreatLinks = async (
     where: { reportId },
   });
 
-  const uniqueThreatIds = dedupeStrings(threatIds);
+  const links = toOrderedReportThreatLinks(reportId, threatIds);
 
-  if (uniqueThreatIds.length === 0) {
+  if (links.length === 0) {
     return;
   }
 
   await db.reportThreat.createMany({
-    data: uniqueThreatIds.map(threatId => ({ reportId, threatId })),
+    data: links,
   });
 };
 
@@ -179,23 +189,30 @@ export function createReportRepository(
       try {
         return await db.$transaction(
           async (tx: RepositoryTransactionClient) => {
+            const reportId = generateId('report');
+            const selectedThreatLinks = input.selectedThreatIds
+              ? toOrderedReportThreatLinks(reportId, input.selectedThreatIds)
+              : [];
+
             const report = await tx.report.create({
               data: {
-                id: generateId('report'),
+                id: reportId,
                 assessmentId: input.assessmentId,
                 title: input.title,
                 status: input.status,
                 latestVersion: input.latestVersion,
                 executiveSummary: input.executiveSummary,
-                selectedThreats: input.selectedThreatIds
-                  ? {
-                      create: dedupeStrings(input.selectedThreatIds).map(
-                        threatId => ({
-                          threatId,
-                        }),
-                      ),
-                    }
-                  : undefined,
+                selectedThreats:
+                  selectedThreatLinks.length > 0
+                    ? {
+                        create: selectedThreatLinks.map(
+                          ({ threatId, position }) => ({
+                            threatId,
+                            position,
+                          }),
+                        ),
+                      }
+                    : undefined,
               },
               select: reportSelect,
             });
@@ -251,9 +268,23 @@ export function createReportRepository(
 
     async attachThreat(reportId, threatId) {
       try {
-        await db.reportThreat.create({
-          data: { reportId, threatId },
-        });
+        await db.$transaction(
+          async (tx: RepositoryTransactionClient): Promise<void> => {
+            const lastLink = await tx.reportThreat.findFirst({
+              where: { reportId },
+              orderBy: { position: 'desc' },
+              select: { position: true },
+            });
+
+            await tx.reportThreat.create({
+              data: {
+                reportId,
+                threatId,
+                position: (lastLink?.position ?? -1) + 1,
+              },
+            });
+          },
+        );
       } catch (error) {
         throw mapPrismaError(error);
       }

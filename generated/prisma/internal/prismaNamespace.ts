@@ -1400,7 +1400,8 @@ export type EvidenceThreatScalarFieldEnum = (typeof EvidenceThreatScalarFieldEnu
 
 export const ReportThreatScalarFieldEnum = {
   reportId: 'reportId',
-  threatId: 'threatId'
+  threatId: 'threatId',
+  position: 'position'
 } as const
 
 export type ReportThreatScalarFieldEnum = (typeof ReportThreatScalarFieldEnum)[keyof typeof ReportThreatScalarFieldEnum]

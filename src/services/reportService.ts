@@ -1,19 +1,24 @@
 import type {
   AssessmentReportListItem,
+  CreateReportRequest,
+  Report,
   ReportPreviewRequest,
   ReportPreviewSnapshot,
   ReportView,
 } from '~/domain';
 import {
   assessmentReportListResponseSchema,
+  createReportRequestSchema,
   reportPreviewRequestSchema,
   reportPreviewSnapshotSchema,
+  reportResponseSchema,
 } from '~/domain/schemas';
 
 import { ApiResponseParseError, apiRequest } from './apiClient.js';
 import { requestData, type ApiRequestFn } from './serviceHelpers.js';
 
 export interface ReportService {
+  create(input: CreateReportRequest, signal?: AbortSignal): Promise<Report>;
   listByAssessmentId(
     assessmentId: string,
     signal?: AbortSignal,
@@ -28,6 +33,24 @@ export interface ReportService {
 export const createReportService = (
   request: ApiRequestFn = apiRequest,
 ): ReportService => ({
+  async create(input, signal) {
+    const validatedRequest = createReportRequestSchema.parse(input);
+    const response = await requestData<unknown>(request, '/api/reports', {
+      method: 'POST',
+      body: validatedRequest,
+      signal,
+    });
+    const parsed = reportResponseSchema.safeParse(response);
+
+    if (!parsed.success) {
+      throw new ApiResponseParseError(
+        'Unable to validate the created Report response.',
+      );
+    }
+
+    return parsed.data;
+  },
+
   async listByAssessmentId(assessmentId, signal) {
     const response = await requestData<unknown>(request, '/api/reports', {
       method: 'GET',

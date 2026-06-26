@@ -9,9 +9,13 @@ import type {
   ReportView,
   ReportViewEvidence,
 } from '../../src/domain/report-view.js';
-import type { ReportSnapshot } from '../../src/domain/report.js';
+import type {
+  CreateReportRequest,
+  ReportSnapshot,
+} from '../../src/domain/report.js';
 import {
   assessmentReportListResponseSchema,
+  createReportRequestSchema,
   reportListQuerySchema,
   reportRouteParamsSchema,
   reportViewSchema,
@@ -26,6 +30,7 @@ import type { ReportRepository } from '../database/repositories/report.repositor
 import type { SettingsRepository } from '../database/repositories/settings.repository.js';
 import type { ThreatRepository } from '../database/repositories/threat.repository.js';
 import type { Evidence } from '../../src/domain/evidence.js';
+import { createReportRouteHandler } from './reports.create.route.js';
 
 type ReportRepositoryOperation = 'list' | 'retrieve';
 
@@ -136,6 +141,24 @@ export const createReportsRouter = (
           throw error;
         }
       }
+    }),
+  );
+
+  router.post(
+    '/',
+    createRequestValidationMiddleware({
+      body: createReportRequestSchema,
+    }),
+    asyncRoute(async (_req, res) => {
+      await createReportRouteHandler(
+        res.locals.validatedRequest?.body as CreateReportRequest,
+        res,
+        {
+          reportRepository,
+          assessmentRepository,
+          threatRepository,
+        },
+      );
     }),
   );
 

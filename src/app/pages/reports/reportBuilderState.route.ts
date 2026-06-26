@@ -41,6 +41,11 @@ const mergeRouteState = (
 ): ReportBuilderState =>
   reportBuilderStateSchema.parse({
     companyId: baseState.companyId,
+    ...(routeState.reportId !== undefined
+      ? {
+          reportId: routeState.reportId,
+        }
+      : {}),
     selection: {
       ...baseState.selection,
       ...(routeState.selection?.selectedAssessmentId !== undefined
@@ -193,6 +198,11 @@ export const serializeReportBuilderRouteState = (
   const parsedState = reportBuilderStateSchema.parse(state);
   const routeState: ReportBuilderRouteState = {
     companyId: parsedState.companyId,
+    ...(parsedState.reportId !== undefined
+      ? {
+          reportId: parsedState.reportId,
+        }
+      : {}),
   };
 
   const selection = createSelectionRouteState(parsedState.selection);

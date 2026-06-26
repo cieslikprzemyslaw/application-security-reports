@@ -68,6 +68,15 @@ export const updateReportBuilderConfiguration = (
     },
   });
 
+export const updateReportBuilderReportId = (
+  state: ReportBuilderState,
+  reportId: string,
+): ReportBuilderState =>
+  reportBuilderStateSchema.parse({
+    ...state,
+    reportId: reportId.trim(),
+  });
+
 type ReportBuilderSelectionPatch = Omit<
   Partial<ReportBuilderSelection>,
   'selectedAssessmentId'

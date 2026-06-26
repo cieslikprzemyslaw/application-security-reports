@@ -150,9 +150,13 @@ const createReportDb = () => {
         calls.push({ method: 'reportThreat.createMany', args });
         return { count: 1 };
       },
+      async findFirst(args: unknown) {
+        calls.push({ method: 'reportThreat.findFirst', args });
+        return null;
+      },
       async create(args: unknown) {
         calls.push({ method: 'reportThreat.create', args });
-        return { reportId: 'rpt_123', threatId: 'thr_123' };
+        return { reportId: 'rpt_123', threatId: 'thr_123', position: 0 };
       },
       async delete(args: unknown) {
         calls.push({ method: 'reportThreat.delete', args });
@@ -286,6 +290,7 @@ const createReportDb = () => {
 
   assert.equal(report.id, reportRow.id);
   await repository.attachThreat('rpt_123', 'thr_123');
+  assert.equal(calls.at(-2)?.method, 'reportThreat.findFirst');
   assert.equal(calls.at(-1)?.method, 'reportThreat.create');
 }
 

@@ -136,6 +136,45 @@ describe('ReportBuilderTree controlled selection', () => {
     });
   });
 
+  it('establishes Assessment context from one Threat without selecting siblings', async () => {
+    const { user } = renderWithProviders(
+      <ControlledTree loadHierarchy={async () => populatedHierarchy} />,
+    );
+
+    const assessmentCheckbox = (await screen.findByRole('checkbox', {
+      name: /Customer Services Portal/,
+    })) as HTMLInputElement;
+    const threatOneCheckbox = screen.getByRole('checkbox', {
+      name: /Missing Server-Side Authorization/,
+    }) as HTMLInputElement;
+    const threatTwoCheckbox = screen.getByRole('checkbox', {
+      name: /Verbose Error Messages/,
+    }) as HTMLInputElement;
+    const evidenceOneCheckbox = screen.getByRole('checkbox', {
+      name: /Authorization note/,
+    }) as HTMLInputElement;
+    const evidenceTwoCheckbox = screen.getByRole('checkbox', {
+      name: /HTTP exchange evidence/,
+    }) as HTMLInputElement;
+
+    await user.click(threatOneCheckbox);
+
+    await waitFor(() => {
+      assert.equal(assessmentCheckbox.checked, false);
+      assert.equal(assessmentCheckbox.indeterminate, true);
+      assert.equal(threatOneCheckbox.checked, true);
+      assert.equal(threatTwoCheckbox.checked, false);
+      assert.equal(evidenceOneCheckbox.checked, true);
+      assert.equal(evidenceTwoCheckbox.checked, false);
+    });
+
+    assert.deepEqual(readControlledSelection(), {
+      selectedAssessmentId: assessmentId,
+      selectedThreatIds: [threatOneId],
+      selectedEvidenceIds: [evidenceOneId],
+    });
+  });
+
   it('keeps Evidence selection explicit when includeEvidence changes', async () => {
     const { user } = renderWithProviders(
       <ControlledTree loadHierarchy={async () => populatedHierarchy} />,
@@ -166,6 +205,7 @@ describe('ReportBuilderTree controlled selection', () => {
       assert.equal(evidenceCheckbox.checked, true);
     });
     assert.deepEqual(readControlledSelection(), {
+      selectedAssessmentId: assessmentId,
       selectedThreatIds: [],
       selectedEvidenceIds: [evidenceOneId],
     });
@@ -177,6 +217,7 @@ describe('ReportBuilderTree controlled selection', () => {
       assert.equal(evidenceCheckbox.checked, true);
     });
     assert.deepEqual(readControlledSelection(), {
+      selectedAssessmentId: assessmentId,
       selectedThreatIds: [],
       selectedEvidenceIds: [evidenceOneId],
     });
@@ -220,6 +261,7 @@ describe('ReportBuilderTree controlled selection', () => {
       assert.equal(evidenceCheckboxes[1]?.checked, false);
     });
     assert.deepEqual(readControlledSelection(), {
+      selectedAssessmentId: assessmentId,
       selectedThreatIds: [],
       selectedEvidenceIds: [evidenceOneId],
       selectedEvidenceSelections: [
@@ -234,6 +276,7 @@ describe('ReportBuilderTree controlled selection', () => {
       assert.equal(evidenceCheckboxes[1]?.checked, true);
     });
     assert.deepEqual(readControlledSelection(), {
+      selectedAssessmentId: assessmentId,
       selectedThreatIds: [],
       selectedEvidenceIds: [evidenceOneId],
       selectedEvidenceSelections: [

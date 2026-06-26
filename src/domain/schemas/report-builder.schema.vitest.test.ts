@@ -9,6 +9,7 @@ import {
 } from './report-builder.schema.js';
 
 const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
+const reportId = 'rpt_00000000-0000-0000-0000-000000000001';
 const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
 const threatId = 'thr_00000000-0000-0000-0000-000000000001';
 const evidenceId = 'evd_00000000-0000-0000-0000-000000000001';
@@ -27,6 +28,8 @@ describe('Report builder runtime schemas', () => {
     expect(
       reportBuilderRouteStateSchema.safeParse({
         companyId,
+        reportId,
+        selection: { selectedAssessmentId: assessmentId },
         configuration: { includeEvidence: true },
       }).success,
     ).toBe(true);
@@ -34,6 +37,7 @@ describe('Report builder runtime schemas', () => {
     expect(
       reportBuilderStateSchema.safeParse({
         companyId,
+        reportId,
         selection: {
           selectedAssessmentId: assessmentId,
           selectedThreatIds: [threatId],
@@ -75,6 +79,50 @@ describe('Report builder runtime schemas', () => {
       }).success,
     ).toBe(false);
 
+    expect(
+      reportBuilderStateSchema.safeParse({
+        companyId,
+        reportId: 'asm_00000000-0000-0000-0000-000000000001',
+        selection: {},
+        configuration: {},
+        branding: {},
+      }).success,
+    ).toBe(false);
+
+    const canonicalWithoutAssessment = reportBuilderStateSchema.safeParse({
+      companyId,
+      reportId,
+      selection: {},
+      configuration: {},
+      branding: {},
+    });
+
+    expect(canonicalWithoutAssessment.success).toBe(false);
+
+    if (!canonicalWithoutAssessment.success) {
+      expect(canonicalWithoutAssessment.error.issues).toContainEqual(
+        expect.objectContaining({
+          path: ['selection', 'selectedAssessmentId'],
+          message: 'A persisted Report requires a selected Assessment.',
+        }),
+      );
+    }
+
+    const routeWithoutAssessment = reportBuilderRouteStateSchema.safeParse({
+      companyId,
+      reportId,
+    });
+
+    expect(routeWithoutAssessment.success).toBe(false);
+
+    if (!routeWithoutAssessment.success) {
+      expect(routeWithoutAssessment.error.issues).toContainEqual(
+        expect.objectContaining({
+          path: ['selection', 'selectedAssessmentId'],
+          message: 'A persisted Report requires a selected Assessment.',
+        }),
+      );
+    }
     expect(
       reportBuilderSelectionSchema.safeParse({
         selectedAssessmentId: assessmentId,
@@ -121,6 +169,7 @@ describe('Report builder runtime schemas', () => {
     expect(
       reportBuilderStateSchema.safeParse({
         companyId,
+        reportId,
         selection: {
           selectedAssessmentId: assessmentId,
           selectedThreatIds: [threatId],

@@ -20,40 +20,64 @@ export type ReportThreatModel = runtime.Types.Result.DefaultSelection<Prisma.$Re
 
 export type AggregateReportThreat = {
   _count: ReportThreatCountAggregateOutputType | null
+  _avg: ReportThreatAvgAggregateOutputType | null
+  _sum: ReportThreatSumAggregateOutputType | null
   _min: ReportThreatMinAggregateOutputType | null
   _max: ReportThreatMaxAggregateOutputType | null
+}
+
+export type ReportThreatAvgAggregateOutputType = {
+  position: number | null
+}
+
+export type ReportThreatSumAggregateOutputType = {
+  position: number | null
 }
 
 export type ReportThreatMinAggregateOutputType = {
   reportId: string | null
   threatId: string | null
+  position: number | null
 }
 
 export type ReportThreatMaxAggregateOutputType = {
   reportId: string | null
   threatId: string | null
+  position: number | null
 }
 
 export type ReportThreatCountAggregateOutputType = {
   reportId: number
   threatId: number
+  position: number
   _all: number
 }
 
 
+export type ReportThreatAvgAggregateInputType = {
+  position?: true
+}
+
+export type ReportThreatSumAggregateInputType = {
+  position?: true
+}
+
 export type ReportThreatMinAggregateInputType = {
   reportId?: true
   threatId?: true
+  position?: true
 }
 
 export type ReportThreatMaxAggregateInputType = {
   reportId?: true
   threatId?: true
+  position?: true
 }
 
 export type ReportThreatCountAggregateInputType = {
   reportId?: true
   threatId?: true
+  position?: true
   _all?: true
 }
 
@@ -95,6 +119,18 @@ export type ReportThreatAggregateArgs<ExtArgs extends runtime.Types.Extensions.I
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ReportThreatAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ReportThreatSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ReportThreatMinAggregateInputType
@@ -125,6 +161,8 @@ export type ReportThreatGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   _count?: ReportThreatCountAggregateInputType | true
+  _avg?: ReportThreatAvgAggregateInputType
+  _sum?: ReportThreatSumAggregateInputType
   _min?: ReportThreatMinAggregateInputType
   _max?: ReportThreatMaxAggregateInputType
 }
@@ -132,7 +170,10 @@ export type ReportThreatGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 export type ReportThreatGroupByOutputType = {
   reportId: string
   threatId: string
+  position: number
   _count: ReportThreatCountAggregateOutputType | null
+  _avg: ReportThreatAvgAggregateOutputType | null
+  _sum: ReportThreatSumAggregateOutputType | null
   _min: ReportThreatMinAggregateOutputType | null
   _max: ReportThreatMaxAggregateOutputType | null
 }
@@ -158,6 +199,7 @@ export type ReportThreatWhereInput = {
   NOT?: Prisma.ReportThreatWhereInput | Prisma.ReportThreatWhereInput[]
   reportId?: Prisma.StringFilter<"ReportThreat"> | string
   threatId?: Prisma.StringFilter<"ReportThreat"> | string
+  position?: Prisma.IntFilter<"ReportThreat"> | number
   report?: Prisma.XOR<Prisma.ReportScalarRelationFilter, Prisma.ReportWhereInput>
   threat?: Prisma.XOR<Prisma.ThreatScalarRelationFilter, Prisma.ThreatWhereInput>
 }
@@ -165,27 +207,33 @@ export type ReportThreatWhereInput = {
 export type ReportThreatOrderByWithRelationInput = {
   reportId?: Prisma.SortOrder
   threatId?: Prisma.SortOrder
+  position?: Prisma.SortOrder
   report?: Prisma.ReportOrderByWithRelationInput
   threat?: Prisma.ThreatOrderByWithRelationInput
 }
 
 export type ReportThreatWhereUniqueInput = Prisma.AtLeast<{
+  reportId_position?: Prisma.ReportThreatReportIdPositionCompoundUniqueInput
   reportId_threatId?: Prisma.ReportThreatReportIdThreatIdCompoundUniqueInput
   AND?: Prisma.ReportThreatWhereInput | Prisma.ReportThreatWhereInput[]
   OR?: Prisma.ReportThreatWhereInput[]
   NOT?: Prisma.ReportThreatWhereInput | Prisma.ReportThreatWhereInput[]
   reportId?: Prisma.StringFilter<"ReportThreat"> | string
   threatId?: Prisma.StringFilter<"ReportThreat"> | string
+  position?: Prisma.IntFilter<"ReportThreat"> | number
   report?: Prisma.XOR<Prisma.ReportScalarRelationFilter, Prisma.ReportWhereInput>
   threat?: Prisma.XOR<Prisma.ThreatScalarRelationFilter, Prisma.ThreatWhereInput>
-}, "reportId_threatId">
+}, "reportId_threatId" | "reportId_position">
 
 export type ReportThreatOrderByWithAggregationInput = {
   reportId?: Prisma.SortOrder
   threatId?: Prisma.SortOrder
+  position?: Prisma.SortOrder
   _count?: Prisma.ReportThreatCountOrderByAggregateInput
+  _avg?: Prisma.ReportThreatAvgOrderByAggregateInput
   _max?: Prisma.ReportThreatMaxOrderByAggregateInput
   _min?: Prisma.ReportThreatMinOrderByAggregateInput
+  _sum?: Prisma.ReportThreatSumOrderByAggregateInput
 }
 
 export type ReportThreatScalarWhereWithAggregatesInput = {
@@ -194,9 +242,11 @@ export type ReportThreatScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ReportThreatScalarWhereWithAggregatesInput | Prisma.ReportThreatScalarWhereWithAggregatesInput[]
   reportId?: Prisma.StringWithAggregatesFilter<"ReportThreat"> | string
   threatId?: Prisma.StringWithAggregatesFilter<"ReportThreat"> | string
+  position?: Prisma.IntWithAggregatesFilter<"ReportThreat"> | number
 }
 
 export type ReportThreatCreateInput = {
+  position: number
   report: Prisma.ReportCreateNestedOneWithoutSelectedThreatsInput
   threat: Prisma.ThreatCreateNestedOneWithoutReportLinksInput
 }
@@ -204,9 +254,11 @@ export type ReportThreatCreateInput = {
 export type ReportThreatUncheckedCreateInput = {
   reportId: string
   threatId: string
+  position: number
 }
 
 export type ReportThreatUpdateInput = {
+  position?: Prisma.IntFieldUpdateOperationsInput | number
   report?: Prisma.ReportUpdateOneRequiredWithoutSelectedThreatsNestedInput
   threat?: Prisma.ThreatUpdateOneRequiredWithoutReportLinksNestedInput
 }
@@ -214,20 +266,23 @@ export type ReportThreatUpdateInput = {
 export type ReportThreatUncheckedUpdateInput = {
   reportId?: Prisma.StringFieldUpdateOperationsInput | string
   threatId?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ReportThreatCreateManyInput = {
   reportId: string
   threatId: string
+  position: number
 }
 
 export type ReportThreatUpdateManyMutationInput = {
-
+  position?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ReportThreatUncheckedUpdateManyInput = {
   reportId?: Prisma.StringFieldUpdateOperationsInput | string
   threatId?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ReportThreatListRelationFilter = {
@@ -240,6 +295,11 @@ export type ReportThreatOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type ReportThreatReportIdPositionCompoundUniqueInput = {
+  reportId: string
+  position: number
+}
+
 export type ReportThreatReportIdThreatIdCompoundUniqueInput = {
   reportId: string
   threatId: string
@@ -248,16 +308,27 @@ export type ReportThreatReportIdThreatIdCompoundUniqueInput = {
 export type ReportThreatCountOrderByAggregateInput = {
   reportId?: Prisma.SortOrder
   threatId?: Prisma.SortOrder
+  position?: Prisma.SortOrder
+}
+
+export type ReportThreatAvgOrderByAggregateInput = {
+  position?: Prisma.SortOrder
 }
 
 export type ReportThreatMaxOrderByAggregateInput = {
   reportId?: Prisma.SortOrder
   threatId?: Prisma.SortOrder
+  position?: Prisma.SortOrder
 }
 
 export type ReportThreatMinOrderByAggregateInput = {
   reportId?: Prisma.SortOrder
   threatId?: Prisma.SortOrder
+  position?: Prisma.SortOrder
+}
+
+export type ReportThreatSumOrderByAggregateInput = {
+  position?: Prisma.SortOrder
 }
 
 export type ReportThreatCreateNestedManyWithoutThreatInput = {
@@ -345,11 +416,13 @@ export type ReportThreatUncheckedUpdateManyWithoutReportNestedInput = {
 }
 
 export type ReportThreatCreateWithoutThreatInput = {
+  position: number
   report: Prisma.ReportCreateNestedOneWithoutSelectedThreatsInput
 }
 
 export type ReportThreatUncheckedCreateWithoutThreatInput = {
   reportId: string
+  position: number
 }
 
 export type ReportThreatCreateOrConnectWithoutThreatInput = {
@@ -383,14 +456,17 @@ export type ReportThreatScalarWhereInput = {
   NOT?: Prisma.ReportThreatScalarWhereInput | Prisma.ReportThreatScalarWhereInput[]
   reportId?: Prisma.StringFilter<"ReportThreat"> | string
   threatId?: Prisma.StringFilter<"ReportThreat"> | string
+  position?: Prisma.IntFilter<"ReportThreat"> | number
 }
 
 export type ReportThreatCreateWithoutReportInput = {
+  position: number
   threat: Prisma.ThreatCreateNestedOneWithoutReportLinksInput
 }
 
 export type ReportThreatUncheckedCreateWithoutReportInput = {
   threatId: string
+  position: number
 }
 
 export type ReportThreatCreateOrConnectWithoutReportInput = {
@@ -420,34 +496,42 @@ export type ReportThreatUpdateManyWithWhereWithoutReportInput = {
 
 export type ReportThreatCreateManyThreatInput = {
   reportId: string
+  position: number
 }
 
 export type ReportThreatUpdateWithoutThreatInput = {
+  position?: Prisma.IntFieldUpdateOperationsInput | number
   report?: Prisma.ReportUpdateOneRequiredWithoutSelectedThreatsNestedInput
 }
 
 export type ReportThreatUncheckedUpdateWithoutThreatInput = {
   reportId?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ReportThreatUncheckedUpdateManyWithoutThreatInput = {
   reportId?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ReportThreatCreateManyReportInput = {
   threatId: string
+  position: number
 }
 
 export type ReportThreatUpdateWithoutReportInput = {
+  position?: Prisma.IntFieldUpdateOperationsInput | number
   threat?: Prisma.ThreatUpdateOneRequiredWithoutReportLinksNestedInput
 }
 
 export type ReportThreatUncheckedUpdateWithoutReportInput = {
   threatId?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ReportThreatUncheckedUpdateManyWithoutReportInput = {
   threatId?: Prisma.StringFieldUpdateOperationsInput | string
+  position?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 
@@ -455,6 +539,7 @@ export type ReportThreatUncheckedUpdateManyWithoutReportInput = {
 export type ReportThreatSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   reportId?: boolean
   threatId?: boolean
+  position?: boolean
   report?: boolean | Prisma.ReportDefaultArgs<ExtArgs>
   threat?: boolean | Prisma.ThreatDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reportThreat"]>
@@ -462,6 +547,7 @@ export type ReportThreatSelect<ExtArgs extends runtime.Types.Extensions.Internal
 export type ReportThreatSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   reportId?: boolean
   threatId?: boolean
+  position?: boolean
   report?: boolean | Prisma.ReportDefaultArgs<ExtArgs>
   threat?: boolean | Prisma.ThreatDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reportThreat"]>
@@ -469,6 +555,7 @@ export type ReportThreatSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
 export type ReportThreatSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   reportId?: boolean
   threatId?: boolean
+  position?: boolean
   report?: boolean | Prisma.ReportDefaultArgs<ExtArgs>
   threat?: boolean | Prisma.ThreatDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reportThreat"]>
@@ -476,9 +563,10 @@ export type ReportThreatSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
 export type ReportThreatSelectScalar = {
   reportId?: boolean
   threatId?: boolean
+  position?: boolean
 }
 
-export type ReportThreatOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"reportId" | "threatId", ExtArgs["result"]["reportThreat"]>
+export type ReportThreatOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"reportId" | "threatId" | "position", ExtArgs["result"]["reportThreat"]>
 export type ReportThreatInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   report?: boolean | Prisma.ReportDefaultArgs<ExtArgs>
   threat?: boolean | Prisma.ThreatDefaultArgs<ExtArgs>
@@ -501,6 +589,7 @@ export type $ReportThreatPayload<ExtArgs extends runtime.Types.Extensions.Intern
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     reportId: string
     threatId: string
+    position: number
   }, ExtArgs["result"]["reportThreat"]>
   composites: {}
 }
@@ -928,6 +1017,7 @@ export interface Prisma__ReportThreatClient<T, Null = never, ExtArgs extends run
 export interface ReportThreatFieldRefs {
   readonly reportId: Prisma.FieldRef<"ReportThreat", 'String'>
   readonly threatId: Prisma.FieldRef<"ReportThreat", 'String'>
+  readonly position: Prisma.FieldRef<"ReportThreat", 'Int'>
 }
     
 

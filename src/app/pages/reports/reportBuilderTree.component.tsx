@@ -28,6 +28,7 @@ interface ReportBuilderTreeProps {
   includeEvidence: boolean;
   selection: ReportBuilderSelection;
   selectionState: ReportBuilderSelectionTreeState;
+  lockedAssessmentId?: string;
   onSelectionChange: (
     nextState: ReportBuilderSelectionTreeState,
     exactSelection: ReportBuilderSelection,
@@ -44,6 +45,7 @@ const ReportBuilderTree = ({
   companyName,
   includeEvidence,
   selectionState,
+  lockedAssessmentId,
   onSelectionChange,
   onIncludeEvidenceChange,
   loadHierarchy = reportBuilderHierarchyLoader,
@@ -160,31 +162,37 @@ const ReportBuilderTree = ({
           <ReportBuilderTreeContent
             hierarchy={hierarchy}
             selectionState={selectionState}
-            onAssessmentChange={(assessmentId, checked) => {
+            lockedAssessmentId={lockedAssessmentId}
+            onAssessmentChange={(assessment, checked) => {
               commitSelection(
                 toggleReportBuilderAssessmentSelection(
                   selectionState,
-                  assessmentId,
+                  assessment,
                   checked,
+                  lockedAssessmentId,
                 ),
               );
             }}
-            onThreatChange={(threatId, checked) => {
+            onThreatChange={(assessmentId, threatId, checked) => {
               commitSelection(
                 toggleReportBuilderThreatSelection(
                   selectionState,
+                  assessmentId,
                   threatId,
                   checked,
+                  lockedAssessmentId,
                 ),
               );
             }}
-            onEvidenceChange={(threatId, evidenceId, checked) => {
+            onEvidenceChange={(assessmentId, threatId, evidenceId, checked) => {
               commitSelection(
                 toggleReportBuilderEvidenceSelection(
                   selectionState,
+                  assessmentId,
                   threatId,
                   evidenceId,
                   checked,
+                  lockedAssessmentId,
                 ),
               );
             }}

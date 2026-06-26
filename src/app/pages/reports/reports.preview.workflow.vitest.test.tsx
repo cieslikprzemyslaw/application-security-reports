@@ -21,6 +21,9 @@ import {
   previewThreatId,
 } from './reportPreview.testFixtures';
 
+const siblingThreatId = 'thr_00000000-0000-0000-0000-000000000099';
+const siblingEvidenceId = 'evd_00000000-0000-0000-0000-000000000099';
+
 const findButton = (container: HTMLElement, label: string) =>
   Array.from(container.querySelectorAll('button')).find(
     button => button.textContent?.trim() === label,
@@ -87,6 +90,17 @@ describe('Report Builder preview through the production route', () => {
               createdAt: '2026-06-03T00:00:00.000Z',
               updatedAt: '2026-06-12T00:00:00.000Z',
             },
+            {
+              id: siblingThreatId,
+              assessmentId: previewAssessmentId,
+              title: 'Verbose Error Messages',
+              description: 'Unhandled errors disclose stack traces.',
+              severity: 'medium',
+              strideCategories: ['information-disclosure'],
+              status: 'open',
+              createdAt: '2026-06-04T00:00:00.000Z',
+              updatedAt: '2026-06-12T00:00:00.000Z',
+            },
           ],
         });
       }
@@ -102,6 +116,15 @@ describe('Report Builder preview through the production route', () => {
               title: 'Authorization evidence',
               createdAt: '2026-06-05T00:00:00.000Z',
               updatedAt: '2026-06-05T00:00:00.000Z',
+            },
+            {
+              id: siblingEvidenceId,
+              assessmentId: previewAssessmentId,
+              threatIds: [siblingThreatId],
+              type: 'note',
+              title: 'Error disclosure evidence',
+              createdAt: '2026-06-06T00:00:00.000Z',
+              updatedAt: '2026-06-06T00:00:00.000Z',
             },
           ],
         });
@@ -145,17 +168,30 @@ describe('Report Builder preview through the production route', () => {
         container,
         `assessment-${previewAssessmentId}`,
       );
+      const threatCheckbox = findCheckbox(
+        container,
+        `threat-${previewThreatId}`,
+      );
+      const siblingThreatCheckbox = findCheckbox(
+        container,
+        `threat-${siblingThreatId}`,
+      );
 
       assert.ok(includeEvidenceCheckbox);
       assert.ok(assessmentCheckbox);
+      assert.ok(threatCheckbox);
+      assert.ok(siblingThreatCheckbox);
 
       await act(async () => {
         includeEvidenceCheckbox.click();
-        assessmentCheckbox.click();
+        threatCheckbox.click();
       });
 
       await waitFor(() => {
         assert.equal(previewBodies.length, 1);
+        assert.equal(assessmentCheckbox.indeterminate, true);
+        assert.equal(threatCheckbox.checked, true);
+        assert.equal(siblingThreatCheckbox.checked, false);
       });
 
       assert.deepEqual(previewBodies[0], {
@@ -235,8 +271,20 @@ describe('Report Builder preview through the production route', () => {
         `assessment-${previewAssessmentId}`,
       );
 
+      const restoredThreatCheckbox = findCheckbox(
+        container,
+        `threat-${previewThreatId}`,
+      );
+      const restoredSiblingThreatCheckbox = findCheckbox(
+        container,
+        `threat-${siblingThreatId}`,
+      );
+
       assert.equal(restoredIncludeEvidenceCheckbox?.checked, false);
-      assert.equal(restoredAssessmentCheckbox?.checked, true);
+      assert.equal(restoredAssessmentCheckbox?.checked, false);
+      assert.equal(restoredAssessmentCheckbox?.indeterminate, true);
+      assert.equal(restoredThreatCheckbox?.checked, true);
+      assert.equal(restoredSiblingThreatCheckbox?.checked, false);
 
       await act(async () => {
         root.unmount();

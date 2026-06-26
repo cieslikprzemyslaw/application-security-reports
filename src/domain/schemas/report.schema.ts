@@ -177,4 +177,19 @@ const _reportSchemaCompatibilityCheck: ReportSchemaOutput extends Report
   ? true
   : never = true;
 
+export const reportResponseSchema = reportObjectSchema
+  .extend({
+    id: prefixedUuidSchema('rpt_', 'Report'),
+    assessmentId: prefixedUuidSchema('asm_', 'Assessment'),
+    selectedThreatIds: z.array(prefixedUuidSchema('thr_', 'Threat')),
+  })
+  .strict();
+
+type ReportResponseSchemaOutput = Required<
+  z.output<typeof reportResponseSchema>
+>;
+const _reportResponseSchemaCompatibilityCheck: ReportResponseSchemaOutput extends Report
+  ? true
+  : never = true;
+
 export const reportsFileSchema = z.array(reportSchema);

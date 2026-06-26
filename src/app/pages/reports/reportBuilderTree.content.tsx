@@ -20,9 +20,18 @@ import type {
 interface ReportBuilderTreeContentProps {
   hierarchy: ReportBuilderHierarchy;
   selectionState: ReportBuilderSelectionTreeState;
-  onAssessmentChange: (assessmentId: string, checked: boolean) => void;
-  onThreatChange: (threatId: string, checked: boolean) => void;
+  lockedAssessmentId?: string;
+  onAssessmentChange: (
+    assessment: ReportBuilderHierarchyAssessmentNode,
+    checked: boolean,
+  ) => void;
+  onThreatChange: (
+    assessmentId: string,
+    threatId: string,
+    checked: boolean,
+  ) => void;
   onEvidenceChange: (
+    assessmentId: string,
     threatId: string,
     evidenceId: string,
     checked: boolean,
@@ -85,6 +94,7 @@ const createInitialExpandedAssessmentIds = (
 const ReportBuilderTreeContent = ({
   hierarchy,
   selectionState,
+  lockedAssessmentId,
   onAssessmentChange,
   onThreatChange,
   onEvidenceChange,
@@ -134,8 +144,13 @@ const ReportBuilderTreeContent = ({
           }
           checked={branchState.checked}
           indeterminate={false}
+          disabled={
+            lockedAssessmentId !== undefined &&
+            lockedAssessmentId !== assessment.assessment.id
+          }
           onChange={event =>
             onEvidenceChange(
+              assessment.assessment.id,
               threat.threat.id,
               node.evidence.id,
               event.target.checked,
@@ -181,8 +196,16 @@ const ReportBuilderTreeContent = ({
             }
             checked={branchState.checked}
             indeterminate={branchState.indeterminate}
+            disabled={
+              lockedAssessmentId !== undefined &&
+              lockedAssessmentId !== assessment.assessment.id
+            }
             onChange={event =>
-              onThreatChange(node.threat.id, event.target.checked)
+              onThreatChange(
+                assessment.assessment.id,
+                node.threat.id,
+                event.target.checked,
+              )
             }
           />
 
@@ -241,6 +264,7 @@ const ReportBuilderTreeContent = ({
               }
               checked={branchState.checked}
               indeterminate={branchState.indeterminate}
+              disabled={lockedAssessmentId !== undefined}
               onChange={event => {
                 const checked = event.target.checked;
 
@@ -248,7 +272,7 @@ const ReportBuilderTreeContent = ({
                   setAssessmentExpanded(assessmentId, true);
                 }
 
-                onAssessmentChange(assessmentId, checked);
+                onAssessmentChange(node, checked);
               }}
             />
           </div>
