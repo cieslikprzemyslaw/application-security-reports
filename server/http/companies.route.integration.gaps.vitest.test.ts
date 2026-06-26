@@ -8,6 +8,10 @@ import {
   startCompanyApiServer,
 } from './companies.route.integration.test/helpers.js';
 
+vi.mock('../lib/prisma.js', () => ({
+  prisma: {},
+}));
+
 type ApiErrorBody = {
   error: {
     code: string;
