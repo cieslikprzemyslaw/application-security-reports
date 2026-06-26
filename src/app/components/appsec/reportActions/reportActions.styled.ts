@@ -7,12 +7,15 @@ const StyledReportActions = styled.div`
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: flex-start;
     gap: ${spacing.xxs};
 
     width: 100%;
     min-width: 0;
 
     .report-actions__action {
+      flex: 0 0 auto;
+
       min-width: 0;
       max-width: 100%;
     }
@@ -33,7 +36,7 @@ const StyledReportActions = styled.div`
       border: 0;
     }
 
-    @container (max-width: 36rem) {
+    @container (max-width: 24rem) {
       .report-actions__action {
         flex: 1 1 100%;
 

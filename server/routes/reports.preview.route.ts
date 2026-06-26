@@ -1,4 +1,5 @@
 import { Router, type Response } from 'express';
+import { ZodError } from 'zod';
 
 import type {
   ReportPreviewRequest,
@@ -8,6 +9,7 @@ import {
   reportPreviewRequestSchema,
   reportPreviewSnapshotSchema,
 } from '../../src/domain/schemas/index.js';
+import { formatValidationErrors } from '../../src/validation/index.js';
 import { RepositoryError } from '../database/errors.js';
 import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
@@ -78,6 +80,20 @@ export const handleReportPreviewGenerationError = (
     } else {
       sendApiError(res, 404, 'SETTINGS_NOT_FOUND', 'Settings not found');
     }
+    return true;
+  }
+
+  if (error instanceof ZodError) {
+    const { fields } = formatValidationErrors(error);
+
+    console.error('Invalid persisted data for report preview', error);
+    sendApiError(
+      res,
+      422,
+      'VALIDATION_ERROR',
+      'Report preview data contains invalid values.',
+      fields,
+    );
     return true;
   }
 

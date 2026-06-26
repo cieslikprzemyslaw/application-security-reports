@@ -23,17 +23,44 @@ export interface BuildReportPreviewSnapshotInput {
   warnings?: readonly string[];
 }
 
+const toOptionalPreviewText = (
+  value: string | null | undefined,
+): string | undefined => {
+  const normalized = value?.trim();
+
+  return normalized ? normalized : undefined;
+};
+
+const toNullablePreviewText = (
+  value: string | null | undefined,
+): string | null => toOptionalPreviewText(value) ?? null;
+
+const previewIsoDateTimePattern =
+  /^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+
+const toOptionalPreviewDate = (
+  value: string | null | undefined,
+): string | undefined => {
+  const normalized = toOptionalPreviewText(value);
+
+  if (!normalized) {
+    return undefined;
+  }
+
+  return previewIsoDateTimePattern.exec(normalized)?.[1] ?? normalized;
+};
+
 const copyReportPreviewCompany = (
   company: ReportPreviewCompany,
 ): ReportPreviewCompany => ({
   id: company.id,
   name: company.name,
-  description: company.description,
-  website: company.website,
-  contactName: company.contactName,
-  contactEmail: company.contactEmail,
+  description: toOptionalPreviewText(company.description),
+  website: toOptionalPreviewText(company.website),
+  contactName: toOptionalPreviewText(company.contactName),
+  contactEmail: toOptionalPreviewText(company.contactEmail),
   logoUrl: company.logoUrl ?? null,
-  footerText: company.footerText,
+  footerText: toOptionalPreviewText(company.footerText),
 });
 
 const toReportPreviewAssessment = (
@@ -42,14 +69,14 @@ const toReportPreviewAssessment = (
   id: assessment.id,
   companyId: assessment.companyId,
   title: assessment.title,
-  description: assessment.description,
-  scope: assessment.scope,
+  description: toOptionalPreviewText(assessment.description),
+  scope: toOptionalPreviewText(assessment.scope),
   status: assessment.status,
-  startedAt: assessment.startedAt,
-  completedAt: assessment.completedAt,
-  applicationName: assessment.applicationName,
-  environment: assessment.environment,
-  assessmentType: assessment.assessmentType,
+  startedAt: toOptionalPreviewDate(assessment.startedAt),
+  completedAt: toOptionalPreviewDate(assessment.completedAt),
+  applicationName: toNullablePreviewText(assessment.applicationName),
+  environment: toOptionalPreviewText(assessment.environment),
+  assessmentType: toOptionalPreviewText(assessment.assessmentType),
   overallRisk: assessment.overallRisk,
   owaspTaxonomyVersion: assessment.owaspTaxonomyVersion,
 });
@@ -62,21 +89,23 @@ const toReportPreviewThreat = (threat: Threat): ReportPreviewThreat => ({
   severity: threat.severity,
   strideCategories: [...threat.strideCategories],
   status: threat.status,
-  owaspCategoryCode: threat.owaspCategoryCode,
-  customCategory: threat.customCategory,
-  affectedAsset: threat.affectedAsset,
-  impact: threat.impact,
-  recommendation: threat.recommendation,
-  remediation: threat.remediation,
-  observation: threat.observation,
-  reproductionSteps: threat.reproductionSteps,
-  affectedComponent: threat.affectedComponent,
-  affectedEndpoint: threat.affectedEndpoint,
-  risk: threat.risk,
-  references: threat.references,
+  owaspCategoryCode: toOptionalPreviewText(threat.owaspCategoryCode),
+  customCategory: toOptionalPreviewText(threat.customCategory),
+  affectedAsset: toOptionalPreviewText(threat.affectedAsset),
+  impact: toOptionalPreviewText(threat.impact),
+  recommendation: toOptionalPreviewText(threat.recommendation),
+  remediation: toOptionalPreviewText(threat.remediation),
+  observation: toOptionalPreviewText(threat.observation),
+  reproductionSteps: toOptionalPreviewText(threat.reproductionSteps),
+  affectedComponent: toOptionalPreviewText(threat.affectedComponent),
+  affectedEndpoint: toOptionalPreviewText(threat.affectedEndpoint),
+  risk: toOptionalPreviewText(threat.risk),
+  references: toOptionalPreviewText(threat.references),
   evidenceCount: threat.evidenceCount,
-  resolutionNote: threat.resolutionNote,
-  acceptedRiskJustification: threat.acceptedRiskJustification,
+  resolutionNote: toOptionalPreviewText(threat.resolutionNote),
+  acceptedRiskJustification: toOptionalPreviewText(
+    threat.acceptedRiskJustification,
+  ),
 });
 
 const copyHttpExchange = (
@@ -92,7 +121,7 @@ const copyHttpExchange = (
   },
   response: {
     statusCode: exchange.response.statusCode,
-    statusText: exchange.response.statusText,
+    statusText: toOptionalPreviewText(exchange.response.statusText),
     headers: exchange.response.headers
       ? { ...exchange.response.headers }
       : undefined,
@@ -142,12 +171,12 @@ const toReportPreviewEvidence = (
   threatIds: [...evidence.threatIds],
   type: evidence.type,
   title: evidence.title,
-  description: evidence.description,
-  content: evidence.content,
-  fileName: evidence.fileName,
-  mimeType: evidence.mimeType,
+  description: toOptionalPreviewText(evidence.description),
+  content: toOptionalPreviewText(evidence.content),
+  fileName: toOptionalPreviewText(evidence.fileName),
+  mimeType: toOptionalPreviewText(evidence.mimeType),
   attachmentSizeBytes: evidence.attachmentSizeBytes,
-  capturedAt: evidence.capturedAt,
+  capturedAt: toOptionalPreviewText(evidence.capturedAt),
   httpExchanges: evidence.httpExchanges?.map(copyHttpExchange),
   attachmentUrl: toPublicEvidenceAttachmentUrl(evidence),
 });
@@ -158,16 +187,18 @@ const copyReportPreviewBranding = (
 ): ReportPreviewBranding => ({
   brandingMode,
   companyName: branding.companyName,
-  companyWebsite: branding.companyWebsite,
-  companyContactEmail: branding.companyContactEmail,
+  companyWebsite: toOptionalPreviewText(branding.companyWebsite),
+  companyContactEmail: toOptionalPreviewText(branding.companyContactEmail),
   companyLogoUrl: branding.companyLogoUrl,
-  companyFooterText: branding.companyFooterText,
-  issuerName: branding.issuerName,
-  issuerContactName: branding.issuerContactName,
-  issuerContactEmail: branding.issuerContactEmail,
+  companyFooterText: toOptionalPreviewText(branding.companyFooterText),
+  issuerName: toOptionalPreviewText(branding.issuerName),
+  issuerContactName: toOptionalPreviewText(branding.issuerContactName),
+  issuerContactEmail: toOptionalPreviewText(branding.issuerContactEmail),
   issuerLogoUrl: branding.issuerLogoUrl,
-  reportFooterText: branding.reportFooterText,
-  reportConfidentialityLabel: branding.reportConfidentialityLabel,
+  reportFooterText: toOptionalPreviewText(branding.reportFooterText),
+  reportConfidentialityLabel: toOptionalPreviewText(
+    branding.reportConfidentialityLabel,
+  ),
   confidentialReports: branding.confidentialReports,
   allowedBrandingModes: branding.allowedBrandingModes
     ? [...branding.allowedBrandingModes]

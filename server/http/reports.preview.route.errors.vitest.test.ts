@@ -142,6 +142,40 @@ describe('POST /api/reports/preview errors', () => {
     }
   });
 
+  it('returns safe field details for unsupported persisted preview values', async () => {
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const server = await startPreviewServer({
+      company: {
+        ...company,
+        website: 'not-a-valid-url',
+      },
+    });
+
+    try {
+      const response = await postPreview(server.baseUrl);
+      const body = await readError(response);
+
+      expect(response.status).toBe(422);
+      expect(body.error.code).toBe('VALIDATION_ERROR');
+      expect(body.error.message).toBe(
+        'Report preview data contains invalid values.',
+      );
+      expect(
+        body.error.details.some(
+          item =>
+            item.path === 'company.website' ||
+            item.path === 'branding.companyWebsite',
+        ),
+      ).toBe(true);
+      expect(JSON.stringify(body)).not.toContain('not-a-valid-url');
+    } finally {
+      consoleError.mockRestore();
+      await server.close();
+    }
+  });
+
   it('returns a safe generic error for repository failures', async () => {
     const consoleError = vi
       .spyOn(console, 'error')

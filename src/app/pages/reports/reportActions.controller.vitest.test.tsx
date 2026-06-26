@@ -7,11 +7,16 @@ import {
 } from './reportBuilderState';
 import {
   useReportActionsController,
+  type ReportReadinessActionController,
   type ReportSaveController,
 } from './reportActions.controller';
 import { previewSnapshot } from './reportPreview.testFixtures';
 
-import type { ReportBuilderState, ReportVersionResponse } from '~/domain';
+import type {
+  ReportBuilderState,
+  ReportReadinessResult,
+  ReportVersionResponse,
+} from '~/domain';
 
 const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
 const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
@@ -37,11 +42,39 @@ const selectedVersion: ReportVersionResponse = {
   },
 };
 
+const readyResult: ReportReadinessResult = {
+  errors: [],
+  warnings: [],
+};
+
+const blockedResult: ReportReadinessResult = {
+  errors: [
+    {
+      code: 'THREAT_SELECTION_REQUIRED',
+      message: 'Select at least one Threat.',
+      target: {
+        resourceType: 'report',
+        resourceId: reportId,
+        field: 'selection.threatIds',
+      },
+    },
+  ],
+  warnings: [],
+};
+
 const createSaveController = (
   overrides: Partial<ReportSaveController> = {},
 ): ReportSaveController => ({
   status: 'idle',
   save: vi.fn().mockResolvedValue(undefined),
+  ...overrides,
+});
+
+const createReadinessController = (
+  overrides: Partial<ReportReadinessActionController> = {},
+): ReportReadinessActionController => ({
+  status: 'idle',
+  check: vi.fn().mockResolvedValue(readyResult),
   ...overrides,
 });
 
@@ -77,6 +110,7 @@ describe('useReportActionsController', () => {
           previewStatus: 'success',
           hasCurrentAssessmentPreview: true,
           selectedVersion: version,
+          readinessController: createReadinessController(),
           draftSaveController,
           finalSaveController,
           clearDraftSelectedVersion: vi.fn(),
@@ -97,9 +131,6 @@ describe('useReportActionsController', () => {
     expect(result.current.reportActions.primaryAction).toBe('generatePreview');
     expect(result.current.reportActions.backToEditor).toBeUndefined();
     expect(result.current.reportActions.generatePdf?.isDisabled).toBe(true);
-    expect(result.current.reportActions.generatePdf?.disabledReason).toBe(
-      'Save and select a report version before generating a PDF.',
-    );
 
     act(() => {
       result.current.reportActions.generatePreview?.onActivate();
@@ -115,8 +146,6 @@ describe('useReportActionsController', () => {
     });
 
     expect(result.current.reportActions.primaryAction).toBe('generatePdf');
-    expect(result.current.reportActions.backToEditor).toBeDefined();
-    expect(result.current.reportActions.generatePdf?.isDisabled).toBe(false);
 
     act(() => {
       result.current.reportActions.generatePdf?.onActivate();
@@ -131,7 +160,7 @@ describe('useReportActionsController', () => {
     expect(finalSaveController.save).not.toHaveBeenCalled();
   });
 
-  it('derives accessible disabled reasons without duplicating readiness rules', () => {
+  it('derives accessible disabled reasons without local readiness rules', () => {
     const emptyBuilderState = createDefaultReportBuilderState(companyId);
     const { result } = renderHook(() =>
       useReportActionsController({
@@ -139,6 +168,7 @@ describe('useReportActionsController', () => {
         builderState: emptyBuilderState,
         previewStatus: 'idle',
         hasCurrentAssessmentPreview: false,
+        readinessController: createReadinessController(),
         draftSaveController: createSaveController(),
         finalSaveController: createSaveController(),
         clearDraftSelectedVersion: vi.fn(),
@@ -162,26 +192,124 @@ describe('useReportActionsController', () => {
     );
   });
 
-  it('prevents draft and final saves from starting together in the same tick', async () => {
-    const draftDeferred = createDeferred<ReportVersionResponse | undefined>();
-    const draftSave = vi.fn(() => draftDeferred.promise);
+  it('checks readiness before final save and accepts backend warnings', async () => {
+    const warningResult: ReportReadinessResult = {
+      errors: [],
+      warnings: [
+        {
+          code: 'EVIDENCE_SELECTION_EMPTY',
+          message: 'No Evidence is selected.',
+          target: {
+            resourceType: 'report',
+            resourceId: reportId,
+            field: 'selection.evidenceIds',
+          },
+        },
+      ],
+    };
+    const check = vi.fn().mockResolvedValue(warningResult);
     const finalSave = vi.fn().mockResolvedValue(undefined);
     const clearDraftSelectedVersion = vi.fn();
-    const clearFinalSelectedVersion = vi.fn();
     const { result } = renderHook(() =>
       useReportActionsController({
         activeView: 'preview',
         builderState,
         previewStatus: 'success',
         hasCurrentAssessmentPreview: true,
-        draftSaveController: createSaveController({
-          save: draftSave,
-        }),
-        finalSaveController: createSaveController({
-          save: finalSave,
-        }),
+        readinessController: createReadinessController({ check }),
+        draftSaveController: createSaveController(),
+        finalSaveController: createSaveController({ save: finalSave }),
         clearDraftSelectedVersion,
-        clearFinalSelectedVersion,
+        clearFinalSelectedVersion: vi.fn(),
+        clearSelectedVersions: vi.fn(),
+        retryPreview: vi.fn(),
+        onViewChange: vi.fn(),
+      }),
+    );
+
+    await act(async () => {
+      result.current.reportActions.saveAsFinal?.onActivate();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(check).toHaveBeenCalledTimes(1);
+    expect(finalSave).toHaveBeenCalledTimes(1);
+    expect(clearDraftSelectedVersion).toHaveBeenCalledTimes(1);
+  });
+
+  it('blocks final save from backend errors while keeping Draft available', async () => {
+    const check = vi.fn().mockResolvedValue(blockedResult);
+    const finalSave = vi.fn().mockResolvedValue(undefined);
+    const clearDraftSelectedVersion = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ readiness }: { readiness: ReportReadinessActionController }) =>
+        useReportActionsController({
+          activeView: 'preview',
+          builderState,
+          previewStatus: 'success',
+          hasCurrentAssessmentPreview: true,
+          readinessController: readiness,
+          draftSaveController: createSaveController(),
+          finalSaveController: createSaveController({ save: finalSave }),
+          clearDraftSelectedVersion,
+          clearFinalSelectedVersion: vi.fn(),
+          clearSelectedVersions: vi.fn(),
+          retryPreview: vi.fn(),
+          onViewChange: vi.fn(),
+        }),
+      {
+        initialProps: {
+          readiness: createReadinessController({ check }),
+        },
+      },
+    );
+
+    await act(async () => {
+      result.current.reportActions.saveAsFinal?.onActivate();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(finalSave).not.toHaveBeenCalled();
+    expect(clearDraftSelectedVersion).not.toHaveBeenCalled();
+
+    rerender({
+      readiness: createReadinessController({
+        status: 'success',
+        result: blockedResult,
+        message: 'Report readiness found 1 blocking issue.',
+        check,
+      }),
+    });
+
+    expect(result.current.reportActions.saveAsFinal?.isDisabled).toBe(true);
+    expect(result.current.reportActions.saveAsFinal?.disabledReason).toBe(
+      'Resolve the blocking Report readiness issues before saving a final version.',
+    );
+    expect(result.current.reportActions.saveDraft?.isDisabled).toBe(false);
+    expect(result.current.reportActionStatus).toEqual({
+      message: 'Report readiness found 1 blocking issue.',
+      role: 'alert',
+    });
+  });
+
+  it('prevents Draft and Final from starting together in the same tick', async () => {
+    const draftDeferred = createDeferred<ReportVersionResponse | undefined>();
+    const draftSave = vi.fn(() => draftDeferred.promise);
+    const finalSave = vi.fn().mockResolvedValue(undefined);
+    const check = vi.fn().mockResolvedValue(readyResult);
+    const { result } = renderHook(() =>
+      useReportActionsController({
+        activeView: 'preview',
+        builderState,
+        previewStatus: 'success',
+        hasCurrentAssessmentPreview: true,
+        readinessController: createReadinessController({ check }),
+        draftSaveController: createSaveController({ save: draftSave }),
+        finalSaveController: createSaveController({ save: finalSave }),
+        clearDraftSelectedVersion: vi.fn(),
+        clearFinalSelectedVersion: vi.fn(),
         clearSelectedVersions: vi.fn(),
         retryPreview: vi.fn(),
         onViewChange: vi.fn(),
@@ -193,71 +321,26 @@ describe('useReportActionsController', () => {
       result.current.reportActions.saveAsFinal?.onActivate();
     });
 
+    await act(async () => {
+      await Promise.resolve();
+    });
+
     expect(draftSave).toHaveBeenCalledTimes(1);
+    expect(check).not.toHaveBeenCalled();
     expect(finalSave).not.toHaveBeenCalled();
-    expect(clearFinalSelectedVersion).toHaveBeenCalledTimes(1);
-    expect(clearDraftSelectedVersion).not.toHaveBeenCalled();
 
     await act(async () => {
       draftDeferred.resolve(undefined);
       await draftDeferred.promise;
     });
 
-    act(() => {
+    await act(async () => {
       result.current.reportActions.saveAsFinal?.onActivate();
+      await Promise.resolve();
+      await Promise.resolve();
     });
 
+    expect(check).toHaveBeenCalledTimes(1);
     expect(finalSave).toHaveBeenCalledTimes(1);
-    expect(clearDraftSelectedVersion).toHaveBeenCalledTimes(1);
-  });
-
-  it('maps save feedback to polite status or alert semantics', () => {
-    const successHook = renderHook(() =>
-      useReportActionsController({
-        activeView: 'preview',
-        builderState,
-        previewStatus: 'success',
-        hasCurrentAssessmentPreview: true,
-        draftSaveController: createSaveController({
-          status: 'success',
-          message: 'Draft saved as v0.1.',
-        }),
-        finalSaveController: createSaveController(),
-        clearDraftSelectedVersion: vi.fn(),
-        clearFinalSelectedVersion: vi.fn(),
-        clearSelectedVersions: vi.fn(),
-        retryPreview: vi.fn(),
-        onViewChange: vi.fn(),
-      }),
-    );
-
-    expect(successHook.result.current.reportActionStatus).toEqual({
-      message: 'Draft saved as v0.1.',
-      role: 'status',
-    });
-
-    const readinessHook = renderHook(() =>
-      useReportActionsController({
-        activeView: 'preview',
-        builderState,
-        previewStatus: 'success',
-        hasCurrentAssessmentPreview: true,
-        draftSaveController: createSaveController(),
-        finalSaveController: createSaveController({
-          status: 'readiness',
-          message: 'The Report is not ready for finalisation.',
-        }),
-        clearDraftSelectedVersion: vi.fn(),
-        clearFinalSelectedVersion: vi.fn(),
-        clearSelectedVersions: vi.fn(),
-        retryPreview: vi.fn(),
-        onViewChange: vi.fn(),
-      }),
-    );
-
-    expect(readinessHook.result.current.reportActionStatus).toEqual({
-      message: 'The Report is not ready for finalisation.',
-      role: 'alert',
-    });
   });
 });

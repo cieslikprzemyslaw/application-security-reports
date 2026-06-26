@@ -10,6 +10,7 @@ import {
   prefixedUuidSchema,
   reportBrandingModeSchema,
   severitySchema,
+  strideCategorySchema,
   urlSchema,
 } from './common.schema.js';
 import { evidenceObjectSchema } from './evidence.schema.js';
@@ -144,6 +145,11 @@ export const reportPreviewThreatObjectSchema = threatObjectSchema
     evidenceCount: true,
     resolutionNote: true,
     acceptedRiskJustification: true,
+  })
+  .extend({
+    // Preview and readiness must work for incomplete draft or legacy Threats.
+    // Final-readiness rules remain backend-owned and are evaluated separately.
+    strideCategories: z.array(strideCategorySchema),
   })
   .strict();
 

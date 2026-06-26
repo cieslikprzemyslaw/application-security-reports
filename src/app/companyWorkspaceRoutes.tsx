@@ -6,6 +6,7 @@ import {
   useNavigate,
   useNavigationType,
   useParams,
+  type To,
 } from 'react-router-dom';
 
 import { ActivityFeed, PageHeader } from '~/app/components/common';
@@ -14,7 +15,11 @@ import {
   RouteLoadingView,
 } from '~/app/components/routeStateViews';
 import IconSVG from '~/app/components/ui/iconSVG';
-import type { CompanyListItem, ReportBuilderState } from '~/domain';
+import type {
+  CompanyListItem,
+  ReportBuilderState,
+  ReportReadinessTarget,
+} from '~/domain';
 import type { ReportPreviewShellTab } from '~/app/components/appsec/reportPreviewShell';
 import { routes } from '~/routes';
 
@@ -209,6 +214,79 @@ export const CompanyReportsRoute = ({
     });
   };
 
+  const navigateFromReportBuilder = (
+    destination: To,
+    builderState: ReportBuilderState,
+    state?: unknown,
+  ) => {
+    const serializedState = serializeReportBuilderRouteState(builderState);
+
+    void (async () => {
+      await navigate(location.pathname, {
+        replace: true,
+        state: serializedState,
+      });
+      await navigate(destination, { state });
+    })();
+  };
+
+  const handleReadinessTargetNavigate = (
+    target: ReportReadinessTarget,
+    builderState: ReportBuilderState,
+  ) => {
+    const assessmentId = builderState.selection.selectedAssessmentId;
+
+    if (target.resourceType === 'threat' && assessmentId) {
+      const destination =
+        target.field === 'evidence'
+          ? routes.assessmentDetailsEvidence(companyId, assessmentId)
+          : routes.assessmentDetailsFindings(companyId, assessmentId);
+
+      navigateFromReportBuilder(
+        destination,
+        builderState,
+        target.field === 'evidence'
+          ? undefined
+          : { reportReadinessTarget: target },
+      );
+      return;
+    }
+
+    if (target.resourceType === 'assessment' && assessmentId) {
+      navigateFromReportBuilder(
+        routes.assessmentDetailsOverview(companyId, assessmentId),
+        builderState,
+      );
+      return;
+    }
+
+    if (target.resourceType === 'evidence' && assessmentId) {
+      navigateFromReportBuilder(
+        routes.assessmentDetailsEvidence(companyId, assessmentId),
+        builderState,
+      );
+      return;
+    }
+
+    if (target.resourceType === 'company') {
+      navigateFromReportBuilder(
+        routes.companyWorkspaceOverview(companyId),
+        builderState,
+      );
+      return;
+    }
+
+    if (target.resourceType === 'report' && target.field === 'brandingMode') {
+      navigateFromReportBuilder(
+        {
+          pathname: routes.settings,
+          hash: '#organisationName',
+        },
+        builderState,
+      );
+    }
+  };
+
   const focusTarget =
     view === 'preview'
       ? 'preview-heading'
@@ -228,6 +306,7 @@ export const CompanyReportsRoute = ({
       builderFocusKey={location.key}
       onBuilderViewChange={handleViewChange}
       onBuilderStateChange={handleBuilderStateChange}
+      onReadinessTargetNavigate={handleReadinessTargetNavigate}
     />
   );
 };

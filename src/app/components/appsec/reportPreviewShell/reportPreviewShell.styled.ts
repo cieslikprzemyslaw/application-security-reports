@@ -75,9 +75,25 @@ const StyledReportPreviewShell = styled.div.attrs({
 
     .report-preview-shell-actions {
       display: flex;
+      flex: 1 1 auto;
       flex-wrap: wrap;
       align-items: center;
+      justify-content: flex-start;
       gap: ${spacing.xxs};
+
+      min-width: 0;
+
+      .report-actions {
+        justify-content: flex-start;
+      }
+
+      @media ${mq.min.tablet} {
+        justify-content: flex-end;
+
+        .report-actions {
+          justify-content: flex-end;
+        }
+      }
     }
 
     .report-preview-shell-action-status {
@@ -98,6 +114,11 @@ const StyledReportPreviewShell = styled.div.attrs({
     .report-preview-shell-auto-saved {
       color: ${colors.feedback.success};
       font-size: ${typography.body.small.size};
+    }
+
+    .report-preview-shell-readiness {
+      width: min(100%, 72rem);
+      margin: 0 auto;
     }
 
     .report-preview-shell-stage {

@@ -111,6 +111,7 @@ describe('reportPreviewShell', () => {
             assessmentCode="ASM-001"
             preview={<ThemeProbe label="Preview" />}
             dataView={<ThemeProbe label="Data" />}
+            readiness={<div data-testid="readiness">Readiness checklist</div>}
             reportActions={{
               generatePdf: {
                 onActivate: generatePdfSpy,
@@ -130,8 +131,16 @@ describe('reportPreviewShell', () => {
       '.report-preview-shell-panel--data',
     );
 
+    const readiness = container.querySelector('[data-testid="readiness"]');
+
     assert.ok(previewPanel);
     assert.ok(dataPanel);
+    assert.ok(readiness);
+    assert.equal(readiness.closest('.report-preview-shell-paper'), null);
+    assert.equal(
+      readiness.parentElement?.getAttribute('data-print-hidden'),
+      'true',
+    );
     assert.ok(
       previewPanel.classList.contains('report-preview-shell-panel--active'),
     );

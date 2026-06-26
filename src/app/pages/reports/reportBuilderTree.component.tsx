@@ -20,7 +20,7 @@ import {
   type ReportBuilderHierarchy,
 } from './reportBuilderTree.service';
 
-import type { ReportBuilderSelection } from '~/domain';
+import type { ReportBuilderSelection, ReportReadinessTarget } from '~/domain';
 
 interface ReportBuilderTreeProps {
   companyId: string;
@@ -29,6 +29,7 @@ interface ReportBuilderTreeProps {
   selection: ReportBuilderSelection;
   selectionState: ReportBuilderSelectionTreeState;
   lockedAssessmentId?: string;
+  focusTarget?: ReportReadinessTarget;
   onSelectionChange: (
     nextState: ReportBuilderSelectionTreeState,
     exactSelection: ReportBuilderSelection,
@@ -46,6 +47,7 @@ const ReportBuilderTree = ({
   includeEvidence,
   selectionState,
   lockedAssessmentId,
+  focusTarget,
   onSelectionChange,
   onIncludeEvidenceChange,
   loadHierarchy = reportBuilderHierarchyLoader,
@@ -118,6 +120,7 @@ const ReportBuilderTree = ({
           <h3
             className="report-builder-tree-title"
             id="report-builder-tree-title"
+            tabIndex={-1}
           >
             {companyName}
           </h3>
@@ -134,6 +137,8 @@ const ReportBuilderTree = ({
             label="Include selected evidence"
             description="Only explicitly selected Evidence items are included. Changing this setting does not select or clear Evidence."
             checked={includeEvidence}
+            data-readiness-resource-type="report"
+            data-readiness-field="selection.evidenceIds"
             onChange={event => onIncludeEvidenceChange(event.target.checked)}
           />
         </div>
@@ -163,6 +168,7 @@ const ReportBuilderTree = ({
             hierarchy={hierarchy}
             selectionState={selectionState}
             lockedAssessmentId={lockedAssessmentId}
+            focusTarget={focusTarget}
             onAssessmentChange={(assessment, checked) => {
               commitSelection(
                 toggleReportBuilderAssessmentSelection(

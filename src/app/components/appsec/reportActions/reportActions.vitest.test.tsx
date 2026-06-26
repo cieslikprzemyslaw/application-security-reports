@@ -218,7 +218,7 @@ describe('ReportActions', () => {
       expect(markup).toContain('no-print');
 
       expect(styles).toContain('@container');
-      expect(styles).toMatch(/max-width:\s*36rem/);
+      expect(styles).toMatch(/max-width:\s*24rem/);
       expect(styles).toMatch(/flex:\s*1 1 100%/);
       expect(styles).toMatch(/overflow-wrap:\s*anywhere/);
       expect(styles).toContain('@media print');

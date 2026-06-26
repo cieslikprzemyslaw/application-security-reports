@@ -27,6 +27,7 @@ export interface ThreatFormProps {
   owaspTaxonomyVersion: string;
   errors?: Partial<Record<keyof ThreatFormValue, string>>;
   isSubmitting?: boolean;
+  focusField?: keyof ThreatFormValue;
   submitLabel?: string;
   onChange: (value: ThreatFormValue) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;

@@ -5,7 +5,11 @@ import type {
   ReportPreviewShellActionStatus,
   ReportPreviewShellTab,
 } from '~/app/components/appsec/reportPreviewShell';
-import type { ReportBuilderState, ReportVersionResponse } from '~/domain';
+import type {
+  ReportBuilderState,
+  ReportReadinessResult,
+  ReportVersionResponse,
+} from '~/domain';
 
 import {
   createReportPdfDocumentTitle,
@@ -28,6 +32,13 @@ export interface ReportSaveController {
   save: () => Promise<ReportVersionResponse | undefined>;
 }
 
+export interface ReportReadinessActionController {
+  status: 'idle' | 'pending' | 'success' | 'error';
+  result?: ReportReadinessResult;
+  message?: string;
+  check: () => Promise<ReportReadinessResult | undefined>;
+}
+
 export type ReportPdfOpener = (documentTitle: string) => void;
 
 interface UseReportActionsControllerOptions {
@@ -36,6 +47,7 @@ interface UseReportActionsControllerOptions {
   previewStatus: ReportPreviewControllerStatus;
   hasCurrentAssessmentPreview: boolean;
   selectedVersion?: ReportVersionResponse;
+  readinessController: ReportReadinessActionController;
   draftSaveController: ReportSaveController;
   finalSaveController: ReportSaveController;
   clearDraftSelectedVersion: () => void;
@@ -70,6 +82,7 @@ export const useReportActionsController = ({
   previewStatus,
   hasCurrentAssessmentPreview,
   selectedVersion,
+  readinessController,
   draftSaveController,
   finalSaveController,
   clearDraftSelectedVersion,
@@ -79,45 +92,43 @@ export const useReportActionsController = ({
   onViewChange,
   openPdf = openReportPdfPrintFlow,
 }: UseReportActionsControllerOptions): ReportActionsControllerState => {
-  const saveLockRef = useRef<
-    Promise<ReportVersionResponse | undefined> | undefined
-  >(undefined);
+  const operationLockRef = useRef<Promise<unknown> | undefined>(undefined);
   const selectedAssessmentId = builderState.selection.selectedAssessmentId;
   const isSavePending =
     draftSaveController.status === 'pending' ||
     finalSaveController.status === 'pending';
+  const isReadinessPending = readinessController.status === 'pending';
+  const isOperationPending = isSavePending || isReadinessPending;
+  const readinessHasErrors =
+    (readinessController.result?.errors.length ?? 0) > 0;
 
-  const runSave = useCallback(
-    (
-      save: () => Promise<ReportVersionResponse | undefined>,
-      clearOtherSelectedVersion: () => void,
-    ) => {
-      if (saveLockRef.current) {
-        return;
+  const runLocked = useCallback((operation: () => Promise<unknown>) => {
+    if (operationLockRef.current) {
+      return;
+    }
+
+    const request = Promise.resolve().then(operation);
+    operationLockRef.current = request;
+
+    const releaseLock = () => {
+      if (operationLockRef.current === request) {
+        operationLockRef.current = undefined;
       }
+    };
 
-      clearOtherSelectedVersion();
-
-      const request = save();
-      saveLockRef.current = request;
-
-      const releaseLock = () => {
-        if (saveLockRef.current === request) {
-          saveLockRef.current = undefined;
-        }
-      };
-
-      void request.then(releaseLock, releaseLock);
-    },
-    [],
-  );
+    void request.then(releaseLock, releaseLock);
+  }, []);
 
   const handleBackToEditor = useCallback(() => {
     onViewChange?.('data', builderState);
   }, [builderState, onViewChange]);
 
   const handleGeneratePreview = useCallback(() => {
-    if (saveLockRef.current || isSavePending || !selectedAssessmentId) {
+    if (
+      operationLockRef.current ||
+      isOperationPending ||
+      !selectedAssessmentId
+    ) {
       return;
     }
 
@@ -127,22 +138,39 @@ export const useReportActionsController = ({
   }, [
     builderState,
     clearSelectedVersions,
-    isSavePending,
+    isOperationPending,
     onViewChange,
     retryPreview,
     selectedAssessmentId,
   ]);
 
   const handleSaveDraft = useCallback(() => {
-    runSave(draftSaveController.save, clearFinalSelectedVersion);
-  }, [clearFinalSelectedVersion, draftSaveController.save, runSave]);
+    runLocked(async () => {
+      clearFinalSelectedVersion();
+      return draftSaveController.save();
+    });
+  }, [clearFinalSelectedVersion, draftSaveController, runLocked]);
 
   const handleSaveFinal = useCallback(() => {
-    runSave(finalSaveController.save, clearDraftSelectedVersion);
-  }, [clearDraftSelectedVersion, finalSaveController.save, runSave]);
+    runLocked(async () => {
+      const readiness = await readinessController.check();
+
+      if (!readiness || readiness.errors.length > 0) {
+        return undefined;
+      }
+
+      clearDraftSelectedVersion();
+      return finalSaveController.save();
+    });
+  }, [
+    clearDraftSelectedVersion,
+    finalSaveController,
+    readinessController,
+    runLocked,
+  ]);
 
   const handleGeneratePdf = useCallback(() => {
-    if (saveLockRef.current || isSavePending || !selectedVersion) {
+    if (operationLockRef.current || isOperationPending || !selectedVersion) {
       return;
     }
 
@@ -153,17 +181,20 @@ export const useReportActionsController = ({
     });
 
     openPdf(documentTitle);
-  }, [isSavePending, openPdf, selectedVersion]);
+  }, [isOperationPending, openPdf, selectedVersion]);
 
-  const generatePreviewDisabledReason = isSavePending
-    ? 'Wait for the report save to finish.'
+  const generatePreviewDisabledReason = isOperationPending
+    ? isReadinessPending
+      ? 'Wait for the Report readiness check to finish.'
+      : 'Wait for the report save to finish.'
     : !selectedAssessmentId
       ? 'Select an Assessment before generating the preview.'
       : previewStatus === 'pending'
         ? 'Wait for the current report preview to finish.'
         : undefined;
-  const saveDraftDisabledReason =
-    finalSaveController.status === 'pending'
+  const saveDraftDisabledReason = isReadinessPending
+    ? 'Wait for the Report readiness check to finish.'
+    : finalSaveController.status === 'pending'
       ? 'Wait for the final version save to finish.'
       : !selectedAssessmentId
         ? 'Select an Assessment before saving a draft.'
@@ -175,28 +206,52 @@ export const useReportActionsController = ({
   const saveFinalDisabledReason =
     draftSaveController.status === 'pending'
       ? 'Wait for the draft save to finish.'
-      : !selectedAssessmentId
-        ? 'Select an Assessment before saving a final version.'
-        : !hasCurrentAssessmentPreview
-          ? previewStatus === 'pending'
-            ? 'Wait for the report preview before saving a final version.'
-            : 'Generate a report preview before saving a final version.'
-          : undefined;
-  const generatePdfDisabledReason = isSavePending
-    ? 'Wait for the report save to finish.'
+      : readinessHasErrors
+        ? 'Resolve the blocking Report readiness issues before saving a final version.'
+        : !selectedAssessmentId
+          ? 'Select an Assessment before saving a final version.'
+          : !hasCurrentAssessmentPreview
+            ? previewStatus === 'pending'
+              ? 'Wait for the report preview before saving a final version.'
+              : 'Generate a report preview before saving a final version.'
+            : undefined;
+  const generatePdfDisabledReason = isOperationPending
+    ? isReadinessPending
+      ? 'Wait for the Report readiness check to finish.'
+      : 'Wait for the report save to finish.'
     : !selectedVersion
       ? 'Save and select a report version before generating a PDF.'
       : undefined;
-  const activeSaveController = finalSaveController.message
-    ? finalSaveController
-    : draftSaveController;
-  const reportActionStatus: ReportPreviewShellActionStatus | undefined =
-    activeSaveController.message
-      ? {
-          message: activeSaveController.message,
-          role: isAlertStatus(activeSaveController.status) ? 'alert' : 'status',
-        }
-      : undefined;
+
+  let reportActionStatus: ReportPreviewShellActionStatus | undefined;
+
+  if (
+    readinessController.message &&
+    (readinessController.status === 'pending' ||
+      readinessController.status === 'error')
+  ) {
+    reportActionStatus = {
+      message: readinessController.message,
+      role: readinessController.status === 'error' ? 'alert' : 'status',
+    };
+  } else {
+    const activeSaveController = finalSaveController.message
+      ? finalSaveController
+      : draftSaveController;
+
+    if (activeSaveController.message) {
+      reportActionStatus = {
+        message: activeSaveController.message,
+        role: isAlertStatus(activeSaveController.status) ? 'alert' : 'status',
+      };
+    } else if (readinessController.message) {
+      reportActionStatus = {
+        message: readinessController.message,
+        role: readinessHasErrors ? 'alert' : 'status',
+      };
+    }
+  }
+
   const primaryAction =
     activeView === 'data'
       ? 'generatePreview'
@@ -226,7 +281,9 @@ export const useReportActionsController = ({
       },
       saveAsFinal: {
         onActivate: handleSaveFinal,
-        isPending: finalSaveController.status === 'pending',
+        isPending:
+          readinessController.status === 'pending' ||
+          finalSaveController.status === 'pending',
         isDisabled: Boolean(saveFinalDisabledReason),
         disabledReason: saveFinalDisabledReason,
       },

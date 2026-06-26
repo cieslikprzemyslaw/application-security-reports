@@ -9,6 +9,7 @@ import {
   previewRequest,
   settings,
   startPreviewServer,
+  threat,
   threatId,
 } from './reports.preview.route.test/support.js';
 
@@ -43,6 +44,27 @@ describe('POST /api/reports/preview success', () => {
       expect(JSON.stringify(snapshot)).not.toContain('private/evidence.txt');
       expect(JSON.stringify(snapshot)).not.toContain('C:\\private');
       expect(snapshot.warnings).toEqual([]);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('renders incomplete draft Threats without turning preview into a server error', async () => {
+    const server = await startPreviewServer({
+      threat: {
+        ...threat,
+        strideCategories: [],
+      },
+    });
+
+    try {
+      const response = await postPreview(server.baseUrl);
+      expect(response.status).toBe(200);
+
+      const body = (await response.json()) as { data: unknown };
+      const snapshot = reportPreviewSnapshotSchema.parse(body.data);
+
+      expect(snapshot.selectedThreats[0]?.strideCategories).toEqual([]);
     } finally {
       await server.close();
     }
