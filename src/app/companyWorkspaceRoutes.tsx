@@ -202,6 +202,13 @@ export const CompanyReportsRoute = ({
     })();
   };
 
+  const handleBuilderStateChange = (builderState: ReportBuilderState) => {
+    void navigate(location.pathname, {
+      replace: true,
+      state: serializeReportBuilderRouteState(builderState),
+    });
+  };
+
   const focusTarget =
     view === 'preview'
       ? 'preview-heading'
@@ -220,6 +227,7 @@ export const CompanyReportsRoute = ({
       builderFocusTarget={focusTarget}
       builderFocusKey={location.key}
       onBuilderViewChange={handleViewChange}
+      onBuilderStateChange={handleBuilderStateChange}
     />
   );
 };

@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import ReportCover from '~/app/components/appsec/reportCover';
 import ReportPreviewShell from '~/app/components/appsec/reportPreviewShell';
@@ -12,13 +18,18 @@ import {
   updateReportBuilderConfiguration,
   updateReportBuilderSelection,
 } from './reportBuilderState';
+import { useReportBootstrapController } from './reportBootstrap.controller';
 import ReportBuilderPreview from './reportBuilderPreview.component';
+import { useReportDraftSaveController } from './reportDraftSave.controller';
 import { useReportPreviewController } from './reportPreview.controller';
 import ReportBuilderTree from './reportBuilderTree.component';
 
 import type { ReportBuilderSelection, ReportBuilderState } from '~/domain';
 import type { ReportCoverProps } from '~/app/components/appsec/reportCover';
-import type { ReportPreviewShellTab } from '~/app/components/appsec/reportPreviewShell';
+import type {
+  ReportPreviewShellActionStatus,
+  ReportPreviewShellTab,
+} from '~/app/components/appsec/reportPreviewShell';
 import type { ReportBuilderFocusTarget, ReportsProps } from './reports.type';
 
 const fallbackCover: ReportCoverProps = {
@@ -37,6 +48,13 @@ const fallbackCover: ReportCoverProps = {
   scope: [],
   findings: [],
   confidential: true,
+};
+
+const formatReportVersionNumber = (version: number): string => {
+  const major = Math.floor(version / 10);
+  const minor = version % 10;
+
+  return `${major}.${minor}`;
 };
 
 interface ReportsShellProps {
@@ -79,6 +97,7 @@ interface ReportBuilderReportsProps extends Omit<
     view: ReportPreviewShellTab,
     state: ReportBuilderState,
   ) => void;
+  onStateChange?: (state: ReportBuilderState) => void;
 }
 
 const ReportBuilderReports = ({
@@ -90,6 +109,7 @@ const ReportBuilderReports = ({
   focusTarget,
   focusKey,
   onViewChange,
+  onStateChange,
   onPrint,
   onDownloadPdf,
 }: ReportBuilderReportsProps) => {
@@ -105,6 +125,39 @@ const ReportBuilderReports = ({
   const previewHeadingRef = useRef<HTMLHeadingElement>(null);
   const previewController = useReportPreviewController(builderState);
 
+  const handleBuilderStateChange = useCallback(
+    (nextState: ReportBuilderState) => {
+      builderStateRef.current = nextState;
+      setBuilderState(nextState);
+      onStateChange?.(nextState);
+    },
+    [onStateChange],
+  );
+
+  const bootstrapController = useReportBootstrapController({
+    builderState,
+    onBuilderStateChange: handleBuilderStateChange,
+  });
+
+  const bootstrapAssessment = useMemo(() => {
+    const assessment = previewController.snapshot?.assessment;
+
+    return assessment
+      ? {
+          id: assessment.id,
+          name: assessment.title,
+          applicationName: assessment.applicationName ?? undefined,
+        }
+      : undefined;
+  }, [previewController.snapshot]);
+
+  const draftSaveController = useReportDraftSaveController({
+    builderState,
+    assessment: bootstrapAssessment,
+    bootstrapReport: bootstrapController.bootstrap,
+  });
+  const { clearSelectedVersion } = draftSaveController;
+
   useEffect(() => {
     builderStateRef.current = builderState;
   }, [builderState]);
@@ -118,12 +171,13 @@ const ReportBuilderReports = ({
       return;
     }
 
+    clearSelectedVersion();
     builderStateRef.current = restoredState;
     setBuilderState(restoredState);
     setSelectionState(
       createReportBuilderSelectionTreeState(restoredState.selection),
     );
-  }, [companyId, routeState]);
+  }, [clearSelectedVersion, companyId, routeState]);
 
   useEffect(() => {
     if (focusTarget === 'preview-tab') {
@@ -140,6 +194,7 @@ const ReportBuilderReports = ({
     nextSelectionState: ReportBuilderSelectionTreeState,
     exactSelection: ReportBuilderSelection,
   ) => {
+    clearSelectedVersion();
     setSelectionState(nextSelectionState);
     setBuilderState(current => {
       const nextState = updateReportBuilderSelection(current, {
@@ -156,6 +211,7 @@ const ReportBuilderReports = ({
   };
 
   const handleIncludeEvidenceChange = (includeEvidence: boolean) => {
+    clearSelectedVersion();
     setBuilderState(current => {
       const nextState = updateReportBuilderConfiguration(current, {
         includeEvidence,
@@ -167,31 +223,88 @@ const ReportBuilderReports = ({
     });
   };
 
-  const previewCover = previewController.snapshot
+  const selectedVersion = draftSaveController.selectedVersion;
+  const displayedSnapshot =
+    selectedVersion?.snapshot ?? previewController.snapshot;
+  const displayedStatus = selectedVersion
+    ? 'success'
+    : previewController.status;
+  const displayedErrorMessage = selectedVersion
+    ? undefined
+    : previewController.errorMessage;
+
+  const previewCover = displayedSnapshot
     ? {
         ...cover,
         applicationName:
-          previewController.snapshot.assessment.applicationName ??
-          previewController.snapshot.assessment.title,
-        reportId: previewController.snapshot.assessment.id,
+          displayedSnapshot.assessment.applicationName ??
+          displayedSnapshot.assessment.title,
+        reportId: displayedSnapshot.assessment.id,
       }
     : cover;
+
+  const selectedAssessmentId = builderState.selection.selectedAssessmentId;
+  const hasCurrentAssessmentPreview =
+    previewController.snapshot?.assessment.id === selectedAssessmentId;
+  const saveDraftDisabledReason = !selectedAssessmentId
+    ? 'Select an Assessment before saving a draft.'
+    : !hasCurrentAssessmentPreview
+      ? previewController.status === 'pending'
+        ? 'Wait for the report preview before saving a draft.'
+        : 'Generate a report preview before saving a draft.'
+      : undefined;
+
+  const reportActionStatus: ReportPreviewShellActionStatus | undefined =
+    draftSaveController.message
+      ? {
+          message: draftSaveController.message,
+          role:
+            draftSaveController.status === 'conflict' ||
+            draftSaveController.status === 'readiness' ||
+            draftSaveController.status === 'error'
+              ? 'alert'
+              : 'status',
+        }
+      : undefined;
+
+  const assessmentCode = selectedVersion
+    ? `${selectedVersion.reportId} · v${formatReportVersionNumber(
+        selectedVersion.version,
+      )}`
+    : previewCover.reportId;
 
   return (
     <ReportPreviewShell
       applicationName={previewCover.applicationName}
-      assessmentCode={previewCover.reportId}
+      assessmentCode={assessmentCode}
       autoSaved={false}
       activeTab={activeView}
       onActiveTabChange={nextView => onViewChange?.(nextView, builderState)}
       previewTabRef={previewTabRef}
       titleRef={previewHeadingRef}
+      reportActions={{
+        saveDraft: {
+          onActivate: () => {
+            void draftSaveController.save();
+          },
+          isPending: draftSaveController.status === 'pending',
+          isDisabled: Boolean(saveDraftDisabledReason),
+          disabledReason: saveDraftDisabledReason,
+        },
+        primaryAction: 'saveDraft',
+      }}
+      reportActionStatus={reportActionStatus}
       preview={
         <ReportBuilderPreview
-          status={previewController.status}
-          snapshot={previewController.snapshot}
-          errorMessage={previewController.errorMessage}
-          onRetry={previewController.retry}
+          status={displayedStatus}
+          snapshot={displayedSnapshot}
+          errorMessage={displayedErrorMessage}
+          reportId={selectedVersion?.reportId ?? builderState.reportId}
+          issuedDate={selectedVersion?.generatedAt}
+          onRetry={() => {
+            clearSelectedVersion();
+            previewController.retry();
+          }}
         />
       }
       onPrint={onPrint}
@@ -227,6 +340,7 @@ const Reports = ({
   builderFocusTarget,
   builderFocusKey,
   onBuilderViewChange,
+  onBuilderStateChange,
   onPrint,
   onDownloadPdf,
 }: ReportsProps) => {
@@ -255,6 +369,7 @@ const Reports = ({
         focusTarget={builderFocusTarget}
         focusKey={builderFocusKey}
         onViewChange={onBuilderViewChange}
+        onStateChange={onBuilderStateChange}
         onPrint={onPrint}
         onDownloadPdf={onDownloadPdf}
       />
