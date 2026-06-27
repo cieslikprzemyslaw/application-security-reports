@@ -1,4 +1,5 @@
 import type { Report } from '../../../src/domain/report.js';
+import type { Prisma } from '../../../generated/prisma/client.js';
 import type {
   AssessmentReportListItem,
   ReportVersionSummary,
@@ -61,12 +62,16 @@ type ReportListRow = ReportRow & {
   }>;
 };
 
+const reportThreatOrderBy = [
+  { position: 'asc' },
+  { threatId: 'asc' },
+] satisfies Prisma.ReportThreatOrderByWithRelationInput[];
 const reportSelect = {
   id: true,
   assessmentId: true,
   selectedThreats: {
     select: { threatId: true, position: true },
-    orderBy: { position: 'asc' as const },
+    orderBy: reportThreatOrderBy,
   },
   title: true,
   status: true,
