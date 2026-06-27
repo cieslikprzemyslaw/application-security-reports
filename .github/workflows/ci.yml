@@ -76,6 +76,7 @@ jobs:
           docker run -d \
             --name appsec-report-builder-api \
             -p 3001:3001 \
+            -e DATABASE_URL="file:/data/appsec-report-builder.db" \
             appsec-report-builder-api:${{ github.sha }}
 
       - name: Check API health
