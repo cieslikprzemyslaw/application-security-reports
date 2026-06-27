@@ -108,6 +108,30 @@ const buildAttachmentStorageKey = (
   return `uploads/evidence/${evidenceId}/${attachmentId}${extension}`;
 };
 
+const toStoredHttpRequest = (request: EvidenceHttpExchange['request']) => ({
+  method: request.method,
+  url: request.url,
+  ...(request.headers
+    ? {
+        headers: { ...request.headers },
+      }
+    : {}),
+  ...(request.body !== undefined ? { body: request.body } : {}),
+});
+
+const toStoredHttpResponse = (response: EvidenceHttpExchange['response']) => ({
+  statusCode: response.statusCode,
+  ...(response.statusText !== undefined
+    ? { statusText: response.statusText }
+    : {}),
+  ...(response.headers
+    ? {
+        headers: { ...response.headers },
+      }
+    : {}),
+  ...(response.body !== undefined ? { body: response.body } : {}),
+});
+
 const toHttpExchange = (row: EvidenceExchangeRow): EvidenceHttpExchange => ({
   request: row.request as EvidenceHttpExchange['request'],
   response: row.response as EvidenceHttpExchange['response'],
@@ -193,37 +217,43 @@ const replaceEvidenceHttpExchanges = async (
       id: generateId('evidenceExchange'),
       evidenceId,
       position,
-      request: exchange.request,
-      response: exchange.response,
+      request: toStoredHttpRequest(exchange.request),
+      response: toStoredHttpResponse(exchange.response),
     })),
   });
 };
 
-const buildEvidenceData = (
-  input: CreateEvidenceInput | UpdateEvidenceInput,
+const buildEvidenceAttachmentData = (
+  fileName: string | undefined,
   evidenceId: string,
 ) => {
-  const data: Record<string, unknown> = {
-    assessmentId: input.assessmentId,
-    type: input.type,
-    title: input.title,
-    description: input.description,
-    content: input.content,
-    fileName: input.fileName,
-    mimeType: input.mimeType,
-    attachmentSizeBytes: input.attachmentSizeBytes,
-    capturedAt: input.capturedAt,
-  };
-
-  if (input.fileName) {
-    const storageKey = buildAttachmentStorageKey(evidenceId, input.fileName);
-
-    data.filePath = storageKey;
-    data.storageKey = storageKey;
+  if (!fileName) {
+    return {};
   }
 
-  return data;
+  const storageKey = buildAttachmentStorageKey(evidenceId, fileName);
+
+  return {
+    filePath: storageKey,
+    storageKey,
+  };
 };
+
+const buildEvidenceUpdateData = (
+  input: UpdateEvidenceInput,
+  evidenceId: string,
+) => ({
+  assessmentId: input.assessmentId,
+  type: input.type,
+  title: input.title,
+  description: input.description,
+  content: input.content,
+  fileName: input.fileName,
+  mimeType: input.mimeType,
+  attachmentSizeBytes: input.attachmentSizeBytes,
+  capturedAt: input.capturedAt,
+  ...buildEvidenceAttachmentData(input.fileName, evidenceId),
+});
 
 export function createEvidenceRepository(
   db: EvidenceRepositoryDb,
@@ -250,7 +280,16 @@ export function createEvidenceRepository(
             const evidence = await tx.evidence.create({
               data: {
                 id: evidenceId,
-                ...buildEvidenceData(input, evidenceId),
+                assessmentId: input.assessmentId,
+                type: input.type,
+                title: input.title,
+                description: input.description,
+                content: input.content,
+                fileName: input.fileName,
+                mimeType: input.mimeType,
+                attachmentSizeBytes: input.attachmentSizeBytes,
+                capturedAt: input.capturedAt,
+                ...buildEvidenceAttachmentData(input.fileName, evidenceId),
                 threatLinks: input.threatIds
                   ? {
                       create: dedupeStrings(input.threatIds).map(threatId => ({
@@ -292,7 +331,7 @@ export function createEvidenceRepository(
           async (tx: RepositoryTransactionClient) => {
             await tx.evidence.update({
               where: { id },
-              data: buildEvidenceData(input, id),
+              data: buildEvidenceUpdateData(input, id),
             });
 
             if (input.threatIds) {
