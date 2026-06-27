@@ -22,7 +22,7 @@
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",
     "build:server": "tsc -p tsconfig.server.json",
-    "prepare": "git config core.hooksPath .husky",
+    "prepare": "node scripts/configure-git-hooks.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",

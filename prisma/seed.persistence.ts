@@ -28,6 +28,34 @@ const stripUndefined = <T extends Record<string, unknown>>(value: T): T => {
   return Object.fromEntries(entries) as T;
 };
 
+const toStoredHttpRequest = (
+  request: NonNullable<Evidence['httpExchanges']>[number]['request'],
+) => ({
+  method: request.method,
+  url: request.url,
+  ...(request.headers
+    ? {
+        headers: { ...request.headers },
+      }
+    : {}),
+  ...(request.body !== undefined ? { body: request.body } : {}),
+});
+
+const toStoredHttpResponse = (
+  response: NonNullable<Evidence['httpExchanges']>[number]['response'],
+) => ({
+  statusCode: response.statusCode,
+  ...(response.statusText !== undefined
+    ? { statusText: response.statusText }
+    : {}),
+  ...(response.headers
+    ? {
+        headers: { ...response.headers },
+      }
+    : {}),
+  ...(response.body !== undefined ? { body: response.body } : {}),
+});
+
 const clearSeedData = async (db: RepositoryTransactionClient) => {
   await db.reportThreat.deleteMany({});
   await db.evidenceExchange.deleteMany({});
@@ -110,8 +138,8 @@ const insertEvidence = async (
           id: `${row.id}-${position}`,
           evidenceId: row.id,
           position,
-          request: exchange.request,
-          response: exchange.response,
+          request: toStoredHttpRequest(exchange.request),
+          response: toStoredHttpResponse(exchange.response),
         },
       });
     }

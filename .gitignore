@@ -29,3 +29,8 @@ docs/*
 
 uploads/issuer-logos/*
 !uploads/issuer-logos/.gitkeep
+
+# Local Docker configuration and secrets
+docker/**/*.local
+docker/**/secrets/*
+!docker/**/secrets/.gitkeep

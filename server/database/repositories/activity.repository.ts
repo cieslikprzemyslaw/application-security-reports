@@ -1,4 +1,8 @@
 import type { Activity } from '../../../src/domain/activity.js';
+import {
+  ACTIVITY_ACTIONS,
+  type ActivityAction,
+} from '../../../src/domain/common.js';
 import { generateId } from '../../utils/id.js';
 import { mapPrismaError } from '../errors.js';
 import type { RepositoryClient } from '../repository.types.js';
@@ -22,7 +26,7 @@ type ActivityRow = {
   id: string;
   entityType: Activity['entityType'];
   entityId: string | null;
-  action: Activity['action'];
+  action: string;
   message: string;
   createdAt: Date;
 };
@@ -36,14 +40,25 @@ const activitySelect = {
   createdAt: true,
 } as const;
 
-const toActivity = (row: ActivityRow): Activity => ({
-  id: row.id,
-  entityType: row.entityType,
-  entityId: row.entityId ?? undefined,
-  action: row.action,
-  message: row.message,
-  createdAt: toIsoString(row.createdAt),
-});
+const isActivityAction = (value: string): value is ActivityAction =>
+  ACTIVITY_ACTIONS.includes(value as ActivityAction);
+
+const toActivity = (row: ActivityRow): Activity => {
+  if (!isActivityAction(row.action)) {
+    throw new Error(
+      `Unsupported activity action stored in database: ${row.action}`,
+    );
+  }
+
+  return {
+    id: row.id,
+    entityType: row.entityType,
+    entityId: row.entityId ?? undefined,
+    action: row.action,
+    message: row.message,
+    createdAt: toIsoString(row.createdAt),
+  };
+};
 
 export function createActivityRepository(
   db: ActivityRepositoryDb,
