@@ -1,0 +1,48 @@
+services:
+  api-migrate:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+      target: build
+    environment:
+      DATABASE_URL: file:/data/appsec-report-builder.db
+      NODE_ENV: production
+    volumes:
+      - api-data:/data
+    command: ['npm', 'run', 'db:update']
+    restart: 'no'
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+      target: runtime
+    image: appsec-report-builder-api:local
+    environment:
+      API_PORT: '3000'
+      FRONTEND_ORIGIN: http://localhost:8080
+      DATABASE_URL: file:/data/appsec-report-builder.db
+      NODE_ENV: production
+    ports:
+      - '3000:3000'
+    volumes:
+      - api-data:/data
+      - api-uploads:/app/uploads
+    depends_on:
+      api-migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+      target: runtime
+    image: appsec-report-builder-web:local
+    ports:
+      - '8080:8080'
+    depends_on:
+      - api
+
+volumes:
+  api-data:
+  api-uploads:
