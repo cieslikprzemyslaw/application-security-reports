@@ -55,3 +55,46 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  docker-runtime:
+    name: Docker Runtime
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: validate
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -f docker/api/Dockerfile -t appsec-report-builder-api:${{ github.sha }} .
+
+      - name: Run Docker container
+        run: |
+          docker run -d \
+            --name appsec-report-builder-api \
+            -p 3001:3001 \
+            appsec-report-builder-api:${{ github.sha }}
+
+      - name: Check API health
+        run: |
+          for i in {1..20}; do
+            if curl -fsS http://localhost:3001/api/health; then
+              exit 0
+            fi
+
+            echo "Waiting for API health check..."
+            sleep 2
+          done
+
+          echo "API health check failed"
+          docker logs appsec-report-builder-api
+          exit 1
+
+      - name: Stop Docker container
+        if: always()
+        run: |
+          docker stop appsec-report-builder-api || true
+          docker rm appsec-report-builder-api || true
