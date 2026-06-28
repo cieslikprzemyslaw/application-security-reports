@@ -99,3 +99,26 @@ jobs:
         run: |
           docker stop appsec-report-builder-api || true
           docker rm appsec-report-builder-api || true
+
+  dependency-security:
+    name: Dependency Security
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run dependency audit policy
+        run: npm run security:audit
