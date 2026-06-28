@@ -50,7 +50,8 @@
     "test:settings-workflow": "vitest run --project frontend src/app/pages/settings/settings.workflow.vitest.test.tsx src/app/pages/settings/settings.controller.vitest.test.tsx src/app/pages/settings/settings.readinessFocus.vitest.test.tsx",
     "validate": "npm run db:validate && npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
     "db:update": "node scripts/prisma-command.mjs migrate deploy && node scripts/prisma-command.mjs generate",
-    "predev": "npm run db:update"
+    "predev": "npm run db:update",
+    "security:audit": "node scripts/check-npm-audit-policy.mjs"
   },
   "lint-staged": {
     "*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}": [
@@ -92,7 +93,7 @@
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
-    "concurrently": "^9.1.2",
+    "concurrently": "^10.0.3",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",

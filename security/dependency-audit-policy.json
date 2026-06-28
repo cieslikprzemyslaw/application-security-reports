@@ -1,0 +1,13 @@
+{
+  "_description": "Policy for npm audit JSON results. High and critical vulnerabilities fail CI unless they are documented in the accepted array with reason, expiry and follow-up.",
+  "_acceptedRiskTemplate": {
+    "package": "example-package",
+    "severity": "critical",
+    "reason": "Explain why the risk is temporarily accepted. Include exposure, current project status and why the fix is deferred.",
+    "expires": "2026-07-31",
+    "issue": "https://github.com/owner/repo/issues/123 or TODO",
+    "advisoryIds": ["optional-advisory-id"]
+  },
+  "minimumSeverity": "high",
+  "accepted": []
+}
