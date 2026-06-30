@@ -42,7 +42,10 @@ export interface AssessmentEvidenceController {
   handleEvidenceChange: (value: EvidenceFormValue) => void;
   handleEvidenceSave: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   downloadAttachment: (evidence: Evidence) => Promise<void>;
-  requestDeleteEvidence: () => void;
+  requestDeleteEvidence: (
+    evidence?: Evidence,
+    invoker?: HTMLElement | null,
+  ) => void;
   cancelDeleteEvidence: () => void;
   confirmDeleteEvidence: () => Promise<void>;
   retrySelectedEvidenceLoad: () => void;
