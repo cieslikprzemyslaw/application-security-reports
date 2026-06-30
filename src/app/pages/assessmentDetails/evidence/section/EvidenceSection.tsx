@@ -68,6 +68,7 @@ const AssessmentEvidenceSection = ({
           controller.canEditEvidence ? (
             <Button
               title="Add evidence"
+              data-evidence-add-action="true"
               onClick={controller.openCreateEvidence}
             />
           ) : undefined

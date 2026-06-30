@@ -240,6 +240,7 @@ type EvidenceServiceOverrides = Partial<
 
 interface RenderHarnessOptions {
   openEvidenceId?: string;
+  onMutationSuccess?: (delta: number) => void;
 }
 
 export const renderHarness = async (
@@ -247,6 +248,7 @@ export const renderHarness = async (
   serviceOverrides: EvidenceServiceOverrides = {},
   options: RenderHarnessOptions = {},
 ) => {
+  const { openEvidenceId, onMutationSuccess } = options;
   const { container, window } = setupDom();
 
   assert.ok(container, 'Expected root container to exist');
@@ -257,17 +259,21 @@ export const renderHarness = async (
     const controller = useAssessmentEvidence({
       assessmentId: assessment.id,
       assessmentStatus: assessment.status,
+      onMutationSuccess,
     });
+    const initialOpenEvidenceIdRef = useRef(openEvidenceId);
     const initialOpenHandledRef = useRef(false);
 
     useEffect(() => {
-      if (!options.openEvidenceId || initialOpenHandledRef.current) {
+      const initialOpenEvidenceId = initialOpenEvidenceIdRef.current;
+
+      if (!initialOpenEvidenceId || initialOpenHandledRef.current) {
         return;
       }
 
       initialOpenHandledRef.current = true;
-      controller.openEvidenceDetails(options.openEvidenceId);
-    }, [controller, options.openEvidenceId]);
+      controller.openEvidenceDetails(initialOpenEvidenceId);
+    }, [controller]);
 
     return (
       <AssessmentEvidenceSection

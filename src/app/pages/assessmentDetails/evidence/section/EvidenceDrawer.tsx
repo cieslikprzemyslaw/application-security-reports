@@ -124,7 +124,12 @@ const EvidenceDrawer = ({
               <Button
                 title="Delete evidence"
                 variant="destructive"
-                onClick={controller.requestDeleteEvidence}
+                onClick={event =>
+                  controller.requestDeleteEvidence(
+                    controller.selectedEvidence,
+                    event.currentTarget,
+                  )
+                }
               />
             )}
           </div>

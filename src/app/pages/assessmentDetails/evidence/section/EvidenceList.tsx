@@ -24,6 +24,7 @@ const EvidenceList = ({ evidence, controller }: EvidenceListProps) => {
             controller.canEditEvidence ? (
               <Button
                 title="Add evidence"
+                data-evidence-add-action="true"
                 onClick={controller.openCreateEvidence}
               />
             ) : undefined
@@ -32,6 +33,13 @@ const EvidenceList = ({ evidence, controller }: EvidenceListProps) => {
       </div>
     );
   }
+
+  const handleDeleteClick = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    item: Evidence,
+  ) => {
+    controller.requestDeleteEvidence(item, event.currentTarget);
+  };
 
   return (
     <div className="assessment-evidence-list">
@@ -42,6 +50,7 @@ const EvidenceList = ({ evidence, controller }: EvidenceListProps) => {
               <button
                 className="assessment-evidence-card-title-button"
                 type="button"
+                data-evidence-open-action={item.id}
                 onClick={() => controller.openEvidenceDetails(item)}
               >
                 {item.title}
@@ -49,12 +58,21 @@ const EvidenceList = ({ evidence, controller }: EvidenceListProps) => {
 
               <div className="assessment-evidence-card-actions">
                 {controller.canEditEvidence && (
-                  <Button
-                    title="Edit"
-                    variant="secondary"
-                    size="small"
-                    onClick={() => controller.openEditEvidence(item)}
-                  />
+                  <>
+                    <Button
+                      title="Edit"
+                      variant="secondary"
+                      size="small"
+                      onClick={() => controller.openEditEvidence(item)}
+                    />
+                    <Button
+                      title="Delete evidence"
+                      ariaLabel={`Delete evidence ${item.title}`}
+                      variant="destructive"
+                      size="small"
+                      onClick={event => handleDeleteClick(event, item)}
+                    />
+                  </>
                 )}
               </div>
             </div>
