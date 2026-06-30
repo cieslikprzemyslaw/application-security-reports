@@ -161,7 +161,11 @@ const AssessmentFindingsSection = ({
         padding="large"
         actions={
           assessment.status === 'archived' ? undefined : (
-            <Button title="Add threat" onClick={openCreateFinding} />
+            <Button
+              title="Add threat"
+              data-threat-delete-success-focus="true"
+              onClick={openCreateFinding}
+            />
           )
         }
       >
@@ -170,16 +174,31 @@ const AssessmentFindingsSection = ({
             <p>{loadError}</p>
           </Callout>
         ) : (
-          <ThreatTable
-            threats={threats.map(threatToTableRow)}
-            owaspTaxonomyVersion={owaspTaxonomyVersion}
-            isLoading={isLoading}
-            emptyState={tableEmptyState}
-            onThreatClick={openFindingDetails}
-            onEditThreatClick={
-              canEditFindings ? threat => openEditFinding(threat) : undefined
-            }
-          />
+          <>
+            {deleteError && drawerMode === null ? (
+              <Callout variant="error" title="Unable to delete threat">
+                <p>{deleteError}</p>
+              </Callout>
+            ) : null}
+
+            <ThreatTable
+              threats={threats.map(threatToTableRow)}
+              owaspTaxonomyVersion={owaspTaxonomyVersion}
+              isLoading={isLoading}
+              emptyState={tableEmptyState}
+              onThreatClick={openFindingDetails}
+              onEditThreatClick={
+                canEditFindings ? threat => openEditFinding(threat) : undefined
+              }
+              onDeleteThreatClick={
+                canEditFindings
+                  ? threat => {
+                      void handleFindingDelete(threat);
+                    }
+                  : undefined
+              }
+            />
+          </>
         )}
       </Card>
 

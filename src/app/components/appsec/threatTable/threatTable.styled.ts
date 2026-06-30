@@ -81,6 +81,7 @@ const StyledThreatTable = styled.div`
 
     .threat-table-actions {
       display: inline-flex;
+      gap: ${spacing.xs};
       justify-content: flex-end;
     }
   `}

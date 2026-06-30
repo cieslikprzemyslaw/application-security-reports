@@ -31,4 +31,5 @@ export interface ThreatTableProps {
   emptyState?: React.ReactNode;
   onThreatClick?: (threat: ThreatTableRow) => void;
   onEditThreatClick?: (threat: ThreatTableRow) => void;
+  onDeleteThreatClick?: (threat: ThreatTableRow) => void;
 }
