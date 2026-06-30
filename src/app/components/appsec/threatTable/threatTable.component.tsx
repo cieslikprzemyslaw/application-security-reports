@@ -34,6 +34,7 @@ const ThreatTable = ({
   emptyState,
   onThreatClick,
   onEditThreatClick,
+  onDeleteThreatClick,
 }: ThreatTableProps) => (
   <StyledThreatTable>
     <DataTable<ThreatTableRow>
@@ -126,6 +127,19 @@ const ThreatTable = ({
                   onClick={event => {
                     event.stopPropagation();
                     onEditThreatClick(threat);
+                  }}
+                />
+              )}
+
+              {onDeleteThreatClick && (
+                <Button
+                  title="Delete threat"
+                  ariaLabel={`Delete threat "${threat.title}"`}
+                  size="small"
+                  variant="destructive"
+                  onClick={event => {
+                    event.stopPropagation();
+                    onDeleteThreatClick(threat);
                   }}
                 />
               )}

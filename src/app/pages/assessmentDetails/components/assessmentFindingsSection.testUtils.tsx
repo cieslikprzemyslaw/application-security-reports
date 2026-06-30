@@ -199,7 +199,11 @@ export const renderHarness = async (
         handleFindingSave={async event => {
           event.preventDefault();
         }}
-        handleFindingDelete={async () => {}}
+        handleFindingDelete={async threat => {
+          events.push(
+            `delete:${threat?.id ?? selectedFinding?.id ?? 'unknown'}`,
+          );
+        }}
       />
     );
   };

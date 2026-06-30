@@ -25,6 +25,24 @@ import {
 
 export type FindingDrawerMode = 'view' | 'create' | 'edit' | null;
 
+const focusThreatDeleteSuccessTarget = () => {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return;
+  }
+
+  const requestFrame =
+    window.requestAnimationFrame?.bind(window) ??
+    ((callback: FrameRequestCallback) => window.setTimeout(callback, 0));
+
+  requestFrame(() => {
+    document
+      .querySelector<HTMLButtonElement>(
+        '[data-threat-delete-success-focus="true"]',
+      )
+      ?.focus();
+  });
+};
+
 export interface AssessmentFindingsController {
   threats: Threat[];
   isLoading: boolean;
@@ -44,7 +62,7 @@ export interface AssessmentFindingsController {
   closeFindingDrawer: () => void;
   handleFindingChange: (value: ThreatFormValue) => void;
   handleFindingSave: (event: FormEvent<HTMLFormElement>) => Promise<void>;
-  handleFindingDelete: () => Promise<void>;
+  handleFindingDelete: (threat?: Threat | ThreatTableRow) => Promise<void>;
 }
 
 export const useAssessmentFindings = ({
@@ -191,6 +209,7 @@ export const useAssessmentFindings = ({
     setBaselineValue(value);
     setFieldErrors({});
     setFormError(undefined);
+    setDeleteError(undefined);
   };
 
   const openFindingDetails = (threat: Threat | ThreatTableRow) => {
@@ -215,6 +234,7 @@ export const useAssessmentFindings = ({
     setBaselineValue(value);
     setFieldErrors({});
     setFormError(undefined);
+    setDeleteError(undefined);
   };
 
   const openEditFinding = (threat?: Threat | ThreatTableRow) => {
@@ -241,6 +261,7 @@ export const useAssessmentFindings = ({
     setBaselineValue(value);
     setFieldErrors({});
     setFormError(undefined);
+    setDeleteError(undefined);
   };
 
   const closeFindingDrawer = () => {
@@ -316,12 +337,21 @@ export const useAssessmentFindings = ({
     setFormError(undefined);
   };
 
-  const handleFindingDelete = async () => {
-    if (!selectedFindingId || isDeleting) {
+  const handleFindingDelete = async (threat?: Threat | ThreatTableRow) => {
+    if (isDeleting) {
       return;
     }
 
-    const title = selectedFinding?.title ?? 'this threat';
+    const target = threat ?? selectedFinding;
+    const targetId = target?.id ?? selectedFindingId;
+
+    if (!targetId) {
+      return;
+    }
+
+    const title = target?.title ?? selectedFinding?.title ?? 'this threat';
+
+    setDeleteError(undefined);
 
     if (!window.confirm(`Delete "${title}"? This action cannot be undone.`)) {
       return;
@@ -331,10 +361,11 @@ export const useAssessmentFindings = ({
     setDeleteError(undefined);
 
     try {
-      await threatService.remove(selectedFindingId);
+      await threatService.remove(targetId);
       setReloadKey(key => key + 1);
       resetDrawerState();
       onMutationSuccess?.(-1);
+      focusThreatDeleteSuccessTarget();
     } catch (error) {
       setDeleteError(
         error instanceof Error ? error.message : 'Unable to delete threat.',

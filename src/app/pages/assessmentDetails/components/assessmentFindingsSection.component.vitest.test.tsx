@@ -215,6 +215,41 @@ describe('assessmentFindingsSection.component', () => {
       }
 
       {
+        const { container, root, window, events } =
+          await renderHarness('in-progress');
+
+        const deleteButton = Array.from(
+          container.querySelectorAll('button'),
+        ).find(button => button.textContent?.trim() === 'Delete threat') as
+          | HTMLButtonElement
+          | undefined;
+
+        assert.ok(deleteButton, 'Expected the row delete action');
+
+        await act(async () => {
+          deleteButton!.dispatchEvent(
+            new window.MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+              button: 0,
+            }),
+          );
+          await renderTick();
+          await renderTick();
+        });
+
+        assert.deepEqual(events, ['delete:thr_1']);
+        assert.ok(
+          !textContent(window.document.body).includes('Threat details'),
+          'Expected the row delete action not to open the details view',
+        );
+
+        await act(async () => {
+          root.unmount();
+        });
+      }
+
+      {
         const { container, root, window } = await renderHarness('in-progress');
 
         const addButton = Array.from(container.querySelectorAll('button')).find(
