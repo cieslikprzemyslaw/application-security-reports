@@ -141,6 +141,28 @@ describe('CompanyForm logo selection', () => {
     },
   );
 
+  it('shows the saved logo preview when the company already has a logo', () => {
+    renderControlledForm(
+      {
+        ...baseValue,
+        hasExistingLogo: true,
+      },
+      {
+        existingLogoUrl:
+          '/api/companies/cmp_1/logo?v=2026-06-30T10%3A00%3A00.000Z',
+      },
+    );
+
+    expect(
+      screen.getByRole('img', {
+        name: 'Company logo preview',
+      }),
+    ).toHaveAttribute(
+      'src',
+      '/api/companies/cmp_1/logo?v=2026-06-30T10%3A00%3A00.000Z',
+    );
+  });
+
   it('removes a selected logo', async () => {
     const logoFile = new File(['logo'], 'logo.png', {
       type: 'image/png',
@@ -162,6 +184,86 @@ describe('CompanyForm logo selection', () => {
       logoFile: null,
       hasExistingLogo: false,
     });
+  });
+
+  it('removes an existing logo and clears both logo states', async () => {
+    const { user, onChange } = renderControlledForm(
+      {
+        ...baseValue,
+        hasExistingLogo: true,
+      },
+      {
+        existingLogoUrl: '/api/companies/cmp_1/logo',
+      },
+    );
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Remove logo',
+      }),
+    );
+
+    expect(onChange).toHaveBeenLastCalledWith({
+      ...baseValue,
+      logoFile: null,
+      hasExistingLogo: false,
+    });
+  });
+
+  it('falls back to initials when an existing logo preview fails', () => {
+    renderControlledForm(
+      {
+        ...baseValue,
+        hasExistingLogo: true,
+      },
+      {
+        existingLogoUrl: '/api/companies/cmp_1/logo',
+      },
+    );
+
+    const preview = screen.getByRole('img', {
+      name: 'Company logo preview',
+    });
+
+    expect(preview).toHaveAttribute('src', '/api/companies/cmp_1/logo');
+
+    fireEvent.error(preview);
+
+    expect(
+      screen.getByRole('img', {
+        name: 'Company logo preview',
+      }),
+    ).toHaveTextContent('AC');
+  });
+
+  it('shows the selected replacement file preview after an existing logo', async () => {
+    const replacementFile = new File(['replacement'], 'replacement.png', {
+      type: 'image/png',
+    });
+
+    const { user, onChange } = renderControlledForm(
+      {
+        ...baseValue,
+        hasExistingLogo: true,
+      },
+      {
+        existingLogoUrl: '/api/companies/cmp_1/logo',
+      },
+    );
+
+    await user.upload(getFileInput('company-logo-replace'), replacementFile);
+
+    expect(onChange).toHaveBeenLastCalledWith({
+      ...baseValue,
+      hasExistingLogo: true,
+      logoFile: replacementFile,
+    });
+
+    expect(
+      screen.getByRole('img', {
+        name: 'Company logo preview',
+      }),
+    ).toHaveAttribute('src', 'blob:test-object-url');
   });
 
   it('replaces a selected logo', async () => {

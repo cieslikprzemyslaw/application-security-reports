@@ -44,9 +44,8 @@ const StyledCompanyForm = styled.form`
     }
 
     .company-logo-preview-img {
-      max-width: 12rem;
-      max-height: 6rem;
-      object-fit: contain;
+      width: 3rem;
+      height: 3rem;
       border-radius: ${radii.md};
       border: 1px solid ${colors.border.default};
     }

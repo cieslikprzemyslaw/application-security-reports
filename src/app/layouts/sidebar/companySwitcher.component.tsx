@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import type { CompanyListItem } from '~/domain';
+import CompanyAvatar from '~/app/components/appsec/companyAvatar';
 import Button from '~/app/components/ui/button';
 import Drawer from '~/app/components/ui/drawer';
 import EmptyState from '~/app/components/ui/emptyState';
@@ -16,6 +17,22 @@ import {
   updateRecentCompanyIds,
   writeRecentCompanyIds,
 } from './companySwitcher.utils';
+
+const getCompanySwitcherLogoUrl = (company: CompanyListItem) => {
+  const trimmedLogoUrl = company.logoUrl?.trim();
+
+  if (!trimmedLogoUrl) {
+    return null;
+  }
+
+  if (!company.updatedAt) {
+    return trimmedLogoUrl;
+  }
+
+  const separator = trimmedLogoUrl.includes('?') ? '&' : '?';
+
+  return `${trimmedLogoUrl}${separator}v=${encodeURIComponent(company.updatedAt)}`;
+};
 
 export interface CompanySwitcherProps {
   activeCompany?: {
@@ -180,12 +197,13 @@ const CompanySwitcher = ({
                             .join(' ')}
                           onClick={() => handleSelectCompany(company)}
                         >
-                          <span
+                          <CompanyAvatar
                             className="company-switcher-item-icon"
-                            aria-hidden="true"
-                          >
-                            <IconSVG name="company" />
-                          </span>
+                            companyName={company.name}
+                            logoUrl={getCompanySwitcherLogoUrl(company)}
+                            size="medium"
+                            isDecorative
+                          />
 
                           <span className="company-switcher-item-content">
                             <span className="company-switcher-item-name">

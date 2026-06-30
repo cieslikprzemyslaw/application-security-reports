@@ -1,5 +1,6 @@
 import React from 'react';
 
+import CompanyAvatar from '~/app/components/appsec/companyAvatar';
 import Badge from '~/app/components/ui/badge';
 import Button from '~/app/components/ui/button';
 import EmptyState from '~/app/components/ui/emptyState';
@@ -34,6 +35,22 @@ const getAssessmentSummary = (company: RecentCompanyItem) => {
   }
 
   return formatWithMissingValue(company.latestAssessment.name);
+};
+
+const getRecentCompanyLogoUrl = (company: RecentCompanyItem) => {
+  const trimmedLogoUrl = company.logoUrl?.trim();
+
+  if (!trimmedLogoUrl) {
+    return null;
+  }
+
+  if (!company.updatedAt) {
+    return trimmedLogoUrl;
+  }
+
+  const separator = trimmedLogoUrl.includes('?') ? '&' : '?';
+
+  return `${trimmedLogoUrl}${separator}v=${encodeURIComponent(company.updatedAt)}`;
 };
 
 const Dashboard = ({
@@ -99,12 +116,24 @@ const Dashboard = ({
             const latestAssessmentLabel = getAssessmentSummary(company);
             const companyRow = (
               <>
-                <div className="dashboard-company-summary">
-                  <span className="dashboard-company-name">{company.name}</span>
+                <div className="dashboard-company-identity">
+                  <CompanyAvatar
+                    className="dashboard-company-avatar"
+                    companyName={company.name}
+                    logoUrl={getRecentCompanyLogoUrl(company)}
+                    size="large"
+                    isDecorative
+                  />
 
-                  <span className="dashboard-company-last-opened">
-                    Last opened {formatRelativeTime(company.lastOpenedAt)}
-                  </span>
+                  <div className="dashboard-company-summary">
+                    <span className="dashboard-company-name">
+                      {company.name}
+                    </span>
+
+                    <span className="dashboard-company-last-opened">
+                      Last opened {formatRelativeTime(company.lastOpenedAt)}
+                    </span>
+                  </div>
                 </div>
 
                 <dl className="dashboard-company-details">

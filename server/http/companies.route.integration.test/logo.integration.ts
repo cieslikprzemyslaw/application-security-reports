@@ -81,7 +81,7 @@ try {
     };
     assert.ok(
       typeof getCompanyJson.data.logoUrl === 'string' &&
-        getCompanyJson.data.logoUrl.startsWith('http'),
+        getCompanyJson.data.logoUrl.startsWith('/api/companies/'),
     );
 
     const deleteResp = await fetch(

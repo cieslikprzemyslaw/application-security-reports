@@ -15,6 +15,7 @@ export interface CompanyTableRow {
   name: string;
   initials: string;
   logoTone?: CompanyLogoTone;
+  logoUrl?: string | null;
   applicationCount: number;
   website: string;
   primaryContact: string;

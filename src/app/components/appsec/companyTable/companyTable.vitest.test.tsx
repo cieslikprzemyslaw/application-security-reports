@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderWithProviders, screen, within } from '~/test/render';
+import { fireEvent, renderWithProviders, screen, within } from '~/test/render';
 
 import CompanyTable from './companyTable.component';
 import type { CompanyTableProps, CompanyTableRow } from './companyTable.type';
@@ -16,6 +16,7 @@ const sampleCompany: CompanyTableRow = {
   assessmentCount: 6,
   openThreats: 2,
   riskPosture: 'high',
+  logoUrl: '/api/companies/cmp_1/logo',
 };
 
 const secondCompany: CompanyTableRow = {
@@ -48,6 +49,51 @@ const getCompanyRow = (companyName: string) => {
 };
 
 describe('CompanyTable', () => {
+  it('renders a saved company logo in the avatar cell', () => {
+    const { container } = renderTable();
+
+    const logo = container.querySelector('.company-table__identity img');
+
+    expect(logo).toHaveAttribute('src', sampleCompany.logoUrl);
+    expect(logo).toHaveAttribute('alt', '');
+    expect(
+      within(getCompanyRow(sampleCompany.name)).queryByText('ND'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('falls back to initials after a company logo load failure', () => {
+    const { container } = renderTable();
+
+    const logo = container.querySelector('.company-table__identity img');
+
+    fireEvent.error(logo as Element);
+
+    expect(
+      container.querySelector('.company-table__identity img'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(getCompanyRow(sampleCompany.name)).getByText('ND'),
+    ).toBeInTheDocument();
+  });
+
+  it('does not render an obvious filesystem path as a company logo source', () => {
+    renderWithProviders(
+      <CompanyTable
+        companies={[
+          {
+            ...sampleCompany,
+            logoUrl: 'C:\\logos\\northstar.png',
+          },
+        ]}
+      />,
+    );
+
+    const row = getCompanyRow(sampleCompany.name);
+
+    expect(row.querySelector('.company-table__identity img')).toBeNull();
+    expect(within(row).getByText('ND')).toBeInTheDocument();
+  });
+
   it('activates the selected company when its row is clicked', async () => {
     const onCompanyClick = vi.fn();
     const onEditCompany = vi.fn();

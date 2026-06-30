@@ -48,8 +48,7 @@ export const previewSnapshot: ReportPreviewSnapshot = {
     name: 'Northstar Digital',
     website: 'https://northstar.example',
     contactEmail: 'security@northstar.example',
-    logoUrl:
-      'http://localhost/api/companies/cmp_00000000-0000-0000-0000-000000000001/logo',
+    logoUrl: '/api/companies/cmp_00000000-0000-0000-0000-000000000001/logo',
   },
   assessment: {
     id: previewAssessmentId,
@@ -80,11 +79,11 @@ export const previewSnapshot: ReportPreviewSnapshot = {
     companyWebsite: 'https://northstar.example',
     companyContactEmail: 'security@northstar.example',
     companyLogoUrl:
-      'http://localhost/api/companies/cmp_00000000-0000-0000-0000-000000000001/logo',
+      '/api/companies/cmp_00000000-0000-0000-0000-000000000001/logo',
     issuerName: 'AppSec Consulting Ltd',
     issuerContactName: 'Alex Mercer',
     issuerContactEmail: 'alex@example.com',
-    issuerLogoUrl: 'http://localhost/api/settings/issuer-logo',
+    issuerLogoUrl: '/api/settings/issuer-logo',
     reportFooterText: 'Confidential',
     confidentialReports: true,
     allowedBrandingModes: ['issuer', 'client'],

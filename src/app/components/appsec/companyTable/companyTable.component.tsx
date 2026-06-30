@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
+import CompanyAvatar from '~/app/components/appsec/companyAvatar';
 import IconSVG from '~/app/components/ui/iconSVG';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 
@@ -82,14 +83,14 @@ const CompanyTable = ({
               >
                 <td className="company-table__cell">
                   <div className="company-table__identity">
-                    <span
-                      className={[
-                        'company-table__initials',
-                        `company-table__initials--${company.logoTone ?? 'blue'}`,
-                      ].join(' ')}
-                    >
-                      {company.initials}
-                    </span>
+                    <CompanyAvatar
+                      companyName={company.name}
+                      initials={company.initials}
+                      logoUrl={company.logoUrl}
+                      tone={company.logoTone ?? 'blue'}
+                      size="large"
+                      isDecorative
+                    />
 
                     <div>
                       <strong className="company-table__name">

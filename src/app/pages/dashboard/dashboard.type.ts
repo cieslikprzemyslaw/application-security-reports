@@ -1,7 +1,12 @@
 import type { CompanyListItem } from '~/domain';
 
 export type DashboardPeriod = '90' | '30' | 'all';
-export type RecentCompanyIdentity = Pick<CompanyListItem, 'id' | 'name'>;
+export type RecentCompanyIdentity = Pick<
+  CompanyListItem,
+  'id' | 'name' | 'logoUrl'
+> & {
+  updatedAt?: string;
+};
 
 export interface DashboardStats {
   totalAssessments: number;

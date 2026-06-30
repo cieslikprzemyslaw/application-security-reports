@@ -6,6 +6,7 @@ import { companyService } from '~/services';
 
 import type { CompanyFormValue } from '~/app/components/appsec/companyForm';
 import {
+  appendLogoCacheKey,
   areCompanyFormValuesEqual,
   companyToFormValue,
   createEmptyCompanyFormValue,
@@ -343,7 +344,9 @@ export const useCompaniesController = ({
   };
 
   const selectedCompany = companies.find(c => c.id === selectedCompanyId);
-  const selectedCompanyLogoUrl = selectedCompany?.logoUrl ?? null;
+  const selectedCompanyLogoUrl = selectedCompany
+    ? appendLogoCacheKey(selectedCompany.logoUrl, selectedCompany.updatedAt)
+    : null;
 
   return {
     companies,
