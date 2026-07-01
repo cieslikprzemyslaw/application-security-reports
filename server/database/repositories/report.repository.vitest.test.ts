@@ -26,7 +26,15 @@ const row = {
   executiveSummary: null,
   createdAt,
   updatedAt: createdAt,
-  versions: [],
+  versions: [
+    {
+      id: 'rvs_00000000-0000-0000-0000-000000000001',
+      version: 1,
+      status: 'draft',
+      generatedAt: '2026-06-22',
+      createdAt,
+    },
+  ],
 };
 
 const createDb = () => {
@@ -78,7 +86,15 @@ describe('createReportRepository', () => {
         selectedThreatIds: [secondThreatId, firstThreatId],
         executiveSummary: undefined,
         createdAt: createdAt.toISOString(),
-        versions: [],
+        versions: [
+          {
+            id: 'rvs_00000000-0000-0000-0000-000000000001',
+            version: 1,
+            status: 'draft',
+            generatedAt: '2026-06-22',
+            createdAt: createdAt.toISOString(),
+          },
+        ],
       }),
     ]);
     expect(db.report.findMany).toHaveBeenCalledWith({

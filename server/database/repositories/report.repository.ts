@@ -59,6 +59,7 @@ type ReportListRow = ReportRow & {
     version: number;
     status: string;
     generatedAt: string;
+    createdAt: Date;
   }>;
 };
 
@@ -89,7 +90,6 @@ const reportListSelect = {
       version: true,
       status: true,
       generatedAt: true,
-      createdAt: true,
       createdAt: true,
     },
     orderBy: { version: 'desc' as const },
