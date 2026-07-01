@@ -79,8 +79,16 @@ const requireSupportedVersion = (version: ReportVersion): void => {
 };
 
 const requireSupportedHistory = (history: readonly ReportVersion[]): void => {
+  const seenVersions = new Set<number>();
+
   for (const version of history) {
     requireSupportedVersion(version);
+
+    if (seenVersions.has(version.version)) {
+      failInvalidHistory();
+    }
+
+    seenVersions.add(version.version);
   }
 };
 

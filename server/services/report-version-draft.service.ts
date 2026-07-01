@@ -96,8 +96,6 @@ export const createDraftReportVersion = async (
       );
       await repository.applyRetention(input.reportId, version);
 
-      await repository.applyRetention(input.reportId, version);
-
       return created;
     },
   );

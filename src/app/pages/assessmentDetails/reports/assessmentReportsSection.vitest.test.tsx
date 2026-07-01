@@ -139,8 +139,15 @@ describe('AssessmentReportsSection', () => {
     expect(input).toBeInstanceOf(HTMLInputElement);
 
     await act(async () => {
-      input!.value = 'v0.1';
+      const valueSetter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        'value',
+      )?.set;
+
+      valueSetter?.call(input, 'v0.1');
       input!.dispatchEvent(new Event('input', { bubbles: true }));
+      input!.dispatchEvent(new Event('change', { bubbles: true }));
+      await Promise.resolve();
     });
 
     expect(confirmButton?.disabled).toBe(false);

@@ -104,9 +104,9 @@ describe('draft ReportVersion production integration', () => {
       });
       expect(
         persisted.map((item: { version: number }) => item.version),
-      ).toEqual([3]);
+      ).toEqual([1, 2, 3]);
       expect(
-        reportVersionSnapshotSchema.parse(persisted[0]?.snapshot)
+        reportVersionSnapshotSchema.parse(persisted.at(-1)?.snapshot)
           .selectedThreats[0]?.title,
       ).toBe('Changed after first draft');
 

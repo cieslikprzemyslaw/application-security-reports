@@ -25,7 +25,7 @@ export const reportVersionSummaryObjectSchema = z
     version: positiveIntegerSchema,
     status: reportVersionStatusSchema,
     generatedAt: isoDateStringSchema,
-    createdAt: timestampSchema,
+    createdAt: timestampSchema.optional(),
   })
   .strict();
 

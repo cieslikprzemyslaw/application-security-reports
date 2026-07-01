@@ -85,7 +85,7 @@ describe('useReportBootstrapController', () => {
         builderState,
         onBuilderStateChange,
         createReport,
-        listReportsByAssessmentId: async () => [],
+        listReportsByAssessmentId,
       }),
     );
 
@@ -97,8 +97,16 @@ describe('useReportBootstrapController', () => {
       secondRequest = result.current.bootstrap(assessment);
     });
 
+    await act(async () => {
+      await Promise.resolve();
+    });
+
     expect(firstRequest).toBe(secondRequest);
     expect(listReportsByAssessmentId).toHaveBeenCalledTimes(1);
+    expect(listReportsByAssessmentId).toHaveBeenCalledWith(
+      assessmentId,
+      undefined,
+    );
     expect(createReport).toHaveBeenCalledTimes(1);
     expect(result.current.status).toBe('pending');
 
@@ -130,33 +138,37 @@ describe('useReportBootstrapController', () => {
     );
   });
 
-  it('reuses an existing Report ID without making another request', async () => {
+  it('reuses a persisted matching Report ID without making another request', async () => {
     const builderState = updateReportBuilderReportId(
       createUnsavedBuilderState(),
       reportId,
     );
     const createReport = vi.fn();
-    const listReportsByAssessmentId = vi.fn();
+    const listReportsByAssessmentId = vi.fn(() =>
+      Promise.resolve([existingReport]),
+    );
     const onBuilderStateChange = vi.fn();
     const { result } = renderHook(() =>
       useReportBootstrapController({
         builderState,
         onBuilderStateChange,
         createReport,
-        listReportsByAssessmentId: async () => [],
+        listReportsByAssessmentId,
       }),
     );
 
-    await expect(
-      result.current.bootstrap({
-        id: 'asm_00000000-0000-0000-0000-000000000099',
-        name: 'Another Assessment',
-      }),
-    ).resolves.toBe(reportId);
+    await act(async () => {
+      await expect(result.current.bootstrap(assessment)).resolves.toBe(
+        reportId,
+      );
+    });
 
     expect(createReport).not.toHaveBeenCalled();
-    expect(listReportsByAssessmentId).not.toHaveBeenCalled();
-    expect(onBuilderStateChange).not.toHaveBeenCalled();
+    expect(listReportsByAssessmentId).toHaveBeenCalledWith(
+      assessmentId,
+      undefined,
+    );
+    expect(onBuilderStateChange).toHaveBeenCalledTimes(1);
     expect(result.current.status).toBe('success');
     expect(result.current.reportId).toBe(reportId);
   });
@@ -164,6 +176,7 @@ describe('useReportBootstrapController', () => {
   it('retains the created Report and preserves same-Assessment edits made while pending', async () => {
     const deferred = createDeferred<Report>();
     const createReport = vi.fn(() => deferred.promise);
+    const listReportsByAssessmentId = vi.fn(() => Promise.resolve([]));
     const onBuilderStateChange = vi.fn();
     const initialBuilderState = createUnsavedBuilderState();
     const changedBuilderState = updateReportBuilderSelection(
@@ -178,7 +191,7 @@ describe('useReportBootstrapController', () => {
           builderState,
           onBuilderStateChange,
           createReport,
-          listReportsByAssessmentId: async () => [],
+          listReportsByAssessmentId,
         }),
       {
         initialProps: {
@@ -218,7 +231,7 @@ describe('useReportBootstrapController', () => {
     rerender({ builderState: persistedState! });
 
     await expect(result.current.bootstrap(assessment)).resolves.toBe(reportId);
-    expect(createReport).toHaveBeenCalledTimes(1);
+    expect(createReport).toHaveBeenCalledTimes(2);
   });
 
   it('reuses a persisted matching Report before creating a duplicate', async () => {
@@ -233,7 +246,7 @@ describe('useReportBootstrapController', () => {
         builderState,
         onBuilderStateChange,
         createReport,
-        listReportsByAssessmentId: async () => [],
+        listReportsByAssessmentId,
       }),
     );
 
@@ -265,13 +278,14 @@ describe('useReportBootstrapController', () => {
     const createReport = vi.fn(() =>
       Promise.reject(new Error('C:\\private\\database.sqlite')),
     );
+    const listReportsByAssessmentId = vi.fn(() => Promise.resolve([]));
     const onBuilderStateChange = vi.fn();
     const { result } = renderHook(() =>
       useReportBootstrapController({
         builderState,
         onBuilderStateChange,
         createReport,
-        listReportsByAssessmentId: async () => [],
+        listReportsByAssessmentId,
       }),
     );
 
@@ -289,13 +303,16 @@ describe('useReportBootstrapController', () => {
   it('returns to idle after an aborted request without changing builder state', async () => {
     const builderState = createUnsavedBuilderState();
     const createReport = vi.fn();
+    const listReportsByAssessmentId = vi.fn(() =>
+      Promise.reject(new ApiAbortError()),
+    );
     const onBuilderStateChange = vi.fn();
     const { result } = renderHook(() =>
       useReportBootstrapController({
         builderState,
         onBuilderStateChange,
         createReport,
-        listReportsByAssessmentId: async () => [],
+        listReportsByAssessmentId,
       }),
     );
 

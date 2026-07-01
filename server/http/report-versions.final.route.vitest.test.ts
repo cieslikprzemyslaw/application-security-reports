@@ -1,4 +1,4 @@
-﻿import { createServer } from 'node:http';
+import { createServer } from 'node:http';
 
 import { describe, expect, it, vi } from 'vitest';
 
@@ -184,7 +184,7 @@ describe('POST /api/reports/:id/versions/final', () => {
       expect(server.final.create).toHaveBeenCalledOnce();
       expect(
         server.final.updateReportLatestVersionIfCurrent,
-      ).toHaveBeenCalledWith(report.id, 0, 10);
+      ).toHaveBeenCalledWith(report.id, 0, 10, 'generated');
     } finally {
       await server.close();
     }

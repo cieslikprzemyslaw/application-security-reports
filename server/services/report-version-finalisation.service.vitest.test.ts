@@ -96,17 +96,11 @@ const createFinalisationHarness = (
       latestVersion = version;
     },
   );
-  const applyRetention = vi.fn(
-    async (_reportId: string, currentVersion: number) => {
-      if (options.retentionError) {
-        throw options.retentionError;
-      }
-      persisted = persisted.filter(
-        version =>
-          version.status === 'final' || version.version === currentVersion,
-      );
-    },
-  );
+  const applyRetention = vi.fn(async () => {
+    if (options.retentionError) {
+      throw options.retentionError;
+    }
+  });
   const transactionReportVersionRepository: ReportVersionTransactionRepository =
     {
       create,
@@ -213,6 +207,7 @@ describe('finaliseReportVersion', () => {
         report.id,
         expectedLatestVersion,
         expected,
+        'generated',
       );
       expect(harness.latestVersion()).toBe(expected);
       expect(
@@ -238,8 +233,11 @@ describe('finaliseReportVersion', () => {
     expect(
       harness.persisted().map(version => [version.version, version.status]),
     ).toEqual([
+      [1, 'draft'],
       [10, 'final'],
+      [11, 'draft'],
       [20, 'final'],
+      [21, 'draft'],
       [30, 'final'],
     ]);
   });

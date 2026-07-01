@@ -88,17 +88,19 @@ describe('ReportVersion finalisation transaction repositories', () => {
   it('deletes one version and recalculates the parent latestVersion in one transaction', async () => {
     const { db, transaction } = createDb();
     const repository = createReportVersionRepository(db);
-    vi.mocked(transaction.reportVersion.findFirst)
-      .mockResolvedValueOnce({
-        id: 'rvs_00000000-0000-0000-0000-000000000001',
-        reportId,
-        version: 10,
-        status: 'final',
-        generatedAt: '2026-06-25',
-        filePath: null,
-        snapshot: buildReportPreviewSnapshotFixture(),
-      })
-      .mockResolvedValueOnce({ version: 3 });
+    vi.mocked(transaction.reportVersion.findUnique).mockResolvedValueOnce({
+      id: 'rvs_00000000-0000-0000-0000-000000000001',
+      reportId,
+      version: 10,
+      status: 'final',
+      generatedAt: '2026-06-25',
+      filePath: null,
+      snapshot: buildReportPreviewSnapshotFixture(),
+    });
+    vi.mocked(transaction.reportVersion.findFirst).mockResolvedValueOnce({
+      version: 3,
+      status: 'draft',
+    });
 
     const result = await repository.deleteByReportIdAndVersionId(
       reportId,
@@ -107,13 +109,13 @@ describe('ReportVersion finalisation transaction repositories', () => {
 
     expect(db.$transaction).toHaveBeenCalledOnce();
     expect(transaction.reportVersion.delete).toHaveBeenCalledWith({
-      where: { id: 'rvs_00000000-0000-0000-0000-000000000001' },
+      where: { id: 'rvs_00000000-0000-0000-0000-000000000001', reportId },
     });
     expect(transaction.report.update).toHaveBeenCalledWith({
       where: { id: reportId },
-      data: { latestVersion: 3 },
+      data: { latestVersion: 3, status: 'draft' },
     });
-    expect(result).toMatchObject({ latestVersion: 3 });
+    expect(result).toMatchObject({ latestVersion: 3, latestStatus: 'draft' });
   });
 
   it('rejects a stale latestVersion compare-and-set update', async () => {

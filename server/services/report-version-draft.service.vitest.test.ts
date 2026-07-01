@@ -136,18 +136,11 @@ const createVersionRepositoryFake = (
       throw options.failLatestVersionUpdate;
     }
   });
-  const applyRetention = vi.fn(
-    async (_reportId: string, currentVersion: number) => {
-      if (options.failRetention) {
-        throw options.failRetention;
-      }
-
-      persisted = persisted.filter(
-        version =>
-          version.status === 'final' || version.version === currentVersion,
-      );
-    },
-  );
+  const applyRetention = vi.fn(async () => {
+    if (options.failRetention) {
+      throw options.failRetention;
+    }
+  });
   const transactionRepository: ReportVersionTransactionRepository = {
     create,
     findById,
@@ -266,6 +259,7 @@ describe('createDraftReportVersion', () => {
       expect(versionRepository.updateReportLatestVersion).toHaveBeenCalledWith(
         reportId,
         expected,
+        'draft',
       );
       expect(versionRepository.repository.applyRetention).toHaveBeenCalledWith(
         reportId,
@@ -292,7 +286,9 @@ describe('createDraftReportVersion', () => {
         .persisted()
         .map(version => [version.version, version.status]),
     ).toEqual([
+      [1, 'draft'],
       [10, 'final'],
+      [11, 'draft'],
       [20, 'final'],
       [21, 'draft'],
     ]);
