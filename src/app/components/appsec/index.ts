@@ -1,5 +1,7 @@
 export { default as AssessmentTable } from './assessmentTable';
 
+export { default as CompanyAvatar } from './companyAvatar';
+
 export { default as CompanyForm } from './companyForm';
 
 export { default as CompanyTable } from './companyTable';

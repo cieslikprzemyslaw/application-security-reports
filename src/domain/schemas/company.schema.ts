@@ -12,6 +12,16 @@ import {
   timestampSchema,
 } from './common.schema.js';
 
+const companyLogoPublicUrlSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .refine(
+    value =>
+      value.startsWith('/api/companies/') || urlSchema.safeParse(value).success,
+    'Company logo URL must be a safe public API path or absolute URL',
+  );
+
 export const companyObjectSchema = z
   .object({
     id: nonEmptyIdSchema,
@@ -43,7 +53,7 @@ export const companyPublicSchema = z
     website: optionalUrlSchema,
     contactName: optionalTrimmedTextSchema,
     contactEmail: optionalEmailSchema,
-    logoUrl: urlSchema.nullable(),
+    logoUrl: companyLogoPublicUrlSchema.nullable(),
     footerText: optionalTrimmedTextSchema,
     archivedAt: timestampSchema.nullable(),
     createdAt: timestampSchema,

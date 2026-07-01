@@ -113,9 +113,18 @@ const StyledDashboard = styled.div.attrs({ className: 'dashboard' })`
       outline-offset: -2px;
     }
 
+    .dashboard-company-identity {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: ${spacing.xs};
+      align-items: center;
+      min-width: 0;
+    }
+
     .dashboard-company-summary {
       display: grid;
       gap: ${spacing.xxs};
+      min-width: 0;
     }
 
     .dashboard-company-name {

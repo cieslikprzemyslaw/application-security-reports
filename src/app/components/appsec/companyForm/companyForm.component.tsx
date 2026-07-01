@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import Callout from '~/app/components/ui/callout';
+import CompanyAvatar from '~/app/components/appsec/companyAvatar';
 import Button from '~/app/components/ui/button';
+import Callout from '~/app/components/ui/callout';
 import Dropzone from '~/app/components/ui/dropzone';
 import Input from '~/app/components/ui/input';
 import Textarea from '~/app/components/ui/textarea';
@@ -43,6 +44,10 @@ const CompanyForm = ({
   const [logoSelectionError, setLogoSelectionError] = useState<
     string | undefined
   >();
+  const [failedLocalPreviewUrl, setFailedLocalPreviewUrl] = useState<
+    string | undefined
+  >();
+
   const previewUrl = useMemo(() => {
     if (!value.logoFile) {
       return null;
@@ -104,12 +109,20 @@ const CompanyForm = ({
 
   const handleRemoveLogo = () => {
     setLogoSelectionError(undefined);
+    setFailedLocalPreviewUrl(undefined);
     onChange({ ...value, logoFile: null, hasExistingLogo: false });
   };
 
   const errorSummary = Object.entries(errors).filter(([, error]) =>
     Boolean(error),
   );
+  const showExistingLogoPreview = Boolean(
+    !previewUrl && value.hasExistingLogo && existingLogoUrl,
+  );
+  const showLocalPreview = Boolean(
+    previewUrl && failedLocalPreviewUrl !== previewUrl,
+  );
+  const showLogoPreview = Boolean(previewUrl || showExistingLogoPreview);
 
   return (
     <StyledCompanyForm ref={formRef} onSubmit={onSubmit} noValidate>
@@ -221,14 +234,34 @@ const CompanyForm = ({
         </div>
 
         <div className="company-form-full-width">
-          {previewUrl || (value.hasExistingLogo && existingLogoUrl) ? (
+          {showLogoPreview ? (
             <div className="company-logo-preview">
               <span className="company-logo-preview-label">Company logo</span>
-              <img
-                className="company-logo-preview-img"
-                src={previewUrl ?? existingLogoUrl ?? undefined}
-                alt="Company logo preview"
-              />
+              {showLocalPreview ? (
+                <img
+                  className="company-logo-preview-img"
+                  src={previewUrl ?? undefined}
+                  alt="Company logo preview"
+                  onError={() =>
+                    setFailedLocalPreviewUrl(previewUrl ?? undefined)
+                  }
+                />
+              ) : showExistingLogoPreview ? (
+                <CompanyAvatar
+                  className="company-logo-preview-img"
+                  companyName={value.name || 'Company'}
+                  logoUrl={existingLogoUrl}
+                  size="large"
+                  ariaLabel="Company logo preview"
+                />
+              ) : (
+                <CompanyAvatar
+                  className="company-logo-preview-img"
+                  companyName={value.name || 'Company'}
+                  size="large"
+                  ariaLabel="Company logo preview"
+                />
+              )}
               <div className="company-logo-preview-actions">
                 <input
                   ref={replaceInputRef}

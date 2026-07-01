@@ -20,7 +20,7 @@ export const buildBaseUrl = (req: Request): string =>
 
 export const companyResponse = (
   company: Company,
-  baseUrl: string,
+  _baseUrl?: string,
 ): CompanyResponse =>
   companyPublicSchema.parse({
     id: company.id,
@@ -29,9 +29,7 @@ export const companyResponse = (
     website: company.website,
     contactName: company.contactName,
     contactEmail: company.contactEmail,
-    logoUrl: company.logoUrl
-      ? baseUrl + '/api/companies/' + company.id + '/logo'
-      : null,
+    logoUrl: company.logoUrl ? `/api/companies/${company.id}/logo` : null,
     footerText: company.footerText,
     archivedAt: company.archivedAt ?? null,
     createdAt: company.createdAt,
@@ -39,13 +37,13 @@ export const companyResponse = (
   });
 
 export const sendCompanyResponse = (
-  req: Request,
+  _req: Request,
   res: Response,
   statusCode: number,
   company: Company,
 ): Response =>
   res.status(statusCode).json({
-    data: companyResponse(company, buildBaseUrl(req)),
+    data: companyResponse(company),
   });
 
 export const handleCompanyRepositoryError = (

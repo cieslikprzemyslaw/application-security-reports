@@ -85,6 +85,16 @@ export const reportPreviewRequestObjectSchema = z
 
 export const reportPreviewRequestSchema = reportPreviewRequestObjectSchema;
 
+const reportPreviewPublicLogoUrlSchema = z
+  .string()
+  .trim()
+  .refine(
+    value =>
+      value.startsWith('/api/companies/') ||
+      value === '/api/settings/issuer-logo' ||
+      urlSchema.safeParse(value).success,
+    'Report preview logo URL must be a safe public API path or absolute URL',
+  );
 export const reportPreviewCompanyObjectSchema = companyObjectSchema
   .pick({
     id: true,
@@ -95,6 +105,9 @@ export const reportPreviewCompanyObjectSchema = companyObjectSchema
     contactEmail: true,
     logoUrl: true,
     footerText: true,
+  })
+  .extend({
+    logoUrl: reportPreviewPublicLogoUrlSchema.nullable().optional(),
   })
   .strict();
 
@@ -220,12 +233,12 @@ export const reportPreviewBrandingObjectSchema = z
     companyName: nonEmptyTextSchema,
     companyWebsite: optionalUrlSchema,
     companyContactEmail: z.string().trim().email().optional(),
-    companyLogoUrl: urlSchema.nullable().optional(),
+    companyLogoUrl: reportPreviewPublicLogoUrlSchema.nullable().optional(),
     companyFooterText: optionalTrimmedTextSchema,
     issuerName: optionalTrimmedTextSchema,
     issuerContactName: optionalTrimmedTextSchema,
     issuerContactEmail: z.string().trim().email().optional(),
-    issuerLogoUrl: urlSchema.nullable().optional(),
+    issuerLogoUrl: reportPreviewPublicLogoUrlSchema.nullable().optional(),
     reportFooterText: optionalTrimmedTextSchema,
     reportConfidentialityLabel: optionalTrimmedTextSchema,
     confidentialReports: z.boolean().optional(),

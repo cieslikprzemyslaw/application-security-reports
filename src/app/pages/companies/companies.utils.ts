@@ -105,6 +105,25 @@ export const getCompanyLogoTone = (name: string): CompanyLogoTone => {
   return logoTones[hash % logoTones.length];
 };
 
+export const appendLogoCacheKey = (
+  logoUrl?: string | null,
+  updatedAt?: string,
+) => {
+  const trimmedLogoUrl = logoUrl?.trim();
+
+  if (!trimmedLogoUrl) {
+    return null;
+  }
+
+  if (!updatedAt) {
+    return trimmedLogoUrl;
+  }
+
+  const separator = trimmedLogoUrl.includes('?') ? '&' : '?';
+
+  return `${trimmedLogoUrl}${separator}v=${encodeURIComponent(updatedAt)}`;
+};
+
 export const companyToTableRow = (
   company: CompanyListItem,
 ): CompanyTableRow => ({
@@ -112,6 +131,7 @@ export const companyToTableRow = (
   name: company.name,
   initials: getCompanyInitials(company.name),
   logoTone: getCompanyLogoTone(company.name),
+  logoUrl: appendLogoCacheKey(company.logoUrl, company.updatedAt),
   applicationCount: company.assessmentCount,
   website: company.website ?? '',
   primaryContact: company.contactEmail ?? company.contactName ?? '',
