@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
@@ -9,6 +9,7 @@ import { AppThemeProvider } from '~/theme';
 import AssessmentReportsSection from './assessmentReportsSection.component';
 
 import type { AssessmentReportListItem } from '~/domain';
+import type { ReportVersionService } from '~/services/reportVersionService';
 
 const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
 const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
@@ -44,7 +45,7 @@ afterEach(() => {
 const renderSection = async (
   options: {
     reports?: AssessmentReportListItem[];
-    deleteVersion?: ReturnType<typeof vi.fn>;
+    deleteVersion?: ReportVersionService['deleteVersion'];
   } = {},
 ) => {
   const container = document.createElement('div');
