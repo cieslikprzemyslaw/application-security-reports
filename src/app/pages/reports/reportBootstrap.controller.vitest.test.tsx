@@ -51,6 +51,7 @@ const existingReport: AssessmentReportListItem = {
       version: 2,
       status: 'draft',
       generatedAt: '2026-06-25',
+      createdAt: '2026-06-25T10:30:00.000Z',
     },
   ],
 };
@@ -84,7 +85,7 @@ describe('useReportBootstrapController', () => {
         builderState,
         onBuilderStateChange,
         createReport,
-        listReportsByAssessmentId,
+        listReportsByAssessmentId: async () => [],
       }),
     );
 
@@ -142,7 +143,7 @@ describe('useReportBootstrapController', () => {
         builderState,
         onBuilderStateChange,
         createReport,
-        listReportsByAssessmentId,
+        listReportsByAssessmentId: async () => [],
       }),
     );
 
@@ -163,7 +164,6 @@ describe('useReportBootstrapController', () => {
   it('retains the created Report and preserves same-Assessment edits made while pending', async () => {
     const deferred = createDeferred<Report>();
     const createReport = vi.fn(() => deferred.promise);
-    const listReportsByAssessmentId = vi.fn(() => Promise.resolve([]));
     const onBuilderStateChange = vi.fn();
     const initialBuilderState = createUnsavedBuilderState();
     const changedBuilderState = updateReportBuilderSelection(
@@ -178,7 +178,7 @@ describe('useReportBootstrapController', () => {
           builderState,
           onBuilderStateChange,
           createReport,
-          listReportsByAssessmentId,
+          listReportsByAssessmentId: async () => [],
         }),
       {
         initialProps: {
@@ -233,7 +233,7 @@ describe('useReportBootstrapController', () => {
         builderState,
         onBuilderStateChange,
         createReport,
-        listReportsByAssessmentId,
+        listReportsByAssessmentId: async () => [],
       }),
     );
 
@@ -271,7 +271,7 @@ describe('useReportBootstrapController', () => {
         builderState,
         onBuilderStateChange,
         createReport,
-        listReportsByAssessmentId,
+        listReportsByAssessmentId: async () => [],
       }),
     );
 
@@ -289,16 +289,13 @@ describe('useReportBootstrapController', () => {
   it('returns to idle after an aborted request without changing builder state', async () => {
     const builderState = createUnsavedBuilderState();
     const createReport = vi.fn();
-    const listReportsByAssessmentId = vi.fn(() =>
-      Promise.reject(new ApiAbortError()),
-    );
     const onBuilderStateChange = vi.fn();
     const { result } = renderHook(() =>
       useReportBootstrapController({
         builderState,
         onBuilderStateChange,
         createReport,
-        listReportsByAssessmentId,
+        listReportsByAssessmentId: async () => [],
       }),
     );
 

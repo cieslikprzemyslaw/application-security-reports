@@ -33,6 +33,7 @@ const reportFixture: AssessmentReportListItem = {
       version: 1,
       status: 'final',
       generatedAt: '2026-06-25' as const,
+      createdAt: '2026-06-25T10:30:00.000Z',
     },
   ],
 };
