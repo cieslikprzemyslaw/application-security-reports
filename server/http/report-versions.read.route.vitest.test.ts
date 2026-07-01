@@ -1,4 +1,4 @@
-import { createServer } from 'node:http';
+﻿import { createServer } from 'node:http';
 
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
@@ -71,6 +71,7 @@ const createVersionRepository = (
     })),
     findById,
     findByReportId,
+    applyRetention: vi.fn(async () => undefined),
     updateReportLatestVersion: vi.fn(async () => undefined),
     updateReportLatestVersionIfCurrent: vi.fn(async () => undefined),
   };

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+﻿import { describe, expect, it, vi } from 'vitest';
 
 import type { ReportVersion } from '../../src/domain/report.js';
 import { buildReportPreviewSnapshotFixture } from '../test/report-preview.fixture.js';
@@ -48,6 +48,12 @@ const approvedHistories = [
     final: 10,
   },
   {
+    name: 'retained pre-final current draft only',
+    history: [buildVersion(2, 'draft')],
+    draft: 3,
+    final: 10,
+  },
+  {
     name: 'the first final',
     history: [buildVersion(10, 'final')],
     draft: 11,
@@ -62,6 +68,12 @@ const approvedHistories = [
       buildVersion(11, 'draft'),
       buildVersion(12, 'draft'),
     ],
+    draft: 13,
+    final: 20,
+  },
+  {
+    name: 'retained current draft after the first final',
+    history: [buildVersion(10, 'final'), buildVersion(12, 'draft')],
     draft: 13,
     final: 20,
   },
@@ -111,9 +123,10 @@ const invalidHistories: Array<{
     name: 'a skipped final major version',
     history: [buildVersion(20, 'final')],
   },
+
   {
-    name: 'versions outside creation order',
-    history: [buildVersion(10, 'final'), buildVersion(1, 'draft')],
+    name: 'a current draft beyond the latest final major',
+    history: [buildVersion(10, 'final'), buildVersion(21, 'draft')],
   },
   {
     name: 'a non-positive persisted number',
@@ -227,6 +240,7 @@ describe('withNextReportVersionNumber', () => {
       findByReportId: vi.fn().mockResolvedValue([buildVersion(1, 'draft')]),
       create: vi.fn(),
       findById: vi.fn(),
+      applyRetention: vi.fn(),
       updateReportLatestVersion: vi.fn(),
       updateReportLatestVersionIfCurrent: vi.fn(),
     } satisfies ReportVersionTransactionRepository;
@@ -270,6 +284,7 @@ describe('withNextReportVersionNumber', () => {
         ]),
       create: vi.fn(),
       findById: vi.fn(),
+      applyRetention: vi.fn(),
       updateReportLatestVersion: vi.fn(),
       updateReportLatestVersionIfCurrent: vi.fn(),
     } satisfies ReportVersionTransactionRepository;

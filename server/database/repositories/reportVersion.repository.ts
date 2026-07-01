@@ -1,4 +1,4 @@
-import type { ReportVersion } from '../../../src/domain/report.js';
+﻿import type { ReportVersion } from '../../../src/domain/report.js';
 import type { CreateReportVersionInput } from '../../../src/domain/report.js';
 import type { ReportVersionStatus } from '../../../src/domain/common.js';
 import { reportVersionSnapshotSchema } from '../../../src/domain/schemas/report.schema.js';
@@ -34,6 +34,7 @@ export interface ReportVersionTransactionRepository {
   create(input: CreateReportVersionInput): Promise<ReportVersion>;
   findById(id: string): Promise<ReportVersion | null>;
   findByReportId(reportId: string): Promise<ReportVersion[]>;
+  applyRetention(reportId: string, currentVersion: number): Promise<void>;
   updateReportLatestVersion(reportId: string, version: number): Promise<void>;
   updateReportLatestVersionIfCurrent(
     reportId: string,
@@ -167,6 +168,20 @@ const createTransactionRepository = (
     });
 
     return rows.map(toReportVersion);
+  },
+
+  async applyRetention(reportId, currentVersion) {
+    try {
+      await db.reportVersion.deleteMany({
+        where: {
+          reportId,
+          status: 'draft',
+          NOT: { version: currentVersion },
+        },
+      });
+    } catch (error) {
+      throw mapPrismaError(error);
+    }
   },
 
   async updateReportLatestVersion(reportId, version) {

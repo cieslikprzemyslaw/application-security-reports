@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+﻿import { describe, expect, it, vi } from 'vitest';
 
 import type { Assessment } from '../../src/domain/assessment.js';
 import type { Company } from '../../src/domain/company.js';
@@ -112,6 +112,7 @@ const buildVersion = (
 interface VersionRepositoryFakeOptions {
   history?: ReportVersion[];
   failLatestVersionUpdate?: Error;
+  failRetention?: Error;
 }
 
 const createVersionRepositoryFake = (
@@ -135,10 +136,23 @@ const createVersionRepositoryFake = (
       throw options.failLatestVersionUpdate;
     }
   });
+  const applyRetention = vi.fn(
+    async (_reportId: string, currentVersion: number) => {
+      if (options.failRetention) {
+        throw options.failRetention;
+      }
+
+      persisted = persisted.filter(
+        version =>
+          version.status === 'final' || version.version === currentVersion,
+      );
+    },
+  );
   const transactionRepository: ReportVersionTransactionRepository = {
     create,
     findById,
     findByReportId,
+    applyRetention,
     updateReportLatestVersion,
     updateReportLatestVersionIfCurrent: vi.fn(async () => undefined),
   };
@@ -180,6 +194,7 @@ const createDependencies = (
     report?: Report | null;
     history?: ReportVersion[];
     failLatestVersionUpdate?: Error;
+    failRetention?: Error;
   } = {},
 ) => {
   const versionRepository = createVersionRepositoryFake(options);
@@ -225,6 +240,11 @@ describe('createDraftReportVersion', () => {
       history: [buildVersion(1), buildVersion(10, 'final')],
       expected: 11,
     },
+    {
+      name: 'a draft after retained v0.2 history',
+      history: [buildVersion(2)],
+      expected: 3,
+    },
   ])(
     'creates $name with backend-owned numbering',
     async ({ history, expected }) => {
@@ -246,8 +266,36 @@ describe('createDraftReportVersion', () => {
         reportId,
         expected,
       );
+      expect(versionRepository.repository.applyRetention).toHaveBeenCalledWith(
+        reportId,
+        expected,
+      );
     },
   );
+
+  it('retains every final version and only the current draft after save', async () => {
+    const { dependencies, versionRepository } = createDependencies({
+      history: [
+        buildVersion(1),
+        buildVersion(10, 'final'),
+        buildVersion(11),
+        buildVersion(20, 'final'),
+      ],
+    });
+
+    const created = await createDraft(dependencies);
+
+    expect(created.version).toBe(21);
+    expect(
+      versionRepository
+        .persisted()
+        .map(version => [version.version, version.status]),
+    ).toEqual([
+      [10, 'final'],
+      [20, 'final'],
+      [21, 'draft'],
+    ]);
+  });
 
   it('allows an incomplete draft without applying a readiness gate', async () => {
     const { dependencies } = createDependencies();
@@ -315,6 +363,18 @@ describe('createDraftReportVersion', () => {
 
     await expect(createDraft(dependencies)).rejects.toBe(failure);
     expect(versionRepository.create).toHaveBeenCalledOnce();
+    expect(versionRepository.persisted()).toEqual([]);
+  });
+
+  it('rolls back the created version when retention fails', async () => {
+    const failure = new Error('retention failed');
+    const { dependencies, versionRepository } = createDependencies({
+      failRetention: failure,
+    });
+
+    await expect(createDraft(dependencies)).rejects.toBe(failure);
+    expect(versionRepository.create).toHaveBeenCalledOnce();
+    expect(versionRepository.updateReportLatestVersion).toHaveBeenCalledOnce();
     expect(versionRepository.persisted()).toEqual([]);
   });
 });

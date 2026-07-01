@@ -1,4 +1,4 @@
-import type { ReportVersion } from '../../src/domain/report.js';
+﻿import type { ReportVersion } from '../../src/domain/report.js';
 import type { ReportVersionStatus } from '../../src/domain/common.js';
 import type {
   ReportVersionRepository,
@@ -79,38 +79,110 @@ const requireSupportedVersion = (version: ReportVersion): void => {
   failInvalidHistory();
 };
 
-const analyseReportVersionHistory = (
+const toVersionParts = (version: number): { major: number; minor: number } => ({
+  major: Math.floor(version / VERSION_SCALE),
+  minor: version % VERSION_SCALE,
+});
+
+const compareVersions = (left: ReportVersion, right: ReportVersion): number =>
+  left.version - right.version;
+
+const requireUniqueVersionNumbers = (
   history: readonly ReportVersion[],
-): ReportVersionHistoryState => {
-  let currentFinalMajor = 0;
-  let currentDraftMinor = 0;
+): void => {
+  const seen = new Set<number>();
 
   for (const version of history) {
-    requireSupportedVersion(version);
-
-    if (version.status === 'draft') {
-      const expectedDraft =
-        currentFinalMajor * VERSION_SCALE + currentDraftMinor + 1;
-
-      if (version.version !== expectedDraft) {
-        failInvalidHistory();
-      }
-
-      currentDraftMinor += 1;
-      continue;
-    }
-
-    const expectedFinal = (currentFinalMajor + 1) * VERSION_SCALE;
-
-    if (version.version !== expectedFinal) {
+    if (seen.has(version.version)) {
       failInvalidHistory();
     }
 
-    currentFinalMajor += 1;
-    currentDraftMinor = 0;
+    seen.add(version.version);
+  }
+};
+
+const requireSequentialFinalVersions = (
+  finals: readonly ReportVersion[],
+): number => {
+  let expectedMajor = 1;
+
+  for (const version of [...finals].sort(compareVersions)) {
+    const { major } = toVersionParts(version.version);
+
+    if (major !== expectedMajor) {
+      failInvalidHistory();
+    }
+
+    expectedMajor += 1;
   }
 
-  return { currentFinalMajor, currentDraftMinor };
+  return expectedMajor - 1;
+};
+
+const requireDraftContinuityWhenMultipleDraftsAreRetained = (
+  drafts: readonly ReportVersion[],
+): void => {
+  const draftsByMajor = new Map<number, number[]>();
+
+  for (const version of drafts) {
+    const { major, minor } = toVersionParts(version.version);
+    const minors = draftsByMajor.get(major) ?? [];
+    minors.push(minor);
+    draftsByMajor.set(major, minors);
+  }
+
+  for (const minors of draftsByMajor.values()) {
+    if (minors.length <= 1) {
+      continue;
+    }
+
+    const sorted = [...minors].sort((left, right) => left - right);
+
+    sorted.forEach((minor, index) => {
+      if (minor !== index + 1) {
+        failInvalidHistory();
+      }
+    });
+  }
+};
+
+const analyseReportVersionHistory = (
+  history: readonly ReportVersion[],
+): ReportVersionHistoryState => {
+  if (history.length === 0) {
+    return { currentFinalMajor: 0, currentDraftMinor: 0 };
+  }
+
+  for (const version of history) {
+    requireSupportedVersion(version);
+  }
+
+  requireUniqueVersionNumbers(history);
+
+  const draftVersions = history.filter(version => version.status === 'draft');
+  const finalMajor = requireSequentialFinalVersions(
+    history.filter(version => version.status === 'final'),
+  );
+
+  requireDraftContinuityWhenMultipleDraftsAreRetained(draftVersions);
+
+  const current = [...history].sort(compareVersions).at(-1);
+
+  if (!current) {
+    return { currentFinalMajor: 0, currentDraftMinor: 0 };
+  }
+
+  const { major, minor } = toVersionParts(current.version);
+
+  if (current.status === 'final') {
+    return { currentFinalMajor: major, currentDraftMinor: 0 };
+  }
+
+  if (major !== finalMajor) {
+    failInvalidHistory();
+  }
+
+  return { currentFinalMajor: major, currentDraftMinor: minor };
 };
 
 export const calculateNextDraftReportVersionNumber = (

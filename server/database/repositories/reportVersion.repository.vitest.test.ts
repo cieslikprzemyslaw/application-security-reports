@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+﻿import { describe, expect, it, vi } from 'vitest';
 
 import { RepositoryConflictError } from '../errors.js';
 
@@ -29,6 +29,7 @@ const createDb = () => {
       create: vi.fn(),
       findUnique: vi.fn(),
       findMany: vi.fn().mockResolvedValue([]),
+      deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
     },
     settings: { findFirst: vi.fn().mockResolvedValue(null) },
   } as unknown as RepositoryTransactionClient;
@@ -58,6 +59,7 @@ describe('ReportVersion finalisation transaction repositories', () => {
       await repositories.reportRepository.findById(reportId);
       await repositories.settingsRepository.get();
       await repositories.reportVersionRepository.findByReportId(reportId);
+      await repositories.reportVersionRepository.applyRetention(reportId, 10);
       await repositories.reportVersionRepository.updateReportLatestVersionIfCurrent(
         reportId,
         0,
@@ -73,6 +75,13 @@ describe('ReportVersion finalisation transaction repositories', () => {
     expect(transaction.report.findUnique).toHaveBeenCalledOnce();
     expect(transaction.settings.findFirst).toHaveBeenCalledOnce();
     expect(transaction.reportVersion.findMany).toHaveBeenCalledOnce();
+    expect(transaction.reportVersion.deleteMany).toHaveBeenCalledWith({
+      where: {
+        reportId,
+        status: 'draft',
+        NOT: { version: 10 },
+      },
+    });
     expect(transaction.report.updateMany).toHaveBeenCalledWith({
       where: { id: reportId, latestVersion: 0 },
       data: { latestVersion: 10 },

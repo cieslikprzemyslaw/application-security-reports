@@ -1,4 +1,4 @@
-import { createServer } from 'node:http';
+﻿import { createServer } from 'node:http';
 
 import { describe, expect, it, vi } from 'vitest';
 
@@ -77,6 +77,7 @@ const createFinalRepository = (
     create,
     findById: vi.fn(async id => history.find(item => item.id === id) ?? null),
     findByReportId: vi.fn(async () => structuredClone(history)),
+    applyRetention: vi.fn(async () => undefined),
     updateReportLatestVersion: vi.fn(async (_reportId, version) => {
       latestVersion = version;
     }),

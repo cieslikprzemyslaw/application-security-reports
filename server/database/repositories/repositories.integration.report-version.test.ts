@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -230,6 +230,13 @@ try {
   const versionList = await reportVersionRepo.findByReportId(report.id);
   assert.equal(versionList.length, 2);
   assert.ok(versionList.every(v => v.reportId === report.id));
+
+  await reportVersionRepo.applyRetention(report.id, finalVersion.version);
+  const retainedVersions = await reportVersionRepo.findByReportId(report.id);
+  assert.deepEqual(
+    retainedVersions.map(version => [version.version, version.status]),
+    [[10, 'final']],
+  );
 
   await assert.rejects(
     reportVersionRepo.create({

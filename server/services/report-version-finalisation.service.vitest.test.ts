@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+﻿import { describe, expect, it, vi } from 'vitest';
 
 import type {
   CreateReportVersionInput,
@@ -52,6 +52,7 @@ interface FinalisationHarnessOptions {
   history?: ReportVersion[];
   createError?: Error;
   latestVersionUpdateError?: Error;
+  retentionError?: Error;
   latestVersion?: number;
   transactionError?: Error;
 }
@@ -105,11 +106,24 @@ const createFinalisationHarness = (
       latestVersion = version;
     },
   );
+  const applyRetention = vi.fn(
+    async (_reportId: string, currentVersion: number) => {
+      if (options.retentionError) {
+        throw options.retentionError;
+      }
+
+      persisted = persisted.filter(
+        version =>
+          version.status === 'final' || version.version === currentVersion,
+      );
+    },
+  );
   const transactionReportVersionRepository: ReportVersionTransactionRepository =
     {
       create,
       findById,
       findByReportId,
+      applyRetention,
       updateReportLatestVersion,
       updateReportLatestVersionIfCurrent,
     };
@@ -220,8 +234,37 @@ describe('finaliseReportVersion', () => {
         expected,
       );
       expect(harness.latestVersion()).toBe(expected);
+      expect(
+        harness.persisted().filter(version => version.status === 'final'),
+      ).not.toHaveLength(0);
     },
   );
+
+  it('retains all final versions and removes only old non-current drafts after finalisation', async () => {
+    const harness = createFinalisationHarness({
+      history: [
+        buildVersion(1),
+        buildVersion(10, 'final'),
+        buildVersion(11),
+        buildVersion(20, 'final'),
+        buildVersion(21),
+      ],
+    });
+
+    const result = await finalise(harness.dependencies, previewRequest, 21);
+
+    expect(result).toMatchObject({
+      status: 'created',
+      reportVersion: { version: 30, status: 'final' },
+    });
+    expect(
+      harness.persisted().map(version => [version.version, version.status]),
+    ).toEqual([
+      [10, 'final'],
+      [20, 'final'],
+      [30, 'final'],
+    ]);
+  });
 
   it('allows warning-only content without a client override', async () => {
     const harness = createFinalisationHarness();
@@ -307,8 +350,19 @@ describe('finaliseReportVersion', () => {
     expect(harness.latestVersion()).toBe(0);
   });
 
-  it('stores a new immutable snapshot without changing previous versions', async () => {
-    const previous = buildVersion(1);
+  it('rolls back the new version when retention fails', async () => {
+    const failure = new Error('retention failed');
+    const harness = createFinalisationHarness({ retentionError: failure });
+
+    await expect(finalise(harness.dependencies)).rejects.toBe(failure);
+    expect(harness.create).toHaveBeenCalledOnce();
+    expect(harness.updateReportLatestVersionIfCurrent).toHaveBeenCalledOnce();
+    expect(harness.persisted()).toEqual([]);
+    expect(harness.latestVersion()).toBe(0);
+  });
+
+  it('stores a new immutable snapshot without changing previous final versions', async () => {
+    const previous = buildVersion(10, 'final');
     const mutableThreat = { ...readyThreat };
     const harness = createFinalisationHarness({
       history: [previous],
@@ -316,7 +370,7 @@ describe('finaliseReportVersion', () => {
     });
 
     const mutableRequest = structuredClone(previewRequest);
-    const result = await finalise(harness.dependencies, mutableRequest, 1);
+    const result = await finalise(harness.dependencies, mutableRequest, 10);
     mutableThreat.title = 'Changed after finalisation';
     mutableRequest.selection.threatIds.push(
       'thr_00000000-0000-0000-0000-000000000099',
