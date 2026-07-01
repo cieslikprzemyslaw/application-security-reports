@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-
 import type {
   CreateReportVersionInput,
   ReportVersion,
@@ -26,13 +25,11 @@ import {
   finaliseReportVersion,
   type FinaliseReportVersionDependencies,
 } from './report-version-finalisation.service.js';
-
 const readyThreat = {
   ...threat,
   impact: 'Customer data may be exposed.',
   recommendation: 'Apply object-level authorization.',
 };
-
 const buildVersion = (
   version: number,
   status: ReportVersion['status'] = 'draft',
@@ -44,9 +41,7 @@ const buildVersion = (
   generatedAt: '2026-06-24',
   snapshot: buildReportPreviewSnapshotFixture(),
 });
-
 type PreviewOverrides = Parameters<typeof createPreviewRepositories>[0];
-
 interface FinalisationHarnessOptions {
   preview?: PreviewOverrides;
   history?: ReportVersion[];
@@ -56,7 +51,6 @@ interface FinalisationHarnessOptions {
   latestVersion?: number;
   transactionError?: Error;
 }
-
 const createFinalisationHarness = (
   options: FinalisationHarnessOptions = {},
 ) => {
@@ -67,12 +61,10 @@ const createFinalisationHarness = (
   let persisted = structuredClone(options.history ?? []);
   let latestVersion =
     options.latestVersion ?? persisted.at(-1)?.version ?? report.latestVersion;
-
   const create = vi.fn(async (input: CreateReportVersionInput) => {
     if (options.createError) {
       throw options.createError;
     }
-
     const created: ReportVersion = {
       id: `rvs_00000000-0000-0000-0000-${String(input.version).padStart(12, '0')}`,
       ...structuredClone(input),
@@ -98,11 +90,9 @@ const createFinalisationHarness = (
       if (options.latestVersionUpdateError) {
         throw options.latestVersionUpdateError;
       }
-
       if (latestVersion !== expectedLatestVersion) {
         throw new RepositoryConflictError();
       }
-
       latestVersion = version;
     },
   );
@@ -111,7 +101,6 @@ const createFinalisationHarness = (
       if (options.retentionError) {
         throw options.retentionError;
       }
-
       persisted = persisted.filter(
         version =>
           version.status === 'final' || version.version === currentVersion,
@@ -143,14 +132,11 @@ const createFinalisationHarness = (
   const withFinalisationTransaction: FinaliseReportVersionDependencies['reportVersionRepository']['withFinalisationTransaction'] =
     async operation => {
       withFinalisationTransactionCalls();
-
       if (options.transactionError) {
         throw options.transactionError;
       }
-
       const versionsBefore = structuredClone(persisted);
       const latestVersionBefore = latestVersion;
-
       try {
         return await operation(transactionRepositories);
       } catch (error) {
@@ -163,7 +149,6 @@ const createFinalisationHarness = (
     reportVersionRepository: { withFinalisationTransaction },
     now: () => new Date('2026-06-24T19:00:00.000Z'),
   };
-
   return {
     dependencies,
     create,
@@ -176,7 +161,6 @@ const createFinalisationHarness = (
     latestVersion: () => latestVersion,
   };
 };
-
 const finalise = (
   dependencies: FinaliseReportVersionDependencies,
   request = previewRequest,
@@ -191,7 +175,6 @@ const finalise = (
     },
     dependencies,
   );
-
 describe('finaliseReportVersion', () => {
   it.each([
     {
@@ -210,13 +193,11 @@ describe('finaliseReportVersion', () => {
     'creates $name with backend-owned numbering',
     async ({ history, expectedLatestVersion, expected }) => {
       const harness = createFinalisationHarness({ history });
-
       const result = await finalise(
         harness.dependencies,
         previewRequest,
         expectedLatestVersion,
       );
-
       expect(result).toMatchObject({
         status: 'created',
         reportVersion: {
@@ -239,7 +220,6 @@ describe('finaliseReportVersion', () => {
       ).not.toHaveLength(0);
     },
   );
-
   it('preserves every saved draft and final version after finalisation', async () => {
     const harness = createFinalisationHarness({
       history: [
@@ -250,9 +230,7 @@ describe('finaliseReportVersion', () => {
         buildVersion(21),
       ],
     });
-
     const result = await finalise(harness.dependencies, previewRequest, 21);
-
     expect(result).toMatchObject({
       status: 'created',
       reportVersion: { version: 30, status: 'final' },
@@ -265,7 +243,6 @@ describe('finaliseReportVersion', () => {
       [30, 'final'],
     ]);
   });
-
   it('allows warning-only content without a client override', async () => {
     const harness = createFinalisationHarness();
     const warningOnlyRequest = {
@@ -275,21 +252,16 @@ describe('finaliseReportVersion', () => {
         evidenceIds: [],
       },
     };
-
     const result = await finalise(harness.dependencies, warningOnlyRequest);
-
     expect(result.status).toBe('created');
     expect(harness.create).toHaveBeenCalledOnce();
     expect(harness.persisted()[0]?.snapshot.warnings).toEqual([]);
   });
-
   it('returns structured blocking readiness errors and performs no writes', async () => {
     const harness = createFinalisationHarness({
       preview: { threat: { ...readyThreat, impact: undefined } },
     });
-
     const result = await finalise(harness.dependencies);
-
     expect(result).toMatchObject({
       status: 'blocked',
       readiness: {
@@ -302,17 +274,14 @@ describe('finaliseReportVersion', () => {
     expect(harness.persisted()).toEqual([]);
     expect(harness.latestVersion()).toBe(0);
   });
-
   it('reuses readiness ownership and archived-state validation inside the transaction', async () => {
     const archivedHarness = createFinalisationHarness({
       preview: { report: { ...report, status: 'archived' } },
     });
-
     await expect(finalise(archivedHarness.dependencies)).rejects.toBeInstanceOf(
       ValidationError,
     );
     expect(archivedHarness.create).not.toHaveBeenCalled();
-
     const ownershipHarness = createFinalisationHarness({
       preview: {
         report: {
@@ -321,46 +290,38 @@ describe('finaliseReportVersion', () => {
         },
       },
     });
-
     await expect(
       finalise(ownershipHarness.dependencies),
     ).rejects.toBeInstanceOf(ValidationError);
     expect(ownershipHarness.create).not.toHaveBeenCalled();
   });
-
   it('uses the readiness missing-Report error and leaves persistence unchanged', async () => {
     const harness = createFinalisationHarness({ preview: { report: null } });
-
     await expect(finalise(harness.dependencies)).rejects.toBeInstanceOf(
       ReportReadinessReportNotFoundError,
     );
     expect(harness.create).not.toHaveBeenCalled();
     expect(harness.persisted()).toEqual([]);
   });
-
   it('rolls back the new version when updating Report.latestVersion fails', async () => {
     const failure = new Error('latestVersion update failed');
     const harness = createFinalisationHarness({
       latestVersionUpdateError: failure,
     });
-
     await expect(finalise(harness.dependencies)).rejects.toBe(failure);
     expect(harness.create).toHaveBeenCalledOnce();
     expect(harness.persisted()).toEqual([]);
     expect(harness.latestVersion()).toBe(0);
   });
-
   it('rolls back the new version when retention fails', async () => {
     const failure = new Error('retention failed');
     const harness = createFinalisationHarness({ retentionError: failure });
-
     await expect(finalise(harness.dependencies)).rejects.toBe(failure);
     expect(harness.create).toHaveBeenCalledOnce();
     expect(harness.updateReportLatestVersionIfCurrent).toHaveBeenCalledOnce();
     expect(harness.persisted()).toEqual([]);
     expect(harness.latestVersion()).toBe(0);
   });
-
   it('stores a new immutable snapshot without changing previous final versions', async () => {
     const previous = buildVersion(10, 'final');
     const mutableThreat = { ...readyThreat };
@@ -368,14 +329,12 @@ describe('finaliseReportVersion', () => {
       history: [previous],
       preview: { threat: mutableThreat },
     });
-
     const mutableRequest = structuredClone(previewRequest);
     const result = await finalise(harness.dependencies, mutableRequest, 10);
     mutableThreat.title = 'Changed after finalisation';
     mutableRequest.selection.threatIds.push(
       'thr_00000000-0000-0000-0000-000000000099',
     );
-
     expect(result.status).toBe('created');
     expect(harness.persisted()[0]).toEqual(previous);
     expect(harness.persisted()[1]?.snapshot.selectedThreats[0]?.title).toBe(
@@ -385,38 +344,29 @@ describe('finaliseReportVersion', () => {
       threat.id,
     ]);
   });
-
   it('rejects a stale expectedLatestVersion without creating the next major final', async () => {
     const harness = createFinalisationHarness();
-
     const first = await finalise(harness.dependencies, previewRequest, 0);
     expect(first).toMatchObject({
       status: 'created',
       reportVersion: { version: 10 },
     });
-
     await expect(
       finalise(harness.dependencies, previewRequest, 0),
     ).rejects.toBeInstanceOf(RepositoryConflictError);
-
     expect(harness.persisted().map(version => version.version)).toEqual([10]);
     expect(harness.latestVersion()).toBe(10);
   });
-
   it('does not retry a concurrent version conflict as another major version', async () => {
     const conflict = new RepositoryConflictError();
     const harness = createFinalisationHarness({ transactionError: conflict });
-
     await expect(finalise(harness.dependencies)).rejects.toBe(conflict);
     expect(harness.withFinalisationTransactionCalls).toHaveBeenCalledOnce();
     expect(harness.create).not.toHaveBeenCalled();
   });
-
   it('resolves the complete final snapshot through transaction-bound repositories', async () => {
     const harness = createFinalisationHarness();
-
     const result = await finalise(harness.dependencies);
-
     expect(result.status).toBe('created');
     expect(harness.persisted()[0]?.snapshot).toMatchObject({
       company: { id: company.id },
