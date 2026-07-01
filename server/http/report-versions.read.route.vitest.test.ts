@@ -1,4 +1,4 @@
-﻿import { createServer } from 'node:http';
+import { createServer } from 'node:http';
 
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
@@ -50,7 +50,10 @@ const createVersionRepository = (
     findByIdError?: Error;
     findByReportIdError?: Error;
     deleteError?: Error;
-    deleteResult?: { latestVersion: number } | null;
+    deleteResult?: {
+      latestVersion: number;
+      latestStatus: 'draft' | 'generated';
+    } | null;
   } = {},
 ) => {
   const versions = options.versions ?? [
@@ -82,6 +85,7 @@ const createVersionRepository = (
       return {
         deletedVersion: structuredClone(version),
         latestVersion: options.deleteResult?.latestVersion ?? 0,
+        latestStatus: options.deleteResult?.latestStatus ?? 'draft',
       };
     },
   );
@@ -116,7 +120,10 @@ const startReadServer = async (
     findByIdError?: Error;
     findByReportIdError?: Error;
     deleteError?: Error;
-    deleteResult?: { latestVersion: number } | null;
+    deleteResult?: {
+      latestVersion: number;
+      latestStatus: 'draft' | 'generated';
+    } | null;
   } = {},
 ) => {
   const preview = createPreviewRepositories({
@@ -241,7 +248,7 @@ describe('ReportVersion read routes', () => {
 
   it('deletes a selected ReportVersion and returns the next latest version', async () => {
     const server = await startReadServer({
-      deleteResult: { latestVersion: 10 },
+      deleteResult: { latestVersion: 10, latestStatus: 'generated' },
     });
 
     try {

@@ -1,4 +1,4 @@
-﻿import type { ReportVersion } from '../../../src/domain/report.js';
+import type { ReportVersion } from '../../../src/domain/report.js';
 import type { CreateReportVersionInput } from '../../../src/domain/report.js';
 import type {
   ReportStatus,
@@ -158,10 +158,7 @@ const createTransactionRepository = (
     );
 
     if (!snapshotResult.success) {
-      throw new ValidationError({
-        error: 'VALIDATION_ERROR',
-        fields: formatValidationErrors(snapshotResult.error),
-      });
+      throw new ValidationError(formatValidationErrors(snapshotResult.error));
     }
 
     try {
