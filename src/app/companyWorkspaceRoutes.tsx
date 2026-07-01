@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   Navigate,
   Outlet,
@@ -190,7 +190,9 @@ export const CompanyReportsRoute = ({
     }
 
     if (nextView === 'data') {
-      navigate(-1);
+      navigate(routes.companyWorkspaceReports(companyId), {
+        state: serializeReportBuilderRouteState(builderState),
+      });
       return;
     }
 

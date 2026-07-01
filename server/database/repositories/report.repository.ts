@@ -59,6 +59,7 @@ type ReportListRow = ReportRow & {
     version: number;
     status: string;
     generatedAt: string;
+    createdAt: Date;
   }>;
 };
 
@@ -89,6 +90,7 @@ const reportListSelect = {
       version: true,
       status: true,
       generatedAt: true,
+      createdAt: true,
     },
     orderBy: { version: 'desc' as const },
   },
@@ -113,6 +115,7 @@ const toReportVersionSummary = (
   version: version.version,
   status: version.status as ReportVersionSummary['status'],
   generatedAt: version.generatedAt as ReportVersionSummary['generatedAt'],
+  createdAt: toIsoString(version.createdAt),
 });
 
 const toAssessmentReportListItem = (

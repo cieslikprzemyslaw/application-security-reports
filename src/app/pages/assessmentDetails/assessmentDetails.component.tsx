@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+﻿import { useCallback, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import {
@@ -145,6 +145,22 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
     onMutationSuccess: handleEvidenceCountChange,
   });
 
+  const handleReportVersionCountChange = (delta: number) => {
+    setOverview(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        assessment: {
+          ...prev.assessment,
+          reportVersionCount: Math.max(
+            0,
+            prev.assessment.reportVersionCount + delta,
+          ),
+        },
+      };
+    });
+  };
+
   const permanentDeletionController = usePermanentAssessmentDeletion({
     onDeleted: ({ cleanupWarnings }) => {
       if (!companyId) {
@@ -233,6 +249,7 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
           <AssessmentReportsSection
             companyId={companyId}
             assessmentId={assessmentId}
+            onVersionCountChange={handleReportVersionCountChange}
           />
         }
         onSectionChange={handleSectionChange}

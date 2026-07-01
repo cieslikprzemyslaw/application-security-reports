@@ -8,11 +8,6 @@ import type {
 const VERSION_SCALE = 10;
 const MAX_DRAFT_MINOR = VERSION_SCALE - 1;
 
-interface ReportVersionHistoryState {
-  currentFinalMajor: number;
-  currentDraftMinor: number;
-}
-
 export interface ReportVersionNumberingRepository {
   findByReportId: Pick<
     ReportVersionTransactionRepository,
@@ -52,16 +47,20 @@ const failInvalidHistory = (): never => {
   throw new ReportVersionHistoryError();
 };
 
+const getMajor = (version: number): number =>
+  Math.floor(version / VERSION_SCALE);
+const getMinor = (version: number): number => version % VERSION_SCALE;
+
 const requireSupportedVersion = (version: ReportVersion): void => {
   if (!Number.isSafeInteger(version.version) || version.version <= 0) {
     failInvalidHistory();
   }
 
-  const major = Math.floor(version.version / VERSION_SCALE);
-  const minor = version.version % VERSION_SCALE;
+  const major = getMajor(version.version);
+  const minor = getMinor(version.version);
 
   if (version.status === 'draft') {
-    if (minor === 0) {
+    if (minor === 0 || minor > MAX_DRAFT_MINOR) {
       failInvalidHistory();
     }
 
@@ -79,59 +78,72 @@ const requireSupportedVersion = (version: ReportVersion): void => {
   failInvalidHistory();
 };
 
-const analyseReportVersionHistory = (
-  history: readonly ReportVersion[],
-): ReportVersionHistoryState => {
-  let currentFinalMajor = 0;
-  let currentDraftMinor = 0;
+const requireSupportedHistory = (history: readonly ReportVersion[]): void => {
+  const seenVersions = new Set<number>();
 
   for (const version of history) {
     requireSupportedVersion(version);
 
-    if (version.status === 'draft') {
-      const expectedDraft =
-        currentFinalMajor * VERSION_SCALE + currentDraftMinor + 1;
-
-      if (version.version !== expectedDraft) {
-        failInvalidHistory();
-      }
-
-      currentDraftMinor += 1;
-      continue;
-    }
-
-    const expectedFinal = (currentFinalMajor + 1) * VERSION_SCALE;
-
-    if (version.version !== expectedFinal) {
+    if (seenVersions.has(version.version)) {
       failInvalidHistory();
     }
 
-    currentFinalMajor += 1;
-    currentDraftMinor = 0;
+    seenVersions.add(version.version);
   }
-
-  return { currentFinalMajor, currentDraftMinor };
 };
+
+const maxOrZero = (values: readonly number[]): number =>
+  values.length === 0 ? 0 : Math.max(...values);
 
 export const calculateNextDraftReportVersionNumber = (
   history: readonly ReportVersion[],
 ): number => {
-  const { currentFinalMajor, currentDraftMinor } =
-    analyseReportVersionHistory(history);
+  requireSupportedHistory(history);
 
-  if (currentDraftMinor >= MAX_DRAFT_MINOR) {
+  if (history.length === 0) {
+    return 1;
+  }
+
+  const latestFinalMajor = maxOrZero(
+    history
+      .filter(version => version.status === 'final')
+      .map(version => getMajor(version.version)),
+  );
+  const latestDraftMajor = maxOrZero(
+    history
+      .filter(version => version.status === 'draft')
+      .map(version => getMajor(version.version)),
+  );
+  const activeMajor = Math.max(latestFinalMajor, latestDraftMajor);
+  const latestDraftMinorInActiveMajor = maxOrZero(
+    history
+      .filter(
+        version =>
+          version.status === 'draft' &&
+          getMajor(version.version) === activeMajor,
+      )
+      .map(version => getMinor(version.version)),
+  );
+
+  if (latestDraftMinorInActiveMajor >= MAX_DRAFT_MINOR) {
     throw new ReportVersionSequenceExhaustedError();
   }
 
-  return currentFinalMajor * VERSION_SCALE + currentDraftMinor + 1;
+  return activeMajor * VERSION_SCALE + latestDraftMinorInActiveMajor + 1;
 };
 
 export const calculateNextFinalReportVersionNumber = (
   history: readonly ReportVersion[],
 ): number => {
-  const { currentFinalMajor } = analyseReportVersionHistory(history);
+  requireSupportedHistory(history);
 
-  return (currentFinalMajor + 1) * VERSION_SCALE;
+  const latestFinalMajor = maxOrZero(
+    history
+      .filter(version => version.status === 'final')
+      .map(version => getMajor(version.version)),
+  );
+
+  return (latestFinalMajor + 1) * VERSION_SCALE;
 };
 
 const calculateNextReportVersionNumber = (

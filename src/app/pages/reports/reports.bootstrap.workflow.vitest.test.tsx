@@ -84,9 +84,18 @@ describe('Report bootstrap workflow', () => {
   it('creates once through the production service and retains the stable Report ID', async () => {
     const response = createDeferred<Response>();
     const requestBodies: unknown[] = [];
+    let createdReportListItem: Record<string, unknown> | undefined;
 
     setFetch(async (input, init) => {
-      expect(String(input)).toBe('/api/reports');
+      const path = String(input);
+
+      if (path === `/api/reports?assessmentId=${assessmentId}`) {
+        return createJsonResponse({
+          data: createdReportListItem ? [createdReportListItem] : [],
+        });
+      }
+
+      expect(path).toBe('/api/reports');
       expect(init?.method).toBe('POST');
       requestBodies.push(JSON.parse(String(init?.body)));
 
@@ -117,18 +126,24 @@ describe('Report bootstrap workflow', () => {
         selectedThreatIds: [threatId],
       });
 
+      const createdReport = {
+        id: reportId,
+        assessmentId,
+        title: 'Customer Services Portal Security Report',
+        status: 'draft',
+        selectedThreatIds: [threatId],
+        latestVersion: 0,
+        createdAt: '2026-06-25T10:00:00.000Z',
+        updatedAt: '2026-06-25T10:00:00.000Z',
+      };
+      createdReportListItem = {
+        ...createdReport,
+        versions: [],
+      };
+
       response.resolve(
         createJsonResponse({
-          data: {
-            id: reportId,
-            assessmentId,
-            title: 'Customer Services Portal Security Report',
-            status: 'draft',
-            selectedThreatIds: [threatId],
-            latestVersion: 0,
-            createdAt: '2026-06-25T10:00:00.000Z',
-            updatedAt: '2026-06-25T10:00:00.000Z',
-          },
+          data: createdReport,
         }),
       );
 

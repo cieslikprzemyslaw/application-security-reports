@@ -80,6 +80,11 @@ export const finaliseReportVersion = async (
         input.reportId,
         input.expectedLatestVersion,
         version,
+        'generated',
+      );
+      await repositories.reportVersionRepository.applyRetention(
+        input.reportId,
+        version,
       );
 
       const { filePath: _filePath, ...reportVersion } = created;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { ReportBuilderState } from '~/domain';
+import type { AssessmentReportListItem, ReportBuilderState } from '~/domain';
 import type { AssessmentListItem } from '~/services';
 import type { ReportService } from '~/services/reportService';
 import { ApiAbortError } from '~/services/apiClient';
@@ -26,11 +26,13 @@ export type ReportBootstrapAssessment = Pick<
 >;
 
 export type ReportCreator = ReportService['create'];
+export type ReportListByAssessmentId = ReportService['listByAssessmentId'];
 
 interface UseReportBootstrapControllerOptions {
   builderState: ReportBuilderState;
   onBuilderStateChange: (state: ReportBuilderState) => void;
   createReport?: ReportCreator;
+  listReportsByAssessmentId?: ReportListByAssessmentId;
 }
 
 const idleState: ReportBootstrapControllerState = {
@@ -68,10 +70,51 @@ export const createInitialReportTitle = (
   return `${titlePart} Security Report`;
 };
 
+const hasSameThreatSelection = (
+  report: AssessmentReportListItem,
+  selectedThreatIds: readonly string[],
+): boolean => {
+  if (report.selectedThreatIds.length !== selectedThreatIds.length) {
+    return false;
+  }
+
+  return report.selectedThreatIds.every(
+    (threatId, index) => threatId === selectedThreatIds[index],
+  );
+};
+
+const isReusableReport = (
+  report: AssessmentReportListItem,
+  assessmentId: string,
+  title: string,
+  selectedThreatIds: readonly string[],
+): boolean =>
+  report.assessmentId === assessmentId &&
+  report.status !== 'archived' &&
+  report.title === title &&
+  hasSameThreatSelection(report, selectedThreatIds);
+
+const findReusableReport = (
+  reports: readonly AssessmentReportListItem[],
+  assessmentId: string,
+  title: string,
+  selectedThreatIds: readonly string[],
+): AssessmentReportListItem | undefined => {
+  const reusableReports = reports.filter(report =>
+    isReusableReport(report, assessmentId, title, selectedThreatIds),
+  );
+
+  return (
+    reusableReports.find(report => report.versions.length > 0) ??
+    reusableReports[0]
+  );
+};
+
 export const useReportBootstrapController = ({
   builderState,
   onBuilderStateChange,
   createReport = reportService.create,
+  listReportsByAssessmentId = reportService.listByAssessmentId,
 }: UseReportBootstrapControllerOptions) => {
   const builderStateRef = useRef(builderState);
   const onBuilderStateChangeRef = useRef(onBuilderStateChange);
@@ -100,16 +143,9 @@ export const useReportBootstrapController = ({
     ): Promise<string> => {
       const currentState = builderStateRef.current;
 
-      if (currentState.reportId) {
-        const reportId = currentState.reportId;
-
-        setState({
-          status: 'success',
-          reportId,
-        });
-
-        return Promise.resolve(reportId);
-      }
+      // Do not trust route-state reportId blindly. The saved Report may have
+      // been deleted or changed in another flow, so resolve it through the
+      // Assessment report list below before creating or saving a version.
 
       if (pendingRequestRef.current) {
         return pendingRequestRef.current;
@@ -149,48 +185,61 @@ export const useReportBootstrapController = ({
         status: 'pending',
       });
 
-      let createRequest: ReturnType<ReportCreator>;
+      const reportTitle = createInitialReportTitle(assessment);
+      const persistReportId = (reportId: string): string => {
+        const latestBuilderState = builderStateRef.current;
+        const latestSelection =
+          latestBuilderState.selection.selectedAssessmentId ===
+          currentState.selection.selectedAssessmentId
+            ? latestBuilderState.selection
+            : currentState.selection;
 
-      try {
-        createRequest = createReport(
+        const nextBuilderState = updateReportBuilderReportId(
           {
-            assessmentId: selectedAssessmentId,
-            title: createInitialReportTitle(assessment),
-            selectedThreatIds: requestSelection.selectedThreatIds,
+            ...latestBuilderState,
+            selection: latestSelection,
           },
-          signal,
+          reportId,
         );
-      } catch (error) {
-        createRequest = Promise.reject(error);
-      }
 
-      const pendingRequest = createRequest
-        .then(report => {
-          const latestBuilderState = builderStateRef.current;
-          const latestSelection =
-            latestBuilderState.selection.selectedAssessmentId ===
-            currentState.selection.selectedAssessmentId
-              ? latestBuilderState.selection
-              : currentState.selection;
+        builderStateRef.current = nextBuilderState;
+        onBuilderStateChangeRef.current(nextBuilderState);
 
-          const nextBuilderState = updateReportBuilderReportId(
+        setState({
+          status: 'success',
+          reportId: nextBuilderState.reportId,
+        });
+
+        return nextBuilderState.reportId!;
+      };
+
+      const pendingRequest = Promise.resolve()
+        .then(() =>
+          listReportsByAssessmentId(selectedAssessmentId, signal).then(
+            reports =>
+              findReusableReport(
+                reports,
+                selectedAssessmentId,
+                reportTitle,
+                requestSelection.selectedThreatIds,
+              ),
+          ),
+        )
+        .then(reusableReport => {
+          if (reusableReport) {
+            return reusableReport;
+          }
+
+          return createReport(
             {
-              ...latestBuilderState,
-              selection: latestSelection,
+              assessmentId: selectedAssessmentId,
+              title: reportTitle,
+              selectedThreatIds: requestSelection.selectedThreatIds,
             },
-            report.id,
+            signal,
           );
-
-          builderStateRef.current = nextBuilderState;
-          onBuilderStateChangeRef.current(nextBuilderState);
-
-          setState({
-            status: 'success',
-            reportId: nextBuilderState.reportId,
-          });
-
-          return nextBuilderState.reportId!;
         })
+        .then(report => persistReportId(report.id))
         .catch(error => {
           if (error instanceof ApiAbortError || signal?.aborted) {
             setState(idleState);
@@ -212,7 +261,7 @@ export const useReportBootstrapController = ({
 
       return pendingRequest;
     },
-    [createReport],
+    [createReport, listReportsByAssessmentId],
   );
 
   const resolvedState: ReportBootstrapControllerState = builderState.reportId

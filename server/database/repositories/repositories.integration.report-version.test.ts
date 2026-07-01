@@ -231,6 +231,16 @@ try {
   assert.equal(versionList.length, 2);
   assert.ok(versionList.every(v => v.reportId === report.id));
 
+  await reportVersionRepo.applyRetention(report.id, finalVersion.version);
+  const retainedVersions = await reportVersionRepo.findByReportId(report.id);
+  assert.deepEqual(
+    retainedVersions.map(version => [version.version, version.status]),
+    [
+      [1, 'draft'],
+      [10, 'final'],
+    ],
+  );
+
   await assert.rejects(
     reportVersionRepo.create({
       reportId: report.id,

@@ -7,6 +7,7 @@ import type {
 import { reportObjectSchema } from './report.schema.js';
 import {
   isoDateStringSchema,
+  timestampSchema,
   positiveIntegerSchema,
   prefixedUuidSchema,
   reportVersionStatusSchema,
@@ -24,6 +25,7 @@ export const reportVersionSummaryObjectSchema = z
     version: positiveIntegerSchema,
     status: reportVersionStatusSchema,
     generatedAt: isoDateStringSchema,
+    createdAt: timestampSchema.optional(),
   })
   .strict();
 

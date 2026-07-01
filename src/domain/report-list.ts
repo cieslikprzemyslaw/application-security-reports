@@ -10,6 +10,7 @@ export interface ReportVersionSummary {
   version: number;
   status: ReportVersionStatus;
   generatedAt: ISODateString;
+  createdAt?: ISODateString;
 }
 
 export interface AssessmentReportListItem extends Report {

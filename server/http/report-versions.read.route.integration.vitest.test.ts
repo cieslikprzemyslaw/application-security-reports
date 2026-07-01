@@ -1,7 +1,10 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { reportVersionResponseSchema } from '../../src/domain/schemas/index.js';
+import {
+  deleteReportVersionResponseSchema,
+  reportVersionResponseSchema,
+} from '../../src/domain/schemas/index.js';
 import { buildReportPreviewSnapshotFixture } from '../test/report-preview.fixture.js';
 import {
   createReportsApp,
@@ -13,6 +16,9 @@ const listResponseSchema = z.object({
   data: z.array(reportVersionResponseSchema),
 });
 const singleResponseSchema = z.object({ data: reportVersionResponseSchema });
+const deleteResponseSchema = z.object({
+  data: deleteReportVersionResponseSchema,
+});
 
 describe('ReportVersion read production integration', () => {
   it('lists and reads persisted immutable versions through production API composition', async () => {
@@ -74,6 +80,67 @@ describe('ReportVersion read production integration', () => {
       });
       expect(readBody.data.snapshot).toEqual(snapshot);
       expect(JSON.stringify(readBody)).not.toContain('private');
+    } finally {
+      await server.close();
+      await harness.cleanup();
+    }
+  });
+
+  it('deletes a selected final ReportVersion and updates the parent latestVersion', async () => {
+    const harness = await createReportsRouteIntegrationHarness();
+    const snapshot = buildReportPreviewSnapshotFixture();
+    const first = await harness.reportVersionRepository.create({
+      reportId: harness.report.id,
+      version: 1,
+      status: 'draft',
+      generatedAt: '2026-06-24',
+      snapshot,
+    });
+    const second = await harness.reportVersionRepository.create({
+      reportId: harness.report.id,
+      version: 10,
+      status: 'final',
+      generatedAt: '2026-06-25',
+      snapshot,
+    });
+    await harness.reportRepository.update(harness.report.id, {
+      latestVersion: 10,
+    });
+    const server = await startTestServer(
+      createReportsApp(
+        harness.reportRepository,
+        harness.assessmentRepository,
+        harness.companyRepository,
+        harness.threatRepository,
+        harness.evidenceRepository,
+        harness.settingsRepository,
+        harness.reportVersionRepository,
+      ),
+    );
+
+    try {
+      const response = await fetch(
+        `${server.baseUrl}/api/reports/${harness.report.id}/versions/${second.id}`,
+        { method: 'DELETE' },
+      );
+      expect(response.status).toBe(200);
+      const body = deleteResponseSchema.parse(await response.json());
+
+      expect(body.data).toEqual({
+        reportId: harness.report.id,
+        deletedVersionId: second.id,
+        latestVersion: first.version,
+      });
+
+      const remainingVersions =
+        await harness.reportVersionRepository.findByReportId(harness.report.id);
+      expect(remainingVersions.map(version => version.id)).toEqual([first.id]);
+      await expect(
+        harness.reportVersionRepository.findById(second.id),
+      ).resolves.toBeNull();
+      await expect(
+        harness.reportRepository.findById(harness.report.id),
+      ).resolves.toMatchObject({ latestVersion: first.version });
     } finally {
       await server.close();
       await harness.cleanup();

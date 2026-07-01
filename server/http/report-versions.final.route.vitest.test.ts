@@ -77,6 +77,7 @@ const createFinalRepository = (
     create,
     findById: vi.fn(async id => history.find(item => item.id === id) ?? null),
     findByReportId: vi.fn(async () => structuredClone(history)),
+    applyRetention: vi.fn(async () => undefined),
     updateReportLatestVersion: vi.fn(async (_reportId, version) => {
       latestVersion = version;
     }),
@@ -108,6 +109,7 @@ const createFinalRepository = (
     };
   const repository: ReportVersionRepository = {
     ...transactionRepository,
+    deleteByReportIdAndVersionId: vi.fn(async () => null),
     withTransaction: async () => {
       throw new Error('Draft transaction is not used by final routes.');
     },
@@ -182,7 +184,7 @@ describe('POST /api/reports/:id/versions/final', () => {
       expect(server.final.create).toHaveBeenCalledOnce();
       expect(
         server.final.updateReportLatestVersionIfCurrent,
-      ).toHaveBeenCalledWith(report.id, 0, 10);
+      ).toHaveBeenCalledWith(report.id, 0, 10, 'generated');
     } finally {
       await server.close();
     }

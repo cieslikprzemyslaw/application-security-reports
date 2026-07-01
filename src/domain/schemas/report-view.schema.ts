@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { ReportView } from '../report-view.js';
 
 import { assessmentSchema } from './assessment.schema.js';
-import { companySchema } from './company.schema.js';
+import { companyPublicSchema } from './company.schema.js';
 import { evidenceSchema } from './evidence.schema.js';
 import { reportSchema, reportSnapshotSchema } from './report.schema.js';
 import { threatSchema } from './threat.schema.js';
@@ -60,7 +60,7 @@ export const reportViewConfigurationSchema = z
 export const reportViewSchema = z
   .object({
     report: reportSchema,
-    company: companySchema,
+    company: companyPublicSchema,
     assessments: z.array(reportViewAssessmentSchema),
     branding: reportViewBrandingSchema,
     configuration: reportViewConfigurationSchema,

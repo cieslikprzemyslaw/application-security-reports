@@ -80,7 +80,7 @@ describe('useReportFinalSaveController', () => {
       ) => deferred.promise,
     );
     const loadReport = vi.fn().mockResolvedValue(createReportView(3));
-    const bootstrapReport = vi.fn();
+    const bootstrapReport = vi.fn().mockResolvedValue(reportId);
     const builderState = createPersistedState();
     const { result } = renderHook(() =>
       useReportFinalSaveController({
@@ -173,7 +173,7 @@ describe('useReportFinalSaveController', () => {
         useReportFinalSaveController({
           builderState,
           assessment,
-          bootstrapReport: vi.fn(),
+          bootstrapReport: vi.fn().mockResolvedValue(reportId),
           loadReport: vi.fn().mockResolvedValue(createReportView(1)),
           createFinal,
         }),
@@ -213,7 +213,7 @@ describe('useReportFinalSaveController', () => {
       useReportFinalSaveController({
         builderState: createPersistedState(),
         assessment,
-        bootstrapReport: vi.fn(),
+        bootstrapReport: vi.fn().mockResolvedValue(reportId),
         loadReport,
         createFinal: vi
           .fn()
@@ -242,7 +242,7 @@ describe('useReportFinalSaveController', () => {
       useReportFinalSaveController({
         builderState: createPersistedState(),
         assessment,
-        bootstrapReport: vi.fn(),
+        bootstrapReport: vi.fn().mockResolvedValue(reportId),
         loadReport,
         createFinal: vi
           .fn()
@@ -274,7 +274,7 @@ describe('useReportFinalSaveController', () => {
     const readinessHook = renderHook(() =>
       useReportFinalSaveController({
         builderState: createDefaultReportBuilderState(companyId),
-        bootstrapReport: vi.fn(),
+        bootstrapReport: vi.fn().mockResolvedValue(reportId),
         loadReport: vi.fn(),
         createFinal: vi.fn(),
       }),
@@ -293,7 +293,7 @@ describe('useReportFinalSaveController', () => {
       useReportFinalSaveController({
         builderState: createPersistedState(),
         assessment,
-        bootstrapReport: vi.fn(),
+        bootstrapReport: vi.fn().mockResolvedValue(reportId),
         loadReport: vi.fn().mockRejectedValue(new Error('/private/report')),
         createFinal: vi.fn(),
       }),

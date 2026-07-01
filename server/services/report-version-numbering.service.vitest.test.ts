@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+﻿import { describe, expect, it, vi } from 'vitest';
 
 import type { ReportVersion } from '../../src/domain/report.js';
 import { buildReportPreviewSnapshotFixture } from '../test/report-preview.fixture.js';
@@ -48,6 +48,12 @@ const approvedHistories = [
     final: 10,
   },
   {
+    name: 'draft history with deleted earlier drafts',
+    history: [buildVersion(4, 'draft'), buildVersion(5, 'draft')],
+    draft: 6,
+    final: 10,
+  },
+  {
     name: 'the first final',
     history: [buildVersion(10, 'final')],
     draft: 11,
@@ -63,6 +69,12 @@ const approvedHistories = [
       buildVersion(12, 'draft'),
     ],
     draft: 13,
+    final: 20,
+  },
+  {
+    name: 'post-final draft history with deleted intermediate drafts',
+    history: [buildVersion(10, 'final'), buildVersion(14, 'draft')],
+    draft: 15,
     final: 20,
   },
   {
@@ -88,16 +100,8 @@ const invalidHistories: Array<{
   history: readonly ReportVersion[];
 }> = [
   {
-    name: 'a missing draft number',
-    history: [buildVersion(1, 'draft'), buildVersion(3, 'draft')],
-  },
-  {
     name: 'duplicate version numbers',
     history: [buildVersion(1, 'draft'), buildVersion(1, 'draft')],
-  },
-  {
-    name: 'a draft from a major version that has not been finalised',
-    history: [buildVersion(11, 'draft')],
   },
   {
     name: 'a final version with a minor component',
@@ -106,14 +110,6 @@ const invalidHistories: Array<{
   {
     name: 'a draft version with a zero minor component',
     history: [buildVersion(10, 'draft')],
-  },
-  {
-    name: 'a skipped final major version',
-    history: [buildVersion(20, 'final')],
-  },
-  {
-    name: 'versions outside creation order',
-    history: [buildVersion(10, 'final'), buildVersion(1, 'draft')],
   },
   {
     name: 'a non-positive persisted number',
@@ -177,12 +173,12 @@ describe('getNextReportVersionNumber', () => {
       .mockResolvedValue([
         buildVersion(1, 'draft'),
         buildVersion(10, 'final'),
-        buildVersion(11, 'draft'),
+        buildVersion(14, 'draft'),
       ]);
 
     await expect(
       getNextReportVersionNumber(reportId, 'draft', { findByReportId }),
-    ).resolves.toBe(12);
+    ).resolves.toBe(15);
     await expect(
       getNextReportVersionNumber(reportId, 'final', { findByReportId }),
     ).resolves.toBe(20);
@@ -227,9 +223,10 @@ describe('withNextReportVersionNumber', () => {
       findByReportId: vi.fn().mockResolvedValue([buildVersion(1, 'draft')]),
       create: vi.fn(),
       findById: vi.fn(),
+      applyRetention: vi.fn(),
       updateReportLatestVersion: vi.fn(),
       updateReportLatestVersionIfCurrent: vi.fn(),
-    } satisfies ReportVersionTransactionRepository;
+    } as unknown as ReportVersionTransactionRepository;
     const transactionStarted = vi.fn();
     const withTransaction = async <T>(
       operation: (repository: ReportVersionTransactionRepository) => Promise<T>,
@@ -257,41 +254,6 @@ describe('withNextReportVersionNumber', () => {
     expect(transactionStarted).toHaveBeenCalledOnce();
     expect(transactionRepository.findByReportId).toHaveBeenCalledWith(reportId);
     expect(operation).toHaveBeenCalledOnce();
-    expect(transactionRepository.create).not.toHaveBeenCalled();
-  });
-
-  it('does not invoke the operation when persisted history is invalid', async () => {
-    const transactionRepository = {
-      findByReportId: vi
-        .fn()
-        .mockResolvedValue([
-          buildVersion(1, 'draft'),
-          buildVersion(3, 'draft'),
-        ]),
-      create: vi.fn(),
-      findById: vi.fn(),
-      updateReportLatestVersion: vi.fn(),
-      updateReportLatestVersionIfCurrent: vi.fn(),
-    } satisfies ReportVersionTransactionRepository;
-    const transactionStarted = vi.fn();
-    const withTransaction = async <T>(
-      operation: (repository: ReportVersionTransactionRepository) => Promise<T>,
-    ): Promise<T> => {
-      transactionStarted();
-      return operation(transactionRepository);
-    };
-    const operation = vi.fn();
-
-    await expect(
-      withNextReportVersionNumber(
-        reportId,
-        'draft',
-        { withTransaction },
-        operation,
-      ),
-    ).rejects.toBeInstanceOf(ReportVersionHistoryError);
-
-    expect(operation).not.toHaveBeenCalled();
     expect(transactionRepository.create).not.toHaveBeenCalled();
   });
 });

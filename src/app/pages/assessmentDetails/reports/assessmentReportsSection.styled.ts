@@ -1,4 +1,4 @@
-import { css, styled } from 'styled-components';
+﻿import { css, styled } from 'styled-components';
 
 const StyledAssessmentReportsSection = styled.section`
   ${({ theme: { colors, radii, spacing, typography } }) => css`
@@ -73,11 +73,20 @@ const StyledAssessmentReportsSection = styled.section`
       padding-top: ${spacing.xs};
     }
 
+    .assessment-report-version-content {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: ${spacing.xs};
+    }
+
     .assessment-report-version-link {
       display: flex;
+      flex: 1 1 auto;
       flex-direction: column;
       align-items: flex-start;
       gap: ${spacing.xxs};
+      min-width: 0;
       width: 100%;
       padding: ${spacing.xs};
       border-radius: ${radii.sm};
@@ -103,8 +112,44 @@ const StyledAssessmentReportsSection = styled.section`
       text-decoration: underline;
     }
 
+    .assessment-report-delete-dialog {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.m};
+    }
+
+    .assessment-report-delete-label {
+      display: flex;
+      flex-direction: column;
+      gap: ${spacing.xs};
+      color: ${colors.text.primary};
+      font-size: ${typography.body.small.size};
+      font-weight: ${typography.fontWeights.semibold};
+    }
+
+    .assessment-report-delete-input {
+      width: 100%;
+      padding: ${spacing.s};
+      border: 1px solid ${colors.border.default};
+      border-radius: ${radii.sm};
+      background-color: ${colors.surface.card};
+      color: ${colors.text.primary};
+      font: inherit;
+    }
+
+    .assessment-report-delete-input:focus {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: 2px;
+    }
+
     @container (min-width: 40rem) {
       .assessment-report-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .assessment-report-version-content {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;

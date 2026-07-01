@@ -1,11 +1,13 @@
-import type {
+﻿import type {
   CreateDraftReportVersionRequest,
   CreateFinalReportVersionRequest,
+  DeleteReportVersionResponse,
   ReportVersionResponse,
 } from '~/domain';
 import {
   createDraftReportVersionRequestSchema,
   createFinalReportVersionRequestSchema,
+  deleteReportVersionResponseSchema,
   reportVersionListResponseSchema,
   reportVersionResponseSchema,
 } from '~/domain/schemas';
@@ -33,6 +35,11 @@ export interface ReportVersionService {
     input: CreateFinalReportVersionRequest,
     signal?: AbortSignal,
   ): Promise<ReportVersionResponse>;
+  deleteVersion(
+    reportId: string,
+    versionId: string,
+    signal?: AbortSignal,
+  ): Promise<DeleteReportVersionResponse>;
 }
 
 const parseReportVersion = (value: unknown): ReportVersionResponse => {
@@ -53,6 +60,20 @@ const parseReportVersionList = (value: unknown): ReportVersionResponse[] => {
   if (!parsed.success) {
     throw new ApiResponseParseError(
       'Unable to validate the report version list response.',
+    );
+  }
+
+  return parsed.data;
+};
+
+const parseDeleteReportVersionResponse = (
+  value: unknown,
+): DeleteReportVersionResponse => {
+  const parsed = deleteReportVersionResponseSchema.safeParse(value);
+
+  if (!parsed.success) {
+    throw new ApiResponseParseError(
+      'Unable to validate the deleted report version response.',
     );
   }
 
@@ -116,6 +137,19 @@ export const createReportVersionService = (
     );
 
     return parseReportVersion(response);
+  },
+
+  async deleteVersion(reportId, versionId, signal) {
+    const response = await requestData<unknown>(
+      request,
+      `/api/reports/${reportId}/versions/${versionId}`,
+      {
+        method: 'DELETE',
+        signal,
+      },
+    );
+
+    return parseDeleteReportVersionResponse(response);
   },
 });
 

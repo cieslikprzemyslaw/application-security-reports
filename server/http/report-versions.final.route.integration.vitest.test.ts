@@ -91,6 +91,46 @@ describe('final ReportVersion route production integration', () => {
     }
   });
 
+  it('retains every final version after repeated finalisation', async () => {
+    const { harness, server } = await startHarnessServer();
+    const request = buildRequest(harness);
+
+    try {
+      const firstResponse = await postFinal(
+        server.baseUrl,
+        harness.report.id,
+        request,
+      );
+      expect(firstResponse.status).toBe(201);
+
+      const secondResponse = await postFinal(
+        server.baseUrl,
+        harness.report.id,
+        {
+          ...request,
+          expectedLatestVersion: 10,
+        },
+      );
+      expect(secondResponse.status).toBe(201);
+      const secondBody = (await secondResponse.json()) as { data: unknown };
+      const second = reportVersionResponseSchema.parse(secondBody.data);
+
+      expect(second).toMatchObject({ version: 20, status: 'final' });
+
+      const versions = await harness.prisma.reportVersion.findMany({
+        where: { reportId: harness.report.id },
+        orderBy: { version: 'asc' },
+      });
+
+      expect(versions.map((item: { version: number }) => item.version)).toEqual(
+        [10, 20],
+      );
+    } finally {
+      await server.close();
+      await harness.cleanup();
+    }
+  });
+
   it('creates a warning-only final version', async () => {
     const { harness, server } = await startHarnessServer();
     const request = {

@@ -4,7 +4,6 @@ import {
   type Request,
   type Response,
 } from 'express';
-
 import type {
   ReportView,
   ReportViewEvidence,
@@ -31,9 +30,7 @@ import type { SettingsRepository } from '../database/repositories/settings.repos
 import type { ThreatRepository } from '../database/repositories/threat.repository.js';
 import type { Evidence } from '../../src/domain/evidence.js';
 import { createReportRouteHandler } from './reports.create.route.js';
-
 type ReportRepositoryOperation = 'list' | 'retrieve';
-
 const asyncRoute =
   (
     handler: (req: Request, res: Response, next: NextFunction) => Promise<void>,
@@ -41,19 +38,16 @@ const asyncRoute =
   (req: Request, res: Response, next: NextFunction): void => {
     void handler(req, res, next).catch(next);
   };
-
 const sendReportViewResponse = (
   res: Response,
   statusCode: number,
   reportView: ReportView,
 ): Response => {
   const parsedReportView = reportViewSchema.parse(reportView);
-
   return res.status(statusCode).json({
     data: parsedReportView,
   });
 };
-
 const handleReportRepositoryError = (
   error: unknown,
   res: Response,
@@ -64,10 +58,8 @@ const handleReportRepositoryError = (
     sendApiError(res, 500, 'INTERNAL_SERVER_ERROR', 'Unexpected server error');
     return true;
   }
-
   return false;
 };
-
 const toEvidenceView = (evidence: Evidence): ReportViewEvidence => ({
   id: evidence.id,
   assessmentId: evidence.assessmentId,
@@ -82,7 +74,6 @@ const toEvidenceView = (evidence: Evidence): ReportViewEvidence => ({
   createdAt: evidence.createdAt,
   updatedAt: evidence.updatedAt,
 });
-
 const sortEvidence = <
   T extends { capturedAt?: string; createdAt: string; id: string },
 >(
@@ -91,14 +82,29 @@ const sortEvidence = <
   [...evidence].sort((left, right) => {
     const leftTime = new Date(left.capturedAt ?? left.createdAt).getTime();
     const rightTime = new Date(right.capturedAt ?? right.createdAt).getTime();
-
     if (leftTime !== rightTime) {
       return leftTime - rightTime;
     }
-
     return left.id.localeCompare(right.id);
   });
-
+const toPublicCompanyLogoUrl = (company: {
+  id: string;
+  logoUrl?: string | null;
+}) => (company.logoUrl ? `/api/companies/${company.id}/logo` : null);
+const toReportViewCompany = <T extends { id: string; logoUrl?: string | null }>(
+  company: T,
+): T => ({
+  ...company,
+  logoUrl: toPublicCompanyLogoUrl(company),
+});
+const toReportViewDateOnly = (
+  value: string | undefined,
+): string | undefined => {
+  if (!value) {
+    return undefined;
+  }
+  return value.slice(0, 10);
+};
 export const createReportsRouter = (
   reportRepository: ReportRepository,
   assessmentRepository: AssessmentRepository,
@@ -108,7 +114,6 @@ export const createReportsRouter = (
   settingsRepository: SettingsRepository,
 ): Router => {
   const router = Router();
-
   router.get(
     '/',
     createRequestValidationMiddleware({
@@ -118,10 +123,8 @@ export const createReportsRouter = (
       const { assessmentId } = res.locals.validatedRequest?.query as {
         assessmentId: string;
       };
-
       try {
         const assessment = await assessmentRepository.findById(assessmentId);
-
         if (!assessment) {
           sendApiError(
             res,
@@ -131,10 +134,8 @@ export const createReportsRouter = (
           );
           return;
         }
-
         const reports = await reportRepository.findByAssessmentId(assessmentId);
         const parsedReports = assessmentReportListResponseSchema.parse(reports);
-
         res.status(200).json({ data: parsedReports });
       } catch (error) {
         if (!handleReportRepositoryError(error, res, 'list')) {
@@ -143,7 +144,6 @@ export const createReportsRouter = (
       }
     }),
   );
-
   router.post(
     '/',
     createRequestValidationMiddleware({
@@ -161,7 +161,6 @@ export const createReportsRouter = (
       );
     }),
   );
-
   router.get(
     '/:id',
     createRequestValidationMiddleware({
@@ -171,20 +170,16 @@ export const createReportsRouter = (
       const { id } = res.locals.validatedRequest?.params as {
         id: string;
       };
-
       try {
         const report = await reportRepository.findById(id);
-
         if (!report) {
           sendApiError(res, 404, 'REPORT_NOT_FOUND', 'Report not found');
           return;
         }
-
         const [assessment, settings] = await Promise.all([
           assessmentRepository.findById(report.assessmentId),
           settingsRepository.get(),
         ]);
-
         if (!assessment) {
           sendApiError(
             res,
@@ -194,9 +189,7 @@ export const createReportsRouter = (
           );
           return;
         }
-
         const company = await companyRepository.findById(assessment.companyId);
-
         if (!company) {
           sendApiError(
             res,
@@ -206,25 +199,20 @@ export const createReportsRouter = (
           );
           return;
         }
-
         if (!settings) {
           sendApiError(res, 404, 'SETTINGS_NOT_FOUND', 'Settings not found');
           return;
         }
-
         const [threats, evidence] = await Promise.all([
           threatRepository.findByAssessmentId(report.assessmentId),
           evidenceRepository.findByAssessmentId(report.assessmentId),
         ]);
-
         const threatsById = new Map(threats.map(threat => [threat.id, threat]));
         const threatIdsInAssessment = new Set(threatsById.keys());
         const selectedThreatIds = report.selectedThreatIds;
-
         const selectedThreats = selectedThreatIds.map(threatId =>
           threatsById.get(threatId),
         );
-
         if (selectedThreats.some(threat => !threat)) {
           sendApiError(
             res,
@@ -234,7 +222,6 @@ export const createReportsRouter = (
           );
           return;
         }
-
         if (
           selectedThreats.some(threat => threat?.assessmentId !== assessment.id)
         ) {
@@ -246,7 +233,6 @@ export const createReportsRouter = (
           );
           return;
         }
-
         const selectedThreatIdSet = new Set(selectedThreatIds);
         const evidenceByThreatId = new Map(
           selectedThreatIds.map(threatId => [
@@ -254,7 +240,6 @@ export const createReportsRouter = (
             [] as ReturnType<typeof toEvidenceView>[],
           ]),
         );
-
         for (const evidenceItem of evidence) {
           if (evidenceItem.assessmentId !== assessment.id) {
             sendApiError(
@@ -265,7 +250,6 @@ export const createReportsRouter = (
             );
             return;
           }
-
           if (
             evidenceItem.threatIds.some(
               threatId => !threatIdsInAssessment.has(threatId),
@@ -279,22 +263,22 @@ export const createReportsRouter = (
             );
             return;
           }
-
           const matchingThreatIds = evidenceItem.threatIds.filter(threatId =>
             selectedThreatIdSet.has(threatId),
           );
-
           if (matchingThreatIds.length === 0) {
             continue;
           }
-
           const evidenceView = toEvidenceView(evidenceItem);
-
           for (const threatId of matchingThreatIds) {
             evidenceByThreatId.get(threatId)?.push(evidenceView);
           }
         }
-
+        const reportViewAssessment = {
+          ...assessment,
+          startedAt: toReportViewDateOnly(assessment.startedAt),
+          completedAt: toReportViewDateOnly(assessment.completedAt),
+        };
         const snapshot: ReportSnapshot = {
           reportTitle: report.title,
           companyName: company.name,
@@ -316,13 +300,11 @@ export const createReportsRouter = (
           },
           threats: selectedThreatIds.map(threatId => {
             const threat = threatsById.get(threatId);
-
             if (!threat) {
               throw new Error(
                 'Validated report threat missing during snapshot assembly.',
               );
             }
-
             return {
               threatId: threat.id,
               title: threat.title,
@@ -336,22 +318,19 @@ export const createReportsRouter = (
             };
           }),
         };
-
         const reportView: ReportView = {
           report,
-          company,
+          company: toReportViewCompany(company),
           assessments: [
             {
-              assessment,
+              assessment: reportViewAssessment,
               findings: selectedThreatIds.map(threatId => {
                 const threat = threatsById.get(threatId);
-
                 if (!threat) {
                   throw new Error(
                     'Validated report threat missing during view assembly.',
                   );
                 }
-
                 return {
                   threat,
                   evidence: sortEvidence(
@@ -365,7 +344,7 @@ export const createReportsRouter = (
             companyName: company.name,
             companyWebsite: company.website,
             companyContactEmail: company.contactEmail,
-            companyLogoUrl: company.logoUrl ?? null,
+            companyLogoUrl: toPublicCompanyLogoUrl(company),
             companyFooterText: company.footerText,
             issuerName: settings.organisationName,
             issuerContactName: settings.consultantName,
@@ -384,7 +363,6 @@ export const createReportsRouter = (
           },
           snapshot,
         };
-
         sendReportViewResponse(res, 200, reportView);
       } catch (error) {
         if (!handleReportRepositoryError(error, res, 'retrieve')) {
@@ -393,6 +371,5 @@ export const createReportsRouter = (
       }
     }),
   );
-
   return router;
 };

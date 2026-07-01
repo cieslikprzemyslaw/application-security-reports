@@ -87,22 +87,33 @@ describe('draft ReportVersion production integration', () => {
         'Changed after first draft',
       );
 
+      const thirdResponse = await postDraft(
+        server.baseUrl,
+        harness.report.id,
+        request,
+      );
+      expect(thirdResponse.status).toBe(201);
+      const thirdBody = (await thirdResponse.json()) as { data: unknown };
+      const third = reportVersionResponseSchema.parse(thirdBody.data);
+
+      expect(third.version).toBe(3);
+
       const persisted = await harness.prisma.reportVersion.findMany({
         where: { reportId: harness.report.id },
         orderBy: { version: 'asc' },
       });
       expect(
         persisted.map((item: { version: number }) => item.version),
-      ).toEqual([1, 2]);
+      ).toEqual([1, 2, 3]);
       expect(
-        reportVersionSnapshotSchema.parse(persisted[0]?.snapshot)
+        reportVersionSnapshotSchema.parse(persisted.at(-1)?.snapshot)
           .selectedThreats[0]?.title,
-      ).not.toBe('Changed after first draft');
+      ).toBe('Changed after first draft');
 
       const parent = await harness.prisma.report.findUniqueOrThrow({
         where: { id: harness.report.id },
       });
-      expect(parent.latestVersion).toBe(2);
+      expect(parent.latestVersion).toBe(3);
     } finally {
       await server.close();
       await harness.cleanup();

@@ -1,4 +1,4 @@
-import { createServer } from 'node:http';
+﻿import { createServer } from 'node:http';
 
 import { describe, expect, it, vi } from 'vitest';
 
@@ -55,6 +55,7 @@ const createVersionRepository = (
     create,
     findById: vi.fn(async () => null),
     findByReportId: vi.fn(async () => structuredClone(history)),
+    applyRetention: vi.fn(async () => undefined),
     updateReportLatestVersion: vi.fn(async () => undefined),
     updateReportLatestVersionIfCurrent: vi.fn(async () => undefined),
   };
@@ -75,6 +76,7 @@ const createVersionRepository = (
     };
   const repository: ReportVersionRepository = {
     ...transactionRepository,
+    deleteByReportIdAndVersionId: vi.fn(async () => null),
     withTransaction,
     withFinalisationTransaction,
   };

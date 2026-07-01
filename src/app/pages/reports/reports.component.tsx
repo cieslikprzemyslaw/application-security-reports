@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import ReportPreviewShell from '~/app/components/appsec/reportPreviewShell';
 
@@ -35,6 +35,34 @@ const formatReportVersionNumber = (version: number): string => {
   const minor = version % 10;
 
   return `${major}.${minor}`;
+};
+
+const hasSameReportBuilderSelection = (
+  left: ReportBuilderState['selection'],
+  right: ReportBuilderState['selection'],
+): boolean => JSON.stringify(left) === JSON.stringify(right);
+
+const preserveCurrentReportIdForStaleRouteState = (
+  restoredState: ReportBuilderState,
+  currentState: ReportBuilderState,
+): ReportBuilderState => {
+  if (restoredState.reportId || !currentState.reportId) {
+    return restoredState;
+  }
+
+  if (
+    !hasSameReportBuilderSelection(
+      restoredState.selection,
+      currentState.selection,
+    )
+  ) {
+    return restoredState;
+  }
+
+  return {
+    ...restoredState,
+    reportId: currentState.reportId,
+  };
 };
 
 interface ReportBuilderReportsProps extends Omit<
@@ -134,7 +162,10 @@ const ReportBuilderReports = ({
   }, [builderState]);
 
   useEffect(() => {
-    const restoredState = restoreReportBuilderRouteState(companyId, routeState);
+    const restoredState = preserveCurrentReportIdForStaleRouteState(
+      restoreReportBuilderRouteState(companyId, routeState),
+      builderStateRef.current,
+    );
 
     if (
       JSON.stringify(builderStateRef.current) === JSON.stringify(restoredState)
@@ -241,7 +272,7 @@ const ReportBuilderReports = ({
   });
 
   const assessmentCode = selectedVersion
-    ? `${selectedVersion.reportId} · v${formatReportVersionNumber(
+    ? `${selectedVersion.reportId} Â· v${formatReportVersionNumber(
         selectedVersion.version,
       )}`
     : previewCover.reportId;

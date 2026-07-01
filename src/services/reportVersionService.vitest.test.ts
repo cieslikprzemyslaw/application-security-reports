@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { ZodError } from 'zod';
 
 import {
@@ -127,6 +127,30 @@ describe('reportVersionService', () => {
     expect(calls[0]?.init?.body).not.toHaveProperty('version');
   });
 
+  it('deletes a saved ReportVersion through the nested Report endpoint', async () => {
+    const controller = new AbortController();
+    const deleteResponse = {
+      reportId,
+      deletedVersionId: versionId,
+      latestVersion: 0,
+    };
+    const { calls, request } = createRequest({ data: deleteResponse });
+    const service = createReportVersionService(request);
+
+    await expect(
+      service.deleteVersion(reportId, versionId, controller.signal),
+    ).resolves.toEqual(deleteResponse);
+    expect(calls).toEqual([
+      {
+        input: `/api/reports/${reportId}/versions/${versionId}`,
+        init: {
+          method: 'DELETE',
+          signal: controller.signal,
+        },
+      },
+    ]);
+  });
+
   it('creates a final version with the optimistic-concurrency token', async () => {
     const finalVersion: ReportVersionResponse = {
       ...reportVersion,
@@ -156,6 +180,16 @@ describe('reportVersionService', () => {
     ['read', () => ({ data: { ...reportVersion, reportId: 'wrong-id' } })],
     ['draft', () => ({ data: { ...reportVersion, filePath: '/private' } })],
     ['final', () => ({ data: { ...reportVersion, version: 0 } })],
+    [
+      'delete',
+      () => ({
+        data: {
+          reportId,
+          deletedVersionId: 'wrong-id',
+          latestVersion: 0,
+        },
+      }),
+    ],
   ])('rejects a malformed %s response safely', async (operation, response) => {
     const { request } = createRequest(response());
     const service = createReportVersionService(request);
@@ -174,6 +208,9 @@ describe('reportVersionService', () => {
         break;
       case 'final':
         action = service.createFinal(reportId, finalRequest);
+        break;
+      case 'delete':
+        action = service.deleteVersion(reportId, versionId);
         break;
       default:
         throw new Error(`Unsupported operation: ${operation}`);

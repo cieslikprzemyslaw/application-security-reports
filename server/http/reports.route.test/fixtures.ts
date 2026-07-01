@@ -15,6 +15,7 @@ const defaultCompany: Company = {
   contactEmail: 'security@northstar.example',
   logoUrl: null,
   footerText: 'Confidential - do not distribute.',
+  archivedAt: null,
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-11T09:00:00.000Z',
 };

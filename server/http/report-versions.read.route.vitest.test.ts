@@ -7,7 +7,10 @@ import type {
   CreateReportVersionInput,
   ReportVersion,
 } from '../../src/domain/report.js';
-import { reportVersionResponseSchema } from '../../src/domain/schemas/index.js';
+import {
+  deleteReportVersionResponseSchema,
+  reportVersionResponseSchema,
+} from '../../src/domain/schemas/index.js';
 import { loadServerConfig } from '../config.js';
 import { RepositoryError } from '../database/errors.js';
 import type {
@@ -46,6 +49,11 @@ const createVersionRepository = (
     versions?: ReportVersion[];
     findByIdError?: Error;
     findByReportIdError?: Error;
+    deleteError?: Error;
+    deleteResult?: {
+      latestVersion: number;
+      latestStatus: 'draft' | 'generated';
+    } | null;
   } = {},
 ) => {
   const versions = options.versions ?? [
@@ -63,6 +71,24 @@ const createVersionRepository = (
       versions.filter(version => version.reportId === reportId),
     );
   });
+  const deleteByReportIdAndVersionId = vi.fn(
+    async (reportId: string, versionId: string) => {
+      if (options.deleteError) throw options.deleteError;
+      const version = versions.find(
+        item => item.reportId === reportId && item.id === versionId,
+      );
+
+      if (!version || options.deleteResult === null) {
+        return null;
+      }
+
+      return {
+        deletedVersion: structuredClone(version),
+        latestVersion: options.deleteResult?.latestVersion ?? 0,
+        latestStatus: options.deleteResult?.latestStatus ?? 'draft',
+      };
+    },
+  );
 
   const transactionRepository: ReportVersionTransactionRepository = {
     create: vi.fn(async (input: CreateReportVersionInput) => ({
@@ -71,18 +97,20 @@ const createVersionRepository = (
     })),
     findById,
     findByReportId,
+    applyRetention: vi.fn(async () => undefined),
     updateReportLatestVersion: vi.fn(async () => undefined),
     updateReportLatestVersionIfCurrent: vi.fn(async () => undefined),
   };
   const repository: ReportVersionRepository = {
     ...transactionRepository,
+    deleteByReportIdAndVersionId,
     withTransaction: vi.fn(async operation => operation(transactionRepository)),
     withFinalisationTransaction: vi.fn(async () => {
       throw new Error('Finalisation is not used by read routes.');
     }),
   };
 
-  return { repository, findById, findByReportId };
+  return { repository, findById, findByReportId, deleteByReportIdAndVersionId };
 };
 
 const startReadServer = async (
@@ -91,6 +119,11 @@ const startReadServer = async (
     versions?: ReportVersion[];
     findByIdError?: Error;
     findByReportIdError?: Error;
+    deleteError?: Error;
+    deleteResult?: {
+      latestVersion: number;
+      latestStatus: 'draft' | 'generated';
+    } | null;
   } = {},
 ) => {
   const preview = createPreviewRepositories({
@@ -125,6 +158,9 @@ const listResponseSchema = z.object({
   data: z.array(reportVersionResponseSchema),
 });
 const singleResponseSchema = z.object({ data: reportVersionResponseSchema });
+const deleteResponseSchema = z.object({
+  data: deleteReportVersionResponseSchema,
+});
 
 describe('ReportVersion read routes', () => {
   it('lists the parent Report versions in repository order without file paths', async () => {
@@ -207,6 +243,50 @@ describe('ReportVersion read routes', () => {
       } finally {
         await server.close();
       }
+    }
+  });
+
+  it('deletes a selected ReportVersion and returns the next latest version', async () => {
+    const server = await startReadServer({
+      deleteResult: { latestVersion: 10, latestStatus: 'generated' },
+    });
+
+    try {
+      const response = await fetch(
+        `${server.baseUrl}/api/reports/${report.id}/versions/${versionIdB}`,
+        { method: 'DELETE' },
+      );
+      expect(response.status).toBe(200);
+
+      const body = deleteResponseSchema.parse(await response.json());
+      expect(body.data).toEqual({
+        reportId: report.id,
+        deletedVersionId: versionIdB,
+        latestVersion: 10,
+      });
+      expect(server.version.deleteByReportIdAndVersionId).toHaveBeenCalledWith(
+        report.id,
+        versionIdB,
+      );
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('returns REPORT_VERSION_NOT_FOUND for a missing delete target', async () => {
+    const server = await startReadServer({ deleteResult: null });
+
+    try {
+      const response = await fetch(
+        `${server.baseUrl}/api/reports/${report.id}/versions/${versionIdA}`,
+        { method: 'DELETE' },
+      );
+      expect(response.status).toBe(404);
+      expect(await response.json()).toMatchObject({
+        error: { code: 'REPORT_VERSION_NOT_FOUND' },
+      });
+    } finally {
+      await server.close();
     }
   });
 

@@ -37,6 +37,7 @@ describe('Report readiness through the production Report Builder route', () => {
   it('renders backend blockers and warnings, blocks Final, keeps Draft, and focuses the returned target', async () => {
     const reportBodies: unknown[] = [];
     const readinessBodies: unknown[] = [];
+    let createdReportListItem: Record<string, unknown> | undefined;
 
     setFetch(async (input, init) => {
       const path = String(input);
@@ -128,7 +129,15 @@ describe('Report readiness through the production Report Builder route', () => {
       }
 
       if (path === `/api/evidence?assessmentId=${previewAssessmentId}`) {
-        return createJsonResponse({ data: [] });
+        return createJsonResponse({
+          data: createdReportListItem ? [createdReportListItem] : [],
+        });
+      }
+
+      if (path === `/api/reports?assessmentId=${previewAssessmentId}`) {
+        return createJsonResponse({
+          data: createdReportListItem ? [createdReportListItem] : [],
+        });
       }
 
       if (path === '/api/reports/preview') {
@@ -160,18 +169,24 @@ describe('Report readiness through the production Report Builder route', () => {
       if (path === '/api/reports' && init?.method === 'POST') {
         reportBodies.push(JSON.parse(String(init.body)));
 
+        const createdReport = {
+          id: reportId,
+          assessmentId: previewAssessmentId,
+          title: 'Customer Services Portal Security Report',
+          status: 'draft',
+          selectedThreatIds: [previewThreatId],
+          latestVersion: 0,
+          createdAt: '2026-06-26T10:00:00.000Z',
+          updatedAt: '2026-06-26T10:00:00.000Z',
+        };
+        createdReportListItem = {
+          ...createdReport,
+          versions: [],
+        };
+
         return createJsonResponse(
           {
-            data: {
-              id: reportId,
-              assessmentId: previewAssessmentId,
-              title: 'Customer Services Portal Security Report',
-              status: 'draft',
-              selectedThreatIds: [previewThreatId],
-              latestVersion: 0,
-              createdAt: '2026-06-26T10:00:00.000Z',
-              updatedAt: '2026-06-26T10:00:00.000Z',
-            },
+            data: createdReport,
           },
           { status: 201 },
         );
