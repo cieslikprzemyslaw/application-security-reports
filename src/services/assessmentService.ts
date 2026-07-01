@@ -54,6 +54,10 @@ export interface AssessmentWorkspaceOverview {
   assessment: AssessmentWorkspaceAssessment;
 }
 
+export interface AssessmentDeleteResult {
+  cleanupWarnings: string[];
+}
+
 export type AssessmentWorkspaceCommand =
   | 'start'
   | 'complete'
@@ -111,6 +115,14 @@ const buildWorkspaceAssessmentUrl = (
   `/api/companies/${companyId}/assessments/${assessmentId}${
     suffix.length > 0 ? `/${suffix}` : ''
   }`;
+
+const normaliseCleanupWarnings = (value: unknown): string[] =>
+  Array.isArray(value)
+    ? value.filter(
+        (item): item is string =>
+          typeof item === 'string' && item.trim().length > 0,
+      )
+    : [];
 
 const runAssessmentCommand = (
   request: ApiRequestFn,
@@ -172,7 +184,7 @@ export interface AssessmentService {
     recordVersion: number,
     signal?: AbortSignal,
   ): Promise<AssessmentWorkspaceOverview>;
-  remove(assessmentId: string): Promise<void>;
+  remove(assessmentId: string): Promise<AssessmentDeleteResult>;
 }
 
 export const createAssessmentService = (
@@ -279,9 +291,20 @@ export const createAssessmentService = (
   },
 
   async remove(assessmentId) {
-    await request(`/api/assessments/${assessmentId}`, {
+    const response = await request<{
+      data?: { cleanupWarnings?: unknown; warnings?: unknown };
+      warnings?: unknown;
+    }>(`/api/assessments/${assessmentId}`, {
       method: 'DELETE',
     });
+
+    return {
+      cleanupWarnings: normaliseCleanupWarnings(
+        response?.data?.cleanupWarnings ??
+          response?.data?.warnings ??
+          response?.warnings,
+      ),
+    };
   },
 });
 

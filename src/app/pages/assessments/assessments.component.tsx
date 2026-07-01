@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import AssessmentForm from '~/app/components/appsec/assessmentForm';
 import AssessmentTable, {
@@ -28,9 +28,33 @@ import {
   assessmentTypeOptions,
 } from './assessments.utils';
 
+const unsafeStorageDetailPattern =
+  /(storageKey|filePath|filesystem path|internal storage|[A-Za-z]:\\|\\|\/)/i;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const getAssessmentCleanupWarnings = (state: unknown) => {
+  if (!isRecord(state) || !Array.isArray(state.assessmentCleanupWarnings)) {
+    return [];
+  }
+
+  return state.assessmentCleanupWarnings
+    .filter((warning): warning is string => typeof warning === 'string')
+    .map(warning => warning.trim())
+    .filter(
+      warning =>
+        warning.length > 0 && !unsafeStorageDetailPattern.test(warning),
+    );
+};
+
 const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const controller = useAssessmentsController({ companyId, companyName });
+  const assessmentCleanupWarnings = getAssessmentCleanupWarnings(
+    location.state,
+  );
 
   const {
     pagedAssessments,
@@ -108,6 +132,19 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
         }
         actions={<Button title="New assessment" onClick={openCreateDrawer} />}
       />
+
+      {assessmentCleanupWarnings.length > 0 && (
+        <Callout
+          variant="warning"
+          title="Assessment deleted with cleanup warning"
+        >
+          <ul>
+            {assessmentCleanupWarnings.map((warning, index) => (
+              <li key={`${warning}:${index}`}>{warning}</li>
+            ))}
+          </ul>
+        </Callout>
+      )}
 
       <section className="assessments-card">
         <FilterToolbar

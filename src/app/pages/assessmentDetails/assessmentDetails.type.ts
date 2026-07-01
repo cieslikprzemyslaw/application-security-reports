@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 
 import type { AssessmentStatus, Severity } from '~/domain';
 
@@ -31,6 +31,7 @@ export interface AssessmentDetailsAssessment {
   id: string;
   companyId: string;
   companyName: string;
+  title?: string;
   applicationName: string;
   assessmentType?: string;
   description?: string;
@@ -63,4 +64,5 @@ export interface AssessmentDetailsViewProps {
   pendingAction?: AssessmentDetailAction;
   actionError?: string;
   conflictError?: string;
+  onPermanentDeleteRequest?: (event: MouseEvent<HTMLButtonElement>) => void;
 }

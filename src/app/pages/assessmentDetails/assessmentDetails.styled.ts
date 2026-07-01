@@ -182,6 +182,35 @@ const StyledAssessmentDetails = styled.div.attrs({
     .assessment-details-placeholder-copy {
       margin: 0;
     }
+
+    .assessment-details-delete-confirmation {
+      display: grid;
+      gap: ${spacing.s};
+    }
+
+    .assessment-details-delete-counts {
+      display: grid;
+      gap: ${spacing.xxs};
+
+      padding: ${spacing.s};
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.md};
+      background-color: ${colors.surface.subtle};
+    }
+
+    .assessment-details-delete-counts h3 {
+      margin: 0;
+      font-size: ${typography.label.medium.size};
+      line-height: ${typography.label.medium.lineHeight};
+    }
+
+    .assessment-details-delete-counts ul {
+      display: grid;
+      gap: ${spacing.xxxs};
+
+      margin: 0;
+      padding-left: ${spacing.m};
+    }
   `}
 `;
 

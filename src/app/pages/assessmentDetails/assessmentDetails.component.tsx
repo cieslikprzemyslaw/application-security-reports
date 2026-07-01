@@ -8,8 +8,10 @@ import {
 import { routes } from '~/routes';
 
 import AssessmentDetailsView from './assessmentDetails.view';
+import DeleteAssessmentModal from './DeleteAssessmentModal';
 import { useAssessmentOverview } from './hooks/useAssessmentOverview';
 import { useAssessmentActions } from './hooks/useAssessmentActions';
+import { usePermanentAssessmentDeletion } from './hooks/usePermanentAssessmentDeletion';
 import { useAssessmentFindings } from './hooks/useAssessmentFindings';
 import { useAssessmentEvidence } from './evidence/hooks/useAssessmentEvidence';
 import AssessmentFindingsSection, {
@@ -143,6 +145,22 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
     onMutationSuccess: handleEvidenceCountChange,
   });
 
+  const permanentDeletionController = usePermanentAssessmentDeletion({
+    onDeleted: ({ cleanupWarnings }) => {
+      if (!companyId) {
+        return;
+      }
+
+      navigate(routes.companyWorkspaceAssessments(companyId), {
+        replace: true,
+        state:
+          cleanupWarnings.length > 0
+            ? { assessmentCleanupWarnings: cleanupWarnings }
+            : undefined,
+      });
+    },
+  });
+
   const handleSectionChange = (section: AssessmentDetailSection) => {
     if (!companyId || !assessmentId) {
       return;
@@ -191,41 +209,51 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
   }
 
   return (
-    <AssessmentDetailsView
-      assessment={assessmentView}
-      activeSection={activeSection}
-      overviewHref={routes.assessmentDetailsOverview(companyId, assessmentId)}
-      findingsContent={
-        <AssessmentFindingsSection
-          assessment={assessmentView}
-          initialEditTarget={initialThreatEditTarget}
-          onInitialEditTargetHandled={handleInitialThreatEditTargetHandled}
-          {...findingsController}
-        />
-      }
-      evidenceContent={
-        <AssessmentEvidenceSection
-          assessment={assessmentView}
-          threats={findingsController.threats}
-          controller={evidenceController}
-        />
-      }
-      reportsContent={
-        <AssessmentReportsSection
-          companyId={companyId}
-          assessmentId={assessmentId}
-        />
-      }
-      onSectionChange={handleSectionChange}
-      onBack={() => navigate(routes.companyWorkspaceAssessments(companyId))}
-      onAction={action => {
-        void handleAction(action);
-      }}
-      isActionLoading={pendingAction !== undefined}
-      pendingAction={pendingAction}
-      actionError={actionError}
-      conflictError={conflictError}
-    />
+    <>
+      <AssessmentDetailsView
+        assessment={assessmentView}
+        activeSection={activeSection}
+        overviewHref={routes.assessmentDetailsOverview(companyId, assessmentId)}
+        findingsContent={
+          <AssessmentFindingsSection
+            assessment={assessmentView}
+            initialEditTarget={initialThreatEditTarget}
+            onInitialEditTargetHandled={handleInitialThreatEditTargetHandled}
+            {...findingsController}
+          />
+        }
+        evidenceContent={
+          <AssessmentEvidenceSection
+            assessment={assessmentView}
+            threats={findingsController.threats}
+            controller={evidenceController}
+          />
+        }
+        reportsContent={
+          <AssessmentReportsSection
+            companyId={companyId}
+            assessmentId={assessmentId}
+          />
+        }
+        onSectionChange={handleSectionChange}
+        onBack={() => navigate(routes.companyWorkspaceAssessments(companyId))}
+        onAction={action => {
+          void handleAction(action);
+        }}
+        isActionLoading={pendingAction !== undefined}
+        pendingAction={pendingAction}
+        actionError={actionError}
+        conflictError={conflictError}
+        onPermanentDeleteRequest={event => {
+          permanentDeletionController.requestPermanentDelete(
+            assessmentView,
+            event.currentTarget,
+          );
+        }}
+      />
+
+      <DeleteAssessmentModal controller={permanentDeletionController} />
+    </>
   );
 };
 

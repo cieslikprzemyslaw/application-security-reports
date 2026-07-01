@@ -58,15 +58,15 @@ const formatDateRange = (startedAt?: string, completedAt?: string) => {
   const start = formatDate(startedAt);
   const end = formatDate(completedAt);
 
-  if (start === '—' && end === '—') {
-    return '—';
+  if (start === 'â€”' && end === 'â€”') {
+    return 'â€”';
   }
 
-  if (start === '—') {
+  if (start === 'â€”') {
     return end;
   }
 
-  if (end === '—') {
+  if (end === 'â€”') {
     return start;
   }
 
@@ -100,6 +100,7 @@ const AssessmentDetailsView = ({
   pendingAction,
   actionError,
   conflictError,
+  onPermanentDeleteRequest,
 }: AssessmentDetailsViewProps) => {
   const assessmentName = getAssessmentName(assessment);
   const assessmentNameLink =
@@ -107,6 +108,8 @@ const AssessmentDetailsView = ({
   const actions = getAvailableActions(assessment).filter(action =>
     defaultActionOrder.includes(action),
   );
+  const canPermanentlyDelete =
+    assessment.status === 'archived' && Boolean(onPermanentDeleteRequest);
   const summaryMetadata = [
     {
       label: 'Assessment type',
@@ -244,6 +247,15 @@ const AssessmentDetailsView = ({
               onClick={() => onAction(action)}
             />
           ))}
+
+          {canPermanentlyDelete && (
+            <Button
+              title="Permanent delete"
+              variant="destructive"
+              disabled={isActionLoading}
+              onClick={event => onPermanentDeleteRequest?.(event)}
+            />
+          )}
         </div>
       </header>
 
