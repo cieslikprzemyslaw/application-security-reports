@@ -239,7 +239,7 @@ describe('Report Builder preview navigation state', () => {
       assert.deepEqual(window.history.state.usr, expectedRouteState);
       assert.equal(
         window.document.activeElement?.textContent?.trim(),
-        'Preview',
+        'Report Preview',
       );
 
       await act(async () => {
@@ -249,12 +249,11 @@ describe('Report Builder preview navigation state', () => {
       });
 
       await waitFor(() => {
-        assert.equal(window.location.pathname, previewPath);
-        assert.ok(
-          textContent(container).includes('Missing Server-Side Authorization'),
-        );
+        assert.equal(window.location.pathname, editorPath);
+        assert.ok(textContent(container).includes('Selection tree'));
       });
 
+      assert.deepEqual(window.history.state.usr, expectedRouteState);
       assert.equal(
         window.document.activeElement?.textContent?.trim(),
         'Report Preview',

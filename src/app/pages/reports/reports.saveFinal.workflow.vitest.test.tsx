@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 
 import { describe, it } from 'vitest';
 
@@ -39,6 +39,7 @@ describe('Save final through the production Report Builder route', () => {
     const readinessBodies: unknown[] = [];
     const finalBodies: unknown[] = [];
     let reportReadCount = 0;
+    let createdReportListItem: Record<string, unknown> | undefined;
 
     setFetch(async (input, init) => {
       const path = String(input);
@@ -104,7 +105,9 @@ describe('Save final through the production Report Builder route', () => {
       }
 
       if (path === `/api/reports?assessmentId=${previewAssessmentId}`) {
-        return createJsonResponse({ data: [] });
+        return createJsonResponse({
+          data: createdReportListItem ? [createdReportListItem] : [],
+        });
       }
 
       if (path === '/api/reports/preview') {
@@ -136,18 +139,24 @@ describe('Save final through the production Report Builder route', () => {
       if (path === '/api/reports' && init?.method === 'POST') {
         reportBodies.push(JSON.parse(String(init.body)));
 
+        const createdReport = {
+          id: reportId,
+          assessmentId: previewAssessmentId,
+          title: 'Customer Services Portal Security Report',
+          status: 'draft',
+          selectedThreatIds: [previewThreatId],
+          latestVersion: 0,
+          createdAt: '2026-06-26T08:00:00.000Z',
+          updatedAt: '2026-06-26T08:00:00.000Z',
+        };
+        createdReportListItem = {
+          ...createdReport,
+          versions: [],
+        };
+
         return createJsonResponse(
           {
-            data: {
-              id: reportId,
-              assessmentId: previewAssessmentId,
-              title: 'Customer Services Portal Security Report',
-              status: 'draft',
-              selectedThreatIds: [previewThreatId],
-              latestVersion: 0,
-              createdAt: '2026-06-26T08:00:00.000Z',
-              updatedAt: '2026-06-26T08:00:00.000Z',
-            },
+            data: createdReport,
           },
           { status: 201 },
         );

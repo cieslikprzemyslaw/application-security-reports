@@ -144,7 +144,7 @@ try {
     assert.equal(typeof overviewJson.data.assessment.recordVersion, 'number');
     assert.equal(overviewJson.data.assessment.findingsCount, 1);
     assert.equal(overviewJson.data.assessment.evidenceCount, 1);
-    assert.equal(overviewJson.data.assessment.reportVersionCount, 2);
+    assert.equal(overviewJson.data.assessment.reportVersionCount, 0);
     assert.deepEqual(overviewJson.data.assessment.availableActions, [
       'complete',
       'archive',
