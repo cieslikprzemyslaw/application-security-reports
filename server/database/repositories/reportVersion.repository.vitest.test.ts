@@ -1,5 +1,6 @@
-﻿import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { buildReportPreviewSnapshotFixture } from '../../test/report-preview.fixture.js';
 import { RepositoryConflictError } from '../errors.js';
 
 import type {
@@ -28,7 +29,9 @@ const createDb = () => {
     reportVersion: {
       create: vi.fn(),
       findUnique: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue(null),
       findMany: vi.fn().mockResolvedValue([]),
+      delete: vi.fn(),
       deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
     },
     settings: { findFirst: vi.fn().mockResolvedValue(null) },
@@ -47,7 +50,7 @@ const createDb = () => {
 };
 
 describe('ReportVersion finalisation transaction repositories', () => {
-  it('binds every finalisation lookup and write repository to one transaction client', async () => {
+  it('binds every finalisation lookup and write repository to one transaction client without automatic retention deletes', async () => {
     const { db, transaction } = createDb();
     const repository = createReportVersionRepository(db);
 
@@ -75,17 +78,42 @@ describe('ReportVersion finalisation transaction repositories', () => {
     expect(transaction.report.findUnique).toHaveBeenCalledOnce();
     expect(transaction.settings.findFirst).toHaveBeenCalledOnce();
     expect(transaction.reportVersion.findMany).toHaveBeenCalledOnce();
-    expect(transaction.reportVersion.deleteMany).toHaveBeenCalledWith({
-      where: {
-        reportId,
-        status: 'draft',
-        NOT: { version: 10 },
-      },
-    });
+    expect(transaction.reportVersion.deleteMany).not.toHaveBeenCalled();
     expect(transaction.report.updateMany).toHaveBeenCalledWith({
       where: { id: reportId, latestVersion: 0 },
       data: { latestVersion: 10 },
     });
+  });
+
+  it('deletes one version and recalculates the parent latestVersion in one transaction', async () => {
+    const { db, transaction } = createDb();
+    const repository = createReportVersionRepository(db);
+    vi.mocked(transaction.reportVersion.findFirst)
+      .mockResolvedValueOnce({
+        id: 'rvs_00000000-0000-0000-0000-000000000001',
+        reportId,
+        version: 10,
+        status: 'final',
+        generatedAt: '2026-06-25',
+        filePath: null,
+        snapshot: buildReportPreviewSnapshotFixture(),
+      })
+      .mockResolvedValueOnce({ version: 3 });
+
+    const result = await repository.deleteByReportIdAndVersionId(
+      reportId,
+      'rvs_00000000-0000-0000-0000-000000000001',
+    );
+
+    expect(db.$transaction).toHaveBeenCalledOnce();
+    expect(transaction.reportVersion.delete).toHaveBeenCalledWith({
+      where: { id: 'rvs_00000000-0000-0000-0000-000000000001' },
+    });
+    expect(transaction.report.update).toHaveBeenCalledWith({
+      where: { id: reportId },
+      data: { latestVersion: 3 },
+    });
+    expect(result).toMatchObject({ latestVersion: 3 });
   });
 
   it('rejects a stale latestVersion compare-and-set update', async () => {

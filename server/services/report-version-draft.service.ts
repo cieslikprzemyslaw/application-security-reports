@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   CreateDraftReportVersionRequest,
   ReportVersion,
 } from '../../src/domain/report.js';
@@ -89,7 +89,13 @@ export const createDraftReportVersion = async (
         snapshot,
       });
 
-      await repository.updateReportLatestVersion(input.reportId, version);
+      await repository.updateReportLatestVersion(
+        input.reportId,
+        version,
+        'draft',
+      );
+      await repository.applyRetention(input.reportId, version);
+
       await repository.applyRetention(input.reportId, version);
 
       return created;

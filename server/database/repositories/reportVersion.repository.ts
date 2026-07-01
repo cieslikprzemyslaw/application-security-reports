@@ -1,6 +1,9 @@
 ﻿import type { ReportVersion } from '../../../src/domain/report.js';
 import type { CreateReportVersionInput } from '../../../src/domain/report.js';
-import type { ReportVersionStatus } from '../../../src/domain/common.js';
+import type {
+  ReportStatus,
+  ReportVersionStatus,
+} from '../../../src/domain/common.js';
 import { reportVersionSnapshotSchema } from '../../../src/domain/schemas/report.schema.js';
 import {
   ValidationError,
@@ -35,12 +38,23 @@ export interface ReportVersionTransactionRepository {
   findById(id: string): Promise<ReportVersion | null>;
   findByReportId(reportId: string): Promise<ReportVersion[]>;
   applyRetention(reportId: string, currentVersion: number): Promise<void>;
-  updateReportLatestVersion(reportId: string, version: number): Promise<void>;
+  updateReportLatestVersion(
+    reportId: string,
+    version: number,
+    status?: ReportStatus,
+  ): Promise<void>;
   updateReportLatestVersionIfCurrent(
     reportId: string,
     expectedLatestVersion: number,
     version: number,
+    status?: ReportStatus,
   ): Promise<void>;
+}
+
+export interface DeleteReportVersionResult {
+  deletedVersion: ReportVersion;
+  latestVersion: number;
+  latestStatus: ReportStatus;
 }
 
 export interface ReportVersionFinalisationTransactionRepositories {
@@ -54,6 +68,10 @@ export interface ReportVersionFinalisationTransactionRepositories {
 }
 
 export interface ReportVersionRepository extends ReportVersionTransactionRepository {
+  deleteByReportIdAndVersionId(
+    reportId: string,
+    versionId: string,
+  ): Promise<DeleteReportVersionResult | null>;
   withTransaction<T>(
     operation: (repository: ReportVersionTransactionRepository) => Promise<T>,
   ): Promise<T>;
@@ -119,6 +137,18 @@ const toReportVersion = (row: ReportVersionRow): ReportVersion => {
   };
 };
 
+const statusFromVersion = (
+  version: Pick<ReportVersionRow, 'status'> | null,
+): ReportStatus => (version?.status === 'final' ? 'generated' : 'draft');
+
+const updateReportLatestVersionData = (
+  version: number,
+  status?: ReportStatus,
+) => ({
+  latestVersion: version,
+  ...(status ? { status } : {}),
+});
+
 const createTransactionRepository = (
   db: ReportVersionTransactionDb,
 ): ReportVersionTransactionRepository => ({
@@ -128,7 +158,10 @@ const createTransactionRepository = (
     );
 
     if (!snapshotResult.success) {
-      throw new ValidationError(formatValidationErrors(snapshotResult.error));
+      throw new ValidationError({
+        error: 'VALIDATION_ERROR',
+        fields: formatValidationErrors(snapshotResult.error),
+      });
     }
 
     try {
@@ -163,32 +196,24 @@ const createTransactionRepository = (
   async findByReportId(reportId) {
     const rows = await db.reportVersion.findMany({
       where: { reportId },
-      orderBy: [{ createdAt: 'asc' }, { version: 'asc' }],
+      orderBy: [{ version: 'asc' }, { createdAt: 'asc' }],
       select: reportVersionSelect,
     });
 
     return rows.map(toReportVersion);
   },
 
-  async applyRetention(reportId, currentVersion) {
-    try {
-      await db.reportVersion.deleteMany({
-        where: {
-          reportId,
-          status: 'draft',
-          NOT: { version: currentVersion },
-        },
-      });
-    } catch (error) {
-      throw mapPrismaError(error);
-    }
+  async applyRetention(_reportId, _currentVersion) {
+    // Manual delete is now the only supported way to remove saved versions.
+    // Automatic retention must not delete drafts or finals behind the user's back.
+    return;
   },
 
-  async updateReportLatestVersion(reportId, version) {
+  async updateReportLatestVersion(reportId, version, status) {
     try {
       await db.report.update({
         where: { id: reportId },
-        data: { latestVersion: version },
+        data: updateReportLatestVersionData(version, status),
       });
     } catch (error) {
       throw mapPrismaError(error);
@@ -199,11 +224,12 @@ const createTransactionRepository = (
     reportId,
     expectedLatestVersion,
     version,
+    status,
   ) {
     try {
       const result = await db.report.updateMany({
         where: { id: reportId, latestVersion: expectedLatestVersion },
-        data: { latestVersion: version },
+        data: updateReportLatestVersionData(version, status),
       });
 
       if (result.count !== 1) {
@@ -255,6 +281,50 @@ export function createReportVersionRepository(
 ): ReportVersionRepository {
   return {
     ...createTransactionRepository(db),
+
+    async deleteByReportIdAndVersionId(reportId, versionId) {
+      return runTransaction(db, async transaction => {
+        const existingVersion = await transaction.reportVersion.findUnique({
+          where: { id: versionId, reportId },
+          select: reportVersionSelect,
+        });
+
+        if (!existingVersion) {
+          return null;
+        }
+
+        await transaction.reportVersion.delete({
+          where: { id: versionId, reportId },
+        });
+
+        const latestRemainingVersion =
+          await transaction.reportVersion.findFirst({
+            where: { reportId },
+            orderBy: [{ version: 'desc' }, { createdAt: 'desc' }],
+            select: {
+              version: true,
+              status: true,
+            },
+          });
+
+        const latestVersion = latestRemainingVersion?.version ?? 0;
+        const latestStatus = statusFromVersion(latestRemainingVersion);
+
+        await transaction.report.update({
+          where: { id: reportId },
+          data: {
+            latestVersion,
+            status: latestStatus,
+          },
+        });
+
+        return {
+          deletedVersion: toReportVersion(existingVersion),
+          latestVersion,
+          latestStatus,
+        };
+      });
+    },
 
     async withTransaction(operation) {
       return runTransaction(db, transaction =>

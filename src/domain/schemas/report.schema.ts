@@ -1,8 +1,9 @@
-import { z } from 'zod';
+﻿import { z } from 'zod';
 
 import type {
   CreateDraftReportVersionRequest,
   CreateFinalReportVersionRequest,
+  DeleteReportVersionResponse,
   Report,
   ReportVersion,
   ReportVersionResponse,
@@ -153,6 +154,21 @@ type ReportVersionListResponseSchemaOutput = z.output<
   typeof reportVersionListResponseSchema
 >;
 const _reportVersionListResponseSchemaCompatibilityCheck: ReportVersionListResponseSchemaOutput extends ReportVersionResponse[]
+  ? true
+  : never = true;
+
+export const deleteReportVersionResponseSchema = z
+  .object({
+    reportId: prefixedUuidSchema('rpt_', 'Report'),
+    deletedVersionId: prefixedUuidSchema('rvs_', 'ReportVersion'),
+    latestVersion: nonNegativeIntegerSchema,
+  })
+  .strict();
+
+type DeleteReportVersionResponseSchemaOutput = z.output<
+  typeof deleteReportVersionResponseSchema
+>;
+const _deleteReportVersionResponseSchemaCompatibilityCheck: DeleteReportVersionResponseSchemaOutput extends DeleteReportVersionResponse
   ? true
   : never = true;
 

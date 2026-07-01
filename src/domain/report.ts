@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   AssessmentId,
   ISODateString,
   ReportId,
@@ -84,6 +84,12 @@ export type CreateFinalReportVersionRequest = ReportPreviewRequest & {
   expectedLatestVersion: number;
 };
 export type ReportVersionResponse = Omit<ReportVersion, 'filePath'>;
+
+export interface DeleteReportVersionResponse {
+  reportId: ReportId;
+  deletedVersionId: ReportVersionId;
+  latestVersion: number;
+}
 
 export type CreateReportInput = Omit<Report, 'id' | 'createdAt' | 'updatedAt'>;
 

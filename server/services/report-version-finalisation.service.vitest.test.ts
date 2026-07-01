@@ -1,4 +1,4 @@
-﻿import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type {
   CreateReportVersionInput,
@@ -240,7 +240,7 @@ describe('finaliseReportVersion', () => {
     },
   );
 
-  it('retains all final versions and removes only old non-current drafts after finalisation', async () => {
+  it('preserves every saved draft and final version after finalisation', async () => {
     const harness = createFinalisationHarness({
       history: [
         buildVersion(1),

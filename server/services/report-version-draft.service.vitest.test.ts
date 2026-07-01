@@ -1,4 +1,4 @@
-﻿import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { Assessment } from '../../src/domain/assessment.js';
 import type { Company } from '../../src/domain/company.js';
@@ -175,6 +175,7 @@ const createVersionRepositoryFake = (
     };
   const repository: ReportVersionRepository = {
     ...transactionRepository,
+    deleteByReportIdAndVersionId: vi.fn(async () => null),
     withTransaction,
     withFinalisationTransaction,
   };
@@ -273,7 +274,7 @@ describe('createDraftReportVersion', () => {
     },
   );
 
-  it('retains every final version and only the current draft after save', async () => {
+  it('preserves every saved draft and final version after save', async () => {
     const { dependencies, versionRepository } = createDependencies({
       history: [
         buildVersion(1),

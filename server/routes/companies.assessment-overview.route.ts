@@ -48,6 +48,13 @@ const buildAssessmentWorkspaceOverview = async (
     reportRepository.findByAssessmentId(assessment.id),
   ]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const reportVersionCount = reports.reduce(
+    (total, report) => total + report.versions.length,
+
+    0,
+  );
+
   return {
     company: {
       id: company.id,
@@ -58,7 +65,10 @@ const buildAssessmentWorkspaceOverview = async (
       recordVersion: new Date(assessment.updatedAt).getTime(),
       findingsCount: threats.length,
       evidenceCount: evidence.length,
-      reportVersionCount: reports.length,
+      reportVersionCount: reports.reduce(
+        (count, report) => count + report.versions.length,
+        0,
+      ),
       availableActions: getAvailableAssessmentActions(assessment.status),
     },
   };

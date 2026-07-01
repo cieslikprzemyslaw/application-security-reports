@@ -1,4 +1,4 @@
-import { act, useState } from 'react';
+﻿import { act, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -86,7 +86,13 @@ describe('Report bootstrap workflow', () => {
     const requestBodies: unknown[] = [];
 
     setFetch(async (input, init) => {
-      expect(String(input)).toBe('/api/reports');
+      const path = String(input);
+
+      if (path === `/api/reports?assessmentId=${assessmentId}`) {
+        return createJsonResponse({ data: [] });
+      }
+
+      expect(path).toBe('/api/reports');
       expect(init?.method).toBe('POST');
       requestBodies.push(JSON.parse(String(init?.body)));
 

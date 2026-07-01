@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 
 import { describe, it } from 'vitest';
 
@@ -128,6 +128,10 @@ describe('Report readiness through the production Report Builder route', () => {
       }
 
       if (path === `/api/evidence?assessmentId=${previewAssessmentId}`) {
+        return createJsonResponse({ data: [] });
+      }
+
+      if (path === `/api/reports?assessmentId=${previewAssessmentId}`) {
         return createJsonResponse({ data: [] });
       }
 

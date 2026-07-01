@@ -109,6 +109,7 @@ const createFinalRepository = (
     };
   const repository: ReportVersionRepository = {
     ...transactionRepository,
+    deleteByReportIdAndVersionId: vi.fn(async () => null),
     withTransaction: async () => {
       throw new Error('Draft transaction is not used by final routes.');
     },

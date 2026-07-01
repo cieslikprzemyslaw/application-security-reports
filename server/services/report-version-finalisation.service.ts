@@ -1,4 +1,4 @@
-﻿import type { ReportReadinessResult } from '../../src/domain/report-readiness.js';
+import type { ReportReadinessResult } from '../../src/domain/report-readiness.js';
 import type { ReportPreviewRequest } from '../../src/domain/report-preview.js';
 import type { ReportVersionResponse } from '../../src/domain/report.js';
 import { RepositoryConflictError } from '../database/errors.js';
@@ -80,6 +80,7 @@ export const finaliseReportVersion = async (
         input.reportId,
         input.expectedLatestVersion,
         version,
+        'generated',
       );
       await repositories.reportVersionRepository.applyRetention(
         input.reportId,

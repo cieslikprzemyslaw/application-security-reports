@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -235,7 +235,10 @@ try {
   const retainedVersions = await reportVersionRepo.findByReportId(report.id);
   assert.deepEqual(
     retainedVersions.map(version => [version.version, version.status]),
-    [[10, 'final']],
+    [
+      [1, 'draft'],
+      [10, 'final'],
+    ],
   );
 
   await assert.rejects(

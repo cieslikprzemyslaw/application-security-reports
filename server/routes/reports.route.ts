@@ -99,6 +99,26 @@ const sortEvidence = <
     return left.id.localeCompare(right.id);
   });
 
+const toPublicCompanyLogoUrl = (company: {
+  id: string;
+  logoUrl?: string | null;
+}) => (company.logoUrl ? `/api/companies/${company.id}/logo` : null);
+
+const toReportViewCompany = <T extends { id: string; logoUrl?: string | null }>(
+  company: T,
+): T => ({
+  ...company,
+  logoUrl: toPublicCompanyLogoUrl(company),
+});
+const toReportViewDateOnly = (
+  value: string | undefined,
+): string | undefined => {
+  if (!value) {
+    return undefined;
+  }
+
+  return value.slice(0, 10);
+};
 export const createReportsRouter = (
   reportRepository: ReportRepository,
   assessmentRepository: AssessmentRepository,
@@ -295,6 +315,11 @@ export const createReportsRouter = (
           }
         }
 
+        const reportViewAssessment = {
+          ...assessment,
+          startedAt: toReportViewDateOnly(assessment.startedAt),
+          completedAt: toReportViewDateOnly(assessment.completedAt),
+        };
         const snapshot: ReportSnapshot = {
           reportTitle: report.title,
           companyName: company.name,
@@ -339,10 +364,10 @@ export const createReportsRouter = (
 
         const reportView: ReportView = {
           report,
-          company,
+          company: toReportViewCompany(company),
           assessments: [
             {
-              assessment,
+              assessment: reportViewAssessment,
               findings: selectedThreatIds.map(threatId => {
                 const threat = threatsById.get(threatId);
 
@@ -365,7 +390,7 @@ export const createReportsRouter = (
             companyName: company.name,
             companyWebsite: company.website,
             companyContactEmail: company.contactEmail,
-            companyLogoUrl: company.logoUrl ?? null,
+            companyLogoUrl: toPublicCompanyLogoUrl(company),
             companyFooterText: company.footerText,
             issuerName: settings.organisationName,
             issuerContactName: settings.consultantName,

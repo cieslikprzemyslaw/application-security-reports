@@ -76,6 +76,7 @@ const createVersionRepository = (
     };
   const repository: ReportVersionRepository = {
     ...transactionRepository,
+    deleteByReportIdAndVersionId: vi.fn(async () => null),
     withTransaction,
     withFinalisationTransaction,
   };

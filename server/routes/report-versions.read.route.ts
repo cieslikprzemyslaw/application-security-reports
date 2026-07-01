@@ -1,4 +1,4 @@
-import { Router, type Response } from 'express';
+﻿import { Router, type Response } from 'express';
 import { z } from 'zod';
 
 import type {
@@ -7,6 +7,7 @@ import type {
 } from '../../src/domain/report.js';
 import {
   reportRouteParamsSchema,
+  deleteReportVersionResponseSchema,
   reportVersionResponseSchema,
   reportVersionRouteParamsSchema,
 } from '../../src/domain/schemas/index.js';
@@ -21,7 +22,7 @@ export interface ReportVersionReadRouteRepositories {
   reportRepository: Pick<ReportRepository, 'findById'>;
   reportVersionRepository: Pick<
     ReportVersionRepository,
-    'findById' | 'findByReportId'
+    'deleteByReportIdAndVersionId' | 'findById' | 'findByReportId'
   >;
 }
 
@@ -122,6 +123,56 @@ export const createReportVersionsReadRouter = (
         }
 
         sendReportVersionResponse(res, version);
+      } catch (error) {
+        if (!handleRepositoryError(error, res)) {
+          throw error;
+        }
+      }
+    }),
+  );
+
+  router.delete(
+    '/:id/versions/:versionId',
+    createRequestValidationMiddleware({
+      params: reportVersionRouteParamsSchema,
+    }),
+    asyncRoute(async (_req, res) => {
+      const { id, versionId } = res.locals.validatedRequest?.params as {
+        id: string;
+        versionId: string;
+      };
+
+      try {
+        const report = await repositories.reportRepository.findById(id);
+
+        if (!report) {
+          sendApiError(res, 404, 'REPORT_NOT_FOUND', 'Report not found');
+          return;
+        }
+
+        const deletion =
+          await repositories.reportVersionRepository.deleteByReportIdAndVersionId(
+            id,
+            versionId,
+          );
+
+        if (!deletion) {
+          sendApiError(
+            res,
+            404,
+            'REPORT_VERSION_NOT_FOUND',
+            'Report version not found',
+          );
+          return;
+        }
+
+        res.status(200).json({
+          data: deleteReportVersionResponseSchema.parse({
+            reportId: id,
+            deletedVersionId: deletion.deletedVersion.id,
+            latestVersion: deletion.latestVersion,
+          }),
+        });
       } catch (error) {
         if (!handleRepositoryError(error, res)) {
           throw error;

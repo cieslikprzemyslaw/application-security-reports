@@ -61,7 +61,7 @@ describe('useReportDraftSaveController', () => {
   it('prevents duplicate saves and selects the returned immutable version', async () => {
     const deferred = createDeferred<ReportVersionResponse>();
     const createDraft = vi.fn(() => deferred.promise);
-    const bootstrapReport = vi.fn();
+    const bootstrapReport = vi.fn().mockResolvedValue(reportId);
     const builderState = createPersistedState();
     const { result } = renderHook(() =>
       useReportDraftSaveController({
@@ -112,7 +112,7 @@ describe('useReportDraftSaveController', () => {
         useReportDraftSaveController({
           builderState,
           assessment,
-          bootstrapReport: vi.fn(),
+          bootstrapReport: vi.fn().mockResolvedValue(reportId),
           createDraft,
         }),
       {
@@ -197,7 +197,7 @@ describe('useReportDraftSaveController', () => {
       useReportDraftSaveController({
         builderState,
         assessment,
-        bootstrapReport: vi.fn(),
+        bootstrapReport: vi.fn().mockResolvedValue(reportId),
         createDraft,
       }),
     );
@@ -217,7 +217,7 @@ describe('useReportDraftSaveController', () => {
   it('exposes readiness and generic failure states without leaking details', async () => {
     const missingAssessmentState = createDefaultReportBuilderState(companyId);
     const createDraft = vi.fn();
-    const bootstrapReport = vi.fn();
+    const bootstrapReport = vi.fn().mockResolvedValue(reportId);
     const readinessHook = renderHook(() =>
       useReportDraftSaveController({
         builderState: missingAssessmentState,

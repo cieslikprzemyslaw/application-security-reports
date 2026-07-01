@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import type { ReportVersionRepository } from '../database/repositories/reportVersion.repository.js';
 import {

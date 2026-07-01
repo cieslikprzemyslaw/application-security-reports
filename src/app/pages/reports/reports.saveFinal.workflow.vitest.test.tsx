@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 
 import { describe, it } from 'vitest';
 
@@ -101,6 +101,10 @@ describe('Save final through the production Report Builder route', () => {
         return createJsonResponse({
           data: [],
         });
+      }
+
+      if (path === `/api/reports?assessmentId=${previewAssessmentId}`) {
+        return createJsonResponse({ data: [] });
       }
 
       if (path === '/api/reports/preview') {
@@ -282,7 +286,7 @@ describe('Save final through the production Report Builder route', () => {
           textContent(container).includes('Final version saved as v1.0.'),
         );
         assert.ok(textContent(container).includes('Final Customer Portal'));
-        assert.ok(textContent(container).includes(`${reportId} · v1.0`));
+        assert.ok(textContent(container).includes(`${reportId} Â· v1.0`));
       });
 
       assert.equal(reportBodies.length, 1);
