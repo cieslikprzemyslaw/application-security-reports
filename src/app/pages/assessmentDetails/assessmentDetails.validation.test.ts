@@ -5,6 +5,7 @@ import { getOwaspTop10CategoryOption } from '~/domain';
 import {
   threatFormValueToCreateInput,
   threatFormValueToUpdateInput,
+  toAssessmentViewModel,
 } from './assessmentDetails.mapper';
 import {
   createThreatValidationErrorMap,
@@ -78,5 +79,39 @@ assert.equal('assessmentId' in updateInput, false);
 assert.equal(updateInput.title, 'Missing Server-Side Authorization');
 assert.equal(updateInput.affectedComponent, 'Orders API');
 assert.equal(updateInput.affectedEndpoint, '/api/v1/orders/{id}');
+
+const assessmentView = toAssessmentViewModel({
+  company: {
+    id: 'cmp_1',
+    name: 'Northstar Digital',
+  },
+  assessment: {
+    id: 'asm_1',
+    companyId: 'cmp_1',
+    title: 'Customer Services Portal',
+    description: 'Assessment of the customer portal',
+    scope: 'Web application',
+    status: 'in-progress',
+    startedAt: '2026-06-01',
+    completedAt: '2026-06-10',
+    applicationName: 'Customer Services Portal',
+    environment: 'Production',
+    assessmentType: 'Web App',
+    overallRisk: 'high',
+    owaspTaxonomyVersion: '2025',
+    createdAt: '2026-06-01T09:00:00.000Z',
+    updatedAt: '2026-06-11T09:00:00.000Z',
+    recordVersion: 3,
+    findingsCount: 7,
+    evidenceCount: 2,
+    reportVersionCount: 1,
+    testerName: 'Alex Mercer',
+    availableActions: ['complete', 'archive'],
+  },
+});
+
+assert.equal(assessmentView.startedAt, '2026-06-01');
+assert.equal(assessmentView.completedAt, '2026-06-10');
+assert.equal(assessmentView.companyName, 'Northstar Digital');
 
 console.log('assessment finding validation checks passed');

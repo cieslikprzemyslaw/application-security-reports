@@ -5,15 +5,47 @@ const invalidRelativeTimeDisplayValue = 'Invalid relative time';
 const invalidFileSizeDisplayValue = 'Invalid file size';
 const invalidCountDisplayValue = 'Invalid count';
 
+const dateOnlyPattern = /^(\d{4})-(\d{2})-(\d{2})$/;
+
 const hasText = (value?: string | null): value is string =>
   typeof value === 'string' && value.trim().length > 0;
 
 const isValidNumber = (value?: number | null) =>
   typeof value === 'number' && Number.isFinite(value);
 
+const formatDateOnly = (value: string) => {
+  const match = dateOnlyPattern.exec(value.trim());
+
+  if (!match) {
+    return undefined;
+  }
+
+  const [, year, month, day] = match;
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+
+  if (
+    date.getUTCFullYear() !== Number(year) ||
+    date.getUTCMonth() !== Number(month) - 1 ||
+    date.getUTCDate() !== Number(day)
+  ) {
+    return invalidDateDisplayValue;
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeZone: 'UTC',
+  }).format(date);
+};
+
 export const formatDate = (value?: string | null) => {
   if (!hasText(value)) {
     return missingDisplayValue;
+  }
+
+  const dateOnlyValue = formatDateOnly(value);
+
+  if (dateOnlyValue) {
+    return dateOnlyValue;
   }
 
   const date = new Date(value);
@@ -21,6 +53,28 @@ export const formatDate = (value?: string | null) => {
   return Number.isNaN(date.getTime())
     ? invalidDateDisplayValue
     : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date);
+};
+
+export const formatDateRange = (
+  startedAt?: string | null,
+  completedAt?: string | null,
+) => {
+  const start = formatDate(startedAt);
+  const end = formatDate(completedAt);
+
+  if (start === missingDisplayValue && end === missingDisplayValue) {
+    return missingDisplayValue;
+  }
+
+  if (start === missingDisplayValue) {
+    return end;
+  }
+
+  if (end === missingDisplayValue) {
+    return start;
+  }
+
+  return `${start} to ${end}`;
 };
 
 export const formatDateTime = (value?: string | null) => {

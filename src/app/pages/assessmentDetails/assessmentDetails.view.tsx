@@ -8,7 +8,10 @@ import Card from '~/app/components/ui/card';
 import IconSVG from '~/app/components/ui/iconSVG';
 import StatCard from '~/app/components/common/statCard';
 import Tabs from '~/app/components/ui/tabs';
-import { formatDate, formatWithMissingValue } from '~/app/utils/formatters';
+import {
+  formatDateRange,
+  formatWithMissingValue,
+} from '~/app/utils/formatters';
 
 import StyledAssessmentDetails from './assessmentDetails.styled';
 
@@ -53,25 +56,6 @@ const defaultActionOrder: AssessmentDetailAction[] = [
 
 const getAssessmentName = (assessment: AssessmentDetailsAssessment) =>
   formatWithMissingValue(assessment.applicationName);
-
-const formatDateRange = (startedAt?: string, completedAt?: string) => {
-  const start = formatDate(startedAt);
-  const end = formatDate(completedAt);
-
-  if (start === 'â€”' && end === 'â€”') {
-    return 'â€”';
-  }
-
-  if (start === 'â€”') {
-    return end;
-  }
-
-  if (end === 'â€”') {
-    return start;
-  }
-
-  return `${start} to ${end}`;
-};
 
 const getAvailableActions = (
   assessment: AssessmentDetailsAssessment,
