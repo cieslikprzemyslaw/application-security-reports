@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import {
   formatCount,
   formatDate,
+  formatDateRange,
   formatDateTime,
   formatFileSize,
   formatReportVersion,
@@ -24,6 +25,37 @@ describe('formatters', () => {
           new Date('2026-06-14T16:45:00.000Z'),
         ),
       );
+      assert.equal(
+        formatDate('2026-06-01'),
+        new Intl.DateTimeFormat(undefined, {
+          dateStyle: 'medium',
+          timeZone: 'UTC',
+        }).format(new Date(Date.UTC(2026, 5, 1))),
+      );
+      assert.equal(formatDate('2026-02-30'), 'Invalid date');
+
+      assert.equal(formatDateRange(), '—');
+      assert.equal(
+        formatDateRange('2026-06-01', '2026-06-10'),
+        `${new Intl.DateTimeFormat(undefined, {
+          dateStyle: 'medium',
+          timeZone: 'UTC',
+        }).format(new Date(Date.UTC(2026, 5, 1)))} to ${new Intl.DateTimeFormat(
+          undefined,
+          {
+            dateStyle: 'medium',
+            timeZone: 'UTC',
+          },
+        ).format(new Date(Date.UTC(2026, 5, 10)))}`,
+      );
+      assert.equal(
+        formatDateRange(undefined, '2026-06-10'),
+        new Intl.DateTimeFormat(undefined, {
+          dateStyle: 'medium',
+          timeZone: 'UTC',
+        }).format(new Date(Date.UTC(2026, 5, 10))),
+      );
+      assert.equal(formatDateRange('not-a-date'), 'Invalid date');
 
       assert.equal(formatDateTime(), '—');
       assert.equal(formatDateTime('not-a-date'), 'Invalid date');

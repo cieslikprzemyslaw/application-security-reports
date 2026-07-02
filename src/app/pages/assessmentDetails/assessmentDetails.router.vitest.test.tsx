@@ -17,6 +17,16 @@ import {
   textContent,
 } from './assessmentDetails.router.testUtils';
 
+const formatExpectedDateOnly = (
+  year: number,
+  monthIndex: number,
+  day: number,
+) =>
+  new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(year, monthIndex, day)));
+
 describe('assessmentDetails.router', () => {
   it('passes the migrated checks', async () => {
     await (async () => {
@@ -68,6 +78,14 @@ describe('assessmentDetails.router', () => {
               )
               ?.textContent?.trim(),
             'Production',
+          );
+          assert.equal(
+            container
+              .querySelector(
+                '.assessment-summary-metadata-item:nth-child(2) .assessment-summary-metadata-value',
+              )
+              ?.textContent?.trim(),
+            `${formatExpectedDateOnly(2026, 5, 1)} to ${formatExpectedDateOnly(2026, 5, 10)}`,
           );
           assert.equal(
             container
