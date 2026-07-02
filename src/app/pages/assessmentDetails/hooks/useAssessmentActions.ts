@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import type { AssessmentWorkspaceOverview } from '~/services/assessmentService';
 import { assessmentService } from '~/services';
@@ -37,6 +37,7 @@ export const useAssessmentActions = ({
   recordVersion?: number;
   onSuccess: (overview: AssessmentWorkspaceOverview) => void;
 }) => {
+  const isActionPendingRef = useRef(false);
   const [pendingAction, setPendingAction] = useState<
     AssessmentDetailAction | undefined
   >();
@@ -48,11 +49,12 @@ export const useAssessmentActions = ({
       !companyId ||
       !assessmentId ||
       recordVersion === undefined ||
-      pendingAction
+      isActionPendingRef.current
     ) {
       return;
     }
 
+    isActionPendingRef.current = true;
     setPendingAction(action);
     setActionError(undefined);
     setConflictError(undefined);
@@ -78,6 +80,7 @@ export const useAssessmentActions = ({
         );
       }
     } finally {
+      isActionPendingRef.current = false;
       setPendingAction(undefined);
     }
   };
