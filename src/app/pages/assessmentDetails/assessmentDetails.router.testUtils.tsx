@@ -128,6 +128,10 @@ export const createAssessmentOverviewResponse = (
   overrides: Partial<{
     environment: string | null;
     testerName: string | null;
+    status: string;
+    completedAt: string | null;
+    availableActions: string[];
+    recordVersion: number;
   }> = {},
 ) => ({
   data: {
