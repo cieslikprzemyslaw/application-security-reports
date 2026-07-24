@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useInRouterContext, useNavigate } from 'react-router-dom';
 
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
@@ -43,6 +43,40 @@ interface ReportBuilderTreeProps {
   ) => Promise<ReportBuilderHierarchy>;
 }
 
+interface ReportBuilderEmptyStateProps {
+  companyId: string;
+}
+
+const CreateAssessmentAction = ({ companyId }: ReportBuilderEmptyStateProps) => {
+  const navigate = useNavigate();
+
+  return (
+    <Button
+      title="Create assessment"
+      onClick={() => navigate(routes.companyWorkspaceAssessments(companyId))}
+    />
+  );
+};
+
+const ReportBuilderEmptyState = ({
+  companyId,
+}: ReportBuilderEmptyStateProps) => {
+  const isInRouterContext = useInRouterContext();
+
+  return (
+    <EmptyState
+      variant="first-use"
+      title="No assessments yet"
+      description="Create the first assessment for this company to populate the report builder tree."
+      primaryAction={
+        isInRouterContext ? (
+          <CreateAssessmentAction companyId={companyId} />
+        ) : undefined
+      }
+    />
+  );
+};
+
 const ReportBuilderTree = ({
   companyId,
   companyName,
@@ -54,7 +88,6 @@ const ReportBuilderTree = ({
   onIncludeEvidenceChange,
   loadHierarchy = reportBuilderHierarchyLoader,
 }: ReportBuilderTreeProps) => {
-  const navigate = useNavigate();
   const [hierarchy, setHierarchy] = useState<ReportBuilderHierarchy>();
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | undefined>();
@@ -241,19 +274,7 @@ const ReportBuilderTree = ({
                 }}
               />
             ) : (
-              <EmptyState
-                variant="first-use"
-                title="No assessments yet"
-                description="Create the first assessment for this company to populate the report builder tree."
-                primaryAction={
-                  <Button
-                    title="Create assessment"
-                    onClick={() =>
-                      navigate(routes.companyWorkspaceAssessments(companyId))
-                    }
-                  />
-                }
-              />
+              <ReportBuilderEmptyState companyId={companyId} />
             )}
           </>
         )}
