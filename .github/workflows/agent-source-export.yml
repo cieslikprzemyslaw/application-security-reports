@@ -1,0 +1,26 @@
+name: Agent source export
+
+on:
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  export-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Upload source checkout
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-source-${{ github.event.pull_request.head.sha }}
+          path: .
+          include-hidden-files: true
+          retention-days: 1
