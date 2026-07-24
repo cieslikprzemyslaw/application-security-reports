@@ -47,7 +47,9 @@ interface ReportBuilderEmptyStateProps {
   companyId: string;
 }
 
-const CreateAssessmentAction = ({ companyId }: ReportBuilderEmptyStateProps) => {
+const CreateAssessmentAction = ({
+  companyId,
+}: ReportBuilderEmptyStateProps) => {
   const navigate = useNavigate();
 
   return (
