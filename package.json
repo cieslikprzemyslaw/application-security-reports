@@ -63,6 +63,9 @@
       "node ./node_modules/prettier/bin/prettier.cjs --write"
     ]
   },
+  "overrides": {
+    "shell-quote": "1.10.0"
+  },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@prisma/client": "^7.8.0",
