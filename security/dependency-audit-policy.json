@@ -16,7 +16,9 @@
       "reason": "Temporary acceptance for a transitive build-time dependency. This project does not process user-supplied CSS or source-map files; a compatible lockfile update is tracked separately.",
       "expires": "2026-07-31",
       "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
-      "advisoryIds": ["https://github.com/advisories/GHSA-r28c-9q8g-f849"]
+      "advisoryIds": [
+        "https://github.com/advisories/GHSA-r28c-9q8g-f849"
+      ]
     },
     {
       "package": "react-router",
@@ -24,7 +26,9 @@
       "reason": "Temporary acceptance while the compatible remediation path is verified. The application is a client-rendered Vite SPA and does not use React Server Components or React Router RSC mode.",
       "expires": "2026-07-31",
       "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
-      "advisoryIds": ["https://github.com/advisories/GHSA-qwww-vcr4-c8h2"]
+      "advisoryIds": [
+        "https://github.com/advisories/GHSA-qwww-vcr4-c8h2"
+      ]
     },
     {
       "package": "react-router-dom",
