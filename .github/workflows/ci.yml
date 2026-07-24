@@ -126,3 +126,288 @@ jobs:
 
       - name: Run dependency audit policy
         run: npm run security:audit
+
+  report-for-ai:
+    name: Report for AI
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+          cache: npm
+
+      - name: Collect and publish complete diagnostics
+        run: |
+          set +e
+
+          report_dir="$RUNNER_TEMP/report-for-ai"
+          mkdir -p "$report_dir"
+
+          run_check() {
+            id="$1"
+            label="$2"
+            shift 2
+
+            echo "::group::$label"
+            "$@" > >(tee "$report_dir/$id.log") 2>&1
+            status=$?
+            echo "::endgroup::"
+
+            printf '%s\n' "$status" > "$report_dir/$id.status"
+            echo "$label finished with exit code $status"
+          }
+
+          mark_not_run() {
+            id="$1"
+            reason="$2"
+            printf '%s\n' "not-run" > "$report_dir/$id.status"
+            printf '%s\n' "$reason" > "$report_dir/$id.log"
+          }
+
+          run_check edited-file-length "Edited file length" \
+            node .github/scripts/check-edited-file-lines.mjs
+          run_check install "Install dependencies" npm ci
+
+          if [ "$(cat "$report_dir/install.status")" = "0" ]; then
+            run_check prisma-validate "Prisma schema" npm run db:validate
+            run_check prisma-generate "Prisma client generation" npm run db:generate
+            run_check format "Formatting" npm run format:check
+            run_check lint "Lint" npm run lint -- --format stylish
+            run_check typecheck-frontend "Typecheck frontend" \
+              npx tsc --noEmit -p tsconfig.json --pretty false
+            run_check typecheck-server "Typecheck server" \
+              npx tsc --noEmit -p tsconfig.server.json --pretty false
+            run_check test-frontend "Tests frontend" \
+              npm run test:frontend -- --reporter=default
+            run_check test-backend "Tests backend" \
+              npm run test:backend -- --reporter=default
+            run_check build-frontend "Build frontend" npm run build:client
+            run_check build-server "Build server" npm run build:server
+            run_check dependency-audit "Dependency security policy" \
+              npm run security:audit
+
+            if [ "$(cat "$report_dir/dependency-audit.status")" != "0" ]; then
+              run_check npm-audit "Full npm audit" npm audit
+            else
+              mark_not_run npm-audit \
+                "Not run because the dependency security policy passed."
+            fi
+          else
+            for id in \
+              prisma-validate \
+              prisma-generate \
+              format \
+              lint \
+              typecheck-frontend \
+              typecheck-server \
+              test-frontend \
+              test-backend \
+              build-frontend \
+              build-server \
+              dependency-audit \
+              npm-audit; do
+              mark_not_run "$id" \
+                "Not run because npm ci failed. See install.log."
+            done
+          fi
+
+          run_check docker-build "Docker image build" \
+            docker build --progress=plain \
+              -f docker/api/Dockerfile \
+              -t appsec-report-builder-api:${{ github.sha }} .
+
+          if [ "$(cat "$report_dir/docker-build.status")" = "0" ]; then
+            run_check docker-run "Docker container start" \
+              docker run -d \
+                --name appsec-report-builder-api-ai-report \
+                -p 3002:3001 \
+                -e DATABASE_URL="file:/data/appsec-report-builder.db" \
+                appsec-report-builder-api:${{ github.sha }}
+          else
+            mark_not_run docker-run \
+              "Not run because the Docker image build failed."
+          fi
+
+          if [ "$(cat "$report_dir/docker-run.status")" = "0" ]; then
+            run_check docker-health "Docker API health" bash -c '
+              for i in {1..20}; do
+                if curl -fsS http://localhost:3002/api/health; then
+                  exit 0
+                fi
+
+                echo "Waiting for API health check... attempt ${i}/20"
+                sleep 2
+              done
+
+              exit 1
+            '
+          else
+            mark_not_run docker-health \
+              "Not run because the Docker container did not start."
+          fi
+
+          docker ps -a \
+            --filter name=appsec-report-builder-api-ai-report \
+            > "$report_dir/docker-state.log" 2>&1 || true
+          docker inspect appsec-report-builder-api-ai-report \
+            > "$report_dir/docker-inspect.log" 2>&1 || true
+          docker logs appsec-report-builder-api-ai-report \
+            > "$report_dir/docker-container.log" 2>&1 || true
+          docker stop appsec-report-builder-api-ai-report >/dev/null 2>&1 || true
+          docker rm appsec-report-builder-api-ai-report >/dev/null 2>&1 || true
+
+          {
+            echo "Node: $(node --version)"
+            echo "npm: $(npm --version)"
+            echo "Commit: $GITHUB_SHA"
+            echo
+            echo "Changed files against master:"
+            git diff --name-status origin/master...HEAD || true
+          } > "$report_dir/context.log"
+
+          full_report="$report_dir/report-for-ai.md"
+          summary_report="$report_dir/report-for-ai-summary.md"
+
+          checks=(
+            "edited-file-length|Edited file length"
+            "install|Install dependencies"
+            "prisma-validate|Prisma schema"
+            "prisma-generate|Prisma client generation"
+            "format|Formatting"
+            "lint|Lint"
+            "typecheck-frontend|Typecheck frontend"
+            "typecheck-server|Typecheck server"
+            "test-frontend|Tests frontend"
+            "test-backend|Tests backend"
+            "build-frontend|Build frontend"
+            "build-server|Build server"
+            "dependency-audit|Dependency security policy"
+            "npm-audit|Full npm audit"
+            "docker-build|Docker image build"
+            "docker-run|Docker container start"
+            "docker-health|Docker API health"
+          )
+
+          write_header() {
+            target="$1"
+            {
+              echo "# Report for AI"
+              echo
+              echo "Supplementary diagnostic report only."
+              echo "The original Validate, Docker Runtime, and Dependency Security jobs"
+              echo "remain unchanged and are the source of truth for CI."
+              echo
+              echo "All independent checks continued after earlier failures so an AI agent"
+              echo "can repair the complete set of problems in one batch."
+              echo
+              echo "- Commit: \`$GITHUB_SHA\`"
+              echo "- Run: \`$GITHUB_RUN_ID\`"
+              echo
+              echo "| Check | Result | Exit code |"
+              echo "| --- | --- | --- |"
+            } > "$target"
+          }
+
+          write_header "$full_report"
+          write_header "$summary_report"
+
+          failures=0
+          not_run=0
+
+          for entry in "${checks[@]}"; do
+            IFS='|' read -r id label <<< "$entry"
+            status="not-run"
+            [ -f "$report_dir/$id.status" ] && \
+              status="$(cat "$report_dir/$id.status")"
+
+            if [ "$status" = "0" ]; then
+              result="PASS"
+            elif [ "$status" = "not-run" ]; then
+              result="NOT RUN"
+              not_run=$((not_run + 1))
+            else
+              result="FAIL"
+              failures=$((failures + 1))
+            fi
+
+            echo "| $label | $result | $status |" >> "$full_report"
+            echo "| $label | $result | $status |" >> "$summary_report"
+          done
+
+          for target in "$full_report" "$summary_report"; do
+            {
+              echo
+              echo "## Totals"
+              echo
+              echo "- Failed checks: $failures"
+              echo "- Checks not run: $not_run"
+              echo
+              echo "## Failure details"
+            } >> "$target"
+          done
+
+          for entry in "${checks[@]}"; do
+            IFS='|' read -r id label <<< "$entry"
+            status="not-run"
+            [ -f "$report_dir/$id.status" ] && \
+              status="$(cat "$report_dir/$id.status")"
+
+            [ "$status" = "0" ] && continue
+
+            {
+              echo
+              echo "### $label"
+              echo
+              echo "Status: \`$status\`"
+              echo
+              echo '```text'
+              cat "$report_dir/$id.log" 2>/dev/null || echo "No log was produced."
+              echo '```'
+            } >> "$full_report"
+
+            {
+              echo
+              echo "### $label"
+              echo
+              echo "Status: \`$status\`"
+              echo
+              echo '```text'
+              tail -n 180 "$report_dir/$id.log" 2>/dev/null || \
+                echo "No log was produced."
+              echo '```'
+            } >> "$summary_report"
+          done
+
+          {
+            echo
+            echo "## Raw evidence"
+            echo
+            echo "The artifact \`report-for-ai-${GITHUB_RUN_ID}\` contains the full report,"
+            echo "all command logs, exit statuses, changed-file context, and Docker evidence."
+            echo
+            echo "This advisory job intentionally exits successfully."
+            echo "Only the original CI jobs decide whether the commit passes."
+          } >> "$summary_report"
+
+          cat "$summary_report"
+          cat "$summary_report" >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+
+      - name: Upload complete Report for AI
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-for-ai-${{ github.run_id }}
+          path: ${{ runner.temp }}/report-for-ai
+          if-no-files-found: warn
+          retention-days: 7
