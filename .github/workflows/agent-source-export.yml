@@ -21,20 +21,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24.15.0
-          cache: npm
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate Prisma client
-        run: npm run db:generate
-
-      - name: Upload dependencies
+      - name: Upload Node runtime
         uses: actions/upload-artifact@v4
         with:
-          name: agent-dependencies-${{ github.event.pull_request.head.sha }}
-          path: |
-            node_modules
-            generated/prisma
+          name: agent-node-24-${{ github.event.pull_request.head.sha }}
+          path: /opt/hostedtoolcache/node/24.15.0/x64
           include-hidden-files: true
           retention-days: 1
