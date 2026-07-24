@@ -17,6 +17,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Download official CWE weaknesses
+        run: curl --fail --location --retry 3 https://cwe-api.mitre.org/api/v1/cwe/weakness/all --output cwe-api-all.json
+
       - name: Upload source checkout
         uses: actions/upload-artifact@v4
         with:
