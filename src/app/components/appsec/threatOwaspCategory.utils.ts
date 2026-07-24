@@ -1,6 +1,7 @@
 import {
   OWASP_TOP_10_CURRENT_VERSION,
   getOwaspTop10CategoryByValue,
+  type OwaspTop10Version,
 } from '~/domain';
 
 interface ThreatOwaspCategorySource {
@@ -10,7 +11,7 @@ interface ThreatOwaspCategorySource {
 
 export const getThreatOwaspCategoryLabel = (
   threat: ThreatOwaspCategorySource,
-  owaspTaxonomyVersion: string = OWASP_TOP_10_CURRENT_VERSION,
+  owaspTaxonomyVersion: OwaspTop10Version = OWASP_TOP_10_CURRENT_VERSION,
 ) => {
   const customCategory = threat.customCategory?.trim();
 

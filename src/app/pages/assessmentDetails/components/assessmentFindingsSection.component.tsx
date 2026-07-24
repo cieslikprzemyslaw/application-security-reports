@@ -7,7 +7,6 @@ import EmptyState from '~/app/components/ui/emptyState';
 import ThreatDrawer from '~/app/components/appsec/threatDrawer';
 import ThreatForm from '~/app/components/appsec/threatForm';
 import ThreatTable from '~/app/components/appsec/threatTable';
-import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
 
 import { threatToTableRow } from '../assessmentDetails.mapper';
 import type { AssessmentDetailsAssessment } from '../assessmentDetails.type';
@@ -70,8 +69,7 @@ const AssessmentFindingsSection = ({
   initialEditTarget,
   onInitialEditTargetHandled,
 }: AssessmentFindingsSectionProps) => {
-  const owaspTaxonomyVersion =
-    assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION;
+  const { owaspTaxonomyVersion } = assessment;
   const handledTargetRef = useRef<string>();
   const [readinessFocusField] = useState(initialEditTarget?.focusField);
 

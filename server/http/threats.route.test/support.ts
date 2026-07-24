@@ -72,7 +72,7 @@ export const defaultAssessment: Assessment = {
 };
 
 export const defaultThreat: Threat & {
-  assessmentOwaspTaxonomyVersion: string;
+  assessmentOwaspTaxonomyVersion: Assessment['owaspTaxonomyVersion'];
 } = {
   id: 'thr_00000000-0000-0000-0000-000000000001',
   assessmentId: defaultAssessment.id,

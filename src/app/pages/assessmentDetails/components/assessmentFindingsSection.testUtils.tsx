@@ -139,10 +139,7 @@ export const renderHarness = async (
       events.push('view');
       setSelectedFinding(nextFinding);
       setDraftValue(
-        threatToFormValue(
-          nextFinding,
-          assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION,
-        ),
+        threatToFormValue(nextFinding, assessment.owaspTaxonomyVersion),
       );
       setDrawerMode('view');
     };
@@ -155,18 +152,13 @@ export const renderHarness = async (
 
       setSelectedFinding(nextFinding);
       setDraftValue(
-        threatToFormValue(
-          nextFinding,
-          assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION,
-        ),
+        threatToFormValue(nextFinding, assessment.owaspTaxonomyVersion),
       );
       setDrawerMode('edit');
     };
 
     const openCreateFinding = () => {
-      const value = createEmptyThreatFormValue(
-        assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION,
-      );
+      const value = createEmptyThreatFormValue(assessment.owaspTaxonomyVersion);
 
       events.push('create');
       setSelectedFinding(undefined);

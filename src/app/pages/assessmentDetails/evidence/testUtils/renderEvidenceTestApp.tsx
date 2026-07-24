@@ -11,7 +11,11 @@ import {
 import { useEffect, useRef } from 'react';
 import { ThemeProvider } from 'styled-components';
 
-import type { Evidence, Threat } from '~/domain';
+import {
+  OWASP_TOP_10_CURRENT_VERSION,
+  type Evidence,
+  type Threat,
+} from '~/domain';
 import { evidenceService } from '~/services';
 import { defaultTheme } from '~/theme';
 
@@ -69,6 +73,7 @@ export const assessment: AssessmentDetailsAssessment = {
   companyName: 'Northstar Digital',
   applicationName: 'Customer Services Portal',
   status: 'in-progress',
+  owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   recordVersion: 3,
   findingsCount: 2,
   evidenceCount: 1,

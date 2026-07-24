@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 
+import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
 import { defaultTheme } from '~/theme';
 
 import AssessmentDetailsView from './assessmentDetails.view';
@@ -90,6 +91,7 @@ const renderView = async () => {
               applicationName: 'Customer Services Portal',
               environment: 'Production',
               status: 'in-progress',
+              owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
               startedAt: '2026-06-01',
               completedAt: '2026-06-10',
               recordVersion: 3,
@@ -196,6 +198,7 @@ await (async () => {
               applicationName: 'Customer Services Portal',
               environment: '   ',
               status: 'in-progress',
+              owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
               recordVersion: 3,
               findingsCount: 12,
               evidenceCount: 4,

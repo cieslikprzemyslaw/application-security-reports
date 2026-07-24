@@ -4,8 +4,9 @@ import type {
   ISODateString,
   Severity,
 } from '~/domain';
+import { isOwaspTop10Version } from '~/domain';
 
-import { apiRequest } from './apiClient.js';
+import { ApiResponseParseError, apiRequest } from './apiClient.js';
 import { requestData, type ApiRequestFn } from './serviceHelpers.js';
 
 export interface AssessmentCreateInput {
@@ -21,7 +22,6 @@ export interface AssessmentCreateInput {
   assessmentType?: string;
   overallRisk?: Severity;
 }
-
 export interface AssessmentUpdateInput {
   title?: string;
   description?: string;
@@ -34,12 +34,10 @@ export interface AssessmentUpdateInput {
   assessmentType?: string;
   overallRisk?: Severity;
 }
-
 export interface AssessmentWorkspaceCompany {
   id: string;
   name: string;
 }
-
 export interface AssessmentWorkspaceAssessment extends Assessment {
   recordVersion: number;
   findingsCount: number;
@@ -48,12 +46,10 @@ export interface AssessmentWorkspaceAssessment extends Assessment {
   testerName?: string;
   availableActions?: AssessmentWorkspaceCommand[];
 }
-
 export interface AssessmentWorkspaceOverview {
   company: AssessmentWorkspaceCompany;
   assessment: AssessmentWorkspaceAssessment;
 }
-
 export interface AssessmentDeleteResult {
   cleanupWarnings: string[];
 }
@@ -124,15 +120,34 @@ const normaliseCleanupWarnings = (value: unknown): string[] =>
       )
     : [];
 
-const runAssessmentCommand = (
+const validateAssessmentVersion = <T extends Assessment>(
+  assessment: T,
+  message: string,
+): T => {
+  if (!isOwaspTop10Version(assessment.owaspTaxonomyVersion)) {
+    throw new ApiResponseParseError(message);
+  }
+
+  return assessment;
+};
+
+const validateAssessmentOverview = (
+  overview: AssessmentWorkspaceOverview,
+  message: string,
+): AssessmentWorkspaceOverview => ({
+  ...overview,
+  assessment: validateAssessmentVersion(overview.assessment, message),
+});
+
+const runAssessmentCommand = async (
   request: ApiRequestFn,
   companyId: string,
   assessmentId: string,
   command: AssessmentWorkspaceCommand,
   recordVersion: number,
   signal?: AbortSignal,
-) =>
-  requestData<AssessmentWorkspaceOverview>(
+) => {
+  const response = await requestData<AssessmentWorkspaceOverview>(
     request,
     buildWorkspaceAssessmentUrl(companyId, assessmentId, `commands/${command}`),
     {
@@ -141,6 +156,12 @@ const runAssessmentCommand = (
       signal,
     },
   );
+
+  return validateAssessmentOverview(
+    response,
+    'Unable to validate the Assessment command response.',
+  );
+};
 
 export interface AssessmentService {
   list(
@@ -207,7 +228,7 @@ export const createAssessmentService = (
   },
 
   async getById(assessmentId, signal) {
-    return requestData<Assessment>(
+    const response = await requestData<Assessment>(
       request,
       `/api/assessments/${assessmentId}`,
       {
@@ -215,10 +236,15 @@ export const createAssessmentService = (
         signal,
       },
     );
+
+    return validateAssessmentVersion(
+      response,
+      'Unable to validate the Assessment response.',
+    );
   },
 
   async getOverview(companyId, assessmentId, signal) {
-    return requestData<AssessmentWorkspaceOverview>(
+    const response = await requestData<AssessmentWorkspaceOverview>(
       request,
       buildWorkspaceAssessmentUrl(companyId, assessmentId, 'overview'),
       {
@@ -226,23 +252,42 @@ export const createAssessmentService = (
         signal,
       },
     );
+
+    return validateAssessmentOverview(
+      response,
+      'Unable to validate the Assessment overview response.',
+    );
   },
 
   async create(input) {
-    return requestData<Assessment>(request, '/api/assessments', {
-      body: input,
-      method: 'POST',
-    });
+    const response = await requestData<Assessment>(
+      request,
+      '/api/assessments',
+      {
+        body: input,
+        method: 'POST',
+      },
+    );
+
+    return validateAssessmentVersion(
+      response,
+      'Unable to validate the created Assessment response.',
+    );
   },
 
   async update(assessmentId, input) {
-    return requestData<Assessment>(
+    const response = await requestData<Assessment>(
       request,
       `/api/assessments/${assessmentId}`,
       {
         body: input,
         method: 'PATCH',
       },
+    );
+
+    return validateAssessmentVersion(
+      response,
+      'Unable to validate the updated Assessment response.',
     );
   },
 

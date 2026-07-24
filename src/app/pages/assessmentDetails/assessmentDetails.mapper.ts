@@ -2,6 +2,7 @@ import type { AssessmentWorkspaceOverview } from '~/services/assessmentService';
 import {
   OWASP_TOP_10_CURRENT_VERSION,
   getOwaspTop10CategoryOptions,
+  type OwaspTop10Version,
   type Threat,
 } from '~/domain';
 import type {
@@ -22,11 +23,11 @@ const normalizeOptionalText = (value?: string | null) => {
 const normalizeDisplayText = (value?: string | null) =>
   normalizeOptionalText(value) ?? '—';
 
-const getDefaultOwaspCategoryCode = (owaspTaxonomyVersion: string) =>
+const getDefaultOwaspCategoryCode = (owaspTaxonomyVersion: OwaspTop10Version) =>
   getOwaspTop10CategoryOptions(owaspTaxonomyVersion)[0]?.value ?? '';
 
 export const createEmptyThreatFormValue = (
-  owaspTaxonomyVersion: string = OWASP_TOP_10_CURRENT_VERSION,
+  owaspTaxonomyVersion: OwaspTop10Version = OWASP_TOP_10_CURRENT_VERSION,
 ): ThreatFormValue => ({
   title: '',
   owaspCategoryCode: getDefaultOwaspCategoryCode(owaspTaxonomyVersion),
@@ -57,7 +58,7 @@ export const toAssessmentViewModel = (
 
 export const threatToFormValue = (
   threat: Threat,
-  owaspTaxonomyVersion: string = OWASP_TOP_10_CURRENT_VERSION,
+  owaspTaxonomyVersion: OwaspTop10Version = OWASP_TOP_10_CURRENT_VERSION,
 ): ThreatFormValue => ({
   title: threat.title,
   owaspCategoryCode:

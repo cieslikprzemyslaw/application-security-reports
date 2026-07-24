@@ -1,3 +1,5 @@
+import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
+
 import { setFetch, createJsonResponse } from './support';
 
 type AppRouterApiMockRequest = {
@@ -111,6 +113,7 @@ const activeAssessmentOverviewResponse = {
       environment: 'Production',
       assessmentType: 'Web App',
       overallRisk: 'high',
+      owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
       createdAt: '2026-06-01T09:00:00.000Z',
       updatedAt: '2026-06-11T09:00:00.000Z',
       recordVersion: 3,
@@ -142,6 +145,7 @@ const archivedAssessmentOverviewResponse = {
       environment: 'Production',
       assessmentType: 'API',
       overallRisk: 'low',
+      owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
       createdAt: '2026-05-20T09:00:00.000Z',
       updatedAt: '2026-05-22T09:00:00.000Z',
       recordVersion: 2,

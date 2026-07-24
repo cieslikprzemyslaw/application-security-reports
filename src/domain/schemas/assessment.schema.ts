@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import type { Assessment } from '../assessment.js';
-import { isOwaspTop10Version } from '../owaspTop10.js';
+import { isOwaspTop10Version, type OwaspTop10Version } from '../owaspTop10.js';
 
 import {
   assessmentStatusSchema,
@@ -12,6 +12,11 @@ import {
   timestampSchema,
   optionalTrimmedTextSchema,
 } from './common.schema.js';
+
+export const owaspTop10VersionSchema = z.custom<OwaspTop10Version>(
+  value => typeof value === 'string' && isOwaspTop10Version(value),
+  'Unsupported OWASP taxonomy version',
+);
 
 export const assessmentObjectSchema = z
   .object({
@@ -27,9 +32,7 @@ export const assessmentObjectSchema = z
     environment: optionalTrimmedTextSchema,
     assessmentType: optionalTrimmedTextSchema,
     overallRisk: severitySchema.optional(),
-    owaspTaxonomyVersion: z
-      .string()
-      .refine(isOwaspTop10Version, 'Unsupported OWASP taxonomy version'),
+    owaspTaxonomyVersion: owaspTop10VersionSchema,
     createdAt: timestampSchema,
     updatedAt: timestampSchema,
   })
