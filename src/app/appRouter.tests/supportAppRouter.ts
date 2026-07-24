@@ -19,7 +19,7 @@ const normalizeMockRequest = (
 ): AppRouterApiMockRequest => {
   const request = input instanceof Request ? input : undefined;
   const rawUrl =
-    input instanceof URL ? input.toString() : request?.url ?? String(input);
+    input instanceof URL ? input.toString() : (request?.url ?? String(input));
   const url = new URL(rawUrl, 'http://localhost');
 
   return {
