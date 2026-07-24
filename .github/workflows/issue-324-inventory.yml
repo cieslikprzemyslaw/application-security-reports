@@ -1,9 +1,9 @@
 name: Issue 324 Inventory
 
 on:
-  push:
+  pull_request:
     branches:
-      - refactor/324-tighten-assessment-owasp-version-typing
+      - master
 
 permissions:
   contents: read
