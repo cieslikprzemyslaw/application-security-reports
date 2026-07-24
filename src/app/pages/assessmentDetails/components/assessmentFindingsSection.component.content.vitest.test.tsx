@@ -7,7 +7,6 @@ import { createTestingLibraryRoot, act } from '~/test/vitestLegacyBridge';
 import { ThemeProvider } from 'styled-components';
 
 import { defaultTheme } from '~/theme';
-
 import { createEmptyThreatFormValue } from '../assessmentDetails.mapper';
 
 import AssessmentFindingsSection from './assessmentFindingsSection.component';
@@ -125,6 +124,8 @@ describe('assessmentFindingsSection.component.content', () => {
                 assessment={{ ...assessmentBase, status: 'in-progress' }}
                 threats={[threatWithoutEndpoint]}
                 isLoading={false}
+                isRefreshing={false}
+                hasLoadedFindings={true}
                 drawerMode={null}
                 selectedFinding={undefined}
                 draftValue={createEmptyThreatFormValue(
@@ -134,6 +135,7 @@ describe('assessmentFindingsSection.component.content', () => {
                 formError={undefined}
                 isSubmitting={false}
                 canEditFindings={true}
+                reloadFindings={() => undefined}
                 openCreateFinding={() => undefined}
                 openEditFinding={() => undefined}
                 openFindingDetails={() => undefined}
