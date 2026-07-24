@@ -1,0 +1,91 @@
+name: Issue 324 Diagnose
+
+on:
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    if: github.actor != 'github-actions[bot]'
+    name: Capture Assessment taxonomy typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: refactor/324-tighten-assessment-owasp-version-typing
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+          cache: npm
+
+      - name: Extract and apply patch script
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from textwrap import dedent
+
+          workflow = Path('.github/workflows/issue-324-inventory.yml').read_text()
+          marker = "          python - <<'PY'\n"
+          start = workflow.index(marker) + len(marker)
+          end = workflow.index('\n          PY', start)
+          script = dedent(workflow[start:end])
+          Path('/tmp/issue-324-apply.py').write_text(script)
+          PY
+          python /tmp/issue-324-apply.py
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format changed files
+        run: |
+          npx prettier --write \
+            src/app/pages/assessmentDetails/hooks/useAssessmentFindings.ts \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.component.tsx \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.testUtils.tsx \
+            server/routes/threats.route.ts \
+            src/domain/schemas/assessment.schema.vitest.test.ts \
+            src/services/assessmentService.ts \
+            src/services/services.assessment.vitest.test.ts
+
+      - name: Capture typecheck
+        id: typecheck
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run typecheck 2>&1 | tee issue-324-typecheck.log
+
+      - name: Capture changed files
+        if: always()
+        run: |
+          git diff -- \
+            src/app/pages/assessmentDetails/hooks/useAssessmentFindings.ts \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.component.tsx \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.testUtils.tsx \
+            server/routes/threats.route.ts \
+            src/domain/schemas/assessment.schema.vitest.test.ts \
+            src/services/assessmentService.ts \
+            src/services/services.assessment.vitest.test.ts \
+            > issue-324.patch
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-324-diagnostics
+          path: |
+            issue-324-typecheck.log
+            issue-324.patch
+          retention-days: 1
+
+      - name: Fail when typecheck failed
+        if: steps.typecheck.outcome == 'failure'
+        run: exit 1
