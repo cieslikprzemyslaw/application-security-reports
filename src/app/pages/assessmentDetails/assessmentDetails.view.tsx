@@ -91,9 +91,7 @@ const AssessmentDetailsView = ({
   const actions = getAvailableActions(assessment).filter(action =>
     defaultActionOrder.includes(action),
   );
-  const primaryAssessmentAction = actions.find(
-    action => action !== 'archive',
-  );
+  const primaryAssessmentAction = actions.find(action => action !== 'archive');
   const archiveActions = actions.filter(action => action === 'archive');
   const canPermanentlyDelete =
     assessment.status === 'archived' && Boolean(onPermanentDeleteRequest);

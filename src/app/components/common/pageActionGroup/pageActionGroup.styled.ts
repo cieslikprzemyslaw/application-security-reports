@@ -5,7 +5,10 @@ interface StyledPageActionGroupProps {
 }
 
 const StyledPageActionGroup = styled.div<StyledPageActionGroupProps>`
-  ${({ $compact, theme: { colors, mq, radii, shadows, spacing, typography, zIndices } }) => css`
+  ${({
+    $compact,
+    theme: { colors, mq, radii, shadows, spacing, typography, zIndices },
+  }) => css`
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -75,7 +78,9 @@ const StyledPageActionGroup = styled.div<StyledPageActionGroupProps>`
       display: flex;
       margin-inline-start: ${$compact ? '0' : spacing.xxs};
       padding-inline-start: ${$compact ? '0' : spacing.xs};
-      border-inline-start: ${$compact ? '0' : `1px solid ${colors.border.subtle}`};
+      border-inline-start: ${$compact
+        ? '0'
+        : `1px solid ${colors.border.subtle}`};
     }
 
     @media ${mq.max.mobile} {

@@ -369,7 +369,6 @@ const Settings = ({
             </SettingsPanel>
           </div>
         </div>
-
       </form>
     </StyledSettings>
   );

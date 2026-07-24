@@ -18,4 +18,7 @@ export { default as StatCard } from './statCard';
 export { default as TableFooter } from './tableFooter';
 
 export { default as WorkspaceContextNavigation } from './workspaceContextNavigation';
-export type { WorkspaceContextItem, WorkspaceContextNavigationProps } from './workspaceContextNavigation';
+export type {
+  WorkspaceContextItem,
+  WorkspaceContextNavigationProps,
+} from './workspaceContextNavigation';

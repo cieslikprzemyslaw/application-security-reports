@@ -1,10 +1,4 @@
-import {
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type KeyboardEvent,
-} from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 
 import Button from '~/app/components/ui/button';
 import IconButton from '~/app/components/ui/iconButton';
@@ -66,9 +60,10 @@ const PageActionGroup = ({
       return undefined;
     }
 
-    const firstMenuItem = menuWrapperRef.current?.querySelector<HTMLButtonElement>(
-      '[role="menuitem"]:not([aria-disabled="true"])',
-    );
+    const firstMenuItem =
+      menuWrapperRef.current?.querySelector<HTMLButtonElement>(
+        '[role="menuitem"]:not([aria-disabled="true"])',
+      );
     firstMenuItem?.focus();
 
     const closeMenu = (event: MouseEvent) => {
@@ -122,7 +117,9 @@ const PageActionGroup = ({
       return;
     }
 
-    const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+    const currentIndex = items.indexOf(
+      document.activeElement as HTMLButtonElement,
+    );
     const nextIndex =
       event.key === 'Home'
         ? 0
@@ -170,10 +167,7 @@ const PageActionGroup = ({
       )}
 
       {overflowActions.length > 0 && (
-        <div
-          ref={menuWrapperRef}
-          className="page-action-group__overflow"
-        >
+        <div ref={menuWrapperRef} className="page-action-group__overflow">
           <IconButton
             icon={<IconSVG name="more" />}
             ariaLabel="More actions"
@@ -185,11 +179,7 @@ const PageActionGroup = ({
           />
 
           {isMenuOpen && (
-            <div
-              id={menuId}
-              className="page-action-group__menu"
-              role="menu"
-            >
+            <div id={menuId} className="page-action-group__menu" role="menu">
               {overflowActions.map(action => (
                 <button
                   key={action.id}
@@ -200,9 +190,7 @@ const PageActionGroup = ({
                   title={action.disabledReason}
                   onClick={() => activateOverflowAction(action)}
                 >
-                  {action.icon && (
-                    <span aria-hidden="true">{action.icon}</span>
-                  )}
+                  {action.icon && <span aria-hidden="true">{action.icon}</span>}
                   <span>{action.label}</span>
                 </button>
               ))}

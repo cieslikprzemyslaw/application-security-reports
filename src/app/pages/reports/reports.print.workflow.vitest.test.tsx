@@ -42,11 +42,14 @@ describe('Report printing through the production router', () => {
       const { container, root } = await renderApp(
         routes.reportDetails(reportDetailsCompanyId, reportDetailsReportId),
       );
-      originalDocumentTitle = document.title;
-
       await waitFor(() => {
         assert.ok(textContent(container).includes('Current Customer Portal'));
+        assert.equal(
+          document.title,
+          'Northstar Digital - Customer Portal Security Report - v1.1 | AppSec Report Builder',
+        );
       });
+      originalDocumentTitle = document.title;
 
       const dataButton = findButton(container, 'Data');
 

@@ -29,10 +29,20 @@ describe('WorkspaceContextNavigation', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('navigation', { name: 'Workspace context' })).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Companies' })).toHaveAttribute('href', '/companies');
-    expect(screen.getByText('Assessments')).toHaveAttribute('aria-current', 'page');
-    expect(screen.queryByRole('link', { name: 'Assessments' })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('navigation', { name: 'Workspace context' }),
+    ).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Companies' })).toHaveAttribute(
+      'href',
+      '/companies',
+    );
+    expect(screen.getByText('Assessments')).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(
+      screen.queryByRole('link', { name: 'Assessments' }),
+    ).not.toBeInTheDocument();
     expect(document.title).toBe('Assessments for Acme | AppSec Report Builder');
   });
 });

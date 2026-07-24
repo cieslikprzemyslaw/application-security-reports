@@ -16,12 +16,7 @@ export interface PageActionItem {
   dataAttributes?: Record<`data-${string}`, string | boolean | undefined>;
   buttonProps?: Omit<
     ButtonProps,
-    | 'title'
-    | 'icon'
-    | 'variant'
-    | 'disabled'
-    | 'isLoading'
-    | 'onClick'
+    'title' | 'icon' | 'variant' | 'disabled' | 'isLoading' | 'onClick'
   >;
 }
 

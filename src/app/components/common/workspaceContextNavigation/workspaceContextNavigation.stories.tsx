@@ -6,7 +6,13 @@ import WorkspaceContextNavigation from './workspaceContextNavigation.component';
 const meta = {
   title: 'Common/WorkspaceContextNavigation',
   component: WorkspaceContextNavigation,
-  decorators: [Story => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    Story => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
   parameters: { layout: 'padded' },
   tags: ['autodocs'],
 } satisfies Meta<typeof WorkspaceContextNavigation>;

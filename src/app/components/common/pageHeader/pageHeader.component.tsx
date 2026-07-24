@@ -24,10 +24,10 @@ const PageHeader = ({
   const contextItems = context ?? breadcrumbs ?? [];
   const hasActionHierarchy = Boolean(
     actions ||
-      primaryAction ||
-      secondaryActions?.length ||
-      overflowActions?.length ||
-      destructiveAction,
+    primaryAction ||
+    secondaryActions?.length ||
+    overflowActions?.length ||
+    destructiveAction,
   );
 
   return (

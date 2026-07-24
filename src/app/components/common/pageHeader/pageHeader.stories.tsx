@@ -10,7 +10,13 @@ const noop = () => undefined;
 const meta = {
   title: 'Common/PageHeader',
   component: PageHeader,
-  decorators: [Story => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    Story => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
   parameters: { layout: 'padded' },
   tags: ['autodocs'],
 } satisfies Meta<typeof PageHeader>;
