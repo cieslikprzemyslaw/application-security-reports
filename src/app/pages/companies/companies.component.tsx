@@ -7,6 +7,7 @@ import Callout from '~/app/components/ui/callout';
 import Drawer from '~/app/components/ui/drawer';
 import Button from '~/app/components/ui/button';
 import EmptyState from '~/app/components/ui/emptyState';
+import IconSVG from '~/app/components/ui/iconSVG';
 import Pagination from '~/app/components/ui/pagination';
 import SearchInput from '~/app/components/ui/searchInput';
 import {
@@ -101,8 +102,18 @@ const Companies = ({
       <PageHeader
         eyebrow="Workspace"
         title="Companies"
+        context={[
+          { label: 'Dashboard', href: routes.dashboard },
+          { label: 'Companies' },
+        ]}
+        documentTitle="Companies"
         subtitle="Manage client organisations and the assessments associated with them."
-        actions={<Button title="New company" onClick={handleNewCompany} />}
+        primaryAction={{
+          id: 'new-company',
+          label: 'New company',
+          icon: <IconSVG name="add" />,
+          onActivate: handleNewCompany,
+        }}
       />
 
       <section className="companies-card">

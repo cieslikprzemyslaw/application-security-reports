@@ -119,7 +119,7 @@ await (async () => {
   );
   assert.equal(
     container
-      .querySelector('.page-header-breadcrumb-item span[aria-current="page"]')
+      .querySelector('.workspace-context-navigation__item span[aria-current="page"]')
       ?.textContent?.trim(),
     'Overview',
   );

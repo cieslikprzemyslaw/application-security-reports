@@ -74,6 +74,9 @@ const renderView = async () => {
         <MemoryRouter>
           <AssessmentDetailsView
             activeSection="findings"
+            companiesHref="/companies"
+            companyHref="/companies/cmp_1/overview"
+            assessmentsHref="/companies/cmp_1/assessments"
             overviewHref="/companies/cmp_1/assessments/asm_1/overview"
             findingsContent={
               <div data-testid="findings-content">Live findings</div>
@@ -113,7 +116,7 @@ const renderView = async () => {
 await (async () => {
   const { container, root } = await renderView();
 
-  assert.ok(container.querySelector('.assessment-details-breadcrumb-list'));
+  assert.ok(container.querySelector('.workspace-context-navigation__list'));
   assert.ok(
     textContent(container).includes('Northstar Digital'),
     'Expected the company name breadcrumb',
@@ -131,13 +134,13 @@ await (async () => {
   assert.equal(
     container
       .querySelector(
-        '.assessment-details-breadcrumb-item span[aria-current="page"]',
+        '.workspace-context-navigation__item span[aria-current="page"]',
       )
       ?.textContent?.trim(),
     'Findings',
   );
   assert.ok(
-    container.querySelector('.assessment-details-mobile-back button'),
+    container.querySelector('.page-action-group button'),
     'Expected the compact mobile back action',
   );
   assert.ok(
@@ -187,6 +190,9 @@ await (async () => {
         <MemoryRouter>
           <AssessmentDetailsView
             activeSection="overview"
+            companiesHref="/companies"
+            companyHref="/companies/cmp_1/overview"
+            assessmentsHref="/companies/cmp_1/assessments"
             overviewHref="/companies/cmp_1/assessments/asm_1/overview"
             onSectionChange={() => undefined}
             onBack={() => undefined}

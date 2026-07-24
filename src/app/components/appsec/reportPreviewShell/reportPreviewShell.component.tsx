@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import ReportActions from '~/app/components/appsec/reportActions';
+import { PageHeader } from '~/app/components/common';
 import { LightThemeProvider } from '~/theme';
 
 import ReportPrintStyles from './reportPrintStyles';
@@ -24,6 +25,8 @@ const ReportPreviewShell = ({
   titleRef,
   reportActions,
   reportActionStatus,
+  context,
+  documentTitle,
 }: ReportPreviewShellProps) => {
   const [internalActiveTab, setInternalActiveTab] =
     useState<ReportPreviewShellTab>('preview');
@@ -41,24 +44,14 @@ const ReportPreviewShell = ({
     <LightThemeProvider>
       <ReportPrintStyles />
       <StyledReportPreviewShell>
-        <header className="report-preview-shell-header">
-          <div>
-            <h1
-              id="report-preview-shell-title"
-              ref={titleRef}
-              className="report-preview-shell-title"
-              tabIndex={-1}
-            >
-              Report Preview
-            </h1>
-
-            <p className="report-preview-shell-subtitle">
-              {applicationName}
-              {' · '}
-              {assessmentCode}
-            </p>
-          </div>
-        </header>
+        <PageHeader
+          title="Report Preview"
+          titleId="report-preview-shell-title"
+          titleRef={titleRef}
+          context={context}
+          documentTitle={documentTitle ?? `Report preview - ${applicationName}`}
+          subtitle={`${applicationName} · ${assessmentCode}`}
+        />
 
         <div className="report-preview-shell-toolbar">
           <div

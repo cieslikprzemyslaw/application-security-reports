@@ -1,6 +1,7 @@
 import type { ReactNode, Ref } from 'react';
 
 import type { ReportActionsProps } from '~/app/components/appsec/reportActions';
+import type { WorkspaceContextItem } from '~/app/components/common';
 
 export type ReportPreviewShellTab = 'preview' | 'data';
 
@@ -22,4 +23,6 @@ export interface ReportPreviewShellProps {
   titleRef?: Ref<HTMLHeadingElement>;
   reportActions?: ReportActionsProps;
   reportActionStatus?: ReportPreviewShellActionStatus;
+  context?: WorkspaceContextItem[];
+  documentTitle?: string;
 }

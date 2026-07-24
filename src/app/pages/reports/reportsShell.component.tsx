@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import type { WorkspaceContextItem } from '~/app/components/common';
+
 import ReportCover, {
   type ReportCoverProps,
 } from '~/app/components/appsec/reportCover';
@@ -27,13 +29,23 @@ export interface ReportsShellProps {
   cover: ReportCoverProps;
   dataView: ReactNode;
   autoSaved: boolean;
+  context?: WorkspaceContextItem[];
+  documentTitle?: string;
 }
 
-const ReportsShell = ({ cover, dataView, autoSaved }: ReportsShellProps) => (
+const ReportsShell = ({
+  cover,
+  dataView,
+  autoSaved,
+  context = [{ label: 'Reports' }],
+  documentTitle = 'Reports',
+}: ReportsShellProps) => (
   <ReportPreviewShell
     applicationName={cover.applicationName}
     assessmentCode={cover.reportId}
     autoSaved={autoSaved}
+    context={context}
+    documentTitle={documentTitle}
     preview={<ReportCover {...cover} />}
     dataView={dataView}
   />

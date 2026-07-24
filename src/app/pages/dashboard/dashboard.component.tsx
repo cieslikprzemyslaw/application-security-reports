@@ -5,6 +5,7 @@ import Badge from '~/app/components/ui/badge';
 import Button from '~/app/components/ui/button';
 import EmptyState from '~/app/components/ui/emptyState';
 import IconSVG from '~/app/components/ui/iconSVG';
+import { PageHeader } from '~/app/components/common';
 import { formatCount, formatWithMissingValue } from '~/app/utils/formatters';
 
 import StyledDashboard from './dashboard.styled';
@@ -65,15 +66,23 @@ const Dashboard = ({
   if (showEmptyState) {
     return (
       <StyledDashboard>
-        <header className="dashboard-header">
-          <div className="dashboard-title-group">
-            <h1 className="dashboard-title">Recent companies</h1>
-
-            <p className="dashboard-subtitle">
-              Open a company to continue where you left off.
-            </p>
-          </div>
-        </header>
+        <PageHeader
+          eyebrow="Workspace"
+          title="Recent companies"
+          context={[{ label: 'Dashboard' }]}
+          documentTitle="Dashboard"
+          subtitle="Open a company to continue where you left off."
+          primaryAction={
+            onCreateCompany
+              ? {
+                  id: 'create-company',
+                  label: 'Create company',
+                  icon: <IconSVG name="add" />,
+                  onActivate: onCreateCompany,
+                }
+              : undefined
+          }
+        />
 
         <section className="dashboard-empty-card">
           <EmptyState
@@ -93,22 +102,23 @@ const Dashboard = ({
 
   return (
     <StyledDashboard>
-      <header className="dashboard-header">
-        <div className="dashboard-title-group">
-          <h1 className="dashboard-title">Recent companies</h1>
-
-          <p className="dashboard-subtitle">
-            Companies open in your preferred order. Recent workspaces stay at
-            the top.
-          </p>
-        </div>
-
-        {onCreateCompany && (
-          <div className="dashboard-header-actions">
-            <Button title="Create company" onClick={onCreateCompany} />
-          </div>
-        )}
-      </header>
+      <PageHeader
+        eyebrow="Workspace"
+        title="Recent companies"
+        context={[{ label: 'Dashboard' }]}
+        documentTitle="Dashboard"
+        subtitle="Companies open in your preferred order. Recent workspaces stay at the top."
+        primaryAction={
+          onCreateCompany
+            ? {
+                id: 'create-company',
+                label: 'Create company',
+                icon: <IconSVG name="add" />,
+                onActivate: onCreateCompany,
+              }
+            : undefined
+        }
+      />
 
       <section className="dashboard-recent-companies-card">
         <ul className="dashboard-recent-companies-list">

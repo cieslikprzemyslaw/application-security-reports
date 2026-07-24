@@ -355,16 +355,21 @@ export const CompanyActivityRoute = ({
   return (
     <section>
       <PageHeader
-        eyebrow="Workspace"
+        eyebrow="Company workspace"
         title="Activity"
-        breadcrumbs={[
+        context={[
+          { label: 'Companies', href: routes.companies },
           {
             label: companyName ?? 'Company',
+            href: companyId
+              ? routes.companyWorkspaceOverview(companyId)
+              : routes.companies,
           },
-          {
-            label: 'Activity',
-          },
+          { label: 'Activity' },
         ]}
+        documentTitle={
+          companyName ? `Activity for ${companyName}` : 'Company activity'
+        }
         subtitle="Recent actions across the active company workspace."
       />
 

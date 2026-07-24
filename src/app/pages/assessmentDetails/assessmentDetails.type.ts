@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import type { AssessmentStatus, OwaspTop10Version, Severity } from '~/domain';
 
@@ -53,6 +53,9 @@ export interface AssessmentDetailsAssessment {
 export interface AssessmentDetailsViewProps {
   assessment: AssessmentDetailsAssessment;
   activeSection: AssessmentDetailSection;
+  companiesHref: string;
+  companyHref: string;
+  assessmentsHref: string;
   overviewHref: string;
   findingsContent?: ReactNode;
   evidenceContent?: ReactNode;
@@ -64,5 +67,5 @@ export interface AssessmentDetailsViewProps {
   pendingAction?: AssessmentDetailAction;
   actionError?: string;
   conflictError?: string;
-  onPermanentDeleteRequest?: (event: MouseEvent<HTMLButtonElement>) => void;
+  onPermanentDeleteRequest?: () => void;
 }

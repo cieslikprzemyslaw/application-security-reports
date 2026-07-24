@@ -27,6 +27,7 @@ import ReportsShell, {
 } from './reportsShell.component';
 
 import type { ReportBuilderSelection, ReportBuilderState } from '~/domain';
+import { routes } from '~/routes';
 import type { ReportPreviewShellTab } from '~/app/components/appsec/reportPreviewShell';
 import type { ReportBuilderFocusTarget, ReportsProps } from './reports.type';
 
@@ -288,6 +289,15 @@ const ReportBuilderReports = ({
       titleRef={previewHeadingRef}
       reportActions={reportActionsController.reportActions}
       reportActionStatus={reportActionsController.reportActionStatus}
+      context={[
+        { label: 'Companies', href: routes.companies },
+        {
+          label: companyName,
+          href: routes.companyWorkspaceOverview(companyId),
+        },
+        { label: 'Reports' },
+      ]}
+      documentTitle={`Reports for ${companyName}`}
       readiness={
         readinessController.status === 'idle' ? undefined : (
           <ReportReadinessPanel
