@@ -19,7 +19,7 @@ jobs:
   validate:
     name: Validate
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -33,112 +33,195 @@ jobs:
           node-version: 24.15.0
           cache: npm
 
-      - name: Check edited file length
-        run: node .github/scripts/check-edited-file-lines.mjs
+      - name: Prepare Report for AI logs
+        run: mkdir -p "$RUNNER_TEMP/report-for-ai"
 
       - name: Install dependencies
-        run: npm ci
+        id: install
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm ci 2>&1 | tee "$RUNNER_TEMP/report-for-ai/npm-ci.log"
 
-      - name: Validate Prisma schema
-        run: npm run db:validate
-
-      - name: Generate Prisma client
-        run: npm run db:generate
-
-      - name: Check formatting
+      - name: Run all validation checks
+        if: ${{ always() && steps.install.outcome == 'success' }}
         run: |
           set +e
-          npm run format:check
-          format_status=$?
-          set -e
+          set -o pipefail
 
-          if [ "$format_status" -ne 0 ]; then
-            echo "::group::Files requiring Prettier formatting"
-            npx prettier --list-different . || true
+          report_dir="$RUNNER_TEMP/report-for-ai"
+          mkdir -p "$report_dir"
+
+          run_check() {
+            id="$1"
+            label="$2"
+            shift 2
+
+            echo "::group::$label"
+            "$@" 2>&1 | tee "$report_dir/$id.log"
+            status=${PIPESTATUS[0]}
             echo "::endgroup::"
-            exit "$format_status"
+
+            printf '%s\n' "$status" > "$report_dir/$id.status"
+            echo "$label finished with exit code $status"
+          }
+
+          run_check edited-file-length "Edited file length" \
+            node .github/scripts/check-edited-file-lines.mjs
+          run_check prisma-validate "Prisma schema" \
+            npm run db:validate
+          run_check prisma-generate "Prisma client generation" \
+            npm run db:generate
+          run_check format "Formatting" \
+            npm run format:check
+          run_check lint "Lint" \
+            npm run lint -- --format stylish
+          run_check typecheck-frontend "Typecheck frontend" \
+            npx tsc --noEmit -p tsconfig.json --pretty false
+          run_check typecheck-server "Typecheck server" \
+            npx tsc --noEmit -p tsconfig.server.json --pretty false
+          run_check test-frontend "Tests frontend" \
+            npm run test:frontend -- --reporter=dot
+          run_check test-backend "Tests backend" \
+            npm run test:backend -- --reporter=dot
+          run_check build-frontend "Build frontend" \
+            npm run build:client
+          run_check build-server "Build server" \
+            npm run build:server
+
+          exit 0
+
+      - name: Report for AI
+        if: always()
+        env:
+          INSTALL_OUTCOME: ${{ steps.install.outcome }}
+        run: |
+          report_dir="$RUNNER_TEMP/report-for-ai"
+          full_report="$report_dir/report-for-ai.md"
+          summary_report="$report_dir/report-for-ai-summary.md"
+          mkdir -p "$report_dir"
+
+          checks=(
+            "edited-file-length|Edited file length"
+            "prisma-validate|Prisma schema"
+            "prisma-generate|Prisma client generation"
+            "format|Formatting"
+            "lint|Lint"
+            "typecheck-frontend|Typecheck frontend"
+            "typecheck-server|Typecheck server"
+            "test-frontend|Tests frontend"
+            "test-backend|Tests backend"
+            "build-frontend|Build frontend"
+            "build-server|Build server"
+          )
+
+          {
+            echo "# Report for AI"
+            echo
+            echo "Deterministic CI report. It does not replace or hide raw command output."
+            echo "After a successful install, every validation check ran even when an earlier check failed."
+            echo
+            echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- Node: \`$(node --version)\`"
+            echo "- npm: \`$(npm --version)\`"
+            echo
+            echo "| Check | Result | Exit code |"
+            echo "| --- | --- | --- |"
+          } > "$full_report"
+
+          failed=0
+
+          if [ "$INSTALL_OUTCOME" = "success" ]; then
+            echo "| Install dependencies | PASS | 0 |" >> "$full_report"
+          else
+            echo "| Install dependencies | FAIL | unavailable |" >> "$full_report"
+            failed=1
+            {
+              echo
+              echo "## Install dependencies"
+              echo
+              echo "Raw output:"
+              echo
+              echo '```text'
+              cat "$report_dir/npm-ci.log" 2>/dev/null || echo "No log was produced."
+              echo '```'
+            } >> "$full_report"
           fi
 
-      - name: Lint
-        run: npm run lint -- --format stylish
+          for entry in "${checks[@]}"; do
+            IFS='|' read -r id label <<< "$entry"
+            status_file="$report_dir/$id.status"
+            log_file="$report_dir/$id.log"
 
-      - name: Typecheck
-        run: npm run typecheck
+            if [ -f "$status_file" ]; then
+              status="$(cat "$status_file")"
+            else
+              status="not-run"
+            fi
 
-      - name: Test
-        run: npm test -- --reporter=verbose
+            if [ "$status" = "0" ]; then
+              result="PASS"
+            elif [ "$status" = "not-run" ]; then
+              result="NOT RUN"
+              failed=1
+            else
+              result="FAIL"
+              failed=1
+            fi
 
-      - name: Build
-        run: npm run build
+            echo "| $label | $result | $status |" >> "$full_report"
 
-      - name: Print validation context on failure
-        if: failure()
-        run: |
-          echo "Node: $(node --version)"
-          echo "npm: $(npm --version)"
-          echo "Commit: $GITHUB_SHA"
-          echo "Changed files against master:"
-          git diff --name-status origin/master...HEAD || true
+            if [ "$result" = "FAIL" ]; then
+              {
+                echo
+                echo "## $label"
+                echo
+                echo "Raw output:"
+                echo
+                echo '```text'
+                cat "$log_file" 2>/dev/null || echo "No log was produced."
+                echo '```'
+              } >> "$full_report"
+            fi
+          done
 
-  validation-diagnostics:
-    name: Validation Diagnostics
-    if: ${{ always() && needs.validate.result == 'failure' }}
-    needs: validate
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-    env:
-      SOURCE_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-      SOURCE_REF: ${{ github.head_ref || github.ref_name }}
+          cp "$full_report" "$summary_report"
 
-    steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+          line_count="$(wc -l < "$summary_report" | tr -d ' ')"
+          if [ "$line_count" -gt 700 ]; then
+            {
+              sed -n '1,350p' "$full_report"
+              echo
+              echo "... summary shortened; the artifact contains the complete report and raw logs ..."
+              tail -n 350 "$full_report"
+            } > "$summary_report"
+          fi
+
+          cat "$summary_report" >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "$failed" > "$report_dir/validation.failed"
+
+      - name: Upload Report for AI
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          node-version: 24.15.0
+          name: report-for-ai-validation
+          path: ${{ runner.temp }}/report-for-ai
+          if-no-files-found: warn
+          retention-days: 7
 
-      - name: Clone source quietly
-        run: git clone --quiet --depth 1 --branch "$SOURCE_REF" "https://github.com/${SOURCE_REPOSITORY}.git" repo
+      - name: Fail validation after reporting every check
+        if: always()
+        run: |
+          status_file="$RUNNER_TEMP/report-for-ai/validation.failed"
 
-      - name: Install dependencies quietly
-        working-directory: repo
-        run: npm ci --silent
-
-      - name: Generate Prisma client quietly
-        working-directory: repo
-        run: npm run --silent db:generate
-
-      - name: First failing test diagnostics
-        continue-on-error: true
-        working-directory: repo
-        run: npm test -- --reporter=dot --bail=1
-
-      - name: Frontend TypeScript diagnostics
-        continue-on-error: true
-        working-directory: repo
-        run: npx tsc --noEmit -p tsconfig.json --pretty false
-
-      - name: Server TypeScript diagnostics
-        continue-on-error: true
-        working-directory: repo
-        run: npx tsc --noEmit -p tsconfig.server.json --pretty false
-
-      - name: Formatting diagnostics
-        continue-on-error: true
-        working-directory: repo
-        run: npx prettier --list-different .
-
-      - name: Lint diagnostics
-        continue-on-error: true
-        working-directory: repo
-        run: npm run lint -- --format stylish
+          if [ ! -f "$status_file" ] || [ "$(cat "$status_file")" != "0" ]; then
+            exit 1
+          fi
 
   docker-runtime:
     name: Docker Runtime
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: validate
     permissions:
       contents: read
 
@@ -216,4 +299,61 @@ jobs:
             npm audit || true
             echo "::endgroup::"
             exit "$policy_status"
+          fi
+
+  report-for-ai:
+    name: Report for AI
+    if: always()
+    needs:
+      - validate
+      - docker-runtime
+      - dependency-security
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download validation report
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: report-for-ai-validation
+          path: validation-report
+
+      - name: Publish Report for AI
+        env:
+          VALIDATE_RESULT: ${{ needs.validate.result }}
+          DOCKER_RESULT: ${{ needs.docker-runtime.result }}
+          DEPENDENCY_RESULT: ${{ needs.dependency-security.result }}
+        run: |
+          {
+            echo "# Report for AI: complete CI run"
+            echo
+            echo "No AI verdict replaces the real checks below."
+            echo
+            echo "| Area | Result |"
+            echo "| --- | --- |"
+            echo "| Validation | $VALIDATE_RESULT |"
+            echo "| Docker runtime | $DOCKER_RESULT |"
+            echo "| Dependency security | $DEPENDENCY_RESULT |"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -f validation-report/report-for-ai-summary.md ]; then
+            cat validation-report/report-for-ai-summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Validation report artifact was unavailable. Use the raw job logs." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Fail Report for AI when any required area failed
+        env:
+          VALIDATE_RESULT: ${{ needs.validate.result }}
+          DOCKER_RESULT: ${{ needs.docker-runtime.result }}
+          DEPENDENCY_RESULT: ${{ needs.dependency-security.result }}
+        run: |
+          if [ "$VALIDATE_RESULT" != "success" ] ||
+             [ "$DOCKER_RESULT" != "success" ] ||
+             [ "$DEPENDENCY_RESULT" != "success" ]; then
+            exit 1
           fi
