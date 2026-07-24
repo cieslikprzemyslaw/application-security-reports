@@ -64,7 +64,6 @@
     ]
   },
   "overrides": {
-    "postcss": "8.5.18",
     "shell-quote": "1.10.0"
   },
   "dependencies": {
@@ -76,7 +75,7 @@
     "express": "^4.21.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "7.11.0",
+    "react-router-dom": "^7.18.1",
     "styled-components": "^6.1.15",
     "zod": "^3.24.2"
   },
