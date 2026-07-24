@@ -1,0 +1,41 @@
+name: Issue 324 Inventory
+
+on:
+  push:
+    branches:
+      - refactor/324-tighten-assessment-owasp-version-typing
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    name: Inventory assessment taxonomy contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Inventory references
+        run: |
+          {
+            echo "# owaspTaxonomyVersion references"
+            git grep -n -E "owaspTaxonomyVersion" || true
+            echo
+            echo "# OwaspTop10Version references"
+            git grep -n -E "OwaspTop10Version" || true
+            echo
+            echo "# Assessment declarations"
+            git grep -n -E "interface Assessment|type Assessment" -- '*.ts' '*.tsx' || true
+          } | tee issue-324-inventory.txt
+
+      - name: Upload inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-324-inventory
+          path: issue-324-inventory.txt
+          retention-days: 1
