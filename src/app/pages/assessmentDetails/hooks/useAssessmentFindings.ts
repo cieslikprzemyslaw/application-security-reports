@@ -22,6 +22,7 @@ import {
   threatFormValueToUpdateInput,
   threatToFormValue,
 } from '../assessmentDetails.mapper';
+import { useAssessmentFindingsCollection } from './useAssessmentFindingsCollection';
 
 export type FindingDrawerMode = 'view' | 'create' | 'edit' | null;
 
@@ -46,6 +47,8 @@ const focusThreatDeleteSuccessTarget = () => {
 export interface AssessmentFindingsController {
   threats: Threat[];
   isLoading: boolean;
+  isRefreshing: boolean;
+  hasLoadedFindings: boolean;
   loadError?: string;
   drawerMode: FindingDrawerMode;
   selectedFinding?: Threat;
@@ -56,6 +59,7 @@ export interface AssessmentFindingsController {
   isDeleting: boolean;
   deleteError?: string;
   canEditFindings: boolean;
+  reloadFindings: () => void;
   openCreateFinding: () => void;
   openEditFinding: (threat?: Threat | ThreatTableRow) => void;
   openFindingDetails: (threat: Threat | ThreatTableRow) => void;
@@ -76,10 +80,7 @@ export const useAssessmentFindings = ({
   assessmentOwaspTaxonomyVersion?: OwaspTop10Version;
   onMutationSuccess?: (delta: number) => void;
 }): AssessmentFindingsController => {
-  const [threats, setThreats] = useState<Threat[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | undefined>();
-  const [reloadKey, setReloadKey] = useState(0);
+  const collection = useAssessmentFindingsCollection(assessmentId);
   const [drawerMode, setDrawerMode] = useState<FindingDrawerMode>(null);
   const [selectedFindingId, setSelectedFindingId] = useState<string>();
   const [draftValue, setDraftValue] = useState(
@@ -91,58 +92,6 @@ export const useAssessmentFindings = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | undefined>();
-
-  useEffect(() => {
-    const controller = new AbortController();
-    let isActive = true;
-
-    const loadFindings = async () => {
-      if (!assessmentId) {
-        if (isActive) {
-          setIsLoading(false);
-        }
-
-        return;
-      }
-
-      setIsLoading(true);
-      setLoadError(undefined);
-
-      try {
-        const nextFindings = await threatService.listByAssessment(
-          assessmentId,
-          controller.signal,
-        );
-
-        if (isActive) {
-          setThreats(nextFindings);
-        }
-      } catch (error) {
-        if (
-          !isActive ||
-          (error instanceof DOMException && error.name === 'AbortError')
-        ) {
-          return;
-        }
-
-        setThreats([]);
-        setLoadError(
-          error instanceof Error ? error.message : 'Unable to load findings.',
-        );
-      } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    void loadFindings();
-
-    return () => {
-      isActive = false;
-      controller.abort();
-    };
-  }, [assessmentId, reloadKey]);
 
   useEffect(() => {
     const isDirty =
@@ -167,8 +116,8 @@ export const useAssessmentFindings = ({
   }, [baselineValue, draftValue, drawerMode]);
 
   const selectedFinding = useMemo(
-    () => threats.find(threat => threat.id === selectedFindingId),
-    [selectedFindingId, threats],
+    () => collection.threats.find(threat => threat.id === selectedFindingId),
+    [collection.threats, selectedFindingId],
   );
 
   const resetDrawerState = () => {
@@ -216,13 +165,9 @@ export const useAssessmentFindings = ({
     const finding =
       'strideCategories' in threat
         ? threat
-        : threats.find(item => item.id === threat.id);
+        : collection.threats.find(item => item.id === threat.id);
 
-    if (!finding) {
-      return;
-    }
-
-    if (!confirmDiscardChanges()) {
+    if (!finding || !confirmDiscardChanges()) {
       return;
     }
 
@@ -242,14 +187,10 @@ export const useAssessmentFindings = ({
       threat && 'strideCategories' in threat
         ? threat
         : threat
-          ? threats.find(item => item.id === threat.id)
+          ? collection.threats.find(item => item.id === threat.id)
           : selectedFinding;
 
-    if (!finding) {
-      return;
-    }
-
-    if (!confirmDiscardChanges()) {
+    if (!finding || !confirmDiscardChanges()) {
       return;
     }
 
@@ -265,11 +206,7 @@ export const useAssessmentFindings = ({
   };
 
   const closeFindingDrawer = () => {
-    if (isSubmitting) {
-      return;
-    }
-
-    if (!confirmDiscardChanges()) {
+    if (isSubmitting || !confirmDiscardChanges()) {
       return;
     }
 
@@ -308,7 +245,7 @@ export const useAssessmentFindings = ({
         onMutationSuccess?.(1);
       }
 
-      setReloadKey(key => key + 1);
+      collection.reloadFindings();
       resetDrawerState();
     } catch (error) {
       if (error instanceof ApiError && error.status === 400) {
@@ -362,7 +299,7 @@ export const useAssessmentFindings = ({
 
     try {
       await threatService.remove(targetId);
-      setReloadKey(key => key + 1);
+      collection.reloadFindings();
       resetDrawerState();
       onMutationSuccess?.(-1);
       focusThreatDeleteSuccessTarget();
@@ -376,9 +313,7 @@ export const useAssessmentFindings = ({
   };
 
   return {
-    threats,
-    isLoading,
-    loadError,
+    ...collection,
     drawerMode,
     selectedFinding,
     draftValue,

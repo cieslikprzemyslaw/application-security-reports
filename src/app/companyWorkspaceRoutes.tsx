@@ -14,6 +14,8 @@ import {
   EntityNotFoundView,
   RouteLoadingView,
 } from '~/app/components/routeStateViews';
+import Button from '~/app/components/ui/button';
+import Callout from '~/app/components/ui/callout';
 import IconSVG from '~/app/components/ui/iconSVG';
 import type {
   CompanyListItem,
@@ -38,7 +40,10 @@ const companyWorkspaceNavigationLabel = 'Workspace';
 
 interface CompanyWorkspaceRouteShellProps {
   companies: CompanyListItem[];
+  companiesLoadError?: string;
   isCompaniesLoading: boolean;
+  hasLoadedCompanies: boolean;
+  onRetryCompanies: () => void;
 }
 
 interface CompanyWorkspaceRouteProps {
@@ -47,7 +52,10 @@ interface CompanyWorkspaceRouteProps {
 
 const CompanyWorkspaceRouteShell = ({
   companies,
+  companiesLoadError,
   isCompaniesLoading,
+  hasLoadedCompanies,
+  onRetryCompanies,
 }: CompanyWorkspaceRouteShellProps) => {
   const { companyId } = useParams<{ companyId?: string }>();
 
@@ -55,7 +63,7 @@ const CompanyWorkspaceRouteShell = ({
     return <Navigate replace to={routes.companies} />;
   }
 
-  if (isCompaniesLoading) {
+  if (isCompaniesLoading && !hasLoadedCompanies) {
     return <RouteLoadingView />;
   }
 
@@ -71,7 +79,33 @@ const CompanyWorkspaceRouteShell = ({
     );
   }
 
-  return <Outlet />;
+  return (
+    <>
+      {isCompaniesLoading && (
+        <div role="status" aria-live="polite">
+          Refreshing company workspace...
+        </div>
+      )}
+
+      {companiesLoadError && (
+        <Callout
+          variant="warning"
+          title="Company navigation may be out of date"
+          actions={
+            <Button
+              title="Retry"
+              variant="secondary"
+              onClick={onRetryCompanies}
+            />
+          }
+        >
+          <p>{companiesLoadError}</p>
+        </Callout>
+      )}
+
+      <Outlet />
+    </>
+  );
 };
 
 const useCompanyId = () => useParams<{ companyId?: string }>().companyId;

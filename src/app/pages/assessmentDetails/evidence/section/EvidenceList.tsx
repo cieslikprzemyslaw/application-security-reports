@@ -18,8 +18,17 @@ const EvidenceList = ({ evidence, controller }: EvidenceListProps) => {
     return (
       <div className="assessment-evidence-empty">
         <EmptyState
-          title="No evidence yet"
-          description="Add the first evidence item to document what was captured during this assessment."
+          variant={controller.canEditEvidence ? 'first-use' : 'unavailable'}
+          title={
+            controller.canEditEvidence
+              ? 'No evidence yet'
+              : 'No evidence available'
+          }
+          description={
+            controller.canEditEvidence
+              ? 'Add the first evidence item to document what was captured during this assessment.'
+              : 'This archived assessment is read-only and has no evidence items.'
+          }
           primaryAction={
             controller.canEditEvidence ? (
               <Button

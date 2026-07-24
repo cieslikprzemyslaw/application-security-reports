@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { Evidence } from '~/domain';
-import { evidenceService } from '~/services';
+import type { Threat } from '~/domain';
+import { threatService } from '~/services';
 
-export const useEvidenceCollection = (assessmentId?: string) => {
-  const [evidence, setEvidence] = useState<Evidence[]>([]);
+export const useAssessmentFindingsCollection = (assessmentId?: string) => {
+  const [threats, setThreats] = useState<Threat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasLoadedEvidence, setHasLoadedEvidence] = useState(false);
-  const hasLoadedEvidenceRef = useRef(false);
+  const [hasLoadedFindings, setHasLoadedFindings] = useState(false);
+  const hasLoadedFindingsRef = useRef(false);
   const [loadError, setLoadError] = useState<string | undefined>();
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -15,7 +15,7 @@ export const useEvidenceCollection = (assessmentId?: string) => {
     const controller = new AbortController();
     let isActive = true;
 
-    const loadEvidence = async () => {
+    const loadFindings = async () => {
       if (!assessmentId) {
         if (isActive) {
           setIsLoading(false);
@@ -28,15 +28,15 @@ export const useEvidenceCollection = (assessmentId?: string) => {
       setLoadError(undefined);
 
       try {
-        const nextEvidence = await evidenceService.list(
-          { assessmentId },
+        const nextFindings = await threatService.listByAssessment(
+          assessmentId,
           controller.signal,
         );
 
         if (isActive) {
-          setEvidence(nextEvidence);
-          hasLoadedEvidenceRef.current = true;
-          setHasLoadedEvidence(true);
+          setThreats(nextFindings);
+          hasLoadedFindingsRef.current = true;
+          setHasLoadedFindings(true);
         }
       } catch (error) {
         if (
@@ -46,12 +46,12 @@ export const useEvidenceCollection = (assessmentId?: string) => {
           return;
         }
 
-        if (!hasLoadedEvidenceRef.current) {
-          setEvidence([]);
+        if (!hasLoadedFindingsRef.current) {
+          setThreats([]);
         }
 
         setLoadError(
-          error instanceof Error ? error.message : 'Unable to load evidence.',
+          error instanceof Error ? error.message : 'Unable to load findings.',
         );
       } finally {
         if (isActive) {
@@ -60,7 +60,7 @@ export const useEvidenceCollection = (assessmentId?: string) => {
       }
     };
 
-    void loadEvidence();
+    void loadFindings();
 
     return () => {
       isActive = false;
@@ -69,11 +69,11 @@ export const useEvidenceCollection = (assessmentId?: string) => {
   }, [assessmentId, reloadKey]);
 
   return {
-    evidence,
+    threats,
     isLoading,
-    isRefreshing: isLoading && hasLoadedEvidence,
-    hasLoadedEvidence,
+    isRefreshing: isLoading && hasLoadedFindings,
+    hasLoadedFindings,
     loadError,
-    reloadEvidence: () => setReloadKey(key => key + 1),
+    reloadFindings: () => setReloadKey(key => key + 1),
   };
 };

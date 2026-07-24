@@ -1,0 +1,326 @@
+name: Report for AI
+
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: report-for-ai-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    name: Full diagnosis for AI
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: true
+      NO_COLOR: 1
+      FORCE_COLOR: 0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+          cache: npm
+
+      - name: Prepare diagnostic packet
+        run: |
+          report_dir="$RUNNER_TEMP/report-for-ai"
+          mkdir -p "$report_dir"
+          cat > "$report_dir/checks.tsv" <<'EOF'
+          install	Install dependencies	10	npm ci
+          edited-file-length	Edited file length	20	node .github/scripts/check-edited-file-lines.mjs
+          prisma-validate	Prisma schema	30	npm run db:validate
+          prisma-generate	Prisma client generation	40	npm run db:generate
+          diff-integrity	Diff integrity	50	git diff --check origin/master...HEAD
+          formatting	Formatting	60	npm run format:check
+          lint	Lint	70	npm run lint -- --format stylish
+          typecheck-frontend	Typecheck frontend	80	npx tsc --noEmit -p tsconfig.json --pretty false
+          typecheck-server	Typecheck server	90	npx tsc --noEmit -p tsconfig.server.json --pretty false
+          tests-frontend	Tests frontend	100	npm run test:frontend -- --reporter=verbose
+          tests-backend	Tests backend	110	npm run test:backend -- --reporter=verbose
+          build-frontend	Build frontend	120	npm run build:client
+          build-server	Build server	130	npm run build:server
+          dependency-security	Dependency security policy	140	npm run security:audit
+          docker-build	Docker image build	150	docker build
+          docker-runtime	Docker API health	160	docker run and curl
+          EOF
+          {
+            echo "source_commit=${{ github.event.pull_request.head.sha || github.sha }}"
+            echo "checkout_commit=$(git rev-parse HEAD)"
+            echo "branch=${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+            echo "base=${GITHUB_BASE_REF:-master}"
+            echo "repository=$GITHUB_REPOSITORY"
+            echo "run_id=$GITHUB_RUN_ID"
+            echo "node=$(node --version)"
+            echo "npm=$(npm --version)"
+          } > "$report_dir/environment.txt"
+          git diff --name-status origin/master...HEAD > "$report_dir/changed-files.txt" || true
+          git diff --stat origin/master...HEAD > "$report_dir/diff-stat.txt" || true
+
+      - name: Install dependencies diagnostic
+        run: |
+          set +e
+          set -o pipefail
+          report_dir="$RUNNER_TEMP/report-for-ai"
+          started="$(date +%s)"
+          npm ci 2>&1 | tee "$report_dir/install.log"
+          status=${PIPESTATUS[0]}
+          echo "$status" > "$report_dir/install.status"
+          echo "$(( $(date +%s) - started ))" > "$report_dir/install.duration"
+          exit 0
+
+      - name: Run all Node.js diagnostics
+        run: |
+          set +e
+          set -o pipefail
+          report_dir="$RUNNER_TEMP/report-for-ai"
+          install_status="$(cat "$report_dir/install.status")"
+
+          while IFS=$'\t' read -r id label priority command; do
+            case "$id" in install|docker-build|docker-runtime) continue ;; esac
+            echo "$command" > "$report_dir/$id.command"
+
+            if [ "$install_status" != "0" ]; then
+              echo "not-run" > "$report_dir/$id.status"
+              echo "0" > "$report_dir/$id.duration"
+              echo "Skipped because npm ci failed." > "$report_dir/$id.log"
+              continue
+            fi
+
+            echo "::group::$label"
+            started="$(date +%s)"
+            bash -o pipefail -c "$command" 2>&1 | tee "$report_dir/$id.log"
+            status=${PIPESTATUS[0]}
+            echo "::endgroup::"
+            echo "$status" > "$report_dir/$id.status"
+            echo "$(( $(date +%s) - started ))" > "$report_dir/$id.duration"
+          done < "$report_dir/checks.tsv"
+          exit 0
+
+      - name: Run Docker diagnostics
+        if: always()
+        run: |
+          set +e
+          set -o pipefail
+          report_dir="$RUNNER_TEMP/report-for-ai"
+          image="report-for-ai:${GITHUB_SHA}"
+          container="report-for-ai-${GITHUB_RUN_ID}"
+          echo "docker build -f docker/api/Dockerfile -t $image ." > "$report_dir/docker-build.command"
+          echo "docker run + curl http://localhost:3001/api/health" > "$report_dir/docker-runtime.command"
+
+          if [ "$(cat "$report_dir/install.status" 2>/dev/null || echo 1)" != "0" ]; then
+            for id in docker-build docker-runtime; do
+              echo "not-run" > "$report_dir/$id.status"
+              echo "0" > "$report_dir/$id.duration"
+              echo "Skipped because npm ci failed." > "$report_dir/$id.log"
+            done
+            exit 0
+          fi
+
+          started="$(date +%s)"
+          docker build --progress=plain -f docker/api/Dockerfile -t "$image" . \
+            2>&1 | tee "$report_dir/docker-build.log"
+          build_status=${PIPESTATUS[0]}
+          echo "$build_status" > "$report_dir/docker-build.status"
+          echo "$(( $(date +%s) - started ))" > "$report_dir/docker-build.duration"
+
+          if [ "$build_status" != "0" ]; then
+            echo "not-run" > "$report_dir/docker-runtime.status"
+            echo "0" > "$report_dir/docker-runtime.duration"
+            echo "Skipped because the Docker image build failed." > "$report_dir/docker-runtime.log"
+            exit 0
+          fi
+
+          docker rm -f "$container" >/dev/null 2>&1 || true
+          started="$(date +%s)"
+          docker run -d --name "$container" -p 3001:3001 \
+            -e DATABASE_URL="file:/data/appsec-report-builder.db" "$image" \
+            > "$report_dir/docker-runtime.log" 2>&1
+          runtime_status=$?
+
+          if [ "$runtime_status" = "0" ]; then
+            runtime_status=1
+            for i in {1..20}; do
+              if curl -fsS http://localhost:3001/api/health \
+                >> "$report_dir/docker-runtime.log" 2>&1; then
+                runtime_status=0
+                break
+              fi
+              echo "Waiting for API health check, attempt ${i}/20" \
+                >> "$report_dir/docker-runtime.log"
+              sleep 2
+            done
+          fi
+
+          if [ "$runtime_status" != "0" ]; then
+            {
+              echo; echo "Container state:"; docker ps -a --filter "name=$container" || true
+              echo; echo "Container inspection:"; docker inspect "$container" || true
+              echo; echo "Container logs:"; docker logs "$container" || true
+            } >> "$report_dir/docker-runtime.log" 2>&1
+          fi
+
+          echo "$runtime_status" > "$report_dir/docker-runtime.status"
+          echo "$(( $(date +%s) - started ))" > "$report_dir/docker-runtime.duration"
+          docker rm -f "$container" >/dev/null 2>&1 || true
+          exit 0
+
+      - name: Build AI repair packet
+        if: always()
+        run: |
+          REPORT_DIR="$RUNNER_TEMP/report-for-ai" python <<'PY'
+          import json, os, re
+          from pathlib import Path
+
+          root = Path(os.environ["REPORT_DIR"])
+          env = dict(
+              line.split("=", 1)
+              for line in (root / "environment.txt").read_text().splitlines()
+              if "=" in line
+          )
+          changed = (root / "changed-files.txt").read_text(errors="replace").splitlines()
+          stat = (root / "diff-stat.txt").read_text(errors="replace").splitlines()
+          signal = re.compile(
+              r"(?i)(error(?:\s+TS\d+)?|failed?|failure|fatal|assertion|expected|"
+              r"received|unhandled|cannot|unable|not found|vulnerabilit|critical|"
+              r"\bhigh\b|ELIFECYCLE|\bTS\d{4}\b|✖|×)"
+          )
+          location = re.compile(
+              r"((?:src|server|scripts|prisma|docker|\.github)/[\w./-]+\."
+              r"(?:ts|tsx|js|jsx|mjs|cjs|json|yml|yaml|prisma|css|scss|md)"
+              r"(?::\d+(?::\d+)?)?)"
+          )
+          checks, failures = [], []
+
+          for row in (root / "checks.tsv").read_text().splitlines():
+              check_id, label, priority, command = row.split("\t", 3)
+              get = lambda suffix, default="": (
+                  (root / f"{check_id}.{suffix}").read_text(errors="replace").strip()
+                  if (root / f"{check_id}.{suffix}").exists() else default
+              )
+              status = get("status", "not-run")
+              lines = (root / f"{check_id}.log").read_text(
+                  errors="replace"
+              ).splitlines() if (root / f"{check_id}.log").exists() else []
+              result = "pass" if status == "0" else (
+                  "not-run" if status == "not-run" else "fail"
+              )
+              cleaned = [
+                  re.sub(r"\x1b\[[0-9;]*m", "", raw).strip() for raw in lines
+              ]
+              signals, locations = [], []
+              for index, text in enumerate(cleaned):
+                  if text and signal.search(text):
+                      for context in cleaned[max(0, index - 2):index + 6]:
+                          if context and context not in signals:
+                              signals.append(context[:500])
+                  for match in location.findall(text):
+                      if match not in locations:
+                          locations.append(match)
+              item = {
+                  "id": check_id, "label": label, "priority": int(priority),
+                  "command": command, "result": result, "exit_code": status,
+                  "duration_seconds": int(get("duration", "0") or 0),
+                  "log_file": f"{check_id}.log", "locations": locations[:30],
+                  "signals": signals[:80], "tail": lines[-200:],
+              }
+              checks.append(item)
+              if result == "fail":
+                  failures.append(item)
+
+          failures.sort(key=lambda item: item["priority"])
+          packet = {
+              "schema_version": 1,
+              "purpose": "One combined repair cycle; original CI remains authoritative.",
+              "environment": env, "changed_files": changed, "diff_stat": stat,
+              "failure_count": len(failures),
+              "repair_order": [item["id"] for item in failures],
+              "checks": checks,
+          }
+          (root / "report-for-ai.json").write_text(
+              json.dumps(packet, indent=2, ensure_ascii=False) + "\n"
+          )
+
+          md = [
+              "# Report for AI", "",
+              "Additional diagnostic workflow only. Original CI and CodeQL remain unchanged.",
+              "Use this packet to fix every discovered problem before the next push.", "",
+              f"- Source commit: `{env.get('source_commit', 'unknown')}`",
+              f"- Checkout commit: `{env.get('checkout_commit', 'unknown')}`",
+              f"- Branch: `{env.get('branch', 'unknown')}`",
+              f"- Failed diagnostics: **{len(failures)}**",
+              "- Full logs and JSON index: artifact `report-for-ai`", "",
+              "## Status", "",
+              "| Diagnostic | Result | Exit | Seconds |",
+              "| --- | --- | ---: | ---: |",
+          ]
+          names = {"pass": "PASS", "fail": "FAIL", "not-run": "NOT RUN"}
+          for item in checks:
+              md.append(
+                  f"| {item['label']} | {names[item['result']]} | "
+                  f"{item['exit_code']} | {item['duration_seconds']} |"
+              )
+
+          if failures:
+              md += ["", "## Recommended combined repair order", ""]
+              for index, item in enumerate(failures, 1):
+                  where = ", ".join(f"`{value}`" for value in item["locations"][:8])
+                  md.append(f"{index}. **{item['label']}**" + (f": {where}" if where else ""))
+              md += ["", "## Actionable failure index", ""]
+              for item in failures:
+                  md += [f"### {item['label']}", "", f"Command: `{item['command']}`", ""]
+                  if item["locations"]:
+                      md += ["Likely locations: " + ", ".join(
+                          f"`{value}`" for value in item["locations"][:12]
+                      ), ""]
+                  excerpt = item["signals"][:35] or item["tail"][-80:]
+                  md += ["```text", *(excerpt or ["No signal extracted."]), "```", ""]
+          else:
+              md += ["", "## Repair result", "", "No diagnostic failures were found."]
+
+          md += [
+              "", "## Changed files", "", "```text",
+              *(changed or ["No changed files detected."]), "```",
+              "", "## Diff summary", "", "```text",
+              *(stat or ["No diff summary available."]), "```",
+          ]
+          report = "\n".join(md) + "\n"
+          (root / "report-for-ai.md").write_text(report)
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a") as summary:
+              summary.write(report)
+          PY
+
+      - name: Validate diagnostic completeness
+        if: always()
+        run: |
+          report_dir="$RUNNER_TEMP/report-for-ai"
+          missing=0
+          while IFS=$'\t' read -r id label priority command; do
+            test -f "$report_dir/$id.status" || { echo "::error::Missing status: $label"; missing=1; }
+            test -f "$report_dir/$id.log" || { echo "::error::Missing log: $label"; missing=1; }
+          done < "$report_dir/checks.tsv"
+          test -f "$report_dir/report-for-ai.md" || missing=1
+          test -f "$report_dir/report-for-ai.json" || missing=1
+          test "$missing" = "0" || { echo "::error::Report for AI is incomplete."; exit 1; }
+
+      - name: Upload complete Report for AI packet
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-for-ai
+          path: ${{ runner.temp }}/report-for-ai
+          retention-days: 7
+          if-no-files-found: error

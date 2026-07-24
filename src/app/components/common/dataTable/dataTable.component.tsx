@@ -16,10 +16,11 @@ const DataTable = <T,>({
   const loadingItems = Array.from({
     length: loadingRows,
   });
+  const showLoadingRows = isLoading && rows.length === 0;
 
   return (
     <StyledDataTable>
-      <table className="data-table">
+      <table className="data-table" aria-busy={isLoading || undefined}>
         {caption && <caption className="visually-hidden">{caption}</caption>}
 
         <thead className="data-table-head">
@@ -43,7 +44,7 @@ const DataTable = <T,>({
         </thead>
 
         <tbody className="data-table-body">
-          {isLoading &&
+          {showLoadingRows &&
             loadingItems.map((_, rowIndex) => (
               <tr key={`loading-${rowIndex}`} className="data-table-row">
                 {columns.map(column => (
@@ -62,7 +63,7 @@ const DataTable = <T,>({
               </tr>
             ))}
 
-          {!isLoading &&
+          {!showLoadingRows &&
             rows.map(row => (
               <tr
                 key={getRowKey(row)}
@@ -100,7 +101,7 @@ const DataTable = <T,>({
               </tr>
             ))}
 
-          {!isLoading && rows.length === 0 && (
+          {!showLoadingRows && rows.length === 0 && (
             <tr>
               <td className="data-table-empty-cell" colSpan={columns.length}>
                 {emptyState ?? 'No data available.'}

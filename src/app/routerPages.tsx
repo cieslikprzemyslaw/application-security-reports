@@ -23,6 +23,7 @@ interface DashboardRouteProps {
   companies: CompanyListItem[];
   companiesLoadError?: string;
   isCompaniesLoading?: boolean;
+  hasLoadedCompanies?: boolean;
   onOpenCompany: (company: RecentCompanyIdentity) => void;
   onRetryCompanies: () => void;
 }
@@ -31,16 +32,17 @@ export const DashboardRoute = ({
   companies,
   companiesLoadError,
   isCompaniesLoading = false,
+  hasLoadedCompanies = false,
   onOpenCompany,
   onRetryCompanies,
 }: DashboardRouteProps) => {
   const navigate = useNavigate();
 
-  if (isCompaniesLoading) {
+  if (isCompaniesLoading && !hasLoadedCompanies) {
     return <RouteLoadingView />;
   }
 
-  if (companiesLoadError) {
+  if (companiesLoadError && !hasLoadedCompanies) {
     return (
       <section>
         <PageHeader
@@ -67,12 +69,36 @@ export const DashboardRoute = ({
   }
 
   return (
-    <Dashboard
-      companies={companies}
-      isWorkspaceEmpty={companies.length === 0}
-      onCreateCompany={() => navigate(routes.companiesNew)}
-      onOpenCompany={onOpenCompany}
-    />
+    <section>
+      {isCompaniesLoading && (
+        <div role="status" aria-live="polite">
+          Refreshing companies...
+        </div>
+      )}
+
+      {companiesLoadError && (
+        <Callout
+          variant="warning"
+          title="Recent companies may be out of date"
+          actions={
+            <Button
+              title="Retry"
+              variant="secondary"
+              onClick={onRetryCompanies}
+            />
+          }
+        >
+          <p>{companiesLoadError}</p>
+        </Callout>
+      )}
+
+      <Dashboard
+        companies={companies}
+        isWorkspaceEmpty={companies.length === 0}
+        onCreateCompany={() => navigate(routes.companiesNew)}
+        onOpenCompany={onOpenCompany}
+      />
+    </section>
   );
 };
 

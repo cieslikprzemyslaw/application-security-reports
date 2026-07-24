@@ -18,6 +18,8 @@ import { useEvidenceSubmission } from './useEvidenceSubmission';
 export interface AssessmentEvidenceController {
   evidence: Evidence[];
   isLoading: boolean;
+  isRefreshing: boolean;
+  hasLoadedEvidence: boolean;
   loadError?: string;
   statusMessage?: string;
   drawerMode: EvidenceDrawerMode;
@@ -118,6 +120,8 @@ export const useAssessmentEvidence = ({
   return {
     evidence: collection.evidence,
     isLoading: collection.isLoading,
+    isRefreshing: collection.isRefreshing,
+    hasLoadedEvidence: collection.hasLoadedEvidence,
     loadError: collection.loadError,
     statusMessage,
     drawerMode: editor.drawerMode,

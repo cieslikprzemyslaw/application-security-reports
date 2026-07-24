@@ -104,7 +104,7 @@ describe('assessment workflow states', () => {
         assert.ok(textContent(container).includes('No assessments yet'));
         assert.ok(
           textContent(container).includes(
-            'Create the first assessment for this company.',
+            'Create the first assessment for this company to start tracking threats, evidence, and reports.',
           ),
         );
       });

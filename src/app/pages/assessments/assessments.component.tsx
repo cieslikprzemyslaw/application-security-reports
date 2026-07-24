@@ -61,6 +61,8 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
     totalPages,
     safePage,
     isLoading,
+    isRefreshing,
+    hasLoadedAssessments,
     loadError,
     searchValue,
     statusFilter,
@@ -92,14 +94,16 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
 
   const emptyState = showEmptyWorkspace ? (
     <EmptyState
+      variant="first-use"
       title="No assessments yet"
-      description="Create the first assessment for this company."
+      description="Create the first assessment for this company to start tracking threats, evidence, and reports."
       primaryAction={
-        <Button title="New assessment" onClick={openCreateDrawer} />
+        <Button title="Create assessment" onClick={openCreateDrawer} />
       }
     />
   ) : showNoResults ? (
     <EmptyState
+      variant="no-results"
       title="No assessments match your current search and filters"
       description="Clear the search and filters to show all assessments again."
       primaryAction={
@@ -111,6 +115,9 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
       }
     />
   ) : undefined;
+
+  const showInitialError = Boolean(loadError && !hasLoadedAssessments);
+  const showInitialLoading = isLoading && !hasLoadedAssessments;
 
   return (
     <StyledAssessments>
@@ -196,7 +203,7 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
           summary={`${controller.filteredAssessments.length} assessments`}
         />
 
-        {loadError ? (
+        {showInitialError ? (
           <div className="assessments-status">
             <Callout
               variant="error"
@@ -212,12 +219,40 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
               <p>{loadError}</p>
             </Callout>
           </div>
-        ) : isLoading ? (
+        ) : showInitialLoading ? (
           <div className="assessments-status" role="status" aria-live="polite">
             Loading assessments...
           </div>
         ) : (
           <>
+            {isRefreshing && (
+              <div
+                className="assessments-status"
+                role="status"
+                aria-live="polite"
+              >
+                Refreshing assessments...
+              </div>
+            )}
+
+            {loadError && (
+              <div className="assessments-status">
+                <Callout
+                  variant="warning"
+                  title="Assessments may be out of date"
+                  actions={
+                    <Button
+                      title="Retry"
+                      variant="secondary"
+                      onClick={controller.reloadAssessments}
+                    />
+                  }
+                >
+                  <p>{loadError}</p>
+                </Callout>
+              </div>
+            )}
+
             <AssessmentTable
               assessments={pagedAssessments}
               sortBy={sortBy}

@@ -257,11 +257,11 @@ const CompanyOverviewDashboard = ({
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !overview) {
     return <RouteLoadingView />;
   }
 
-  if (loadError) {
+  if (loadError && !overview) {
     return (
       <StyledDashboard>
         <Callout
@@ -287,6 +287,28 @@ const CompanyOverviewDashboard = ({
 
   return (
     <StyledDashboard>
+      {isLoading && (
+        <div role="status" aria-live="polite">
+          Refreshing company overview...
+        </div>
+      )}
+
+      {loadError && (
+        <Callout
+          variant="warning"
+          title="Company overview may be out of date"
+          actions={
+            <Button
+              title="Retry"
+              variant="secondary"
+              onClick={() => setReloadKey(key => key + 1)}
+            />
+          }
+        >
+          <p>{loadError}</p>
+        </Callout>
+      )}
+
       <CompanyOverviewDashboardView
         companyId={companyId}
         overview={overview}

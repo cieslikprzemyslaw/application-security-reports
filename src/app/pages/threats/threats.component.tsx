@@ -79,6 +79,7 @@ const Threats = ({
 
   const emptyState = showEmptyWorkspace ? (
     <EmptyState
+      variant="first-use"
       title="No threats yet"
       description="Add the first threat to start tracking security issues across assessments."
       primaryAction={
@@ -89,6 +90,7 @@ const Threats = ({
     />
   ) : showNoResults ? (
     <EmptyState
+      variant="no-results"
       title={
         hasFilters
           ? 'No threats match your current search and filters'

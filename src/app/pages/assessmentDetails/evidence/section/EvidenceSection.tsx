@@ -22,80 +22,111 @@ const AssessmentEvidenceSection = ({
   assessment,
   threats,
   controller,
-}: AssessmentEvidenceSectionProps) => (
-  <StyledAssessmentEvidenceSection>
-    {controller.statusMessage && (
-      <div className="assessment-evidence-status">
+}: AssessmentEvidenceSectionProps) => {
+  const showInitialError =
+    Boolean(controller.loadError) && !controller.hasLoadedEvidence;
+  const showInitialLoading =
+    controller.isLoading && !controller.hasLoadedEvidence;
+
+  return (
+    <StyledAssessmentEvidenceSection>
+      {controller.statusMessage && (
+        <div className="assessment-evidence-status">
+          <Callout
+            variant="success"
+            title={
+              controller.statusMessage.includes('deleted')
+                ? 'Evidence deleted'
+                : 'Evidence saved'
+            }
+          >
+            <p>{controller.statusMessage}</p>
+          </Callout>
+        </div>
+      )}
+
+      {controller.downloadError && (
+        <Callout variant="error" title="Unable to download attachment">
+          <p>{controller.downloadError}</p>
+        </Callout>
+      )}
+
+      {showInitialError ? (
         <Callout
-          variant="success"
-          title={
-            controller.statusMessage.includes('deleted')
-              ? 'Evidence deleted'
-              : 'Evidence saved'
+          variant="error"
+          title="Unable to load evidence"
+          actions={
+            <Button
+              title="Retry"
+              variant="secondary"
+              onClick={controller.reloadEvidence}
+            />
           }
         >
-          <p>{controller.statusMessage}</p>
+          <p>{controller.loadError}</p>
         </Callout>
-      </div>
-    )}
+      ) : (
+        <Card
+          title="Evidence"
+          subtitle="Structured evidence scoped to the current assessment."
+          padding="large"
+          actions={
+            controller.canEditEvidence ? (
+              <Button
+                title="Add evidence"
+                data-evidence-add-action="true"
+                onClick={controller.openCreateEvidence}
+              />
+            ) : undefined
+          }
+        >
+          {showInitialLoading ? (
+            <div className="assessment-evidence-loading">
+              <Callout variant="info" title="Loading evidence">
+                <p>Fetching evidence for this assessment.</p>
+              </Callout>
+            </div>
+          ) : (
+            <>
+              {controller.isRefreshing && (
+                <div role="status" aria-live="polite">
+                  Refreshing evidence...
+                </div>
+              )}
 
-    {controller.downloadError && (
-      <Callout variant="error" title="Unable to download attachment">
-        <p>{controller.downloadError}</p>
-      </Callout>
-    )}
+              {controller.loadError && (
+                <Callout
+                  variant="warning"
+                  title="Evidence may be out of date"
+                  actions={
+                    <Button
+                      title="Retry"
+                      variant="secondary"
+                      onClick={controller.reloadEvidence}
+                    />
+                  }
+                >
+                  <p>{controller.loadError}</p>
+                </Callout>
+              )}
 
-    {controller.loadError ? (
-      <Callout
-        variant="error"
-        title="Unable to load evidence"
-        actions={
-          <Button
-            title="Retry"
-            variant="secondary"
-            onClick={controller.reloadEvidence}
-          />
-        }
-      >
-        <p>{controller.loadError}</p>
-      </Callout>
-    ) : (
-      <Card
-        title="Evidence"
-        subtitle="Structured evidence scoped to the current assessment."
-        padding="large"
-        actions={
-          controller.canEditEvidence ? (
-            <Button
-              title="Add evidence"
-              data-evidence-add-action="true"
-              onClick={controller.openCreateEvidence}
-            />
-          ) : undefined
-        }
-      >
-        {controller.isLoading && controller.evidence.length === 0 ? (
-          <div className="assessment-evidence-loading">
-            <Callout variant="info" title="Loading evidence">
-              <p>Fetching evidence for this assessment.</p>
-            </Callout>
-          </div>
-        ) : (
-          <EvidenceList
-            evidence={controller.evidence}
-            controller={controller}
-          />
-        )}
-      </Card>
-    )}
+              <EvidenceList
+                evidence={controller.evidence}
+                controller={controller}
+              />
+            </>
+          )}
+        </Card>
+      )}
 
-    <EvidenceDrawer
-      assessment={assessment}
-      threats={threats}
-      controller={controller}
-    />
-    <DeleteEvidenceModal controller={controller} />
-  </StyledAssessmentEvidenceSection>
-);
+      <EvidenceDrawer
+        assessment={assessment}
+        threats={threats}
+        controller={controller}
+      />
+      <DeleteEvidenceModal controller={controller} />
+    </StyledAssessmentEvidenceSection>
+  );
+};
 
 export default AssessmentEvidenceSection;

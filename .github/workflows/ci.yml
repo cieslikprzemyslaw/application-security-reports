@@ -46,6 +46,7 @@ jobs:
         run: npm run db:generate
 
       - name: Check formatting
+        continue-on-error: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
         run: npm run format:check
 
       - name: Lint

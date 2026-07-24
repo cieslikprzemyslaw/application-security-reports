@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -47,6 +48,7 @@ interface RouterShellContextValue {
   companies: CompanyListItem[];
   companiesLoadError?: string;
   isCompaniesLoading: boolean;
+  hasLoadedCompanies: boolean;
   onActiveCompanyChange: (company?: CompanyIdentity) => void;
   onCompaniesChange: (companies: CompanyListItem[]) => void;
   onRetryCompanies: () => void;
@@ -86,6 +88,7 @@ const DashboardRouteElement = () => {
     companies,
     companiesLoadError,
     isCompaniesLoading,
+    hasLoadedCompanies,
     onActiveCompanyChange,
     onRetryCompanies,
   } = useRouterShellContext();
@@ -95,6 +98,7 @@ const DashboardRouteElement = () => {
       companies={companies}
       companiesLoadError={companiesLoadError}
       isCompaniesLoading={isCompaniesLoading}
+      hasLoadedCompanies={hasLoadedCompanies}
       onOpenCompany={onActiveCompanyChange}
       onRetryCompanies={onRetryCompanies}
     />
@@ -128,12 +132,21 @@ const CreateCompanyRouteElement = () => {
 };
 
 const CompanyWorkspaceRouteShellElement = () => {
-  const { companies, isCompaniesLoading } = useRouterShellContext();
+  const {
+    companies,
+    companiesLoadError,
+    isCompaniesLoading,
+    hasLoadedCompanies,
+    onRetryCompanies,
+  } = useRouterShellContext();
 
   return (
     <CompanyWorkspaceRouteShell
       companies={companies}
+      companiesLoadError={companiesLoadError}
       isCompaniesLoading={isCompaniesLoading}
+      hasLoadedCompanies={hasLoadedCompanies}
+      onRetryCompanies={onRetryCompanies}
     />
   );
 };
@@ -167,6 +180,8 @@ const RouterShell = () => {
   const location = useLocation();
   const [companies, setCompanies] = useState<CompanyListItem[]>([]);
   const [isCompaniesLoading, setIsCompaniesLoading] = useState(true);
+  const [hasLoadedCompanies, setHasLoadedCompanies] = useState(false);
+  const hasLoadedCompaniesRef = useRef(false);
   const [companiesLoadError, setCompaniesLoadError] = useState<
     string | undefined
   >();
@@ -194,6 +209,8 @@ const RouterShell = () => {
 
         if (isActive) {
           setCompanies(nextCompanies);
+          hasLoadedCompaniesRef.current = true;
+          setHasLoadedCompanies(true);
         }
       } catch (error) {
         if (
@@ -203,7 +220,10 @@ const RouterShell = () => {
           return;
         }
 
-        setCompanies([]);
+        if (!hasLoadedCompaniesRef.current) {
+          setCompanies([]);
+        }
+
         setCompaniesLoadError(
           error instanceof Error ? error.message : 'Unable to load companies.',
         );
@@ -257,6 +277,8 @@ const RouterShell = () => {
   const handleCompaniesChange = useCallback(
     (nextCompanies: CompanyListItem[]) => {
       setCompanies(nextCompanies);
+      hasLoadedCompaniesRef.current = true;
+      setHasLoadedCompanies(true);
     },
     [],
   );
@@ -273,6 +295,7 @@ const RouterShell = () => {
         companies,
         companiesLoadError,
         isCompaniesLoading,
+        hasLoadedCompanies,
         onActiveCompanyChange: handleActiveCompanyChange,
         onCompaniesChange: handleCompaniesChange,
         onRetryCompanies: reloadCompanies,

@@ -7,6 +7,7 @@ import { act } from '~/test/vitestLegacyBridge';
 import { OWASP_TOP_10_OPTIONS } from '~/domain';
 
 import {
+  finding,
   owaspCategoryValue,
   renderHarness,
   renderTick,
@@ -122,7 +123,6 @@ describe('assessmentFindingsSection.component', () => {
           reopenedCloseButton,
           'Expected the drawer close button to return',
         );
-
         await act(async () => {
           reopenedCloseButton!.dispatchEvent(
             new window.MouseEvent('click', {
@@ -283,4 +283,56 @@ describe('assessmentFindingsSection.component', () => {
       }
     })();
   }, 15_000);
+
+  it('keeps confirmed threats visible when a background refetch fails', async () => {
+    const { container, root, window, events } = await renderHarness(
+      'in-progress',
+      {
+        threats: [finding],
+        hasLoadedFindings: true,
+        loadError: 'Temporary refresh failure.',
+      },
+    );
+
+    assert.ok(textContent(container).includes(finding.title));
+    assert.ok(textContent(container).includes('Threats may be out of date'));
+
+    const retryButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent?.trim() === 'Retry',
+    );
+
+    assert.ok(retryButton, 'Expected a retry action for stale threats');
+
+    await act(async () => {
+      retryButton!.dispatchEvent(
+        new window.MouseEvent('click', { bubbles: true, cancelable: true }),
+      );
+      await renderTick();
+    });
+
+    assert.ok(events.includes('reload'));
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it('uses the unavailable empty state for archived assessments', async () => {
+    const { container, root } = await renderHarness('archived', {
+      threats: [],
+      hasLoadedFindings: true,
+    });
+
+    assert.ok(textContent(container).includes('No threats available'));
+    assert.equal(
+      Array.from(container.querySelectorAll('button')).some(
+        button => button.textContent?.trim() === 'Add threat',
+      ),
+      false,
+    );
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
 });

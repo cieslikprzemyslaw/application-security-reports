@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { AssessmentListItem } from '~/services';
 import { assessmentService } from '~/services';
@@ -27,6 +27,8 @@ export interface AssessmentsController extends AssessmentDrawerController {
   totalPages: number;
   safePage: number;
   isLoading: boolean;
+  isRefreshing: boolean;
+  hasLoadedAssessments: boolean;
   loadError?: string;
   searchValue: string;
   statusFilter: AssessmentStatusFilter;
@@ -63,6 +65,8 @@ export const useAssessmentsController = ({
   } = query.state;
   const [assessments, setAssessments] = useState<AssessmentListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedAssessments, setHasLoadedAssessments] = useState(false);
+  const hasLoadedAssessmentsRef = useRef(false);
   const [loadError, setLoadError] = useState<string | undefined>();
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -84,6 +88,8 @@ export const useAssessmentsController = ({
 
         if (isActive) {
           setAssessments(nextAssessments);
+          hasLoadedAssessmentsRef.current = true;
+          setHasLoadedAssessments(true);
         }
       } catch (error) {
         if (
@@ -93,7 +99,10 @@ export const useAssessmentsController = ({
           return;
         }
 
-        setAssessments([]);
+        if (!hasLoadedAssessmentsRef.current) {
+          setAssessments([]);
+        }
+
         setLoadError(
           error instanceof Error
             ? error.message
@@ -145,11 +154,10 @@ export const useAssessmentsController = ({
     safePage * PAGE_SIZE,
   );
 
-  const showEmptyWorkspace =
-    !isLoading && !loadError && assessments.length === 0;
+  const isRefreshing = isLoading && hasLoadedAssessments;
+  const showEmptyWorkspace = hasLoadedAssessments && assessments.length === 0;
   const showNoResults =
-    !isLoading &&
-    !loadError &&
+    hasLoadedAssessments &&
     !showEmptyWorkspace &&
     filteredAssessments.length === 0;
 
@@ -192,6 +200,8 @@ export const useAssessmentsController = ({
     totalPages,
     safePage,
     isLoading,
+    isRefreshing,
+    hasLoadedAssessments,
     loadError,
     searchValue: query.searchValue,
     statusFilter,
