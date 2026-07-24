@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import Card from '~/app/components/ui/card';
 import Checkbox from '~/app/components/ui/checkbox';
 import EmptyState from '~/app/components/ui/emptyState';
+import { routes } from '~/routes';
 
 import StyledReportBuilderTree from './reportBuilderTree.styled';
 import {
@@ -52,6 +54,7 @@ const ReportBuilderTree = ({
   onIncludeEvidenceChange,
   loadHierarchy = reportBuilderHierarchyLoader,
 }: ReportBuilderTreeProps) => {
+  const navigate = useNavigate();
   const [hierarchy, setHierarchy] = useState<ReportBuilderHierarchy>();
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | undefined>();
@@ -79,7 +82,6 @@ const ReportBuilderTree = ({
           return;
         }
 
-        setHierarchy(undefined);
         setLoadError(
           error instanceof Error
             ? error.message
@@ -106,6 +108,8 @@ const ReportBuilderTree = ({
       getReportBuilderExactSelection(nextState, hierarchy),
     );
   };
+  const showInitialLoading = isLoading && hierarchy === undefined;
+  const showInitialError = loadError && hierarchy === undefined;
 
   return (
     <StyledReportBuilderTree aria-labelledby="report-builder-tree-title">
@@ -143,7 +147,7 @@ const ReportBuilderTree = ({
           />
         </div>
 
-        {isLoading ? (
+        {showInitialLoading ? (
           <div
             className="report-builder-tree-state"
             role="status"
@@ -151,7 +155,7 @@ const ReportBuilderTree = ({
           >
             <p>Loading company hierarchy…</p>
           </div>
-        ) : loadError ? (
+        ) : showInitialError ? (
           <Callout variant="error" title="Unable to load hierarchy">
             <p>{loadError}</p>
 
@@ -163,52 +167,95 @@ const ReportBuilderTree = ({
               />
             </div>
           </Callout>
-        ) : hierarchy?.assessments.length ? (
-          <ReportBuilderTreeContent
-            hierarchy={hierarchy}
-            selectionState={selectionState}
-            lockedAssessmentId={lockedAssessmentId}
-            focusTarget={focusTarget}
-            onAssessmentChange={(assessment, checked) => {
-              commitSelection(
-                toggleReportBuilderAssessmentSelection(
-                  selectionState,
-                  assessment,
-                  checked,
-                  lockedAssessmentId,
-                ),
-              );
-            }}
-            onThreatChange={(assessmentId, threatId, checked) => {
-              commitSelection(
-                toggleReportBuilderThreatSelection(
-                  selectionState,
-                  assessmentId,
-                  threatId,
-                  checked,
-                  lockedAssessmentId,
-                ),
-              );
-            }}
-            onEvidenceChange={(assessmentId, threatId, evidenceId, checked) => {
-              commitSelection(
-                toggleReportBuilderEvidenceSelection(
-                  selectionState,
+        ) : (
+          <>
+            {isLoading && (
+              <div
+                className="report-builder-tree-state"
+                role="status"
+                aria-live="polite"
+              >
+                <p>Refreshing company hierarchy…</p>
+              </div>
+            )}
+
+            {loadError && (
+              <Callout
+                variant="warning"
+                title="Report data may be out of date"
+                actions={
+                  <Button
+                    title="Retry"
+                    variant="secondary"
+                    onClick={() => setReloadKey(key => key + 1)}
+                  />
+                }
+              >
+                <p>{loadError}</p>
+              </Callout>
+            )}
+
+            {hierarchy?.assessments.length ? (
+              <ReportBuilderTreeContent
+                hierarchy={hierarchy}
+                selectionState={selectionState}
+                lockedAssessmentId={lockedAssessmentId}
+                focusTarget={focusTarget}
+                onAssessmentChange={(assessment, checked) => {
+                  commitSelection(
+                    toggleReportBuilderAssessmentSelection(
+                      selectionState,
+                      assessment,
+                      checked,
+                      lockedAssessmentId,
+                    ),
+                  );
+                }}
+                onThreatChange={(assessmentId, threatId, checked) => {
+                  commitSelection(
+                    toggleReportBuilderThreatSelection(
+                      selectionState,
+                      assessmentId,
+                      threatId,
+                      checked,
+                      lockedAssessmentId,
+                    ),
+                  );
+                }}
+                onEvidenceChange={(
                   assessmentId,
                   threatId,
                   evidenceId,
                   checked,
-                  lockedAssessmentId,
-                ),
-              );
-            }}
-          />
-        ) : (
-          <EmptyState
-            variant="first-use"
-            title="No assessments yet"
-            description="Create the first assessment for this company to populate the report builder tree."
-          />
+                ) => {
+                  commitSelection(
+                    toggleReportBuilderEvidenceSelection(
+                      selectionState,
+                      assessmentId,
+                      threatId,
+                      evidenceId,
+                      checked,
+                      lockedAssessmentId,
+                    ),
+                  );
+                }}
+              />
+            ) : (
+              <EmptyState
+                variant="first-use"
+                title="No assessments yet"
+                description="Create the first assessment for this company to populate the report builder tree."
+                primaryAction={
+                  <Button
+                    title="Create assessment"
+                    onClick={() =>
+                      navigate(routes.companyWorkspaceAssessments(companyId))
+                    }
+                  />
+                }
+              />
+            )}
+          </>
         )}
       </Card>
     </StyledReportBuilderTree>
