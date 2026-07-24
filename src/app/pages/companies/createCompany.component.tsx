@@ -5,6 +5,7 @@ import CompanyForm from '~/app/components/appsec/companyForm';
 import type { CompanyFormValue } from '~/app/components/appsec/companyForm';
 import Button from '~/app/components/ui/button';
 import { PageHeader } from '~/app/components/common';
+import IconSVG from '~/app/components/ui/iconSVG';
 import PageContent from '~/app/layouts/pageContent';
 import { useDirtyFormGuard } from '~/app/hooks/useDirtyFormGuard';
 import type { Company, CompanyListItem } from '~/domain';
@@ -265,7 +266,21 @@ const CreateCompany = ({
       <PageHeader
         eyebrow="Workspace"
         title="Create company"
+        context={[
+          { label: 'Companies', href: routes.companies },
+          { label: 'Create company' },
+        ]}
+        documentTitle="Create company"
         subtitle="Create a company to unlock assessments and report branding."
+        secondaryActions={[
+          {
+            id: 'back-to-companies',
+            label: 'Back to companies',
+            icon: <IconSVG name="company" />,
+            disabled: isSubmitting,
+            onActivate: handleCancel,
+          },
+        ]}
       />
 
       <CompanyForm

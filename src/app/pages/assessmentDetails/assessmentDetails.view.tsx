@@ -1,12 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-
 import AssessmentSummary from '~/app/components/appsec/assessmentSummary';
-import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import Card from '~/app/components/ui/card';
 import IconSVG from '~/app/components/ui/iconSVG';
 import StatCard from '~/app/components/common/statCard';
+import { PageHeader } from '~/app/components/common';
 import Tabs from '~/app/components/ui/tabs';
 import {
   formatDateRange,
@@ -73,6 +71,9 @@ const getAvailableActions = (
 const AssessmentDetailsView = ({
   assessment,
   activeSection,
+  companiesHref,
+  companyHref,
+  assessmentsHref,
   overviewHref,
   findingsContent,
   evidenceContent,
@@ -87,11 +88,11 @@ const AssessmentDetailsView = ({
   onPermanentDeleteRequest,
 }: AssessmentDetailsViewProps) => {
   const assessmentName = getAssessmentName(assessment);
-  const assessmentNameLink =
-    activeSection === 'overview' ? undefined : overviewHref;
   const actions = getAvailableActions(assessment).filter(action =>
     defaultActionOrder.includes(action),
   );
+  const primaryAssessmentAction = actions.find(action => action !== 'archive');
+  const archiveActions = actions.filter(action => action === 'archive');
   const canPermanentlyDelete =
     assessment.status === 'archived' && Boolean(onPermanentDeleteRequest);
   const summaryMetadata = [
@@ -155,93 +156,65 @@ const AssessmentDetailsView = ({
 
   return (
     <StyledAssessmentDetails>
-      <header className="assessment-details-header">
-        <div className="assessment-details-header-copy">
-          {onBack && (
-            <div className="assessment-details-mobile-back">
-              <Button
-                title="Back to assessments"
-                variant="secondary"
-                size="small"
-                onClick={onBack}
-              />
-            </div>
-          )}
+      <PageHeader
+        eyebrow="Assessment workspace"
+        title={assessmentName}
+        context={[
+          { label: 'Companies', href: companiesHref },
+          { label: assessment.companyName, href: companyHref },
+          { label: 'Assessments', href: assessmentsHref },
+          { label: assessmentName, href: overviewHref },
+          { label: sectionLabelMap[activeSection] },
+        ]}
+        documentTitle={`${sectionLabelMap[activeSection]} - ${assessmentName}`}
+        subtitle={assessment.companyName}
+        primaryAction={
+          primaryAssessmentAction
+            ? {
+                id: `assessment-${primaryAssessmentAction}`,
+                label: actionLabelMap[primaryAssessmentAction],
+                isLoading: pendingAction === primaryAssessmentAction,
+                disabled:
+                  isActionLoading && pendingAction !== primaryAssessmentAction,
+                onActivate: () => onAction(primaryAssessmentAction),
+              }
+            : undefined
+        }
+        secondaryActions={
+          onBack
+            ? [
+                {
+                  id: 'back-to-assessments',
+                  label: 'Back to assessments',
+                  onActivate: onBack,
+                },
+              ]
+            : undefined
+        }
+        overflowActions={archiveActions.map(action => ({
+          id: `assessment-${action}`,
+          label: actionLabelMap[action],
+          isLoading: pendingAction === action,
+          disabled: isActionLoading && pendingAction !== action,
+          onActivate: () => onAction(action),
+        }))}
+        destructiveAction={
+          canPermanentlyDelete
+            ? {
+                id: 'permanent-delete-assessment',
+                label: 'Permanent delete',
+                disabled: isActionLoading,
+                onActivate: () => onPermanentDeleteRequest?.(),
+              }
+            : undefined
+        }
+      />
 
-          <nav aria-label="Breadcrumb">
-            <ol className="assessment-details-breadcrumb-list">
-              <li className="assessment-details-breadcrumb-item">
-                <span>{assessment.companyName}</span>
-              </li>
-
-              <li className="assessment-details-breadcrumb-item">
-                <Link to={overviewHref}>{assessmentName}</Link>
-              </li>
-
-              <li className="assessment-details-breadcrumb-item">
-                <span aria-current="page">
-                  {sectionLabelMap[activeSection]}
-                </span>
-              </li>
-            </ol>
-          </nav>
-
-          <h1 className="assessment-details-title">
-            {assessmentNameLink ? (
-              <Link
-                className="assessment-details-title-link"
-                to={assessmentNameLink}
-              >
-                {assessmentName}
-              </Link>
-            ) : (
-              <span>{assessmentName}</span>
-            )}
-          </h1>
-
-          <p className="assessment-details-subtitle">
-            {assessment.companyName}
-          </p>
-
-          {assessment.status === 'archived' && (
-            <p className="assessment-details-read-only-note">
-              Archived assessments are read-only.
-            </p>
-          )}
-        </div>
-
-        <div className="assessment-details-header-actions">
-          {onBack && (
-            <Button
-              className="assessment-details-desktop-back"
-              title="Back to assessments"
-              variant="secondary"
-              size="small"
-              onClick={onBack}
-            />
-          )}
-
-          {actions.map(action => (
-            <Button
-              key={action}
-              title={actionLabelMap[action]}
-              isLoading={pendingAction === action}
-              disabled={isActionLoading && pendingAction !== action}
-              variant={action === 'archive' ? 'secondary' : 'primary'}
-              onClick={() => onAction(action)}
-            />
-          ))}
-
-          {canPermanentlyDelete && (
-            <Button
-              title="Permanent delete"
-              variant="destructive"
-              disabled={isActionLoading}
-              onClick={event => onPermanentDeleteRequest?.(event)}
-            />
-          )}
-        </div>
-      </header>
+      {assessment.status === 'archived' && (
+        <p className="assessment-details-read-only-note">
+          Archived assessments are read-only.
+        </p>
+      )}
 
       <AssessmentSummary
         companyName={assessment.companyName}

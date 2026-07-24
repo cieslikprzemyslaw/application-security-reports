@@ -7,6 +7,7 @@ import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import Drawer from '~/app/components/ui/drawer';
 import EmptyState from '~/app/components/ui/emptyState';
+import IconSVG from '~/app/components/ui/iconSVG';
 import Pagination from '~/app/components/ui/pagination';
 import SearchInput from '~/app/components/ui/searchInput';
 import Select from '~/app/components/ui/select';
@@ -118,20 +119,28 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
       <PageHeader
         eyebrow="Company workspace"
         title="Assessments"
-        breadcrumbs={[
+        context={[
+          { label: 'Companies', href: routes.companies },
           {
             label: companyName ?? 'Company',
+            href: routes.companyWorkspaceOverview(companyId),
           },
-          {
-            label: 'Assessments',
-          },
+          { label: 'Assessments' },
         ]}
+        documentTitle={
+          companyName ? `Assessments for ${companyName}` : 'Assessments'
+        }
         subtitle={
           companyName
             ? `Manage assessments for ${companyName}.`
             : 'Manage assessments for the active company.'
         }
-        actions={<Button title="New assessment" onClick={openCreateDrawer} />}
+        primaryAction={{
+          id: 'new-assessment',
+          label: 'New assessment',
+          icon: <IconSVG name="add" />,
+          onActivate: openCreateDrawer,
+        }}
       />
 
       {assessmentCleanupWarnings.length > 0 && (

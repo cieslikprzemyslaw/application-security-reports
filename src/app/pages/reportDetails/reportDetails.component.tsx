@@ -79,6 +79,18 @@ const ReportDetails = ({
       applicationName={applicationName}
       assessmentCode={`${reportId} · v${formatReportVersionNumber(version.version)}`}
       autoSaved={false}
+      context={[
+        { label: 'Companies', href: routes.companies },
+        {
+          label: snapshot.company.name,
+          href: routes.companyWorkspaceOverview(companyId),
+        },
+        { label: 'Reports', href: reportsHref },
+        {
+          label: `${snapshot.reportTitle ?? 'Security report'} v${formatReportVersionNumber(version.version)}`,
+        },
+      ]}
+      documentTitle={pdfDocumentTitle}
       preview={
         <ReportBuilderPreview
           status="success"

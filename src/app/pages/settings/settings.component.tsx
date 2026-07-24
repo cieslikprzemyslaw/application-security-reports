@@ -1,10 +1,11 @@
 import React from 'react';
 
 import SettingsPanel from '~/app/components/appsec/settingsPanel';
-import Button from '~/app/components/ui/button';
 import Input from '~/app/components/ui/input';
 import Select from '~/app/components/ui/select';
 import Textarea from '~/app/components/ui/textarea';
+import IconSVG from '~/app/components/ui/iconSVG';
+import { PageHeader } from '~/app/components/common';
 
 import StyledSettings from './settings.styled';
 import SettingsPreview from './settings.preview';
@@ -68,16 +69,28 @@ const Settings = ({
 }: SettingsProps) => {
   return (
     <StyledSettings>
-      <header className="settings-header">
-        <h1 className="settings-title">Settings</h1>
+      <PageHeader
+        eyebrow="System"
+        title="Settings"
+        context={[{ label: 'Settings' }]}
+        documentTitle="Settings"
+        subtitle="Manage organisation details, report branding, defaults, and user preferences."
+        primaryAction={{
+          id: 'save-settings',
+          label: 'Save settings',
+          icon: <IconSVG name="success" />,
+          disabled: !isDirty || isSaving,
+          disabledReason: !isDirty
+            ? 'Change a setting before saving.'
+            : undefined,
+          isLoading: isSaving,
+          type: 'submit',
+          form: 'settings-form',
+          onActivate: () => undefined,
+        }}
+      />
 
-        <p className="settings-subtitle">
-          Manage organisation details, report branding, defaults, and user
-          preferences.
-        </p>
-      </header>
-
-      <form className="settings-form" onSubmit={onSubmit}>
+      <form id="settings-form" className="settings-form" onSubmit={onSubmit}>
         <div className="settings-form-status-group" aria-live="polite">
           {statusMessage && (
             <p
@@ -355,15 +368,6 @@ const Settings = ({
               <SettingsPreview value={value} previewTheme={previewTheme} />
             </SettingsPanel>
           </div>
-        </div>
-
-        <div className="settings-actions">
-          <Button
-            type="submit"
-            title="Save settings"
-            disabled={!isDirty || isSaving}
-            isLoading={isSaving}
-          />
         </div>
       </form>
     </StyledSettings>

@@ -6,6 +6,8 @@ import Button from '~/app/components/ui/button';
 import EmptyState from '~/app/components/ui/emptyState';
 import SearchInput from '~/app/components/ui/searchInput';
 import Select from '~/app/components/ui/select';
+import IconSVG from '~/app/components/ui/iconSVG';
+import { PageHeader } from '~/app/components/common';
 
 import StyledThreats from './threats.styled';
 
@@ -109,23 +111,35 @@ const Threats = ({
 
   return (
     <StyledThreats>
-      <header className="threats-header">
-        <div>
-          <h1 className="threats-title">Threats</h1>
-
-          <p className="threats-subtitle">
-            Security threats across all active assessments.
-          </p>
-        </div>
-
-        <div className="threats-header-actions">
-          {onExport && (
-            <Button title="Export" variant="secondary" onClick={onExport} />
-          )}
-
-          {onAddThreat && <Button title="Add threat" onClick={onAddThreat} />}
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="Workspace"
+        title="Threats"
+        context={[{ label: 'Threats' }]}
+        documentTitle="Threats"
+        subtitle="Security threats across all active assessments."
+        primaryAction={
+          onAddThreat
+            ? {
+                id: 'add-threat',
+                label: 'Add threat',
+                icon: <IconSVG name="add" />,
+                onActivate: onAddThreat,
+              }
+            : undefined
+        }
+        secondaryActions={
+          onExport
+            ? [
+                {
+                  id: 'export-threats',
+                  label: 'Export',
+                  icon: <IconSVG name="download" />,
+                  onActivate: onExport,
+                },
+              ]
+            : undefined
+        }
+      />
 
       <section className="threats-card">
         <div className="threats-toolbar">

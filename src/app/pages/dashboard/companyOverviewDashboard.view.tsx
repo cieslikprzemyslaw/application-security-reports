@@ -43,23 +43,24 @@ const CompanyOverviewDashboardView = ({
       <PageHeader
         eyebrow="Company workspace"
         title={overview.company.name}
-        breadcrumbs={[
+        context={[
+          { label: 'Companies', href: routes.companies },
           {
             label: overview.company.name,
+            href: routes.companyWorkspaceOverview(companyId),
           },
+          { label: 'Overview' },
+        ]}
+        documentTitle={`${overview.company.name} overview`}
+        subtitle={getCompanySubtitle(overview.company)}
+        secondaryActions={[
           {
-            label: 'Overview',
+            id: 'edit-company',
+            label: 'Edit company',
+            icon: <IconSVG name="edit" />,
+            onActivate: onEditCompany,
           },
         ]}
-        subtitle={getCompanySubtitle(overview.company)}
-        actions={
-          <Button
-            title="Edit company"
-            icon={<IconSVG name="edit" />}
-            variant="secondary"
-            onClick={onEditCompany}
-          />
-        }
       />
 
       <div className="dashboard-stats-grid">

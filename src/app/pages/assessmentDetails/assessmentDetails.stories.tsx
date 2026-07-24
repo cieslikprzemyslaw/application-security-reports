@@ -39,6 +39,9 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     activeSection: 'overview',
+    companiesHref: '/companies',
+    companyHref: '/companies/cmp_1/overview',
+    assessmentsHref: '/companies/cmp_1/assessments',
     overviewHref: '/companies/cmp_1/assessments/asm_1/overview',
     findingsContent: <div>Findings table content</div>,
     onSectionChange: () => undefined,

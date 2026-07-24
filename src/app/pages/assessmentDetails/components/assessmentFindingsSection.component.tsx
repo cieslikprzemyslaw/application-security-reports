@@ -7,6 +7,8 @@ import EmptyState from '~/app/components/ui/emptyState';
 import ThreatDrawer from '~/app/components/appsec/threatDrawer';
 import ThreatForm from '~/app/components/appsec/threatForm';
 import ThreatTable from '~/app/components/appsec/threatTable';
+import { PageActionGroup } from '~/app/components/common';
+import IconSVG from '~/app/components/ui/iconSVG';
 
 import { threatToTableRow } from '../assessmentDetails.mapper';
 import type { AssessmentDetailsAssessment } from '../assessmentDetails.type';
@@ -176,10 +178,17 @@ const AssessmentFindingsSection = ({
         padding="large"
         actions={
           assessment.status === 'archived' ? undefined : (
-            <Button
-              title="Add threat"
-              data-threat-delete-success-focus="true"
-              onClick={openCreateFinding}
+            <PageActionGroup
+              compact
+              primaryAction={{
+                id: 'add-assessment-threat',
+                label: 'Add threat',
+                icon: <IconSVG name="add" />,
+                dataAttributes: {
+                  'data-threat-delete-success-focus': 'true',
+                },
+                onActivate: openCreateFinding,
+              }}
             />
           )
         }

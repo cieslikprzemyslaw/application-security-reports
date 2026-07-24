@@ -265,6 +265,9 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
       <AssessmentDetailsView
         assessment={assessmentView}
         activeSection={activeSection}
+        companiesHref={routes.companies}
+        companyHref={routes.companyWorkspaceOverview(companyId)}
+        assessmentsHref={routes.companyWorkspaceAssessments(companyId)}
         overviewHref={routes.assessmentDetailsOverview(companyId, assessmentId)}
         findingsContent={
           <AssessmentFindingsSection
@@ -297,11 +300,8 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
         pendingAction={pendingAction}
         actionError={actionError}
         conflictError={conflictError}
-        onPermanentDeleteRequest={event => {
-          permanentDeletionController.requestPermanentDelete(
-            assessmentView,
-            event.currentTarget,
-          );
+        onPermanentDeleteRequest={() => {
+          permanentDeletionController.requestPermanentDelete(assessmentView);
         }}
       />
 

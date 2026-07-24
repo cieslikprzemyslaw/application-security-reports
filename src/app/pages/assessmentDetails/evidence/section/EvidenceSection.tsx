@@ -3,6 +3,8 @@ import React from 'react';
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import Card from '~/app/components/ui/card';
+import IconSVG from '~/app/components/ui/iconSVG';
+import { PageActionGroup } from '~/app/components/common';
 import type { Threat } from '~/domain';
 
 import type { AssessmentDetailsAssessment } from '../../assessmentDetails.type';
@@ -72,10 +74,17 @@ const AssessmentEvidenceSection = ({
           padding="large"
           actions={
             controller.canEditEvidence ? (
-              <Button
-                title="Add evidence"
-                data-evidence-add-action="true"
-                onClick={controller.openCreateEvidence}
+              <PageActionGroup
+                compact
+                primaryAction={{
+                  id: 'add-assessment-evidence',
+                  label: 'Add evidence',
+                  icon: <IconSVG name="add" />,
+                  dataAttributes: {
+                    'data-evidence-add-action': 'true',
+                  },
+                  onActivate: controller.openCreateEvidence,
+                }}
               />
             ) : undefined
           }
