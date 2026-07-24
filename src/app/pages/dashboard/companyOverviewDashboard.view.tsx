@@ -124,11 +124,12 @@ const CompanyOverviewDashboardView = ({
         {isNewCompany ? (
           <Card padding="large">
             <EmptyState
+              variant="first-use"
               title="No assessments yet"
-              description="Create the first assessment to start tracking work for this company."
+              description="Create the first assessment to start tracking threats, evidence, and reports for this company."
               primaryAction={
                 <Button
-                  title="View assessments"
+                  title="Create assessment"
                   onClick={() =>
                     navigate(routes.companyWorkspaceAssessments(companyId))
                   }
@@ -167,8 +168,9 @@ const CompanyOverviewDashboardView = ({
             ) : (
               <div className="dashboard-empty-section">
                 <EmptyState
-                  title="No recent assessments"
-                  description="Assessments will appear here after they are updated."
+                  variant="unavailable"
+                  title="No recent assessments available"
+                  description="Open the full assessment list to review existing work for this company."
                   primaryAction={
                     <Button
                       title="View assessments"
@@ -208,13 +210,14 @@ const CompanyOverviewDashboardView = ({
           ) : (
             <div className="dashboard-empty-section">
               <EmptyState
+                variant="first-use"
                 title="No reports yet"
-                description="Generate a report from a completed assessment to show it here."
+                description="Open the report builder to create a report from an assessment."
                 primaryAction={
                   <Button
-                    title="View assessments"
+                    title="Open report builder"
                     onClick={() =>
-                      navigate(routes.companyWorkspaceAssessments(companyId))
+                      navigate(routes.companyWorkspaceReports(companyId))
                     }
                   />
                 }
