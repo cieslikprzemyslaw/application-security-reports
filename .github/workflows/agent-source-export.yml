@@ -17,13 +17,24 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download official CWE weaknesses
-        run: curl --fail --location --retry 3 https://cwe-api.mitre.org/api/v1/cwe/weakness/all --output cwe-api-all.json
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+          cache: npm
 
-      - name: Upload source checkout
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      - name: Upload dependencies
         uses: actions/upload-artifact@v4
         with:
-          name: agent-source-${{ github.event.pull_request.head.sha }}
-          path: .
+          name: agent-dependencies-${{ github.event.pull_request.head.sha }}
+          path: |
+            node_modules
+            generated/prisma
           include-hidden-files: true
           retention-days: 1
