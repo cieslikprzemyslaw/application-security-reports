@@ -28,58 +28,92 @@ jobs:
           node-version: 24.15.0
           cache: npm
 
-      - name: Apply exact replacements
+      - name: Apply idempotent patch
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
-          def replace_exact(path: str, old: str, new: str, count: int = 1) -> None:
-              file_path = Path(path)
-              content = file_path.read_text(encoding='utf-8-sig')
+          def read(path: str) -> str:
+              return Path(path).read_text(encoding='utf-8-sig')
+
+          def write(path: str, content: str) -> None:
+              Path(path).write_text(content, encoding='utf-8')
+
+          def replace_or_present(path: str, old: str, new: str, count: int = 1) -> None:
+              content = read(path)
+              if new in content:
+                  return
               actual = content.count(old)
               if actual != count:
-                  raise SystemExit(f'{path}: expected {count} matches, found {actual}')
-              file_path.write_text(content.replace(old, new), encoding='utf-8')
+                  raise SystemExit(f'{path}: expected {count} old matches, found {actual}')
+              write(path, content.replace(old, new))
 
-          replace_exact(
+          def regex_replace_or_present(
+              path: str,
+              pattern: str,
+              replacement: str,
+              present: str,
+          ) -> None:
+              content = read(path)
+              if present in content:
+                  return
+              updated, count = re.subn(pattern, replacement, content, count=1, flags=re.S)
+              if count != 1:
+                  raise SystemExit(f'{path}: structural pattern did not match')
+              write(path, updated)
+
+          replace_or_present(
               'src/app/pages/assessmentDetails/hooks/useAssessmentFindings.ts',
               "import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';",
               "import {\n  OWASP_TOP_10_CURRENT_VERSION,\n  type OwaspTop10Version,\n} from '~/domain';",
           )
-          replace_exact(
+          replace_or_present(
               'src/app/pages/assessmentDetails/hooks/useAssessmentFindings.ts',
               '  assessmentOwaspTaxonomyVersion?: string;',
               '  assessmentOwaspTaxonomyVersion?: OwaspTop10Version;',
           )
 
-          replace_exact(
+          replace_or_present(
               'src/app/pages/assessmentDetails/components/assessmentFindingsSection.component.tsx',
               "import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';\n\n",
               '',
           )
-          replace_exact(
+          replace_or_present(
               'src/app/pages/assessmentDetails/components/assessmentFindingsSection.component.tsx',
               '  const owaspTaxonomyVersion =\n    assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION;',
               '  const { owaspTaxonomyVersion } = assessment;',
           )
 
-          replace_exact(
-              'src/app/pages/assessmentDetails/components/assessmentFindingsSection.testUtils.tsx',
-              'assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION',
-              'assessment.owaspTaxonomyVersion',
-              3,
-          )
+          test_utils = 'src/app/pages/assessmentDetails/components/assessmentFindingsSection.testUtils.tsx'
+          content = read(test_utils)
+          old_fallback = 'assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION'
+          if old_fallback in content:
+              if content.count(old_fallback) != 3:
+                  raise SystemExit(f'{test_utils}: unexpected fallback count')
+              write(test_utils, content.replace(old_fallback, 'assessment.owaspTaxonomyVersion'))
 
-          replace_exact(
-              'server/routes/threats.route.ts',
-              'assessment.owaspTaxonomyVersion!',
-              'assessment.owaspTaxonomyVersion',
-              4,
-          )
+          threat_route = 'server/routes/threats.route.ts'
+          content = read(threat_route)
+          if 'assessment.owaspTaxonomyVersion!' in content:
+              if content.count('assessment.owaspTaxonomyVersion!') != 4:
+                  raise SystemExit(f'{threat_route}: unexpected assertion count')
+              write(
+                  threat_route,
+                  content.replace(
+                      'assessment.owaspTaxonomyVersion!',
+                      'assessment.owaspTaxonomyVersion',
+                  ),
+              )
 
-          schema_test_path = 'src/domain/schemas/assessment.schema.vitest.test.ts'
-          schema_test_anchor = """  it('accepts a historical null application name', () => {"""
-          schema_test_insert = """  it('rejects a persisted assessment without an OWASP taxonomy version', () => {
+          schema_test = 'src/domain/schemas/assessment.schema.vitest.test.ts'
+          missing_test_title = 'rejects a persisted assessment without an OWASP taxonomy version'
+          content = read(schema_test)
+          if missing_test_title not in content:
+              anchor = "  it('accepts a historical null application name', () => {"
+              if anchor not in content:
+                  raise SystemExit(f'{schema_test}: insertion anchor missing')
+              test = """  it('rejects a persisted assessment without an OWASP taxonomy version', () => {
             const {
               owaspTaxonomyVersion: omittedVersion,
               ...assessmentWithoutVersion
@@ -92,31 +126,38 @@ jobs:
           });
 
           """
-          replace_exact(
-              schema_test_path,
-              schema_test_anchor,
-              schema_test_insert + schema_test_anchor,
-          )
+              write(schema_test, content.replace(anchor, test + anchor, 1))
 
-          service_test_path = 'src/services/services.assessment.vitest.test.ts'
-          replace_exact(
-              service_test_path,
+          service_test = 'src/services/services.assessment.vitest.test.ts'
+          replace_or_present(
+              service_test,
               "import assert from 'node:assert/strict';\n\n",
               "import assert from 'node:assert/strict';\n\nimport { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';\n\n",
           )
-          replace_exact(
-              service_test_path,
+          replace_or_present(
+              service_test,
               "import type { ApiRequestOptions } from './apiClient.js';",
               "import {\n  ApiResponseParseError,\n  type ApiRequestOptions,\n} from './apiClient.js';",
           )
-          replace_exact(
-              service_test_path,
-              "      overallRisk: 'high',\n      createdAt:",
-              "      overallRisk: 'high',\n      owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,\n      createdAt:",
-          )
-          get_by_id_anchor = """    {
-              const input: AssessmentCreateInput = {"""
-          negative_service_tests = """    {
+          content = read(service_test)
+          if 'owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION' not in content:
+              anchor = "      overallRisk: 'high',\n"
+              if content.count(anchor) != 1:
+                  raise SystemExit(f'{service_test}: fixture anchor missing')
+              write(
+                  service_test,
+                  content.replace(
+                      anchor,
+                      anchor + '      owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,\n',
+                      1,
+                  ),
+              )
+          content = read(service_test)
+          if 'assessmentWithoutVersion' not in content:
+              anchor = "    {\n      const input: AssessmentCreateInput = {"
+              if anchor not in content:
+                  raise SystemExit(f'{service_test}: negative-test anchor missing')
+              tests = """    {
             const {
               owaspTaxonomyVersion: omittedVersion,
               ...assessmentWithoutVersion
@@ -150,29 +191,21 @@ jobs:
           }
 
           """
-          replace_exact(
-              service_test_path,
-              get_by_id_anchor,
-              negative_service_tests + get_by_id_anchor,
-          )
+              write(service_test, content.replace(anchor, tests + anchor, 1))
 
-          service_path = 'src/services/assessmentService.ts'
-          replace_exact(
-              service_path,
+          service = 'src/services/assessmentService.ts'
+          replace_or_present(
+              service,
               "import type {\n  Assessment,",
               "import { z } from 'zod';\n\nimport type {\n  Assessment,",
           )
-          replace_exact(
-              service_path,
+          replace_or_present(
+              service,
               "} from '~/domain';\n\nimport { apiRequest } from './apiClient.js';",
               "} from '~/domain';\nimport {\n  assessmentSchema,\n  nonEmptyIdSchema,\n  nonEmptyTextSchema,\n  nonNegativeIntegerSchema,\n} from '~/domain/schemas';\n\nimport { ApiResponseParseError, apiRequest } from './apiClient.js';",
           )
-          command_type_old = """export type AssessmentWorkspaceCommand =
-            | 'start'
-            | 'complete'
-            | 'reopen'
-            | 'archive';"""
-          command_type_new = """export const assessmentWorkspaceCommands = [
+
+          command_schema = """export const assessmentWorkspaceCommands = [
             'start',
             'complete',
             'reopen',
@@ -235,26 +268,14 @@ jobs:
 
             return parsed.data;
           };"""
-          replace_exact(service_path, command_type_old, command_type_new)
+          regex_replace_or_present(
+              service,
+              r"export type AssessmentWorkspaceCommand =\n  \| 'start'\n  \| 'complete'\n  \| 'reopen'\n  \| 'archive';",
+              command_schema,
+              'export const assessmentWorkspaceCommands = [',
+          )
 
-          run_command_old = """const runAssessmentCommand = (
-            request: ApiRequestFn,
-            companyId: string,
-            assessmentId: string,
-            command: AssessmentWorkspaceCommand,
-            recordVersion: number,
-            signal?: AbortSignal,
-          ) =>
-            requestData<AssessmentWorkspaceOverview>(
-              request,
-              buildWorkspaceAssessmentUrl(companyId, assessmentId, `commands/${command}`),
-              {
-                body: { recordVersion },
-                method: 'POST',
-                signal,
-              },
-            );"""
-          run_command_new = """const runAssessmentCommand = async (
+          run_command = """const runAssessmentCommand = async (
             request: ApiRequestFn,
             companyId: string,
             assessmentId: string,
@@ -277,19 +298,14 @@ jobs:
               'Unable to validate the Assessment command response.',
             );
           };"""
-          replace_exact(service_path, run_command_old, run_command_new)
+          regex_replace_or_present(
+              service,
+              r"const runAssessmentCommand = \([\s\S]*?\n  \);(?=\n\nexport interface AssessmentService)",
+              run_command,
+              'const runAssessmentCommand = async (',
+          )
 
-          get_by_id_old = """  async getById(assessmentId, signal) {
-            return requestData<Assessment>(
-              request,
-              `/api/assessments/${assessmentId}`,
-              {
-                method: 'GET',
-                signal,
-              },
-            );
-          },"""
-          get_by_id_new = """  async getById(assessmentId, signal) {
+          get_by_id = """  async getById(assessmentId, signal) {
             const response = await requestData<unknown>(
               request,
               `/api/assessments/${assessmentId}`,
@@ -303,20 +319,17 @@ jobs:
               response,
               'Unable to validate the Assessment response.',
             );
-          },"""
-          replace_exact(service_path, get_by_id_old, get_by_id_new)
+          },
 
-          overview_old = """  async getOverview(companyId, assessmentId, signal) {
-            return requestData<AssessmentWorkspaceOverview>(
-              request,
-              buildWorkspaceAssessmentUrl(companyId, assessmentId, 'overview'),
-              {
-                method: 'GET',
-                signal,
-              },
-            );
-          },"""
-          overview_new = """  async getOverview(companyId, assessmentId, signal) {
+          """
+          regex_replace_or_present(
+              service,
+              r"  async getById\(assessmentId, signal\) \{[\s\S]*?\n  \},\n\n(?=  async getOverview)",
+              get_by_id,
+              "'Unable to validate the Assessment response.'",
+          )
+
+          overview = """  async getOverview(companyId, assessmentId, signal) {
             const response = await requestData<unknown>(
               request,
               buildWorkspaceAssessmentUrl(companyId, assessmentId, 'overview'),
@@ -330,16 +343,17 @@ jobs:
               response,
               'Unable to validate the Assessment overview response.',
             );
-          },"""
-          replace_exact(service_path, overview_old, overview_new)
+          },
 
-          create_old = """  async create(input) {
-            return requestData<Assessment>(request, '/api/assessments', {
-              body: input,
-              method: 'POST',
-            });
-          },"""
-          create_new = """  async create(input) {
+          """
+          regex_replace_or_present(
+              service,
+              r"  async getOverview\(companyId, assessmentId, signal\) \{[\s\S]*?\n  \},\n\n(?=  async create)",
+              overview,
+              "'Unable to validate the Assessment overview response.'",
+          )
+
+          create = """  async create(input) {
             const response = await requestData<unknown>(request, '/api/assessments', {
               body: input,
               method: 'POST',
@@ -349,20 +363,17 @@ jobs:
               response,
               'Unable to validate the created Assessment response.',
             );
-          },"""
-          replace_exact(service_path, create_old, create_new)
+          },
 
-          update_old = """  async update(assessmentId, input) {
-            return requestData<Assessment>(
-              request,
-              `/api/assessments/${assessmentId}`,
-              {
-                body: input,
-                method: 'PATCH',
-              },
-            );
-          },"""
-          update_new = """  async update(assessmentId, input) {
+          """
+          regex_replace_or_present(
+              service,
+              r"  async create\(input\) \{[\s\S]*?\n  \},\n\n(?=  async update)",
+              create,
+              "'Unable to validate the created Assessment response.'",
+          )
+
+          update = """  async update(assessmentId, input) {
             const response = await requestData<unknown>(
               request,
               `/api/assessments/${assessmentId}`,
@@ -376,8 +387,15 @@ jobs:
               response,
               'Unable to validate the updated Assessment response.',
             );
-          },"""
-          replace_exact(service_path, update_old, update_new)
+          },
+
+          """
+          regex_replace_or_present(
+              service,
+              r"  async update\(assessmentId, input\) \{[\s\S]*?\n  \},\n\n(?=  async start)",
+              update,
+              "'Unable to validate the updated Assessment response.'",
+          )
           PY
 
       - name: Install dependencies
