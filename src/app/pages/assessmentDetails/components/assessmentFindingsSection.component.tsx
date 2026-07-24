@@ -22,6 +22,8 @@ interface AssessmentFindingsSectionProps extends Pick<
   AssessmentFindingsController,
   | 'threats'
   | 'isLoading'
+  | 'isRefreshing'
+  | 'hasLoadedFindings'
   | 'loadError'
   | 'drawerMode'
   | 'selectedFinding'
@@ -32,6 +34,7 @@ interface AssessmentFindingsSectionProps extends Pick<
   | 'isDeleting'
   | 'deleteError'
   | 'canEditFindings'
+  | 'reloadFindings'
   | 'openCreateFinding'
   | 'openEditFinding'
   | 'openFindingDetails'
@@ -49,6 +52,8 @@ const AssessmentFindingsSection = ({
   assessment,
   threats,
   isLoading,
+  isRefreshing,
+  hasLoadedFindings,
   loadError,
   drawerMode,
   selectedFinding,
@@ -59,6 +64,7 @@ const AssessmentFindingsSection = ({
   isDeleting,
   deleteError,
   canEditFindings,
+  reloadFindings,
   openCreateFinding,
   openEditFinding,
   openFindingDetails,
@@ -114,10 +120,20 @@ const AssessmentFindingsSection = ({
   ]);
 
   const tableEmptyState =
-    !isLoading && threats.length === 0 ? (
+    hasLoadedFindings && threats.length === 0 ? (
       <EmptyState
-        title="No threats yet"
-        description="Add the first threat to start tracking security issues in this assessment."
+        variant={canEditFindings ? 'first-use' : 'unavailable'}
+        title={canEditFindings ? 'No threats yet' : 'No threats available'}
+        description={
+          canEditFindings
+            ? 'Add the first threat to start tracking security issues in this assessment.'
+            : 'This archived assessment is read-only and has no recorded threats.'
+        }
+        primaryAction={
+          canEditFindings ? (
+            <Button title="Add threat" onClick={openCreateFinding} />
+          ) : undefined
+        }
       />
     ) : undefined;
 
@@ -150,6 +166,7 @@ const AssessmentFindingsSection = ({
         />
       </>
     ) : undefined;
+  const showInitialError = Boolean(loadError && !hasLoadedFindings);
 
   return (
     <>
@@ -167,12 +184,44 @@ const AssessmentFindingsSection = ({
           )
         }
       >
-        {loadError ? (
-          <Callout variant="error" title="Unable to load threats">
+        {showInitialError ? (
+          <Callout
+            variant="error"
+            title="Unable to load threats"
+            actions={
+              <Button
+                title="Retry"
+                variant="secondary"
+                onClick={reloadFindings}
+              />
+            }
+          >
             <p>{loadError}</p>
           </Callout>
         ) : (
           <>
+            {isRefreshing && (
+              <div role="status" aria-live="polite">
+                Refreshing threats...
+              </div>
+            )}
+
+            {loadError && (
+              <Callout
+                variant="warning"
+                title="Threats may be out of date"
+                actions={
+                  <Button
+                    title="Retry"
+                    variant="secondary"
+                    onClick={reloadFindings}
+                  />
+                }
+              >
+                <p>{loadError}</p>
+              </Callout>
+            )}
+
             {deleteError && drawerMode === null ? (
               <Callout variant="error" title="Unable to delete threat">
                 <p>{deleteError}</p>
@@ -182,7 +231,7 @@ const AssessmentFindingsSection = ({
             <ThreatTable
               threats={threats.map(threatToTableRow)}
               owaspTaxonomyVersion={owaspTaxonomyVersion}
-              isLoading={isLoading}
+              isLoading={isLoading && !hasLoadedFindings}
               emptyState={tableEmptyState}
               onThreatClick={openFindingDetails}
               onEditThreatClick={
