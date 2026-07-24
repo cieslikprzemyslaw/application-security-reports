@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { ThemeProvider } from 'styled-components';
 
 import AppRouter from '~/app/appRouter';
+import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
 import {
   act,
   createTestDom,
@@ -110,6 +111,7 @@ const baseAssessment = {
     environment: 'Production',
     assessmentType: 'Web App',
     overallRisk: 'high',
+    owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
     createdAt: '2026-06-01T09:00:00.000Z',
     updatedAt: '2026-06-11T09:00:00.000Z',
     recordVersion: 3,

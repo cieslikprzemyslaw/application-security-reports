@@ -1,6 +1,6 @@
 import type { MouseEvent, ReactNode } from 'react';
 
-import type { AssessmentStatus, Severity } from '~/domain';
+import type { AssessmentStatus, OwaspTop10Version, Severity } from '~/domain';
 
 export const assessmentDetailSections = [
   'overview',
@@ -41,7 +41,7 @@ export interface AssessmentDetailsAssessment {
   environment?: string;
   status: AssessmentStatus;
   overallRisk?: Severity;
-  owaspTaxonomyVersion?: string;
+  owaspTaxonomyVersion: OwaspTop10Version;
   recordVersion: number;
   findingsCount: number;
   evidenceCount: number;

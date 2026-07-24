@@ -14,6 +14,7 @@ import {
   RepositoryNotFoundError,
 } from '../database/errors.js';
 import type { Assessment } from '../../src/domain/assessment.js';
+import type { OwaspTop10Version } from '../../src/domain/owaspTop10.js';
 import type {
   CreateThreatInput,
   Threat,
@@ -29,7 +30,7 @@ import { sendApiError } from '../http/api-errors.js';
 import { createRequestValidationMiddleware } from '../http/request-validation.js';
 
 type ThreatResponse = Threat & {
-  assessmentOwaspTaxonomyVersion: string;
+  assessmentOwaspTaxonomyVersion: OwaspTop10Version;
 };
 
 type ThreatValidatedRequest = {
@@ -44,7 +45,7 @@ type ThreatValidatedRequest = {
 
 const threatResponse = (
   threat: Threat,
-  assessmentVersion: string,
+  assessmentVersion: OwaspTop10Version,
 ): ThreatResponse => ({
   ...threat,
   assessmentOwaspTaxonomyVersion: assessmentVersion,
@@ -54,7 +55,7 @@ const sendThreatResponse = (
   res: Response,
   statusCode: number,
   threat: Threat,
-  assessmentVersion: string,
+  assessmentVersion: OwaspTop10Version,
 ): Response =>
   res.status(statusCode).json({
     data: threatResponse(threat, assessmentVersion),

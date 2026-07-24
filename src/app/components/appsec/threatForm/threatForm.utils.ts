@@ -1,4 +1,8 @@
-import { getOwaspTop10CategoryOptions, type OwaspTop10Option } from '~/domain';
+import {
+  getOwaspTop10CategoryOptions,
+  type OwaspTop10Option,
+  type OwaspTop10Version,
+} from '~/domain';
 
 import type { ThreatFormValue } from './threatForm.type';
 
@@ -41,7 +45,7 @@ const createHistoricalCategoryOption = (value: string): OwaspTop10Option => ({
 });
 
 export const buildOwaspCategoryOptions = (
-  owaspTaxonomyVersion: string,
+  owaspTaxonomyVersion: OwaspTop10Version,
   currentValue?: string,
 ): OwaspTop10Option[] => {
   const options = getOwaspTop10CategoryOptions(owaspTaxonomyVersion);

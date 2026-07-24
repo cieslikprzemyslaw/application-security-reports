@@ -2,13 +2,15 @@ import { describe, it } from 'vitest';
 
 import assert from 'node:assert/strict';
 
+import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
+
 import {
   createAssessmentService,
   type AssessmentCreateInput,
   type AssessmentUpdateInput,
 } from './index.js';
 import type { ApiRequestFn } from './serviceHelpers.js';
-import type { ApiRequestOptions } from './apiClient.js';
+import { ApiResponseParseError, type ApiRequestOptions } from './apiClient.js';
 
 describe('services.assessment', () => {
   it('passes the migrated checks', async () => {
@@ -86,6 +88,7 @@ describe('services.assessment', () => {
       environment: 'Production',
       assessmentType: 'Web App',
       overallRisk: 'high',
+      owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
       createdAt: '2026-06-01T09:00:00.000Z',
       updatedAt: '2026-06-11T09:00:00.000Z',
     } as const;
@@ -162,6 +165,39 @@ describe('services.assessment', () => {
         input: `/api/assessments/${assessment.id}`,
         method: 'GET',
       });
+    }
+
+    {
+      const {
+        owaspTaxonomyVersion: omittedVersion,
+        ...assessmentWithoutVersion
+      } = assessment;
+      void omittedVersion;
+      const { request } = createRequestSpy({ data: assessmentWithoutVersion });
+      const service = createAssessmentService(request);
+
+      await assert.rejects(
+        () => service.getById(assessment.id),
+        ApiResponseParseError,
+      );
+    }
+
+    {
+      const { request } = createRequestSpy({
+        data: {
+          ...assessmentOverview,
+          assessment: {
+            ...assessmentOverview.assessment,
+            owaspTaxonomyVersion: '2099',
+          },
+        },
+      });
+      const service = createAssessmentService(request);
+
+      await assert.rejects(
+        () => service.getOverview(company.id, assessment.id),
+        ApiResponseParseError,
+      );
     }
 
     {

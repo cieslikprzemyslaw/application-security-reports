@@ -12,6 +12,7 @@ import type {
   Threat,
   ThreatStatus,
 } from './index.js';
+import { OWASP_TOP_10_CURRENT_VERSION } from './owaspTop10.js';
 
 const assessment: Assessment = {
   id: 'asm_1',
@@ -23,6 +24,7 @@ const assessment: Assessment = {
   startedAt: '2026-06-01',
   completedAt: '2026-06-10',
   applicationName: 'Customer Services Portal',
+  owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   createdAt: '2026-06-01',
   updatedAt: '2026-06-10',
 };
@@ -124,7 +126,7 @@ const reportPreviewSnapshot: ReportPreviewSnapshot = {
     environment: assessment.environment,
     assessmentType: assessment.assessmentType,
     overallRisk: assessment.overallRisk,
-    owaspTaxonomyVersion: '2025',
+    owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   },
   selection: reportPreviewRequest.selection,
   configuration: reportPreviewRequest.configuration,

@@ -71,6 +71,18 @@ describe('assessmentSchema', () => {
     );
   });
 
+  it('rejects a persisted assessment without an OWASP taxonomy version', () => {
+    const {
+      owaspTaxonomyVersion: omittedVersion,
+      ...assessmentWithoutVersion
+    } = validPersistedAssessment;
+    void omittedVersion;
+
+    const result = assessmentSchema.safeParse(assessmentWithoutVersion);
+
+    expectInvalidAt(result, ['owaspTaxonomyVersion']);
+  });
+
   it('accepts a historical null application name', () => {
     expect(
       assessmentSchema.safeParse({

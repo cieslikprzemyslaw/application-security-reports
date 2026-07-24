@@ -1,4 +1,8 @@
 import type { Threat } from '../../../src/domain/threat.js';
+import {
+  isOwaspTop10Version,
+  type OwaspTop10Version,
+} from '../../../src/domain/owaspTop10.js';
 import type {
   CreateThreatInput,
   UpdateThreatInput,
@@ -76,7 +80,7 @@ const assessmentTaxonomySelect = {
   owaspTaxonomyVersion: true,
 } as const;
 
-const threatCategoryCodeSchema = (assessmentVersion: string) =>
+const threatCategoryCodeSchema = (assessmentVersion: OwaspTop10Version) =>
   z
     .object({
       owaspCategoryCode: createThreatOwaspCategoryCodeSchema(assessmentVersion),
@@ -92,7 +96,24 @@ const loadAssessmentTaxonomyVersion = async (
     select: assessmentTaxonomySelect,
   });
 
-  return assessment?.owaspTaxonomyVersion;
+  if (!assessment) {
+    return undefined;
+  }
+
+  if (!isOwaspTop10Version(assessment.owaspTaxonomyVersion)) {
+    throw new ValidationError({
+      error: 'VALIDATION_ERROR',
+      fields: [
+        {
+          path: 'owaspTaxonomyVersion',
+          message: `Unsupported OWASP taxonomy version: ${assessment.owaspTaxonomyVersion}`,
+          code: 'custom',
+        },
+      ],
+    });
+  }
+
+  return assessment.owaspTaxonomyVersion;
 };
 
 const loadThreatById = async (db: ThreatRepositoryDb, id: string) => {
@@ -106,7 +127,7 @@ const loadThreatById = async (db: ThreatRepositoryDb, id: string) => {
 
 const validateThreatCategoryCodeForAssessment = (
   owaspCategoryCode: string | undefined,
-  assessmentVersion: string,
+  assessmentVersion: OwaspTop10Version,
 ) => {
   if (!owaspCategoryCode || owaspCategoryCode === 'custom') {
     return;

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
 import PageContent from '~/app/layouts/pageContent';
+import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
 
 import AssessmentDetailsView from './assessmentDetails.view';
 
@@ -55,6 +56,7 @@ export const Default: Story = {
       environment: 'Production',
       status: 'in-progress',
       overallRisk: 'high',
+      owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
       recordVersion: 3,
       findingsCount: 14,
       evidenceCount: 6,

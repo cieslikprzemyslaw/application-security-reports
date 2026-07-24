@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 import { loadServerConfig } from '../../config.js';
 import type { Assessment } from '../../../src/domain/assessment.js';
 import type { Evidence } from '../../../src/domain/evidence.js';
+import { OWASP_TOP_10_CURRENT_VERSION } from '../../../src/domain/owaspTop10.js';
 import type { Threat } from '../../../src/domain/threat.js';
 import type { AssessmentRepository } from '../../database/repositories/assessment.repository.js';
 import type { EvidenceRepository } from '../../database/repositories/evidence.repository.js';
@@ -67,6 +68,7 @@ export const defaultAssessment: Assessment = {
   environment: 'Production',
   assessmentType: 'Web App',
   overallRisk: 'high',
+  owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-11T09:00:00.000Z',
 };

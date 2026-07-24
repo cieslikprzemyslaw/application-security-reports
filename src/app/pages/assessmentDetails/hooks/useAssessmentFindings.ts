@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 
 import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
+import type { OwaspTop10Version, Threat } from '~/domain';
 import { threatService } from '~/services';
 import { ApiError } from '~/services/apiClient';
-import type { Threat } from '~/domain';
 
 import type { ThreatFormValue } from '~/app/components/appsec/threatForm';
 import type { ThreatTableRow } from '~/app/components/appsec/threatTable';
@@ -73,7 +73,7 @@ export const useAssessmentFindings = ({
 }: {
   assessmentId?: string;
   assessmentStatus?: AssessmentDetailsAssessment['status'];
-  assessmentOwaspTaxonomyVersion?: string;
+  assessmentOwaspTaxonomyVersion?: OwaspTop10Version;
   onMutationSuccess?: (delta: number) => void;
 }): AssessmentFindingsController => {
   const [threats, setThreats] = useState<Threat[]>([]);

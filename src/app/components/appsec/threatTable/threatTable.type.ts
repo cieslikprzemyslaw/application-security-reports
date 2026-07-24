@@ -1,4 +1,4 @@
-import type { Severity, ThreatStatus } from '~/domain';
+import type { OwaspTop10Version, Severity, ThreatStatus } from '~/domain';
 
 export interface ThreatTableRow {
   id: string;
@@ -26,7 +26,7 @@ export interface ThreatTableRow {
 
 export interface ThreatTableProps {
   threats: ThreatTableRow[];
-  owaspTaxonomyVersion?: string;
+  owaspTaxonomyVersion?: OwaspTop10Version;
   isLoading?: boolean;
   emptyState?: React.ReactNode;
   onThreatClick?: (threat: ThreatTableRow) => void;

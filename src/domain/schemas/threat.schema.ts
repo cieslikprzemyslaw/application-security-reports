@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
 import type { Threat } from '../threat.js';
-import { getOwaspTop10CategoryByValue } from '../owaspTop10.js';
+import {
+  getOwaspTop10CategoryByValue,
+  type OwaspTop10Version,
+} from '../owaspTop10.js';
 
 import {
   nonEmptyIdSchema,
@@ -46,7 +49,7 @@ export const threatObjectSchema = z
 export const threatSchema = threatObjectSchema;
 
 export const createThreatOwaspCategoryCodeSchema = (
-  assessmentVersion: string,
+  assessmentVersion: OwaspTop10Version,
 ) =>
   z
     .string()
