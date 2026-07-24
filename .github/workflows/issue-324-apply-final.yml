@@ -1,0 +1,154 @@
+name: Issue 324 Apply Final
+
+on:
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    name: Apply validated Assessment taxonomy patch
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: refactor/324-tighten-assessment-owasp-version-typing
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+          cache: npm
+
+      - name: Apply production and fixture patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from textwrap import dedent
+
+          workflow = Path('.github/workflows/issue-324-inventory.yml').read_text()
+          marker = "          python - <<'PY'\n"
+          start = workflow.index(marker) + len(marker)
+          end = workflow.index('\n          PY', start)
+          Path('/tmp/issue-324-apply.py').write_text(dedent(workflow[start:end]))
+          PY
+          python /tmp/issue-324-apply.py
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_or_present(path: str, old: str, new: str, count: int = 1) -> None:
+              file_path = Path(path)
+              content = file_path.read_text(encoding='utf-8-sig')
+              if new in content:
+                  return
+              actual = content.count(old)
+              if actual != count:
+                  raise SystemExit(f'{path}: expected {count} old matches, found {actual}')
+              file_path.write_text(content.replace(old, new), encoding='utf-8')
+
+          story = 'src/app/pages/assessmentDetails/assessmentDetails.stories.tsx'
+          replace_or_present(
+              story,
+              "import PageContent from '~/app/layouts/pageContent';",
+              "import PageContent from '~/app/layouts/pageContent';\nimport { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';",
+          )
+          replace_or_present(
+              story,
+              "      overallRisk: 'high',\n      recordVersion:",
+              "      overallRisk: 'high',\n      owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,\n      recordVersion:",
+          )
+
+          view_test = 'src/app/pages/assessmentDetails/assessmentDetails.view.test.tsx'
+          replace_or_present(
+              view_test,
+              "import { defaultTheme } from '~/theme';",
+              "import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';\nimport { defaultTheme } from '~/theme';",
+          )
+          content = Path(view_test).read_text(encoding='utf-8-sig')
+          old = "              status: 'in-progress',\n"
+          new = "              status: 'in-progress',\n              owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,\n"
+          if new not in content:
+              if content.count(old) != 2:
+                  raise SystemExit(f'{view_test}: unexpected Assessment fixture count')
+              Path(view_test).write_text(content.replace(old, new), encoding='utf-8')
+
+          evidence_utils = 'src/app/pages/assessmentDetails/evidence/testUtils/renderEvidenceTestApp.tsx'
+          replace_or_present(
+              evidence_utils,
+              "import type { Evidence, Threat } from '~/domain';",
+              "import {\n  OWASP_TOP_10_CURRENT_VERSION,\n  type Evidence,\n  type Threat,\n} from '~/domain';",
+          )
+          replace_or_present(
+              evidence_utils,
+              "  status: 'in-progress',\n  recordVersion:",
+              "  status: 'in-progress',\n  owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,\n  recordVersion:",
+          )
+
+          domain_types = 'src/domain/domain.types.test.ts'
+          replace_or_present(
+              domain_types,
+              "} from './index.js';",
+              "} from './index.js';\nimport { OWASP_TOP_10_CURRENT_VERSION } from './owaspTop10.js';",
+          )
+          replace_or_present(
+              domain_types,
+              "  applicationName: 'Customer Services Portal',\n  createdAt:",
+              "  applicationName: 'Customer Services Portal',\n  owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,\n  createdAt:",
+          )
+          PY
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format changed files
+        run: |
+          npx prettier --write \
+            server/routes/threats.route.ts \
+            src/app/pages/assessmentDetails/hooks/useAssessmentFindings.ts \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.component.tsx \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.testUtils.tsx \
+            src/app/pages/assessmentDetails/assessmentDetails.stories.tsx \
+            src/app/pages/assessmentDetails/assessmentDetails.view.test.tsx \
+            src/app/pages/assessmentDetails/evidence/testUtils/renderEvidenceTestApp.tsx \
+            src/domain/domain.types.test.ts \
+            src/domain/schemas/assessment.schema.vitest.test.ts \
+            src/services/assessmentService.ts \
+            src/services/services.assessment.vitest.test.ts
+
+      - name: Run mandatory typecheck
+        run: npm run typecheck
+
+      - name: Run focused tests
+        run: |
+          npm test -- \
+            src/domain/schemas/assessment.schema.vitest.test.ts \
+            src/services/services.assessment.vitest.test.ts
+          npm run test:assessment
+
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            server/routes/threats.route.ts \
+            src/app/pages/assessmentDetails/hooks/useAssessmentFindings.ts \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.component.tsx \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.testUtils.tsx \
+            src/app/pages/assessmentDetails/assessmentDetails.stories.tsx \
+            src/app/pages/assessmentDetails/assessmentDetails.view.test.tsx \
+            src/app/pages/assessmentDetails/evidence/testUtils/renderEvidenceTestApp.tsx \
+            src/domain/domain.types.test.ts \
+            src/domain/schemas/assessment.schema.vitest.test.ts \
+            src/services/assessmentService.ts \
+            src/services/services.assessment.vitest.test.ts
+          git commit -m "refactor: validate Assessment taxonomy responses" \
+            -m "Signed-off-by: Przemyslaw Cieslik <cieslikprzemyslaw@users.noreply.github.com>"
+          git push origin HEAD:refactor/324-tighten-assessment-owasp-version-typing
