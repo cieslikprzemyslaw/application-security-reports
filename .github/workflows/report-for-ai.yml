@@ -17,7 +17,11 @@ jobs:
   diagnose:
     name: Full diagnosis for AI
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
+    env:
+      CI: true
+      NO_COLOR: 1
+      FORCE_COLOR: 0
 
     steps:
       - name: Checkout
@@ -31,18 +35,50 @@ jobs:
           node-version: 24.15.0
           cache: npm
 
-      - name: Prepare diagnostic directory
-        run: mkdir -p "$RUNNER_TEMP/report-for-ai"
+      - name: Prepare diagnostic packet
+        run: |
+          report_dir="$RUNNER_TEMP/report-for-ai"
+          mkdir -p "$report_dir"
+          cat > "$report_dir/checks.tsv" <<'EOF'
+          install	Install dependencies	10	npm ci
+          edited-file-length	Edited file length	20	node .github/scripts/check-edited-file-lines.mjs
+          prisma-validate	Prisma schema	30	npm run db:validate
+          prisma-generate	Prisma client generation	40	npm run db:generate
+          diff-integrity	Diff integrity	50	git diff --check origin/master...HEAD
+          formatting	Formatting	60	npm run format:check
+          lint	Lint	70	npm run lint -- --format stylish
+          typecheck-frontend	Typecheck frontend	80	npx tsc --noEmit -p tsconfig.json --pretty false
+          typecheck-server	Typecheck server	90	npx tsc --noEmit -p tsconfig.server.json --pretty false
+          tests-frontend	Tests frontend	100	npm run test:frontend -- --reporter=verbose
+          tests-backend	Tests backend	110	npm run test:backend -- --reporter=verbose
+          build-frontend	Build frontend	120	npm run build:client
+          build-server	Build server	130	npm run build:server
+          dependency-security	Dependency security policy	140	npm run security:audit
+          docker-build	Docker image build	150	docker build
+          docker-runtime	Docker API health	160	docker run and curl
+          EOF
+          {
+            echo "commit=$GITHUB_SHA"
+            echo "branch=${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+            echo "base=${GITHUB_BASE_REF:-master}"
+            echo "repository=$GITHUB_REPOSITORY"
+            echo "run_id=$GITHUB_RUN_ID"
+            echo "node=$(node --version)"
+            echo "npm=$(npm --version)"
+          } > "$report_dir/environment.txt"
+          git diff --name-status origin/master...HEAD > "$report_dir/changed-files.txt" || true
+          git diff --stat origin/master...HEAD > "$report_dir/diff-stat.txt" || true
 
       - name: Install dependencies diagnostic
         run: |
           set +e
           set -o pipefail
           report_dir="$RUNNER_TEMP/report-for-ai"
-
+          started="$(date +%s)"
           npm ci 2>&1 | tee "$report_dir/install.log"
           status=${PIPESTATUS[0]}
-          printf '%s\n' "$status" > "$report_dir/install.status"
+          echo "$status" > "$report_dir/install.status"
+          echo "$(( $(date +%s) - started ))" > "$report_dir/install.duration"
           exit 0
 
       - name: Run all Node.js diagnostics
@@ -52,36 +88,25 @@ jobs:
           report_dir="$RUNNER_TEMP/report-for-ai"
           install_status="$(cat "$report_dir/install.status")"
 
-          checks=(
-            "edited-file-length|Edited file length|node .github/scripts/check-edited-file-lines.mjs"
-            "prisma-validate|Prisma schema|npm run db:validate"
-            "prisma-generate|Prisma client generation|npm run db:generate"
-            "formatting|Formatting|npm run format:check"
-            "lint|Lint|npm run lint -- --format stylish"
-            "typecheck-frontend|Typecheck frontend|npx tsc --noEmit -p tsconfig.json --pretty false"
-            "typecheck-server|Typecheck server|npx tsc --noEmit -p tsconfig.server.json --pretty false"
-            "tests-frontend|Tests frontend|npm run test:frontend -- --reporter=verbose"
-            "tests-backend|Tests backend|npm run test:backend -- --reporter=verbose"
-            "build-frontend|Build frontend|npm run build:client"
-            "build-server|Build server|npm run build:server"
-            "dependency-security|Dependency security policy|npm run security:audit"
-          )
-
-          for entry in "${checks[@]}"; do
-            IFS='|' read -r id label command <<< "$entry"
+          while IFS=$'\t' read -r id label priority command; do
+            case "$id" in install|docker-build|docker-runtime) continue ;; esac
+            echo "$command" > "$report_dir/$id.command"
 
             if [ "$install_status" != "0" ]; then
               echo "not-run" > "$report_dir/$id.status"
+              echo "0" > "$report_dir/$id.duration"
+              echo "Skipped because npm ci failed." > "$report_dir/$id.log"
               continue
             fi
 
             echo "::group::$label"
+            started="$(date +%s)"
             bash -o pipefail -c "$command" 2>&1 | tee "$report_dir/$id.log"
             status=${PIPESTATUS[0]}
             echo "::endgroup::"
-            printf '%s\n' "$status" > "$report_dir/$id.status"
-          done
-
+            echo "$status" > "$report_dir/$id.status"
+            echo "$(( $(date +%s) - started ))" > "$report_dir/$id.duration"
+          done < "$report_dir/checks.tsv"
           exit 0
 
       - name: Run Docker diagnostics
@@ -92,38 +117,47 @@ jobs:
           report_dir="$RUNNER_TEMP/report-for-ai"
           image="report-for-ai:${GITHUB_SHA}"
           container="report-for-ai-${GITHUB_RUN_ID}"
+          echo "docker build -f docker/api/Dockerfile -t $image ." > "$report_dir/docker-build.command"
+          echo "docker run + curl http://localhost:3001/api/health" > "$report_dir/docker-runtime.command"
 
-          docker build --progress=plain \
-            -f docker/api/Dockerfile \
-            -t "$image" . \
+          if [ "$(cat "$report_dir/install.status" 2>/dev/null || echo 1)" != "0" ]; then
+            for id in docker-build docker-runtime; do
+              echo "not-run" > "$report_dir/$id.status"
+              echo "0" > "$report_dir/$id.duration"
+              echo "Skipped because npm ci failed." > "$report_dir/$id.log"
+            done
+            exit 0
+          fi
+
+          started="$(date +%s)"
+          docker build --progress=plain -f docker/api/Dockerfile -t "$image" . \
             2>&1 | tee "$report_dir/docker-build.log"
           build_status=${PIPESTATUS[0]}
-          printf '%s\n' "$build_status" > "$report_dir/docker-build.status"
+          echo "$build_status" > "$report_dir/docker-build.status"
+          echo "$(( $(date +%s) - started ))" > "$report_dir/docker-build.duration"
 
           if [ "$build_status" != "0" ]; then
             echo "not-run" > "$report_dir/docker-runtime.status"
+            echo "0" > "$report_dir/docker-runtime.duration"
+            echo "Skipped because the Docker image build failed." > "$report_dir/docker-runtime.log"
             exit 0
           fi
 
           docker rm -f "$container" >/dev/null 2>&1 || true
-          docker run -d \
-            --name "$container" \
-            -p 3001:3001 \
-            -e DATABASE_URL="file:/data/appsec-report-builder.db" \
-            "$image" \
+          started="$(date +%s)"
+          docker run -d --name "$container" -p 3001:3001 \
+            -e DATABASE_URL="file:/data/appsec-report-builder.db" "$image" \
             > "$report_dir/docker-runtime.log" 2>&1
           runtime_status=$?
 
           if [ "$runtime_status" = "0" ]; then
             runtime_status=1
-
             for i in {1..20}; do
               if curl -fsS http://localhost:3001/api/health \
                 >> "$report_dir/docker-runtime.log" 2>&1; then
                 runtime_status=0
                 break
               fi
-
               echo "Waiting for API health check, attempt ${i}/20" \
                 >> "$report_dir/docker-runtime.log"
               sleep 2
@@ -132,105 +166,151 @@ jobs:
 
           if [ "$runtime_status" != "0" ]; then
             {
-              echo
-              echo "Container state:"
-              docker ps -a --filter "name=$container" || true
-              echo
-              echo "Container inspection:"
-              docker inspect "$container" || true
-              echo
-              echo "Container logs:"
-              docker logs "$container" || true
+              echo; echo "Container state:"; docker ps -a --filter "name=$container" || true
+              echo; echo "Container inspection:"; docker inspect "$container" || true
+              echo; echo "Container logs:"; docker logs "$container" || true
             } >> "$report_dir/docker-runtime.log" 2>&1
           fi
 
-          printf '%s\n' "$runtime_status" > "$report_dir/docker-runtime.status"
+          echo "$runtime_status" > "$report_dir/docker-runtime.status"
+          echo "$(( $(date +%s) - started ))" > "$report_dir/docker-runtime.duration"
           docker rm -f "$container" >/dev/null 2>&1 || true
           exit 0
 
-      - name: Create Report for AI summary
+      - name: Build AI repair packet
+        if: always()
+        run: |
+          REPORT_DIR="$RUNNER_TEMP/report-for-ai" python <<'PY'
+          import json, os, re
+          from pathlib import Path
+
+          root = Path(os.environ["REPORT_DIR"])
+          env = dict(
+              line.split("=", 1)
+              for line in (root / "environment.txt").read_text().splitlines()
+              if "=" in line
+          )
+          changed = (root / "changed-files.txt").read_text(errors="replace").splitlines()
+          stat = (root / "diff-stat.txt").read_text(errors="replace").splitlines()
+          signal = re.compile(
+              r"(?i)(error(?:\s+TS\d+)?|failed?|failure|fatal|assertion|expected|"
+              r"received|unhandled|cannot|unable|not found|vulnerabilit|critical|"
+              r"high severity|ELIFECYCLE|\bTS\d{4}\b|✖|×)"
+          )
+          location = re.compile(
+              r"((?:src|server|scripts|prisma|docker|\.github)/[\w./-]+\."
+              r"(?:ts|tsx|js|jsx|mjs|cjs|json|yml|yaml|prisma|css|scss|md)"
+              r"(?::\d+(?::\d+)?)?)"
+          )
+          checks, failures = [], []
+
+          for row in (root / "checks.tsv").read_text().splitlines():
+              check_id, label, priority, command = row.split("\t", 3)
+              get = lambda suffix, default="": (
+                  (root / f"{check_id}.{suffix}").read_text(errors="replace").strip()
+                  if (root / f"{check_id}.{suffix}").exists() else default
+              )
+              status = get("status", "not-run")
+              lines = (root / f"{check_id}.log").read_text(
+                  errors="replace"
+              ).splitlines() if (root / f"{check_id}.log").exists() else []
+              result = "pass" if status == "0" else (
+                  "not-run" if status == "not-run" else "fail"
+              )
+              signals, locations = [], []
+              for raw in lines:
+                  text = re.sub(r"\x1b\[[0-9;]*m", "", raw).strip()
+                  if text and signal.search(text) and text not in signals:
+                      signals.append(text[:500])
+                  for match in location.findall(text):
+                      if match not in locations:
+                          locations.append(match)
+              item = {
+                  "id": check_id, "label": label, "priority": int(priority),
+                  "command": command, "result": result, "exit_code": status,
+                  "duration_seconds": int(get("duration", "0") or 0),
+                  "log_file": f"{check_id}.log", "locations": locations[:30],
+                  "signals": signals[:80], "tail": lines[-200:],
+              }
+              checks.append(item)
+              if result == "fail":
+                  failures.append(item)
+
+          failures.sort(key=lambda item: item["priority"])
+          packet = {
+              "schema_version": 1,
+              "purpose": "One combined repair cycle; original CI remains authoritative.",
+              "environment": env, "changed_files": changed, "diff_stat": stat,
+              "failure_count": len(failures),
+              "repair_order": [item["id"] for item in failures],
+              "checks": checks,
+          }
+          (root / "report-for-ai.json").write_text(
+              json.dumps(packet, indent=2, ensure_ascii=False) + "\n"
+          )
+
+          md = [
+              "# Report for AI", "",
+              "Additional diagnostic workflow only. Original CI and CodeQL remain unchanged.",
+              "Use this packet to fix every discovered problem before the next push.", "",
+              f"- Commit: `{env.get('commit', 'unknown')}`",
+              f"- Branch: `{env.get('branch', 'unknown')}`",
+              f"- Failed diagnostics: **{len(failures)}**",
+              "- Full logs and JSON index: artifact `report-for-ai`", "",
+              "## Status", "",
+              "| Diagnostic | Result | Exit | Seconds |",
+              "| --- | --- | ---: | ---: |",
+          ]
+          names = {"pass": "PASS", "fail": "FAIL", "not-run": "NOT RUN"}
+          for item in checks:
+              md.append(
+                  f"| {item['label']} | {names[item['result']]} | "
+                  f"{item['exit_code']} | {item['duration_seconds']} |"
+              )
+
+          if failures:
+              md += ["", "## Recommended combined repair order", ""]
+              for index, item in enumerate(failures, 1):
+                  where = ", ".join(f"`{value}`" for value in item["locations"][:8])
+                  md.append(f"{index}. **{item['label']}**" + (f": {where}" if where else ""))
+              md += ["", "## Actionable failure index", ""]
+              for item in failures:
+                  md += [f"### {item['label']}", "", f"Command: `{item['command']}`", ""]
+                  if item["locations"]:
+                      md += ["Likely locations: " + ", ".join(
+                          f"`{value}`" for value in item["locations"][:12]
+                      ), ""]
+                  excerpt = item["signals"][:35] or item["tail"][-80:]
+                  md += ["```text", *(excerpt or ["No signal extracted."]), "```", ""]
+          else:
+              md += ["", "## Repair result", "", "No diagnostic failures were found."]
+
+          md += [
+              "", "## Changed files", "", "```text",
+              *(changed or ["No changed files detected."]), "```",
+              "", "## Diff summary", "", "```text",
+              *(stat or ["No diff summary available."]), "```",
+          ]
+          report = "\n".join(md) + "\n"
+          (root / "report-for-ai.md").write_text(report)
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a") as summary:
+              summary.write(report)
+          PY
+
+      - name: Validate diagnostic completeness
         if: always()
         run: |
           report_dir="$RUNNER_TEMP/report-for-ai"
-          report="$report_dir/report-for-ai.md"
-          checks=(
-            "install|Install dependencies"
-            "edited-file-length|Edited file length"
-            "prisma-validate|Prisma schema"
-            "prisma-generate|Prisma client generation"
-            "formatting|Formatting"
-            "lint|Lint"
-            "typecheck-frontend|Typecheck frontend"
-            "typecheck-server|Typecheck server"
-            "tests-frontend|Tests frontend"
-            "tests-backend|Tests backend"
-            "build-frontend|Build frontend"
-            "build-server|Build server"
-            "dependency-security|Dependency security policy"
-            "docker-build|Docker image build"
-            "docker-runtime|Docker API health"
-          )
+          missing=0
+          while IFS=$'\t' read -r id label priority command; do
+            test -f "$report_dir/$id.status" || { echo "::error::Missing status: $label"; missing=1; }
+            test -f "$report_dir/$id.log" || { echo "::error::Missing log: $label"; missing=1; }
+          done < "$report_dir/checks.tsv"
+          test -f "$report_dir/report-for-ai.md" || missing=1
+          test -f "$report_dir/report-for-ai.json" || missing=1
+          test "$missing" = "0" || { echo "::error::Report for AI is incomplete."; exit 1; }
 
-          {
-            echo "# Report for AI"
-            echo
-            echo "Additional diagnostic workflow only. Original CI and CodeQL remain unchanged and are the source of truth."
-            echo "Every available diagnostic runs even when an earlier diagnostic fails."
-            echo
-            echo "- Commit: \`$GITHUB_SHA\`"
-            echo "- Branch: \`${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}\`"
-            echo "- Complete raw logs: artifact \`report-for-ai\`"
-            echo
-            echo "| Diagnostic | Result | Exit code |"
-            echo "| --- | --- | --- |"
-          } > "$report"
-
-          for entry in "${checks[@]}"; do
-            IFS='|' read -r id label <<< "$entry"
-            status_file="$report_dir/$id.status"
-            log_file="$report_dir/$id.log"
-            status="not-run"
-
-            if [ -f "$status_file" ]; then
-              status="$(cat "$status_file")"
-            fi
-
-            if [ "$status" = "0" ]; then
-              result="PASS"
-            elif [ "$status" = "not-run" ]; then
-              result="NOT RUN"
-            else
-              result="FAIL"
-            fi
-
-            echo "| $label | $result | $status |" >> "$report"
-
-            if [ "$result" = "FAIL" ]; then
-              {
-                echo
-                echo "## $label"
-                echo
-                echo "Last 160 lines. The artifact contains the complete raw log."
-                echo
-                echo '```text'
-                tail -n 160 "$log_file" 2>/dev/null || echo "Log file unavailable."
-                echo '```'
-              } >> "$report"
-            fi
-          done
-
-          {
-            echo
-            echo "## Changed files"
-            echo
-            echo '```text'
-            git diff --name-status origin/master...HEAD || true
-            echo '```'
-          } >> "$report"
-
-          cat "$report" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload complete Report for AI logs
+      - name: Upload complete Report for AI packet
         if: always()
         uses: actions/upload-artifact@v4
         with:
