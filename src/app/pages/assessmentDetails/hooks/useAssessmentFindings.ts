@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 
 import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
@@ -46,6 +46,8 @@ const focusThreatDeleteSuccessTarget = () => {
 export interface AssessmentFindingsController {
   threats: Threat[];
   isLoading: boolean;
+  isRefreshing: boolean;
+  hasLoadedFindings: boolean;
   loadError?: string;
   drawerMode: FindingDrawerMode;
   selectedFinding?: Threat;
@@ -56,6 +58,7 @@ export interface AssessmentFindingsController {
   isDeleting: boolean;
   deleteError?: string;
   canEditFindings: boolean;
+  reloadFindings: () => void;
   openCreateFinding: () => void;
   openEditFinding: (threat?: Threat | ThreatTableRow) => void;
   openFindingDetails: (threat: Threat | ThreatTableRow) => void;
@@ -78,6 +81,8 @@ export const useAssessmentFindings = ({
 }): AssessmentFindingsController => {
   const [threats, setThreats] = useState<Threat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedFindings, setHasLoadedFindings] = useState(false);
+  const hasLoadedFindingsRef = useRef(false);
   const [loadError, setLoadError] = useState<string | undefined>();
   const [reloadKey, setReloadKey] = useState(0);
   const [drawerMode, setDrawerMode] = useState<FindingDrawerMode>(null);
@@ -116,6 +121,8 @@ export const useAssessmentFindings = ({
 
         if (isActive) {
           setThreats(nextFindings);
+          hasLoadedFindingsRef.current = true;
+          setHasLoadedFindings(true);
         }
       } catch (error) {
         if (
@@ -125,7 +132,10 @@ export const useAssessmentFindings = ({
           return;
         }
 
-        setThreats([]);
+        if (!hasLoadedFindingsRef.current) {
+          setThreats([]);
+        }
+
         setLoadError(
           error instanceof Error ? error.message : 'Unable to load findings.',
         );
@@ -378,6 +388,8 @@ export const useAssessmentFindings = ({
   return {
     threats,
     isLoading,
+    isRefreshing: isLoading && hasLoadedFindings,
+    hasLoadedFindings,
     loadError,
     drawerMode,
     selectedFinding,
@@ -388,6 +400,7 @@ export const useAssessmentFindings = ({
     isDeleting,
     deleteError,
     canEditFindings: assessmentStatus !== 'archived',
+    reloadFindings: () => setReloadKey(key => key + 1),
     openCreateFinding,
     openEditFinding,
     openFindingDetails,
