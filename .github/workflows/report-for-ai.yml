@@ -58,7 +58,8 @@ jobs:
           docker-runtime	Docker API health	160	docker run and curl
           EOF
           {
-            echo "commit=$GITHUB_SHA"
+            echo "source_commit=${{ github.event.pull_request.head.sha || github.sha }}"
+            echo "checkout_commit=$(git rev-parse HEAD)"
             echo "branch=${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
             echo "base=${GITHUB_BASE_REF:-master}"
             echo "repository=$GITHUB_REPOSITORY"
@@ -195,7 +196,7 @@ jobs:
           signal = re.compile(
               r"(?i)(error(?:\s+TS\d+)?|failed?|failure|fatal|assertion|expected|"
               r"received|unhandled|cannot|unable|not found|vulnerabilit|critical|"
-              r"high severity|ELIFECYCLE|\bTS\d{4}\b|✖|×)"
+              r"\bhigh\b|ELIFECYCLE|\bTS\d{4}\b|✖|×)"
           )
           location = re.compile(
               r"((?:src|server|scripts|prisma|docker|\.github)/[\w./-]+\."
@@ -217,11 +218,15 @@ jobs:
               result = "pass" if status == "0" else (
                   "not-run" if status == "not-run" else "fail"
               )
+              cleaned = [
+                  re.sub(r"\x1b\[[0-9;]*m", "", raw).strip() for raw in lines
+              ]
               signals, locations = [], []
-              for raw in lines:
-                  text = re.sub(r"\x1b\[[0-9;]*m", "", raw).strip()
-                  if text and signal.search(text) and text not in signals:
-                      signals.append(text[:500])
+              for index, text in enumerate(cleaned):
+                  if text and signal.search(text):
+                      for context in cleaned[max(0, index - 2):index + 6]:
+                          if context and context not in signals:
+                              signals.append(context[:500])
                   for match in location.findall(text):
                       if match not in locations:
                           locations.append(match)
@@ -253,7 +258,8 @@ jobs:
               "# Report for AI", "",
               "Additional diagnostic workflow only. Original CI and CodeQL remain unchanged.",
               "Use this packet to fix every discovered problem before the next push.", "",
-              f"- Commit: `{env.get('commit', 'unknown')}`",
+              f"- Source commit: `{env.get('source_commit', 'unknown')}`",
+              f"- Checkout commit: `{env.get('checkout_commit', 'unknown')}`",
               f"- Branch: `{env.get('branch', 'unknown')}`",
               f"- Failed diagnostics: **{len(failures)}**",
               "- Full logs and JSON index: artifact `report-for-ai`", "",
