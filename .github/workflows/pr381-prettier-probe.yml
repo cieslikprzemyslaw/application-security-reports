@@ -1,9 +1,9 @@
 name: PR 381 Prettier Probe
 
 on:
-  push:
+  pull_request:
     branches:
-      - refactor/325-centralize-app-router-tests
+      - master
 
 permissions:
   contents: read
