@@ -31,6 +31,12 @@ jobs:
             echo
             echo "# Assessment declarations"
             git grep -n -E "interface Assessment|type Assessment" -- '*.ts' '*.tsx' || true
+            echo
+            echo "# Assessment service files"
+            git ls-files | grep -Ei 'assessment.*service|service.*assessment' || true
+            echo
+            echo "# createAssessmentService owners"
+            git grep -n -E "createAssessmentService" -- '*.ts' '*.tsx' || true
           } | tee issue-324-inventory.txt
 
       - name: Upload inventory
