@@ -87,6 +87,53 @@ jobs:
           echo "Changed files against master:"
           git diff --name-status origin/master...HEAD || true
 
+  validation-diagnostics:
+    name: Validation Diagnostics
+    if: ${{ always() && needs.validate.result == 'failure' }}
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          show-progress: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+          cache: npm
+
+      - name: Install dependencies quietly
+        run: npm ci --silent
+
+      - name: Generate Prisma client quietly
+        run: npm run --silent db:generate
+
+      - name: Formatting diagnostics
+        continue-on-error: true
+        run: npx prettier --list-different .
+
+      - name: Lint diagnostics
+        continue-on-error: true
+        run: npm run lint -- --format stylish
+
+      - name: Frontend TypeScript diagnostics
+        continue-on-error: true
+        run: npx tsc --noEmit -p tsconfig.json --pretty false
+
+      - name: Server TypeScript diagnostics
+        continue-on-error: true
+        run: npx tsc --noEmit -p tsconfig.server.json --pretty false
+
+      - name: Test diagnostics
+        continue-on-error: true
+        run: npm test -- --reporter=verbose --bail=1
+
   docker-runtime:
     name: Docker Runtime
     runs-on: ubuntu-latest
