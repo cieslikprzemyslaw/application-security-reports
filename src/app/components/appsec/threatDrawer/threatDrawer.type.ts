@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
 
-import type { Severity, ThreatStatus } from '~/domain';
+import type {
+  OwaspTop10Version,
+  Severity,
+  ThreatStatus,
+} from '~/domain';
 
 import type { ThreatTableRow } from '../threatTable';
 
@@ -30,7 +34,7 @@ export interface ThreatDrawerFinding {
 
 export interface ThreatDrawerProps {
   isOpen: boolean;
-  owaspTaxonomyVersion?: string;
+  owaspTaxonomyVersion?: OwaspTop10Version;
   threat?: ThreatDrawerFinding | ThreatTableRow;
   title?: string;
   description?: ReactNode;
