@@ -63,14 +63,7 @@ jobs:
         run: npm run lint -- --format stylish
 
       - name: Typecheck
-        run: |
-          echo "::group::Frontend TypeScript"
-          npx tsc --noEmit -p tsconfig.json --pretty false
-          echo "::endgroup::"
-
-          echo "::group::Server TypeScript"
-          npx tsc --noEmit -p tsconfig.server.json --pretty false
-          echo "::endgroup::"
+        run: npm run typecheck
 
       - name: Test
         run: npm test -- --reporter=verbose
