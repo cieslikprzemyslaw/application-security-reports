@@ -16,24 +16,76 @@ import { runAssessmentWorkspaceOverviewActionTests } from './appRouter.tests/ass
 import { runAssessmentWorkspaceReportsAndMissingTests } from './appRouter.tests/assessmentWorkspaceReportsAndMissing';
 import { runReportDetailsAndFallbackRouteTests } from './appRouter.tests/reportDetailsAndFallbackRoutes';
 
-describe('appRouter', () => {
-  it('passes the router checks', async () => {
-    await runStartupAndRouteBoundaryTests();
-    await runDashboardRecentCompanyTests();
-    await runCompanyListAndCreationTests();
-    await runCompanyWorkflowStateTests();
-    await runCompanyWorkflowEditTests();
-    await runCompanyWorkspaceOverviewRouteTests();
-    await runCompanyWorkspaceChildRouteTests();
-    await runCompanyWorkspaceMissingNavigationTests();
-    await runCompanySwitcherNavigationTests();
-    await runGlobalRoutesAndSettingsTests();
-    await runAssessmentWorkspaceNavigationTests();
-    await runAssessmentWorkspaceFilterTests();
-    await runAssessmentWorkspaceOverviewActionTests();
-    await runAssessmentWorkspaceReportsAndMissingTests();
-    await runReportDetailsAndFallbackRouteTests();
+type RouterWorkflowCheck = {
+  name: string;
+  run: () => Promise<void>;
+};
 
-    console.log('router checks passed');
-  }, 60_000);
+const routerWorkflowChecks: RouterWorkflowCheck[] = [
+  {
+    name: 'startup and route boundaries',
+    run: runStartupAndRouteBoundaryTests,
+  },
+  {
+    name: 'dashboard recent companies',
+    run: runDashboardRecentCompanyTests,
+  },
+  {
+    name: 'company list and creation',
+    run: runCompanyListAndCreationTests,
+  },
+  {
+    name: 'company workflow states',
+    run: runCompanyWorkflowStateTests,
+  },
+  {
+    name: 'company workflow edit',
+    run: runCompanyWorkflowEditTests,
+  },
+  {
+    name: 'company workspace overview routes',
+    run: runCompanyWorkspaceOverviewRouteTests,
+  },
+  {
+    name: 'company workspace child routes',
+    run: runCompanyWorkspaceChildRouteTests,
+  },
+  {
+    name: 'company workspace missing navigation',
+    run: runCompanyWorkspaceMissingNavigationTests,
+  },
+  {
+    name: 'company switcher navigation',
+    run: runCompanySwitcherNavigationTests,
+  },
+  {
+    name: 'global routes and settings',
+    run: runGlobalRoutesAndSettingsTests,
+  },
+  {
+    name: 'assessment workspace navigation',
+    run: runAssessmentWorkspaceNavigationTests,
+  },
+  {
+    name: 'assessment workspace filters',
+    run: runAssessmentWorkspaceFilterTests,
+  },
+  {
+    name: 'assessment workspace overview actions',
+    run: runAssessmentWorkspaceOverviewActionTests,
+  },
+  {
+    name: 'assessment workspace reports and missing states',
+    run: runAssessmentWorkspaceReportsAndMissingTests,
+  },
+  {
+    name: 'report details and fallback routes',
+    run: runReportDetailsAndFallbackRouteTests,
+  },
+];
+
+describe('appRouter', () => {
+  for (const { name, run } of routerWorkflowChecks) {
+    it(name, run, 60_000);
+  }
 });
