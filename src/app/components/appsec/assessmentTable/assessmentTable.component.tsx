@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { CollectionRowAction } from '~/app/components/common';
 import Badge from '~/app/components/ui/badge';
 import Button from '~/app/components/ui/button';
 import IconSVG from '~/app/components/ui/iconSVG';
@@ -66,6 +67,7 @@ const AssessmentTable = ({
   sortBy,
   sortDirection,
   onSortChange,
+  getAssessmentHref,
   onAssessmentClick,
   onEditAssessment,
   emptyState,
@@ -118,76 +120,85 @@ const AssessmentTable = ({
           </tr>
         )}
 
-        {assessments.map(assessment => (
-          <tr
-            key={assessment.id}
-            className={[
-              'assessment-table__row',
-              onAssessmentClick ? 'assessment-table__row--clickable' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-            tabIndex={onAssessmentClick ? 0 : undefined}
-            onClick={() => onAssessmentClick?.(assessment)}
-            onKeyDown={event => {
-              if (
-                onAssessmentClick &&
-                (event.key === 'Enter' || event.key === ' ')
-              ) {
-                event.preventDefault();
-                onAssessmentClick(assessment);
-              }
-            }}
-          >
-            <td className="assessment-table__cell">
-              <strong className="assessment-table__name">
-                {assessment.name}
-              </strong>
-            </td>
+        {assessments.map(assessment => {
+          const assessmentHref = getAssessmentHref?.(assessment);
+          const hasPrimaryAction = Boolean(
+            assessmentHref || onAssessmentClick,
+          );
 
-            <td className="assessment-table__cell">
-              <span className="assessment-table__type-badge">
-                {assessment.type}
-              </span>
-            </td>
+          return (
+            <tr
+              key={assessment.id}
+              className={[
+                'assessment-table__row',
+                hasPrimaryAction ? 'assessment-table__row--interactive' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
+              <td className="assessment-table__cell">
+                {assessmentHref ? (
+                  <CollectionRowAction
+                    to={assessmentHref}
+                    label={`Open ${assessment.name} assessment`}
+                  >
+                    {assessment.name}
+                  </CollectionRowAction>
+                ) : onAssessmentClick ? (
+                  <CollectionRowAction
+                    label={`Open ${assessment.name} assessment`}
+                    onActivate={() => onAssessmentClick(assessment)}
+                  >
+                    {assessment.name}
+                  </CollectionRowAction>
+                ) : null}
 
-            <td className="assessment-table__cell">
-              <Badge
-                label={
-                  assessmentStatusLabelMap[assessment.status] ??
-                  assessment.status
-                }
-                variant="neutral"
-                size="small"
-              />
-            </td>
+                <strong className="assessment-table__name">
+                  {assessment.name}
+                </strong>
+              </td>
 
-            <td className="assessment-table__cell">
-              <strong className="assessment-table__findings-count">
-                {formatCount(assessment.findingsCount)}
-              </strong>
-            </td>
+              <td className="assessment-table__cell">
+                <span className="assessment-table__type-badge">
+                  {assessment.type}
+                </span>
+              </td>
 
-            <td className="assessment-table__cell">
-              <time dateTime={assessment.updatedAt}>
-                {formatDateTime(assessment.updatedAt)}
-              </time>
-            </td>
-
-            <td className="assessment-table__cell">
-              <div className="assessment-table__actions">
-                <Button
-                  title="Edit"
-                  variant="secondary"
-                  onClick={event => {
-                    event.stopPropagation();
-                    onEditAssessment?.(assessment);
-                  }}
+              <td className="assessment-table__cell">
+                <Badge
+                  label={
+                    assessmentStatusLabelMap[assessment.status] ??
+                    assessment.status
+                  }
+                  variant="neutral"
+                  size="small"
                 />
-              </div>
-            </td>
-          </tr>
-        ))}
+              </td>
+
+              <td className="assessment-table__cell">
+                <strong className="assessment-table__findings-count">
+                  {formatCount(assessment.findingsCount)}
+                </strong>
+              </td>
+
+              <td className="assessment-table__cell">
+                <time dateTime={assessment.updatedAt}>
+                  {formatDateTime(assessment.updatedAt)}
+                </time>
+              </td>
+
+              <td className="assessment-table__cell">
+                <div className="assessment-table__actions">
+                  <Button
+                    title="Edit"
+                    variant="secondary"
+                    onClick={() => onEditAssessment?.(assessment)}
+                  />
+                </div>
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   </StyledAssessmentTable>

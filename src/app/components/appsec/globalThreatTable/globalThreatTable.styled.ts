@@ -7,7 +7,8 @@ const StyledGlobalThreatTable = styled.div`
 
     .global-threat-table {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
     }
 
     .global-threat-table-head {
@@ -30,19 +31,31 @@ const StyledGlobalThreatTable = styled.div`
     }
 
     .global-threat-table-row {
-      border-bottom: 1px solid ${colors.border.subtle};
-      cursor: default;
+      position: relative;
+      isolation: isolate;
     }
 
-    .global-threat-table-row--clickable {
+    .global-threat-table-row > td {
+      border-bottom: 1px solid ${colors.border.subtle};
+      background-color: ${colors.surface.card};
+    }
+
+    .global-threat-table-row--interactive {
       cursor: pointer;
     }
 
-    .global-threat-table-row--clickable:hover {
+    .global-threat-table-row--interactive:has(
+        .collection-row-action:hover
+      )
+      > td,
+    .global-threat-table-row--interactive:has(
+        .collection-row-action:focus-visible
+      )
+      > td {
       background-color: ${colors.neutral.grey50};
     }
 
-    .global-threat-table-row:last-child {
+    .global-threat-table-row:last-child > td {
       border-bottom: 0;
     }
 

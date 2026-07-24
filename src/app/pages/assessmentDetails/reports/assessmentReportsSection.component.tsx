@@ -1,20 +1,26 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import Badge from '~/app/components/ui/badge';
+
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import Card from '~/app/components/ui/card';
 import EmptyState from '~/app/components/ui/emptyState';
 import Modal from '~/app/components/ui/modal';
-import { formatDateTime } from '~/app/utils/formatters';
-import { routes } from '~/routes';
 import { reportService, type ReportService } from '~/services/reportService';
 import {
   reportVersionService,
   type ReportVersionService,
 } from '~/services/reportVersionService';
+
+import AssessmentReportList from './assessmentReportList.component';
+import {
+  formatVersionNumber,
+  getDeleteConfirmationText,
+  getDeleteDescription,
+} from './assessmentReportsSection.utils';
 import StyledAssessmentReportsSection from './assessmentReportsSection.styled';
+
 import type { AssessmentReportListItem, ReportVersionSummary } from '~/domain';
+
 interface AssessmentReportsSectionProps {
   companyId: string;
   assessmentId: string;
@@ -22,6 +28,7 @@ interface AssessmentReportsSectionProps {
   versionService?: Pick<ReportVersionService, 'deleteVersion'>;
   onVersionCountChange?: (delta: number) => void;
 }
+
 type LoadState =
   | { status: 'pending'; requestKey: string }
   | {
@@ -30,27 +37,12 @@ type LoadState =
       reports: AssessmentReportListItem[];
     }
   | { status: 'error'; requestKey: string; message: string };
+
 interface DeleteTarget {
   report: AssessmentReportListItem;
   version: ReportVersionSummary;
 }
-const formatVersionNumber = (version: number): string =>
-  `${Math.floor(version / 10)}.${version % 10}`;
-const reportStatusLabels = {
-  draft: 'Draft',
-  generated: 'Generated',
-  archived: 'Archived',
-} as const;
-const versionStatusLabels = {
-  draft: 'Draft',
-  final: 'Final',
-} as const;
-const getDeleteConfirmationText = (version: ReportVersionSummary): string =>
-  `v${formatVersionNumber(version.version)}`;
-const getDeleteDescription = (version: ReportVersionSummary): string =>
-  version.status === 'final'
-    ? 'This final Report version is immutable history. Deleting it removes the saved snapshot from this local workspace.'
-    : 'This draft Report version will be removed from this local workspace.';
+
 const removeVersionFromReports = (
   reports: AssessmentReportListItem[],
   reportId: string,
@@ -68,6 +60,7 @@ const removeVersionFromReports = (
         : report,
     )
     .filter(report => report.versions.length > 0);
+
 const AssessmentReportsSection = ({
   companyId,
   assessmentId,
@@ -85,9 +78,11 @@ const AssessmentReportsSection = ({
     status: 'pending',
     requestKey,
   }));
+
   useEffect(() => {
     const controller = new AbortController();
     let isActive = true;
+
     void service
       .listByAssessmentId(assessmentId, controller.signal)
       .then(reports => {
@@ -106,6 +101,7 @@ const AssessmentReportsSection = ({
         ) {
           return;
         }
+
         setState({
           status: 'error',
           requestKey,
@@ -115,38 +111,50 @@ const AssessmentReportsSection = ({
               : 'Unable to load assessment reports.',
         });
       });
+
     return () => {
       isActive = false;
       controller.abort();
     };
   }, [assessmentId, requestKey, service]);
+
   const requestedDeleteConfirmation = useMemo(
     () => (deleteTarget ? getDeleteConfirmationText(deleteTarget.version) : ''),
     [deleteTarget],
   );
   const isDeleteConfirmationValid =
     deleteConfirmation === requestedDeleteConfirmation;
-  const requestVersionDelete = (target: DeleteTarget) => {
-    setDeleteTarget(target);
+
+  const requestVersionDelete = (
+    report: AssessmentReportListItem,
+    version: ReportVersionSummary,
+  ) => {
+    setDeleteTarget({ report, version });
     setDeleteConfirmation('');
     setDeleteError(undefined);
   };
+
   const closeDeleteDialog = () => {
     if (isDeleting) {
       return;
     }
+
     setDeleteTarget(null);
     setDeleteConfirmation('');
     setDeleteError(undefined);
   };
+
   const confirmVersionDelete = () => {
     if (!deleteTarget || !isDeleteConfirmationValid || isDeleting) {
       return;
     }
+
     const controller = new AbortController();
     const { report, version } = deleteTarget;
+
     setIsDeleting(true);
     setDeleteError(undefined);
+
     void versionService
       .deleteVersion(report.id, version.id, controller.signal)
       .then(() => {
@@ -171,6 +179,7 @@ const AssessmentReportsSection = ({
         if (error instanceof DOMException && error.name === 'AbortError') {
           return;
         }
+
         setDeleteError(
           error instanceof Error
             ? error.message
@@ -181,6 +190,7 @@ const AssessmentReportsSection = ({
         setIsDeleting(false);
       });
   };
+
   if (state.requestKey !== requestKey || state.status === 'pending') {
     return (
       <Card title="Reports" padding="large">
@@ -188,6 +198,7 @@ const AssessmentReportsSection = ({
       </Card>
     );
   }
+
   if (state.status === 'error') {
     return (
       <Card title="Reports" padding="large">
@@ -207,9 +218,11 @@ const AssessmentReportsSection = ({
       </Card>
     );
   }
+
   const visibleReports = state.reports.filter(
     report => report.versions.length > 0,
   );
+
   if (visibleReports.length === 0) {
     return (
       <Card title="Reports" padding="large">
@@ -220,6 +233,7 @@ const AssessmentReportsSection = ({
       </Card>
     );
   }
+
   return (
     <StyledAssessmentReportsSection>
       <Card
@@ -238,89 +252,14 @@ const AssessmentReportsSection = ({
             stored by the application.
           </p>
         </Callout>
-        <ul className="assessment-reports-list">
-          {visibleReports.map(report => {
-            const latestVersion = report.versions[0];
-            return (
-              <li key={report.id} className="assessment-report-item">
-                <div className="assessment-report-header">
-                  <div>
-                    <h3 className="assessment-report-title">
-                      <Link
-                        className="assessment-report-title-link"
-                        to={routes.reportDetailsVersion(
-                          companyId,
-                          report.id,
-                          latestVersion.id,
-                        )}
-                      >
-                        {report.title}
-                      </Link>
-                    </h3>
-                    <p className="assessment-report-meta">
-                      Updated {formatDateTime(report.updatedAt)} -{' '}
-                      {report.versions.length} saved{' '}
-                      {report.versions.length === 1 ? 'version' : 'versions'}
-                    </p>
-                  </div>
-                  <Badge
-                    label={reportStatusLabels[report.status]}
-                    variant={
-                      report.status === 'generated' ? 'success' : 'neutral'
-                    }
-                  />
-                </div>
-                <ul className="assessment-report-version-list">
-                  {report.versions.map(version => {
-                    const versionNumber = formatVersionNumber(version.version);
-                    const deleteLabel = `Delete ${report.title} version ${versionNumber}`;
-                    return (
-                      <li
-                        key={version.id}
-                        className="assessment-report-version"
-                      >
-                        <div className="assessment-report-version-content">
-                          <Link
-                            className="assessment-report-version-link"
-                            to={routes.reportDetailsVersion(
-                              companyId,
-                              report.id,
-                              version.id,
-                            )}
-                            aria-label={`Open ${report.title} version ${versionNumber} preview`}
-                          >
-                            <span className="assessment-report-version-name">
-                              v{versionNumber}
-                            </span>
-                            <span className="assessment-report-meta">
-                              {versionStatusLabels[version.status]} -{' '}
-                              {formatDateTime(
-                                version.createdAt ?? version.generatedAt,
-                              )}
-                            </span>
-                            <span className="assessment-report-version-action">
-                              Open preview
-                            </span>
-                          </Link>
-                          <Button
-                            title="Delete"
-                            ariaLabel={deleteLabel}
-                            variant="destructive"
-                            size="small"
-                            onClick={() =>
-                              requestVersionDelete({ report, version })
-                            }
-                          />
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </li>
-            );
-          })}
-        </ul>
+
+        <AssessmentReportList
+          companyId={companyId}
+          reports={visibleReports}
+          onDeleteRequest={requestVersionDelete}
+        />
       </Card>
+
       <Modal
         isOpen={deleteTarget !== null}
         title="Delete Report version"
@@ -354,6 +293,7 @@ const AssessmentReportsSection = ({
               </strong>
               .
             </p>
+
             <Callout
               variant={
                 deleteTarget.version.status === 'final' ? 'warning' : 'neutral'
@@ -366,6 +306,7 @@ const AssessmentReportsSection = ({
             >
               <p>{getDeleteDescription(deleteTarget.version)}</p>
             </Callout>
+
             <label className="assessment-report-delete-label">
               Type <strong>{requestedDeleteConfirmation}</strong> to confirm.
               <input
@@ -376,6 +317,7 @@ const AssessmentReportsSection = ({
                 onChange={event => setDeleteConfirmation(event.target.value)}
               />
             </label>
+
             {deleteError && (
               <Callout variant="error" title="Unable to delete version">
                 <p>{deleteError}</p>
@@ -387,4 +329,5 @@ const AssessmentReportsSection = ({
     </StyledAssessmentReportsSection>
   );
 };
+
 export default AssessmentReportsSection;

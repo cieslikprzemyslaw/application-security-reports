@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { CollectionRowAction } from '~/app/components/common';
 import SeverityBadge from '~/app/components/ui/severityBadge';
 import StatusBadge from '~/app/components/ui/statusBadge';
 import { STRIDE_LABELS } from '~/domain';
@@ -46,24 +47,21 @@ const GlobalThreatTable = ({
               key={threat.id}
               className={[
                 'global-threat-table-row',
-                onThreatClick ? 'global-threat-table-row--clickable' : '',
+                onThreatClick ? 'global-threat-table-row--interactive' : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
-              tabIndex={onThreatClick ? 0 : undefined}
-              onClick={() => onThreatClick?.(threat)}
-              onKeyDown={event => {
-                if (
-                  onThreatClick &&
-                  (event.key === 'Enter' || event.key === ' ')
-                ) {
-                  event.preventDefault();
-
-                  onThreatClick(threat);
-                }
-              }}
             >
               <td className="global-threat-table-cell">
+                {onThreatClick && (
+                  <CollectionRowAction
+                    label={`Open ${threat.title} threat`}
+                    onActivate={() => onThreatClick(threat)}
+                  >
+                    {threat.title}
+                  </CollectionRowAction>
+                )}
+
                 <strong className="global-threat-table-threat-title">
                   {threat.title}
                 </strong>

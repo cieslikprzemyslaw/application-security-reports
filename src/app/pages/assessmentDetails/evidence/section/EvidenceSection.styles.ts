@@ -23,11 +23,24 @@ const StyledAssessmentEvidenceSection = styled.div.attrs({
     }
 
     .assessment-evidence-card {
+      position: relative;
+      isolation: isolate;
       overflow: hidden;
 
       border: 1px solid ${colors.border.subtle};
       border-radius: ${radii.lg};
       background-color: ${colors.surface.card};
+    }
+
+    .assessment-evidence-card:has(.collection-row-action:hover),
+    .assessment-evidence-card:has(.collection-row-action:focus-visible) {
+      border-color: ${colors.border.default};
+      background-color: ${colors.surface.subtle};
+    }
+
+    .assessment-evidence-card:has(.collection-row-action:hover)
+      .assessment-evidence-card-title {
+      color: ${colors.text.link};
     }
 
     .assessment-evidence-card-header {
@@ -46,10 +59,8 @@ const StyledAssessmentEvidenceSection = styled.div.attrs({
       gap: ${spacing.xxs};
     }
 
-    .assessment-evidence-card-title-button {
-      padding: 0;
-      border: 0;
-      background: transparent;
+    .assessment-evidence-card-title {
+      margin: 0;
 
       font-size: ${typography.headings.h6.size};
       line-height: ${typography.headings.h6.lineHeight};
@@ -58,20 +69,17 @@ const StyledAssessmentEvidenceSection = styled.div.attrs({
       text-align: left;
     }
 
-    .assessment-evidence-card-title-button:hover:not(:disabled) {
-      color: ${colors.text.link};
-    }
-
-    .assessment-evidence-card-title-button:disabled {
-      cursor: default;
-    }
-
     .assessment-evidence-card-meta,
     .assessment-evidence-card-actions,
     .assessment-evidence-detail-tags {
       display: flex;
       flex-wrap: wrap;
       gap: ${spacing.xxs};
+    }
+
+    .assessment-evidence-card-actions {
+      position: relative;
+      z-index: 2;
     }
 
     .assessment-evidence-card-body {
