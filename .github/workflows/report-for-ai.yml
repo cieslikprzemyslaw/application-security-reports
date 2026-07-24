@@ -1,0 +1,259 @@
+name: Report for AI
+
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: report-for-ai-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    name: Full diagnosis for AI
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+          cache: npm
+
+      - name: Prepare diagnostic logs
+        run: mkdir -p "$RUNNER_TEMP/report-for-ai"
+
+      - name: Install dependencies
+        id: install
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm ci 2>&1 | tee "$RUNNER_TEMP/report-for-ai/npm-install.log"
+
+      - name: Run every Node.js check
+        if: ${{ always() && steps.install.outcome == 'success' }}
+        run: |
+          set +e
+          set -o pipefail
+
+          report_dir="$RUNNER_TEMP/report-for-ai"
+
+          run_check() {
+            id="$1"
+            label="$2"
+            shift 2
+
+            echo "::group::$label"
+            "$@" 2>&1 | tee "$report_dir/$id.log"
+            status=${PIPESTATUS[0]}
+            echo "::endgroup::"
+
+            printf '%s\n' "$status" > "$report_dir/$id.status"
+            echo "$label finished with exit code $status"
+          }
+
+          run_check edited-file-length "Edited file length" \
+            node .github/scripts/check-edited-file-lines.mjs
+          run_check prisma-validate "Prisma schema" \
+            npm run db:validate
+          run_check prisma-generate "Prisma client generation" \
+            npm run db:generate
+          run_check formatting "Formatting" \
+            npm run format:check
+          run_check lint "Lint" \
+            npm run lint -- --format stylish
+          run_check typecheck-frontend "Typecheck frontend" \
+            npx tsc --noEmit -p tsconfig.json --pretty false
+          run_check typecheck-server "Typecheck server" \
+            npx tsc --noEmit -p tsconfig.server.json --pretty false
+          run_check tests-frontend "Tests frontend" \
+            npm run test:frontend -- --reporter=dot
+          run_check tests-backend "Tests backend" \
+            npm run test:backend -- --reporter=dot
+          run_check build-frontend "Build frontend" \
+            npm run build:client
+          run_check build-server "Build server" \
+            npm run build:server
+          run_check dependency-security "Dependency security policy" \
+            npm run security:audit
+
+          exit 0
+
+      - name: Build Docker image for diagnosis
+        id: docker_build
+        if: always()
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          docker build --progress=plain \
+            -f docker/api/Dockerfile \
+            -t report-for-ai-api:${{ github.sha }} . \
+            2>&1 | tee "$RUNNER_TEMP/report-for-ai/docker-build.log"
+          status=${PIPESTATUS[0]}
+          printf '%s\n' "$status" > "$RUNNER_TEMP/report-for-ai/docker-build.status"
+          exit "$status"
+
+      - name: Run Docker health diagnosis
+        if: ${{ always() && steps.docker_build.outcome == 'success' }}
+        continue-on-error: true
+        run: |
+          set +e
+          set -o pipefail
+          report_dir="$RUNNER_TEMP/report-for-ai"
+
+          {
+            docker rm -f report-for-ai-api >/dev/null 2>&1 || true
+            docker run -d \
+              --name report-for-ai-api \
+              -p 3001:3001 \
+              -e DATABASE_URL="file:/data/appsec-report-builder.db" \
+              report-for-ai-api:${{ github.sha }}
+
+            for i in {1..20}; do
+              if curl -fsS http://localhost:3001/api/health; then
+                exit 0
+              fi
+
+              echo "Waiting for API health check... attempt ${i}/20"
+              sleep 2
+            done
+
+            echo "API health check failed"
+            docker ps -a --filter name=report-for-ai-api
+            docker inspect report-for-ai-api || true
+            docker logs report-for-ai-api || true
+            exit 1
+          } 2>&1 | tee "$report_dir/docker-runtime.log"
+
+          status=${PIPESTATUS[0]}
+          printf '%s\n' "$status" > "$report_dir/docker-runtime.status"
+          docker rm -f report-for-ai-api >/dev/null 2>&1 || true
+          exit "$status"
+
+      - name: Record skipped Docker runtime
+        if: ${{ always() && steps.docker_build.outcome != 'success' }}
+        run: echo "not-run" > "$RUNNER_TEMP/report-for-ai/docker-runtime.status"
+
+      - name: Create Report for AI
+        if: always()
+        env:
+          INSTALL_OUTCOME: ${{ steps.install.outcome }}
+        run: |
+          report_dir="$RUNNER_TEMP/report-for-ai"
+          report="$report_dir/report-for-ai.md"
+          mkdir -p "$report_dir"
+
+          checks=(
+            "edited-file-length|Edited file length"
+            "prisma-validate|Prisma schema"
+            "prisma-generate|Prisma client generation"
+            "formatting|Formatting"
+            "lint|Lint"
+            "typecheck-frontend|Typecheck frontend"
+            "typecheck-server|Typecheck server"
+            "tests-frontend|Tests frontend"
+            "tests-backend|Tests backend"
+            "build-frontend|Build frontend"
+            "build-server|Build server"
+            "dependency-security|Dependency security policy"
+            "docker-build|Docker image build"
+            "docker-runtime|Docker API health"
+          )
+
+          {
+            echo "# Report for AI"
+            echo
+            echo "This is an additional diagnostic workflow. The original CI and CodeQL checks remain the source of truth."
+            echo "All available checks continue after failures so one run exposes the complete repair list."
+            echo
+            echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- Node: \`$(node --version)\`"
+            echo "- npm: \`$(npm --version)\`"
+            echo
+            echo "| Check | Result | Exit code |"
+            echo "| --- | --- | --- |"
+          } > "$report"
+
+          failed=0
+
+          if [ "$INSTALL_OUTCOME" = "success" ]; then
+            echo "| Install dependencies | PASS | 0 |" >> "$report"
+          else
+            echo "| Install dependencies | FAIL | unavailable |" >> "$report"
+            failed=1
+            {
+              echo
+              echo "## Install dependencies"
+              echo
+              echo '```text'
+              cat "$report_dir/npm-install.log" 2>/dev/null || echo "No log was produced."
+              echo '```'
+            } >> "$report"
+          fi
+
+          for entry in "${checks[@]}"; do
+            IFS='|' read -r id label <<< "$entry"
+            status_file="$report_dir/$id.status"
+            log_file="$report_dir/$id.log"
+
+            if [ -f "$status_file" ]; then
+              status="$(cat "$status_file")"
+            else
+              status="not-run"
+            fi
+
+            if [ "$status" = "0" ]; then
+              result="PASS"
+            elif [ "$status" = "not-run" ]; then
+              result="NOT RUN"
+              failed=1
+            else
+              result="FAIL"
+              failed=1
+            fi
+
+            echo "| $label | $result | $status |" >> "$report"
+
+            if [ "$result" = "FAIL" ]; then
+              {
+                echo
+                echo "## $label"
+                echo
+                echo '```text'
+                cat "$log_file" 2>/dev/null || echo "No log was produced."
+                echo '```'
+              } >> "$report"
+            fi
+          done
+
+          cat "$report" >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "$failed" > "$report_dir/report.failed"
+
+      - name: Upload complete diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-for-ai
+          path: ${{ runner.temp }}/report-for-ai
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Mark diagnosis as failed when repairs are required
+        if: always()
+        run: |
+          status_file="$RUNNER_TEMP/report-for-ai/report.failed"
+
+          if [ ! -f "$status_file" ] || [ "$(cat "$status_file")" != "0" ]; then
+            exit 1
+          fi
