@@ -145,7 +145,7 @@ export const renderHarness = async (
 
     const openFindingDetails = (threat: Threat | ThreatTableRow) => {
       const nextFinding =
-        'strideCategories' in threat ? threat : renderedThreats[0] ?? finding;
+        'strideCategories' in threat ? threat : (renderedThreats[0] ?? finding);
 
       events.push('view');
       setSelectedFinding(nextFinding);
@@ -159,7 +159,7 @@ export const renderHarness = async (
       const nextFinding =
         threat && 'strideCategories' in threat
           ? threat
-          : renderedThreats[0] ?? finding;
+          : (renderedThreats[0] ?? finding);
 
       events.push('edit');
 
