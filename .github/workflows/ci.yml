@@ -109,6 +109,11 @@ jobs:
         working-directory: repo
         run: npm run --silent db:generate
 
+      - name: First failing test diagnostics
+        continue-on-error: true
+        working-directory: repo
+        run: npm test -- --reporter=dot --bail=1
+
       - name: Frontend TypeScript diagnostics
         continue-on-error: true
         working-directory: repo
@@ -128,11 +133,6 @@ jobs:
         continue-on-error: true
         working-directory: repo
         run: npm run lint -- --format stylish
-
-      - name: Test diagnostics
-        continue-on-error: true
-        working-directory: repo
-        run: npm test -- --reporter=verbose --bail=1
 
   docker-runtime:
     name: Docker Runtime
