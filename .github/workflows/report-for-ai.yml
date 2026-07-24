@@ -1,0 +1,240 @@
+name: Report for AI
+
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: report-for-ai-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    name: Full diagnosis for AI
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+          cache: npm
+
+      - name: Prepare diagnostic directory
+        run: mkdir -p "$RUNNER_TEMP/report-for-ai"
+
+      - name: Install dependencies diagnostic
+        run: |
+          set +e
+          set -o pipefail
+          report_dir="$RUNNER_TEMP/report-for-ai"
+
+          npm ci 2>&1 | tee "$report_dir/install.log"
+          status=${PIPESTATUS[0]}
+          printf '%s\n' "$status" > "$report_dir/install.status"
+          exit 0
+
+      - name: Run all Node.js diagnostics
+        run: |
+          set +e
+          set -o pipefail
+          report_dir="$RUNNER_TEMP/report-for-ai"
+          install_status="$(cat "$report_dir/install.status")"
+
+          checks=(
+            "edited-file-length|Edited file length|node .github/scripts/check-edited-file-lines.mjs"
+            "prisma-validate|Prisma schema|npm run db:validate"
+            "prisma-generate|Prisma client generation|npm run db:generate"
+            "formatting|Formatting|npm run format:check"
+            "lint|Lint|npm run lint -- --format stylish"
+            "typecheck-frontend|Typecheck frontend|npx tsc --noEmit -p tsconfig.json --pretty false"
+            "typecheck-server|Typecheck server|npx tsc --noEmit -p tsconfig.server.json --pretty false"
+            "tests-frontend|Tests frontend|npm run test:frontend -- --reporter=verbose"
+            "tests-backend|Tests backend|npm run test:backend -- --reporter=verbose"
+            "build-frontend|Build frontend|npm run build:client"
+            "build-server|Build server|npm run build:server"
+            "dependency-security|Dependency security policy|npm run security:audit"
+          )
+
+          for entry in "${checks[@]}"; do
+            IFS='|' read -r id label command <<< "$entry"
+
+            if [ "$install_status" != "0" ]; then
+              echo "not-run" > "$report_dir/$id.status"
+              continue
+            fi
+
+            echo "::group::$label"
+            bash -o pipefail -c "$command" 2>&1 | tee "$report_dir/$id.log"
+            status=${PIPESTATUS[0]}
+            echo "::endgroup::"
+            printf '%s\n' "$status" > "$report_dir/$id.status"
+          done
+
+          exit 0
+
+      - name: Run Docker diagnostics
+        if: always()
+        run: |
+          set +e
+          set -o pipefail
+          report_dir="$RUNNER_TEMP/report-for-ai"
+          image="report-for-ai:${GITHUB_SHA}"
+          container="report-for-ai-${GITHUB_RUN_ID}"
+
+          docker build --progress=plain \
+            -f docker/api/Dockerfile \
+            -t "$image" . \
+            2>&1 | tee "$report_dir/docker-build.log"
+          build_status=${PIPESTATUS[0]}
+          printf '%s\n' "$build_status" > "$report_dir/docker-build.status"
+
+          if [ "$build_status" != "0" ]; then
+            echo "not-run" > "$report_dir/docker-runtime.status"
+            exit 0
+          fi
+
+          docker rm -f "$container" >/dev/null 2>&1 || true
+          docker run -d \
+            --name "$container" \
+            -p 3001:3001 \
+            -e DATABASE_URL="file:/data/appsec-report-builder.db" \
+            "$image" \
+            > "$report_dir/docker-runtime.log" 2>&1
+          runtime_status=$?
+
+          if [ "$runtime_status" = "0" ]; then
+            runtime_status=1
+
+            for i in {1..20}; do
+              if curl -fsS http://localhost:3001/api/health \
+                >> "$report_dir/docker-runtime.log" 2>&1; then
+                runtime_status=0
+                break
+              fi
+
+              echo "Waiting for API health check, attempt ${i}/20" \
+                >> "$report_dir/docker-runtime.log"
+              sleep 2
+            done
+          fi
+
+          if [ "$runtime_status" != "0" ]; then
+            {
+              echo
+              echo "Container state:"
+              docker ps -a --filter "name=$container" || true
+              echo
+              echo "Container inspection:"
+              docker inspect "$container" || true
+              echo
+              echo "Container logs:"
+              docker logs "$container" || true
+            } >> "$report_dir/docker-runtime.log" 2>&1
+          fi
+
+          printf '%s\n' "$runtime_status" > "$report_dir/docker-runtime.status"
+          docker rm -f "$container" >/dev/null 2>&1 || true
+          exit 0
+
+      - name: Create Report for AI summary
+        if: always()
+        run: |
+          report_dir="$RUNNER_TEMP/report-for-ai"
+          report="$report_dir/report-for-ai.md"
+          checks=(
+            "install|Install dependencies"
+            "edited-file-length|Edited file length"
+            "prisma-validate|Prisma schema"
+            "prisma-generate|Prisma client generation"
+            "formatting|Formatting"
+            "lint|Lint"
+            "typecheck-frontend|Typecheck frontend"
+            "typecheck-server|Typecheck server"
+            "tests-frontend|Tests frontend"
+            "tests-backend|Tests backend"
+            "build-frontend|Build frontend"
+            "build-server|Build server"
+            "dependency-security|Dependency security policy"
+            "docker-build|Docker image build"
+            "docker-runtime|Docker API health"
+          )
+
+          {
+            echo "# Report for AI"
+            echo
+            echo "Additional diagnostic workflow only. Original CI and CodeQL remain unchanged and are the source of truth."
+            echo "Every available diagnostic runs even when an earlier diagnostic fails."
+            echo
+            echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- Branch: \`${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}\`"
+            echo "- Complete raw logs: artifact \`report-for-ai\`"
+            echo
+            echo "| Diagnostic | Result | Exit code |"
+            echo "| --- | --- | --- |"
+          } > "$report"
+
+          for entry in "${checks[@]}"; do
+            IFS='|' read -r id label <<< "$entry"
+            status_file="$report_dir/$id.status"
+            log_file="$report_dir/$id.log"
+            status="not-run"
+
+            if [ -f "$status_file" ]; then
+              status="$(cat "$status_file")"
+            fi
+
+            if [ "$status" = "0" ]; then
+              result="PASS"
+            elif [ "$status" = "not-run" ]; then
+              result="NOT RUN"
+            else
+              result="FAIL"
+            fi
+
+            echo "| $label | $result | $status |" >> "$report"
+
+            if [ "$result" = "FAIL" ]; then
+              {
+                echo
+                echo "## $label"
+                echo
+                echo "Last 160 lines. The artifact contains the complete raw log."
+                echo
+                echo '```text'
+                tail -n 160 "$log_file" 2>/dev/null || echo "Log file unavailable."
+                echo '```'
+              } >> "$report"
+            fi
+          done
+
+          {
+            echo
+            echo "## Changed files"
+            echo
+            echo '```text'
+            git diff --name-status origin/master...HEAD || true
+            echo '```'
+          } >> "$report"
+
+          cat "$report" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload complete Report for AI logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-for-ai
+          path: ${{ runner.temp }}/report-for-ai
+          retention-days: 7
+          if-no-files-found: error
