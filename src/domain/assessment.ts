@@ -6,6 +6,7 @@ import type {
   Severity,
   TimestampedEntity,
 } from './common.js';
+import type { OwaspTop10Version } from './owaspTop10.js';
 
 export interface Assessment extends TimestampedEntity {
   id: AssessmentId;
@@ -20,7 +21,7 @@ export interface Assessment extends TimestampedEntity {
   environment?: string;
   assessmentType?: string;
   overallRisk?: Severity;
-  owaspTaxonomyVersion?: string;
+  owaspTaxonomyVersion: OwaspTop10Version;
 }
 
 export interface CreateAssessmentInput {
