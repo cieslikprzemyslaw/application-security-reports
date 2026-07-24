@@ -44,9 +44,7 @@ const StyledGlobalThreatTable = styled.div`
       cursor: pointer;
     }
 
-    .global-threat-table-row--interactive:has(
-        .collection-row-action:hover
-      )
+    .global-threat-table-row--interactive:has(.collection-row-action:hover)
       > td,
     .global-threat-table-row--interactive:has(
         .collection-row-action:focus-visible

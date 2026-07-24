@@ -40,6 +40,21 @@ const StyledAssessmentReportsSection = styled.section`
       color: ${colors.text.primary};
     }
 
+    .assessment-report-title-link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .assessment-report-title-link:hover {
+      color: ${colors.text.linkHover};
+      text-decoration: underline;
+    }
+
+    .assessment-report-title-link:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: 0.25rem;
+    }
+
     .assessment-report-meta,
     .assessment-report-empty {
       color: ${colors.text.secondary};

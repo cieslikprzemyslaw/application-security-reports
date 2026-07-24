@@ -10,15 +10,13 @@ interface CollectionRowActionBaseProps {
   [key: `data-${string}`]: string | number | boolean | undefined;
 }
 
-export interface CollectionRowLinkActionProps
-  extends CollectionRowActionBaseProps {
+export interface CollectionRowLinkActionProps extends CollectionRowActionBaseProps {
   to: To;
   onActivate?: never;
   replace?: boolean;
 }
 
-export interface CollectionRowButtonActionProps
-  extends CollectionRowActionBaseProps {
+export interface CollectionRowButtonActionProps extends CollectionRowActionBaseProps {
   to?: never;
   onActivate: () => void;
   replace?: never;

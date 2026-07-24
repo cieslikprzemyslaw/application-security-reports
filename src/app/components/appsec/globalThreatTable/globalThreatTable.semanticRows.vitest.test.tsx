@@ -24,10 +24,7 @@ describe('GlobalThreatTable semantic rows', () => {
 
     render(
       <AppThemeProvider>
-        <GlobalThreatTable
-          threats={[threat]}
-          onThreatClick={onThreatClick}
-        />
+        <GlobalThreatTable threats={[threat]} onThreatClick={onThreatClick} />
       </AppThemeProvider>,
     );
 

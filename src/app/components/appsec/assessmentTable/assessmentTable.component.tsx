@@ -122,9 +122,7 @@ const AssessmentTable = ({
 
         {assessments.map(assessment => {
           const assessmentHref = getAssessmentHref?.(assessment);
-          const hasPrimaryAction = Boolean(
-            assessmentHref || onAssessmentClick,
-          );
+          const hasPrimaryAction = Boolean(assessmentHref || onAssessmentClick);
 
           return (
             <tr

@@ -18,9 +18,7 @@ export const getDeleteConfirmationText = (
   version: ReportVersionSummary,
 ): string => `v${formatVersionNumber(version.version)}`;
 
-export const getDeleteDescription = (
-  version: ReportVersionSummary,
-): string =>
+export const getDeleteDescription = (version: ReportVersionSummary): string =>
   version.status === 'final'
     ? 'This final Report version is immutable history. Deleting it removes the saved snapshot from this local workspace.'
     : 'This draft Report version will be removed from this local workspace.';
