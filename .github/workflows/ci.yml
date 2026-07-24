@@ -126,3 +126,300 @@ jobs:
 
       - name: Run dependency audit policy
         run: npm run security:audit
+
+  report-for-ai:
+    name: Report for AI
+    if: ${{ always() && (needs.validate.result != 'success' || needs.docker-runtime.result != 'success' || needs.dependency-security.result != 'success') }}
+    needs:
+      - validate
+      - docker-runtime
+      - dependency-security
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+          cache: npm
+
+      - name: Prepare Report for AI logs
+        run: mkdir -p /tmp/report-for-ai
+
+      - name: Install dependencies diagnostic
+        id: install
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm ci 2>&1 | tee /tmp/report-for-ai/install.log
+
+      - name: Edited file length diagnostic
+        id: file_length
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          node .github/scripts/check-edited-file-lines.mjs 2>&1 | tee /tmp/report-for-ai/file-length.log
+
+      - name: Prisma schema diagnostic
+        id: prisma_validate
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run db:validate 2>&1 | tee /tmp/report-for-ai/prisma-validate.log
+
+      - name: Prisma client diagnostic
+        id: prisma_generate
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run db:generate 2>&1 | tee /tmp/report-for-ai/prisma-generate.log
+
+      - name: Formatting diagnostic
+        id: formatting
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run format:check 2>&1 | tee /tmp/report-for-ai/formatting.log
+          status=${PIPESTATUS[0]}
+
+          if [ "$status" -ne 0 ]; then
+            echo "" | tee -a /tmp/report-for-ai/formatting.log
+            echo "Files requiring formatting:" | tee -a /tmp/report-for-ai/formatting.log
+            npx prettier --list-different . 2>&1 | tee -a /tmp/report-for-ai/formatting.log || true
+          fi
+
+          exit "$status"
+
+      - name: Lint diagnostic
+        id: lint
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run lint -- --format stylish 2>&1 | tee /tmp/report-for-ai/lint.log
+
+      - name: Frontend TypeScript diagnostic
+        id: frontend_typecheck
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npx tsc --noEmit -p tsconfig.json --pretty false 2>&1 | tee /tmp/report-for-ai/frontend-typecheck.log
+
+      - name: Server TypeScript diagnostic
+        id: server_typecheck
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npx tsc --noEmit -p tsconfig.server.json --pretty false 2>&1 | tee /tmp/report-for-ai/server-typecheck.log
+
+      - name: Frontend tests diagnostic
+        id: frontend_tests
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run test:frontend -- --reporter=verbose 2>&1 | tee /tmp/report-for-ai/frontend-tests.log
+
+      - name: Backend tests diagnostic
+        id: backend_tests
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run test:backend -- --reporter=verbose 2>&1 | tee /tmp/report-for-ai/backend-tests.log
+
+      - name: Client build diagnostic
+        id: client_build
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run build:client 2>&1 | tee /tmp/report-for-ai/client-build.log
+
+      - name: Server build diagnostic
+        id: server_build
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run build:server 2>&1 | tee /tmp/report-for-ai/server-build.log
+
+      - name: Dependency security diagnostic
+        id: dependency_diagnostic
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run security:audit 2>&1 | tee /tmp/report-for-ai/dependency-security.log
+          status=${PIPESTATUS[0]}
+
+          if [ "$status" -ne 0 ]; then
+            echo "" | tee -a /tmp/report-for-ai/dependency-security.log
+            echo "Full npm audit output:" | tee -a /tmp/report-for-ai/dependency-security.log
+            npm audit 2>&1 | tee -a /tmp/report-for-ai/dependency-security.log || true
+          fi
+
+          exit "$status"
+
+      - name: Docker runtime diagnostic
+        id: docker_diagnostic
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          log=/tmp/report-for-ai/docker-runtime.log
+          image="appsec-report-builder-ai:${GITHUB_SHA}"
+          container="report-for-ai-${GITHUB_RUN_ID}"
+
+          cleanup() {
+            docker stop "$container" >> "$log" 2>&1 || true
+            docker rm "$container" >> "$log" 2>&1 || true
+          }
+
+          trap cleanup EXIT
+
+          docker build --progress=plain -f docker/api/Dockerfile -t "$image" . 2>&1 | tee "$log"
+          docker run -d \
+            --name "$container" \
+            -p 3001:3001 \
+            -e DATABASE_URL="file:/data/appsec-report-builder.db" \
+            "$image" 2>&1 | tee -a "$log"
+
+          for i in {1..20}; do
+            if curl -fsS http://localhost:3001/api/health 2>&1 | tee -a "$log"; then
+              exit 0
+            fi
+
+            echo "Waiting for API health check, attempt ${i}/20" | tee -a "$log"
+            sleep 2
+          done
+
+          echo "Container state:" | tee -a "$log"
+          docker ps -a --filter "name=$container" 2>&1 | tee -a "$log" || true
+          echo "Container inspection:" | tee -a "$log"
+          docker inspect "$container" 2>&1 | tee -a "$log" || true
+          echo "Container logs:" | tee -a "$log"
+          docker logs "$container" 2>&1 | tee -a "$log" || true
+          exit 1
+
+      - name: Create Report for AI summary
+        if: always()
+        env:
+          VALIDATE_RESULT: ${{ needs.validate.result }}
+          DOCKER_RESULT: ${{ needs.docker-runtime.result }}
+          DEPENDENCY_JOB_RESULT: ${{ needs.dependency-security.result }}
+          INSTALL_RESULT: ${{ steps.install.outcome }}
+          FILE_LENGTH_RESULT: ${{ steps.file_length.outcome }}
+          PRISMA_VALIDATE_RESULT: ${{ steps.prisma_validate.outcome }}
+          PRISMA_GENERATE_RESULT: ${{ steps.prisma_generate.outcome }}
+          FORMATTING_RESULT: ${{ steps.formatting.outcome }}
+          LINT_RESULT: ${{ steps.lint.outcome }}
+          FRONTEND_TYPECHECK_RESULT: ${{ steps.frontend_typecheck.outcome }}
+          SERVER_TYPECHECK_RESULT: ${{ steps.server_typecheck.outcome }}
+          FRONTEND_TESTS_RESULT: ${{ steps.frontend_tests.outcome }}
+          BACKEND_TESTS_RESULT: ${{ steps.backend_tests.outcome }}
+          CLIENT_BUILD_RESULT: ${{ steps.client_build.outcome }}
+          SERVER_BUILD_RESULT: ${{ steps.server_build.outcome }}
+          DEPENDENCY_DIAGNOSTIC_RESULT: ${{ steps.dependency_diagnostic.outcome }}
+          DOCKER_DIAGNOSTIC_RESULT: ${{ steps.docker_diagnostic.outcome }}
+        run: |
+          report="$GITHUB_STEP_SUMMARY"
+
+          {
+            echo "# Report for AI"
+            echo
+            echo "This is an explicit diagnostic report for automated analysis. It does not replace the original CI jobs and does not hide their raw results."
+            echo
+            echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- Branch: \`${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}\`"
+            echo "- Complete raw logs: artifact \`report-for-ai-${GITHUB_RUN_ID}\`"
+            echo
+            echo "## Original CI results"
+            echo
+            echo "| Original job | Result |"
+            echo "| --- | --- |"
+            echo "| Validate | $VALIDATE_RESULT |"
+            echo "| Docker Runtime | $DOCKER_RESULT |"
+            echo "| Dependency Security | $DEPENDENCY_JOB_RESULT |"
+            echo
+            echo "## Independent full diagnostic pass"
+            echo
+            echo "| Diagnostic | Result |"
+            echo "| --- | --- |"
+            echo "| Install dependencies | $INSTALL_RESULT |"
+            echo "| Edited file length | $FILE_LENGTH_RESULT |"
+            echo "| Prisma schema | $PRISMA_VALIDATE_RESULT |"
+            echo "| Prisma client generation | $PRISMA_GENERATE_RESULT |"
+            echo "| Formatting | $FORMATTING_RESULT |"
+            echo "| Lint | $LINT_RESULT |"
+            echo "| Frontend TypeScript | $FRONTEND_TYPECHECK_RESULT |"
+            echo "| Server TypeScript | $SERVER_TYPECHECK_RESULT |"
+            echo "| Frontend tests | $FRONTEND_TESTS_RESULT |"
+            echo "| Backend tests | $BACKEND_TESTS_RESULT |"
+            echo "| Client build | $CLIENT_BUILD_RESULT |"
+            echo "| Server build | $SERVER_BUILD_RESULT |"
+            echo "| Dependency security | $DEPENDENCY_DIAGNOSTIC_RESULT |"
+            echo "| Docker runtime | $DOCKER_DIAGNOSTIC_RESULT |"
+            echo
+            echo "## Changed files"
+            echo
+            echo '```text'
+            git diff --name-status origin/master...HEAD || true
+            echo '```'
+          } >> "$report"
+
+          append_failure() {
+            title="$1"
+            result="$2"
+            log_file="$3"
+
+            if [ "$result" = "failure" ]; then
+              {
+                echo
+                echo "## $title"
+                echo
+                echo "The final 120 lines are shown here. The artifact contains the complete raw log."
+                echo
+                echo '```text'
+                tail -n 120 "$log_file" 2>/dev/null || echo "Log file unavailable."
+                echo '```'
+              } >> "$report"
+            fi
+          }
+
+          append_failure "Dependency installation failure" "$INSTALL_RESULT" /tmp/report-for-ai/install.log
+          append_failure "Edited file length failure" "$FILE_LENGTH_RESULT" /tmp/report-for-ai/file-length.log
+          append_failure "Prisma schema failure" "$PRISMA_VALIDATE_RESULT" /tmp/report-for-ai/prisma-validate.log
+          append_failure "Prisma generation failure" "$PRISMA_GENERATE_RESULT" /tmp/report-for-ai/prisma-generate.log
+          append_failure "Formatting failure" "$FORMATTING_RESULT" /tmp/report-for-ai/formatting.log
+          append_failure "Lint failure" "$LINT_RESULT" /tmp/report-for-ai/lint.log
+          append_failure "Frontend TypeScript failure" "$FRONTEND_TYPECHECK_RESULT" /tmp/report-for-ai/frontend-typecheck.log
+          append_failure "Server TypeScript failure" "$SERVER_TYPECHECK_RESULT" /tmp/report-for-ai/server-typecheck.log
+          append_failure "Frontend test failure" "$FRONTEND_TESTS_RESULT" /tmp/report-for-ai/frontend-tests.log
+          append_failure "Backend test failure" "$BACKEND_TESTS_RESULT" /tmp/report-for-ai/backend-tests.log
+          append_failure "Client build failure" "$CLIENT_BUILD_RESULT" /tmp/report-for-ai/client-build.log
+          append_failure "Server build failure" "$SERVER_BUILD_RESULT" /tmp/report-for-ai/server-build.log
+          append_failure "Dependency security failure" "$DEPENDENCY_DIAGNOSTIC_RESULT" /tmp/report-for-ai/dependency-security.log
+          append_failure "Docker runtime failure" "$DOCKER_DIAGNOSTIC_RESULT" /tmp/report-for-ai/docker-runtime.log
+
+      - name: Upload complete Report for AI logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-for-ai-${{ github.run_id }}
+          path: /tmp/report-for-ai
+          retention-days: 7
+          if-no-files-found: warn
