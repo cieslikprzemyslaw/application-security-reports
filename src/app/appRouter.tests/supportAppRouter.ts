@@ -10,9 +10,7 @@ type AppRouterApiMockRequest = {
 type AppRouterApiMockRoute = {
   method?: string;
   path: string;
-  respond: (
-    request: AppRouterApiMockRequest,
-  ) => Response | Promise<Response>;
+  respond: (request: AppRouterApiMockRequest) => Response | Promise<Response>;
 };
 
 const normalizeMockRequest = (
