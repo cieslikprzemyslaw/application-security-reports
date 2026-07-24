@@ -1,0 +1,99 @@
+name: Issue 324 Diagnose Final
+
+on:
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    if: github.actor != 'github-actions[bot]'
+    name: Capture final Assessment taxonomy typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: refactor/324-tighten-assessment-owasp-version-typing
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+          cache: npm
+
+      - name: Extract and apply both patch scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from textwrap import dedent
+
+          def blocks(path: str):
+              text = Path(path).read_text()
+              marker = "          python - <<'PY'\n"
+              result = []
+              cursor = 0
+              while True:
+                  try:
+                      start = text.index(marker, cursor) + len(marker)
+                  except ValueError:
+                      return result
+                  end = text.index('\n          PY', start)
+                  result.append(dedent(text[start:end]))
+                  cursor = end + 1
+
+          inventory_block = blocks('.github/workflows/issue-324-inventory.yml')[0]
+          final_blocks = blocks('.github/workflows/issue-324-apply-final.yml')
+          Path('/tmp/issue-324-main.py').write_text(inventory_block)
+          Path('/tmp/issue-324-fixtures.py').write_text(final_blocks[1])
+          PY
+          python /tmp/issue-324-main.py
+          python /tmp/issue-324-fixtures.py
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format changed files
+        run: |
+          npx prettier --write \
+            server/routes/threats.route.ts \
+            src/app/pages/assessmentDetails/hooks/useAssessmentFindings.ts \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.component.tsx \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.testUtils.tsx \
+            src/app/pages/assessmentDetails/assessmentDetails.stories.tsx \
+            src/app/pages/assessmentDetails/assessmentDetails.view.test.tsx \
+            src/app/pages/assessmentDetails/evidence/testUtils/renderEvidenceTestApp.tsx \
+            src/domain/domain.types.test.ts \
+            src/domain/schemas/assessment.schema.vitest.test.ts \
+            src/services/assessmentService.ts \
+            src/services/services.assessment.vitest.test.ts
+
+      - name: Capture typecheck
+        id: typecheck
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run typecheck 2>&1 | tee issue-324-final-typecheck.log
+
+      - name: Capture changed files
+        if: always()
+        run: git diff > issue-324-final.patch
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-324-final-diagnostics
+          path: |
+            issue-324-final-typecheck.log
+            issue-324-final.patch
+          retention-days: 1
+
+      - name: Fail when typecheck failed
+        if: steps.typecheck.outcome == 'failure'
+        run: exit 1
