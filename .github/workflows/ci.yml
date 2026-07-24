@@ -46,19 +46,46 @@ jobs:
         run: npm run db:generate
 
       - name: Check formatting
-        run: npm run format:check
+        run: |
+          set +e
+          npm run format:check
+          format_status=$?
+          set -e
+
+          if [ "$format_status" -ne 0 ]; then
+            echo "::group::Files requiring Prettier formatting"
+            npx prettier --list-different . || true
+            echo "::endgroup::"
+            exit "$format_status"
+          fi
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint -- --format stylish
 
       - name: Typecheck
-        run: npm run typecheck
+        run: |
+          echo "::group::Frontend TypeScript"
+          npx tsc --noEmit -p tsconfig.json --pretty false
+          echo "::endgroup::"
+
+          echo "::group::Server TypeScript"
+          npx tsc --noEmit -p tsconfig.server.json --pretty false
+          echo "::endgroup::"
 
       - name: Test
-        run: npm test
+        run: npm test -- --reporter=verbose
 
       - name: Build
         run: npm run build
+
+      - name: Print validation context on failure
+        if: failure()
+        run: |
+          echo "Node: $(node --version)"
+          echo "npm: $(npm --version)"
+          echo "Commit: $GITHUB_SHA"
+          echo "Changed files against master:"
+          git diff --name-status origin/master...HEAD || true
 
   docker-runtime:
     name: Docker Runtime
@@ -73,7 +100,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build Docker image
-        run: docker build -f docker/api/Dockerfile -t appsec-report-builder-api:${{ github.sha }} .
+        run: docker build --progress=plain -f docker/api/Dockerfile -t appsec-report-builder-api:${{ github.sha }} .
 
       - name: Run Docker container
         run: |
@@ -90,12 +117,18 @@ jobs:
               exit 0
             fi
 
-            echo "Waiting for API health check..."
+            echo "Waiting for API health check... attempt ${i}/20"
             sleep 2
           done
 
           echo "API health check failed"
-          docker logs appsec-report-builder-api
+          echo "::group::Container state"
+          docker ps -a --filter name=appsec-report-builder-api
+          docker inspect appsec-report-builder-api || true
+          echo "::endgroup::"
+          echo "::group::Container logs"
+          docker logs appsec-report-builder-api || true
+          echo "::endgroup::"
           exit 1
 
       - name: Stop Docker container
@@ -125,4 +158,15 @@ jobs:
         run: npm ci
 
       - name: Run dependency audit policy
-        run: npm run security:audit
+        run: |
+          set +e
+          npm run security:audit
+          policy_status=$?
+          set -e
+
+          if [ "$policy_status" -ne 0 ]; then
+            echo "::group::Detailed npm audit report"
+            npm audit || true
+            echo "::endgroup::"
+            exit "$policy_status"
+          fi
