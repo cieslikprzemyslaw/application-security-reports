@@ -5,6 +5,8 @@ import {
   EntityNotFoundView,
   RouteLoadingView,
 } from '~/app/components/routeStateViews';
+import Button from '~/app/components/ui/button';
+import Callout from '~/app/components/ui/callout';
 import { routes } from '~/routes';
 
 import AssessmentDetailsView from './assessmentDetails.view';
@@ -93,8 +95,10 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
     overview,
     assessmentView,
     isLoading,
+    isRefreshing,
     loadError,
     isNotFound,
+    reloadOverview,
     setOverview,
   } = useAssessmentOverview({ companyId, assessmentId });
 
@@ -192,7 +196,7 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
     });
   }, [location.pathname, navigate]);
 
-  if (isLoading) {
+  if (isLoading && !assessmentView) {
     return <RouteLoadingView />;
   }
 
@@ -210,13 +214,19 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
     );
   }
 
-  if (loadError) {
+  if (loadError && !assessmentView) {
     return (
-      <div role="alert">
-        <h1>Assessment workspace</h1>
-
-        <p>{loadError}</p>
-      </div>
+      <section>
+        <Callout
+          variant="error"
+          title="Unable to load assessment workspace"
+          actions={
+            <Button title="Retry" variant="secondary" onClick={reloadOverview} />
+          }
+        >
+          <p>{loadError}</p>
+        </Callout>
+      </section>
     );
   }
 
@@ -226,6 +236,24 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
 
   return (
     <>
+      {isRefreshing && (
+        <div role="status" aria-live="polite">
+          Refreshing assessment workspace...
+        </div>
+      )}
+
+      {loadError && (
+        <Callout
+          variant="warning"
+          title="Assessment data may be out of date"
+          actions={
+            <Button title="Retry" variant="secondary" onClick={reloadOverview} />
+          }
+        >
+          <p>{loadError}</p>
+        </Callout>
+      )}
+
       <AssessmentDetailsView
         assessment={assessmentView}
         activeSection={activeSection}
