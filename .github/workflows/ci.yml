@@ -125,4 +125,18 @@ jobs:
         run: npm ci
 
       - name: Run dependency audit policy
-        run: npm run security:audit
+        id: dependency-audit
+        continue-on-error: true
+        run: npm run security:audit > dependency-audit.log 2>&1
+
+      - name: Upload dependency audit log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-audit-log
+          path: dependency-audit.log
+          retention-days: 1
+
+      - name: Fail when dependency audit blocks
+        if: steps.dependency-audit.outcome == 'failure'
+        run: exit 1
