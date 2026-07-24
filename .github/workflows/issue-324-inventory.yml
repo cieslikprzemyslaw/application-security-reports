@@ -1,4 +1,4 @@
-name: Issue 324 Inventory
+name: Issue 324 Apply Patch
 
 on:
   pull_request:
@@ -6,42 +6,415 @@ on:
       - master
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  inventory:
-    name: Inventory assessment taxonomy contracts
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    name: Apply and validate Assessment taxonomy patch
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     steps:
-      - name: Checkout
+      - name: Checkout branch
         uses: actions/checkout@v4
         with:
+          ref: refactor/324-tighten-assessment-owasp-version-typing
           fetch-depth: 0
 
-      - name: Inventory references
-        run: |
-          {
-            echo "# owaspTaxonomyVersion references"
-            git grep -n -E "owaspTaxonomyVersion" || true
-            echo
-            echo "# OwaspTop10Version references"
-            git grep -n -E "OwaspTop10Version" || true
-            echo
-            echo "# Assessment declarations"
-            git grep -n -E "interface Assessment|type Assessment" -- '*.ts' '*.tsx' || true
-            echo
-            echo "# Assessment service files"
-            git ls-files | grep -Ei 'assessment.*service|service.*assessment' || true
-            echo
-            echo "# createAssessmentService owners"
-            git grep -n -E "createAssessmentService" -- '*.ts' '*.tsx' || true
-          } | tee issue-324-inventory.txt
-
-      - name: Upload inventory
-        uses: actions/upload-artifact@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: issue-324-inventory
-          path: issue-324-inventory.txt
-          retention-days: 1
+          node-version: 24.15.0
+          cache: npm
+
+      - name: Apply exact replacements
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path: str, old: str, new: str, count: int = 1) -> None:
+              file_path = Path(path)
+              content = file_path.read_text(encoding='utf-8-sig')
+              actual = content.count(old)
+              if actual != count:
+                  raise SystemExit(f'{path}: expected {count} matches, found {actual}')
+              file_path.write_text(content.replace(old, new), encoding='utf-8')
+
+          replace_exact(
+              'src/app/pages/assessmentDetails/hooks/useAssessmentFindings.ts',
+              "import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';",
+              "import {\n  OWASP_TOP_10_CURRENT_VERSION,\n  type OwaspTop10Version,\n} from '~/domain';",
+          )
+          replace_exact(
+              'src/app/pages/assessmentDetails/hooks/useAssessmentFindings.ts',
+              '  assessmentOwaspTaxonomyVersion?: string;',
+              '  assessmentOwaspTaxonomyVersion?: OwaspTop10Version;',
+          )
+
+          replace_exact(
+              'src/app/pages/assessmentDetails/components/assessmentFindingsSection.component.tsx',
+              "import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';\n\n",
+              '',
+          )
+          replace_exact(
+              'src/app/pages/assessmentDetails/components/assessmentFindingsSection.component.tsx',
+              '  const owaspTaxonomyVersion =\n    assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION;',
+              '  const { owaspTaxonomyVersion } = assessment;',
+          )
+
+          replace_exact(
+              'src/app/pages/assessmentDetails/components/assessmentFindingsSection.testUtils.tsx',
+              'assessment.owaspTaxonomyVersion ?? OWASP_TOP_10_CURRENT_VERSION',
+              'assessment.owaspTaxonomyVersion',
+              3,
+          )
+
+          replace_exact(
+              'server/routes/threats.route.ts',
+              'assessment.owaspTaxonomyVersion!',
+              'assessment.owaspTaxonomyVersion',
+              4,
+          )
+
+          schema_test_path = 'src/domain/schemas/assessment.schema.vitest.test.ts'
+          schema_test_anchor = """  it('accepts a historical null application name', () => {"""
+          schema_test_insert = """  it('rejects a persisted assessment without an OWASP taxonomy version', () => {
+            const {
+              owaspTaxonomyVersion: omittedVersion,
+              ...assessmentWithoutVersion
+            } = validPersistedAssessment;
+            void omittedVersion;
+
+            const result = assessmentSchema.safeParse(assessmentWithoutVersion);
+
+            expectInvalidAt(result, ['owaspTaxonomyVersion']);
+          });
+
+          """
+          replace_exact(
+              schema_test_path,
+              schema_test_anchor,
+              schema_test_insert + schema_test_anchor,
+          )
+
+          service_test_path = 'src/services/services.assessment.vitest.test.ts'
+          replace_exact(
+              service_test_path,
+              "import assert from 'node:assert/strict';\n\n",
+              "import assert from 'node:assert/strict';\n\nimport { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';\n\n",
+          )
+          replace_exact(
+              service_test_path,
+              "import type { ApiRequestOptions } from './apiClient.js';",
+              "import {\n  ApiResponseParseError,\n  type ApiRequestOptions,\n} from './apiClient.js';",
+          )
+          replace_exact(
+              service_test_path,
+              "      overallRisk: 'high',\n      createdAt:",
+              "      overallRisk: 'high',\n      owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,\n      createdAt:",
+          )
+          get_by_id_anchor = """    {
+              const input: AssessmentCreateInput = {"""
+          negative_service_tests = """    {
+            const {
+              owaspTaxonomyVersion: omittedVersion,
+              ...assessmentWithoutVersion
+            } = assessment;
+            void omittedVersion;
+            const { request } = createRequestSpy({ data: assessmentWithoutVersion });
+            const service = createAssessmentService(request);
+
+            await assert.rejects(
+              () => service.getById(assessment.id),
+              ApiResponseParseError,
+            );
+          }
+
+          {
+            const { request } = createRequestSpy({
+              data: {
+                ...assessmentOverview,
+                assessment: {
+                  ...assessmentOverview.assessment,
+                  owaspTaxonomyVersion: '2099',
+                },
+              },
+            });
+            const service = createAssessmentService(request);
+
+            await assert.rejects(
+              () => service.getOverview(company.id, assessment.id),
+              ApiResponseParseError,
+            );
+          }
+
+          """
+          replace_exact(
+              service_test_path,
+              get_by_id_anchor,
+              negative_service_tests + get_by_id_anchor,
+          )
+
+          service_path = 'src/services/assessmentService.ts'
+          replace_exact(
+              service_path,
+              "import type {\n  Assessment,",
+              "import { z } from 'zod';\n\nimport type {\n  Assessment,",
+          )
+          replace_exact(
+              service_path,
+              "} from '~/domain';\n\nimport { apiRequest } from './apiClient.js';",
+              "} from '~/domain';\nimport {\n  assessmentSchema,\n  nonEmptyIdSchema,\n  nonEmptyTextSchema,\n  nonNegativeIntegerSchema,\n} from '~/domain/schemas';\n\nimport { ApiResponseParseError, apiRequest } from './apiClient.js';",
+          )
+          command_type_old = """export type AssessmentWorkspaceCommand =
+            | 'start'
+            | 'complete'
+            | 'reopen'
+            | 'archive';"""
+          command_type_new = """export const assessmentWorkspaceCommands = [
+            'start',
+            'complete',
+            'reopen',
+            'archive',
+          ] as const;
+
+          export type AssessmentWorkspaceCommand =
+            (typeof assessmentWorkspaceCommands)[number];
+
+          const assessmentWorkspaceCommandSchema = z.enum(
+            assessmentWorkspaceCommands,
+          );
+          const assessmentWorkspaceCompanySchema = z
+            .object({
+              id: nonEmptyIdSchema,
+              name: nonEmptyTextSchema,
+            })
+            .strict();
+
+          export const assessmentWorkspaceOverviewSchema = z
+            .object({
+              company: assessmentWorkspaceCompanySchema,
+              assessment: assessmentSchema
+                .extend({
+                  recordVersion: nonNegativeIntegerSchema,
+                  findingsCount: nonNegativeIntegerSchema,
+                  evidenceCount: nonNegativeIntegerSchema,
+                  reportVersionCount: nonNegativeIntegerSchema,
+                  testerName: nonEmptyTextSchema.optional(),
+                  availableActions: z
+                    .array(assessmentWorkspaceCommandSchema)
+                    .optional(),
+                })
+                .strict(),
+            })
+            .strict();
+
+          const parseAssessmentResponse = (
+            response: unknown,
+            message: string,
+          ): Assessment => {
+            const parsed = assessmentSchema.safeParse(response);
+
+            if (!parsed.success) {
+              throw new ApiResponseParseError(message);
+            }
+
+            return parsed.data;
+          };
+
+          const parseAssessmentWorkspaceOverview = (
+            response: unknown,
+            message: string,
+          ): AssessmentWorkspaceOverview => {
+            const parsed = assessmentWorkspaceOverviewSchema.safeParse(response);
+
+            if (!parsed.success) {
+              throw new ApiResponseParseError(message);
+            }
+
+            return parsed.data;
+          };"""
+          replace_exact(service_path, command_type_old, command_type_new)
+
+          run_command_old = """const runAssessmentCommand = (
+            request: ApiRequestFn,
+            companyId: string,
+            assessmentId: string,
+            command: AssessmentWorkspaceCommand,
+            recordVersion: number,
+            signal?: AbortSignal,
+          ) =>
+            requestData<AssessmentWorkspaceOverview>(
+              request,
+              buildWorkspaceAssessmentUrl(companyId, assessmentId, `commands/${command}`),
+              {
+                body: { recordVersion },
+                method: 'POST',
+                signal,
+              },
+            );"""
+          run_command_new = """const runAssessmentCommand = async (
+            request: ApiRequestFn,
+            companyId: string,
+            assessmentId: string,
+            command: AssessmentWorkspaceCommand,
+            recordVersion: number,
+            signal?: AbortSignal,
+          ) => {
+            const response = await requestData<unknown>(
+              request,
+              buildWorkspaceAssessmentUrl(companyId, assessmentId, `commands/${command}`),
+              {
+                body: { recordVersion },
+                method: 'POST',
+                signal,
+              },
+            );
+
+            return parseAssessmentWorkspaceOverview(
+              response,
+              'Unable to validate the Assessment command response.',
+            );
+          };"""
+          replace_exact(service_path, run_command_old, run_command_new)
+
+          get_by_id_old = """  async getById(assessmentId, signal) {
+            return requestData<Assessment>(
+              request,
+              `/api/assessments/${assessmentId}`,
+              {
+                method: 'GET',
+                signal,
+              },
+            );
+          },"""
+          get_by_id_new = """  async getById(assessmentId, signal) {
+            const response = await requestData<unknown>(
+              request,
+              `/api/assessments/${assessmentId}`,
+              {
+                method: 'GET',
+                signal,
+              },
+            );
+
+            return parseAssessmentResponse(
+              response,
+              'Unable to validate the Assessment response.',
+            );
+          },"""
+          replace_exact(service_path, get_by_id_old, get_by_id_new)
+
+          overview_old = """  async getOverview(companyId, assessmentId, signal) {
+            return requestData<AssessmentWorkspaceOverview>(
+              request,
+              buildWorkspaceAssessmentUrl(companyId, assessmentId, 'overview'),
+              {
+                method: 'GET',
+                signal,
+              },
+            );
+          },"""
+          overview_new = """  async getOverview(companyId, assessmentId, signal) {
+            const response = await requestData<unknown>(
+              request,
+              buildWorkspaceAssessmentUrl(companyId, assessmentId, 'overview'),
+              {
+                method: 'GET',
+                signal,
+              },
+            );
+
+            return parseAssessmentWorkspaceOverview(
+              response,
+              'Unable to validate the Assessment overview response.',
+            );
+          },"""
+          replace_exact(service_path, overview_old, overview_new)
+
+          create_old = """  async create(input) {
+            return requestData<Assessment>(request, '/api/assessments', {
+              body: input,
+              method: 'POST',
+            });
+          },"""
+          create_new = """  async create(input) {
+            const response = await requestData<unknown>(request, '/api/assessments', {
+              body: input,
+              method: 'POST',
+            });
+
+            return parseAssessmentResponse(
+              response,
+              'Unable to validate the created Assessment response.',
+            );
+          },"""
+          replace_exact(service_path, create_old, create_new)
+
+          update_old = """  async update(assessmentId, input) {
+            return requestData<Assessment>(
+              request,
+              `/api/assessments/${assessmentId}`,
+              {
+                body: input,
+                method: 'PATCH',
+              },
+            );
+          },"""
+          update_new = """  async update(assessmentId, input) {
+            const response = await requestData<unknown>(
+              request,
+              `/api/assessments/${assessmentId}`,
+              {
+                body: input,
+                method: 'PATCH',
+              },
+            );
+
+            return parseAssessmentResponse(
+              response,
+              'Unable to validate the updated Assessment response.',
+            );
+          },"""
+          replace_exact(service_path, update_old, update_new)
+          PY
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format changed files
+        run: |
+          npx prettier --write \
+            src/app/pages/assessmentDetails/hooks/useAssessmentFindings.ts \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.component.tsx \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.testUtils.tsx \
+            server/routes/threats.route.ts \
+            src/domain/schemas/assessment.schema.vitest.test.ts \
+            src/services/assessmentService.ts \
+            src/services/services.assessment.vitest.test.ts
+
+      - name: Run mandatory typecheck
+        run: npm run typecheck
+
+      - name: Run focused tests
+        run: |
+          npm test -- \
+            src/domain/schemas/assessment.schema.vitest.test.ts \
+            src/services/services.assessment.vitest.test.ts
+
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            src/app/pages/assessmentDetails/hooks/useAssessmentFindings.ts \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.component.tsx \
+            src/app/pages/assessmentDetails/components/assessmentFindingsSection.testUtils.tsx \
+            server/routes/threats.route.ts \
+            src/domain/schemas/assessment.schema.vitest.test.ts \
+            src/services/assessmentService.ts \
+            src/services/services.assessment.vitest.test.ts
+          git commit -m "refactor: validate Assessment taxonomy responses" \
+            -m "Signed-off-by: Przemyslaw Cieslik <cieslikprzemyslaw@users.noreply.github.com>"
+          git push origin HEAD:refactor/324-tighten-assessment-owasp-version-typing
