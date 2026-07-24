@@ -110,8 +110,17 @@ export const assessmentBase: AssessmentDetailsAssessment = {
 
 export const textContent = (node: ParentNode) => node.textContent ?? '';
 
+interface RenderHarnessOptions {
+  threats?: Threat[];
+  isLoading?: boolean;
+  isRefreshing?: boolean;
+  hasLoadedFindings?: boolean;
+  loadError?: string;
+}
+
 export const renderHarness = async (
   assessmentStatus: AssessmentDetailsAssessment['status'],
+  options: RenderHarnessOptions = {},
 ) => {
   const { container, window } = setupDom();
 
@@ -119,6 +128,7 @@ export const renderHarness = async (
 
   const root = createTestingLibraryRoot(container);
   const events: string[] = [];
+  const renderedThreats = options.threats ?? [finding];
 
   const Harness = () => {
     const assessment: AssessmentDetailsAssessment = {
@@ -134,7 +144,8 @@ export const renderHarness = async (
     );
 
     const openFindingDetails = (threat: Threat | ThreatTableRow) => {
-      const nextFinding = 'strideCategories' in threat ? threat : finding;
+      const nextFinding =
+        'strideCategories' in threat ? threat : renderedThreats[0] ?? finding;
 
       events.push('view');
       setSelectedFinding(nextFinding);
@@ -146,7 +157,9 @@ export const renderHarness = async (
 
     const openEditFinding = (threat?: Threat | ThreatTableRow) => {
       const nextFinding =
-        threat && 'strideCategories' in threat ? threat : finding;
+        threat && 'strideCategories' in threat
+          ? threat
+          : renderedThreats[0] ?? finding;
 
       events.push('edit');
 
@@ -169,8 +182,11 @@ export const renderHarness = async (
     return (
       <AssessmentFindingsSection
         assessment={assessment}
-        threats={[finding]}
-        isLoading={false}
+        threats={renderedThreats}
+        isLoading={options.isLoading ?? false}
+        isRefreshing={options.isRefreshing ?? false}
+        hasLoadedFindings={options.hasLoadedFindings ?? true}
+        loadError={options.loadError}
         drawerMode={drawerMode}
         selectedFinding={selectedFinding}
         draftValue={draftValue}
@@ -180,6 +196,7 @@ export const renderHarness = async (
         isDeleting={false}
         deleteError={undefined}
         canEditFindings={assessment.status !== 'archived'}
+        reloadFindings={() => events.push('reload')}
         openCreateFinding={openCreateFinding}
         openEditFinding={openEditFinding}
         openFindingDetails={openFindingDetails}
