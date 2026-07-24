@@ -12,8 +12,10 @@ export interface UseAssessmentOverviewResult {
   overview?: AssessmentWorkspaceOverview;
   assessmentView?: AssessmentDetailsAssessment;
   isLoading: boolean;
+  isRefreshing: boolean;
   loadError?: string;
   isNotFound: boolean;
+  reloadOverview: () => void;
   setOverview: Dispatch<
     SetStateAction<AssessmentWorkspaceOverview | undefined>
   >;
@@ -30,6 +32,7 @@ export const useAssessmentOverview = ({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | undefined>();
   const [isNotFound, setIsNotFound] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -73,7 +76,6 @@ export const useAssessmentOverview = ({
           return;
         }
 
-        setOverview(undefined);
         setLoadError(
           error instanceof Error
             ? error.message
@@ -92,14 +94,16 @@ export const useAssessmentOverview = ({
       isActive = false;
       controller.abort();
     };
-  }, [assessmentId, companyId]);
+  }, [assessmentId, companyId, reloadKey]);
 
   return {
     overview,
     assessmentView: overview ? toAssessmentViewModel(overview) : undefined,
     isLoading,
+    isRefreshing: isLoading && overview !== undefined,
     loadError,
     isNotFound,
+    reloadOverview: () => setReloadKey(key => key + 1),
     setOverview,
   };
 };
