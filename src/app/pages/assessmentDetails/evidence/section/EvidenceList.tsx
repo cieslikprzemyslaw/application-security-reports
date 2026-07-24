@@ -20,7 +20,9 @@ const EvidenceList = ({ evidence, controller }: EvidenceListProps) => {
         <EmptyState
           variant={controller.canEditEvidence ? 'first-use' : 'unavailable'}
           title={
-            controller.canEditEvidence ? 'No evidence yet' : 'No evidence available'
+            controller.canEditEvidence
+              ? 'No evidence yet'
+              : 'No evidence available'
           }
           description={
             controller.canEditEvidence

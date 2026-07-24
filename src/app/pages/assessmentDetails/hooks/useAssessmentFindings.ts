@@ -116,8 +116,7 @@ export const useAssessmentFindings = ({
   }, [baselineValue, draftValue, drawerMode]);
 
   const selectedFinding = useMemo(
-    () =>
-      collection.threats.find(threat => threat.id === selectedFindingId),
+    () => collection.threats.find(threat => threat.id === selectedFindingId),
     [collection.threats, selectedFindingId],
   );
 

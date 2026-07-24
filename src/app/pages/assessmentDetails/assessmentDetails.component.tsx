@@ -221,7 +221,11 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
           variant="error"
           title="Unable to load assessment workspace"
           actions={
-            <Button title="Retry" variant="secondary" onClick={reloadOverview} />
+            <Button
+              title="Retry"
+              variant="secondary"
+              onClick={reloadOverview}
+            />
           }
         >
           <p>{loadError}</p>
@@ -247,7 +251,11 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
           variant="warning"
           title="Assessment data may be out of date"
           actions={
-            <Button title="Retry" variant="secondary" onClick={reloadOverview} />
+            <Button
+              title="Retry"
+              variant="secondary"
+              onClick={reloadOverview}
+            />
           }
         >
           <p>{loadError}</p>

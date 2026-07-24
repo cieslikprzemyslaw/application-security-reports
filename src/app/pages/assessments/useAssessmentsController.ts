@@ -155,8 +155,7 @@ export const useAssessmentsController = ({
   );
 
   const isRefreshing = isLoading && hasLoadedAssessments;
-  const showEmptyWorkspace =
-    hasLoadedAssessments && assessments.length === 0;
+  const showEmptyWorkspace = hasLoadedAssessments && assessments.length === 0;
   const showNoResults =
     hasLoadedAssessments &&
     !showEmptyWorkspace &&
