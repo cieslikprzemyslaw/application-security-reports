@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { CollectionRowAction } from '~/app/components/common';
 import Badge from '~/app/components/ui/badge';
 import Button from '~/app/components/ui/button';
 import EmptyState from '~/app/components/ui/emptyState';
@@ -54,16 +55,18 @@ const EvidenceList = ({ evidence, controller }: EvidenceListProps) => {
     <div className="assessment-evidence-list">
       {evidence.map(item => (
         <article key={item.id} className="assessment-evidence-card">
+          <CollectionRowAction
+            className="assessment-evidence-card-title-button"
+            label={`Open ${item.title} evidence`}
+            data-evidence-open-action={item.id}
+            onActivate={() => controller.openEvidenceDetails(item)}
+          >
+            {item.title}
+          </CollectionRowAction>
+
           <div className="assessment-evidence-card-header">
             <div className="assessment-evidence-card-title-row">
-              <button
-                className="assessment-evidence-card-title-button"
-                type="button"
-                data-evidence-open-action={item.id}
-                onClick={() => controller.openEvidenceDetails(item)}
-              >
-                {item.title}
-              </button>
+              <h3 className="assessment-evidence-card-title">{item.title}</h3>
 
               <div className="assessment-evidence-card-actions">
                 {controller.canEditEvidence && (

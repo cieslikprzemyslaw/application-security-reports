@@ -1,10 +1,8 @@
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import AssessmentForm from '~/app/components/appsec/assessmentForm';
-import AssessmentTable, {
-  type AssessmentListRow,
-} from '~/app/components/appsec/assessmentTable';
+import AssessmentTable from '~/app/components/appsec/assessmentTable';
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import Drawer from '~/app/components/ui/drawer';
@@ -29,7 +27,7 @@ import {
 } from './assessments.utils';
 
 const unsafeStorageDetailPattern =
-  /(storageKey|filePath|filesystem path|internal storage|[A-Za-z]:\\|\\|\/)/i;
+  /(storageKey|filePath|filesystem path|internal storage|[A-Za-z]:\|\|\/)/i;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -49,7 +47,6 @@ const getAssessmentCleanupWarnings = (state: unknown) => {
 };
 
 const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
-  const navigate = useNavigate();
   const location = useLocation();
   const controller = useAssessmentsController({ companyId, companyName });
   const assessmentCleanupWarnings = getAssessmentCleanupWarnings(
@@ -88,9 +85,6 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
     clearFilters,
     setDraftValue,
   } = controller;
-  const openAssessmentWorkspace = (assessment: AssessmentListRow) => {
-    navigate(routes.assessmentDetailsOverview(companyId, assessment.id));
-  };
 
   const emptyState = showEmptyWorkspace ? (
     <EmptyState
@@ -258,7 +252,9 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
               sortBy={sortBy}
               sortDirection={sortDirection}
               onSortChange={handleSortChange}
-              onAssessmentClick={openAssessmentWorkspace}
+              getAssessmentHref={assessment =>
+                routes.assessmentDetailsOverview(companyId, assessment.id)
+              }
               onEditAssessment={openEditDrawer}
               emptyState={emptyState}
             />

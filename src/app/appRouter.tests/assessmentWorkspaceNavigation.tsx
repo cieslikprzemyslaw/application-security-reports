@@ -22,25 +22,19 @@ export const runAssessmentWorkspaceNavigationTests = async () => {
       assert.ok(textContent(container).includes('Customer Services Portal'));
       assert.ok(textContent(container).includes('Data Export Service'));
 
-      const editableRow = Array.from(
-        container.querySelectorAll('.assessment-table__row'),
-      ).find(row => row.textContent?.includes('Customer Services Portal')) as
-        | HTMLTableRowElement
-        | undefined;
+      const editableAction = container.querySelector<HTMLAnchorElement>(
+        'a[aria-label="Open Customer Services Portal assessment"]',
+      );
+      const editableRow = editableAction?.closest('tr');
 
-      assert.ok(editableRow, 'Expected an editable assessment row');
-      assert.equal(editableRow?.tabIndex, 0);
+      assert.ok(editableAction, 'Expected an editable assessment link');
+      assert.ok(editableRow, 'Expected the assessment link inside its row');
+      assert.equal(editableRow?.tabIndex, -1);
 
       await act(async () => {
-        editableRow!.focus();
-        assert.equal(window.document.activeElement, editableRow);
-        editableRow!.dispatchEvent(
-          new window.KeyboardEvent('keydown', {
-            bubbles: true,
-            cancelable: true,
-            key: 'Enter',
-          }),
-        );
+        editableAction!.focus();
+        assert.equal(window.document.activeElement, editableAction);
+        editableAction!.click();
         await renderTick();
         await renderTick();
       });
@@ -93,22 +87,17 @@ export const runAssessmentWorkspaceNavigationTests = async () => {
         routes.companyWorkspaceAssessments('cmp_1'),
       );
 
-      const archivedRow = Array.from(
-        container.querySelectorAll('.assessment-table__row'),
-      ).find(row => row.textContent?.includes('Data Export Service')) as
-        | HTMLTableRowElement
-        | undefined;
+      const archivedAction = container.querySelector<HTMLAnchorElement>(
+        'a[aria-label="Open Data Export Service assessment"]',
+      );
+      const archivedRow = archivedAction?.closest('tr');
 
-      assert.ok(archivedRow, 'Expected an archived assessment row');
+      assert.ok(archivedAction, 'Expected an archived assessment link');
+      assert.ok(archivedRow, 'Expected the archived link inside its row');
+      assert.equal(archivedRow?.tabIndex, -1);
 
       await act(async () => {
-        archivedRow!.dispatchEvent(
-          new window.MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            button: 0,
-          }),
-        );
+        archivedAction!.click();
         await renderTick();
         await renderTick();
       });

@@ -1,4 +1,10 @@
 export { default as ActivityFeed } from './activityFeed';
+export { default as CollectionRowAction } from './collectionRowAction';
+export type {
+  CollectionRowActionProps,
+  CollectionRowButtonActionProps,
+  CollectionRowLinkActionProps,
+} from './collectionRowAction';
 export { default as DirtyFormGuard } from './dirtyFormGuard';
 export type { DirtyFormGuardProps } from './dirtyFormGuard';
 export { default as DataTable } from './dataTable';

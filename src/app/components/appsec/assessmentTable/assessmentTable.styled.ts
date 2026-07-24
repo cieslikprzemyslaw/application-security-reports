@@ -28,22 +28,26 @@ const StyledAssessmentTable = styled.div`
       white-space: nowrap;
     }
 
+    .assessment-table__row {
+      position: relative;
+      isolation: isolate;
+    }
+
     .assessment-table__row > td {
       border-bottom: 1px solid ${colors.border.subtle};
       background-color: ${colors.surface.card};
     }
 
-    .assessment-table__row--clickable {
+    .assessment-table__row--interactive {
       cursor: pointer;
     }
 
-    .assessment-table__row--clickable:hover > td {
+    .assessment-table__row--interactive:has(.collection-row-action:hover) > td,
+    .assessment-table__row--interactive:has(
+        .collection-row-action:focus-visible
+      )
+      > td {
       background-color: ${colors.neutral.grey50};
-    }
-
-    .assessment-table__row--clickable:focus-visible {
-      outline: 2px solid ${colors.border.focus};
-      outline-offset: -2px;
     }
 
     .assessment-table__row:last-child > td {
@@ -114,6 +118,9 @@ const StyledAssessmentTable = styled.div`
     }
 
     .assessment-table__actions {
+      position: relative;
+      z-index: 2;
+
       display: flex;
       justify-content: flex-end;
     }

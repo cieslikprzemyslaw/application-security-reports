@@ -1,4 +1,4 @@
-﻿import { css, styled } from 'styled-components';
+import { css, styled } from 'styled-components';
 
 const StyledAssessmentReportsSection = styled.section`
   ${({ theme: { colors, radii, spacing, typography } }) => css`
@@ -35,6 +35,7 @@ const StyledAssessmentReportsSection = styled.section`
     }
 
     .assessment-report-title {
+      margin: 0;
       font-size: ${typography.headings.h5.size};
       color: ${colors.text.primary};
     }
@@ -49,8 +50,7 @@ const StyledAssessmentReportsSection = styled.section`
       text-decoration: underline;
     }
 
-    .assessment-report-title-link:focus-visible,
-    .assessment-report-version-link:focus-visible {
+    .assessment-report-title-link:focus-visible {
       outline: 2px solid ${colors.border.focus};
       outline-offset: 0.25rem;
     }
@@ -69,8 +69,23 @@ const StyledAssessmentReportsSection = styled.section`
     }
 
     .assessment-report-version {
-      border-top: 1px solid ${colors.border.subtle};
+      position: relative;
+      isolation: isolate;
+
       padding-top: ${spacing.xs};
+      border-top: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.sm};
+    }
+
+    .assessment-report-version:has(.collection-row-action:hover),
+    .assessment-report-version:has(.collection-row-action:focus-visible) {
+      background-color: ${colors.surface.subtle};
+    }
+
+    .assessment-report-version:has(.collection-row-action:hover)
+      .assessment-report-version-action {
+      color: ${colors.text.linkHover};
+      text-decoration: underline;
     }
 
     .assessment-report-version-content {
@@ -78,24 +93,16 @@ const StyledAssessmentReportsSection = styled.section`
       flex-direction: column;
       align-items: stretch;
       gap: ${spacing.xs};
+      padding: ${spacing.xs};
     }
 
-    .assessment-report-version-link {
+    .assessment-report-version-details {
       display: flex;
       flex: 1 1 auto;
       flex-direction: column;
       align-items: flex-start;
       gap: ${spacing.xxs};
       min-width: 0;
-      width: 100%;
-      padding: ${spacing.xs};
-      border-radius: ${radii.sm};
-      color: ${colors.text.primary};
-      text-decoration: none;
-    }
-
-    .assessment-report-version-link:hover {
-      background-color: ${colors.surface.subtle};
     }
 
     .assessment-report-version-name,
@@ -107,9 +114,9 @@ const StyledAssessmentReportsSection = styled.section`
       color: ${colors.text.link};
     }
 
-    .assessment-report-version-link:hover .assessment-report-version-action {
-      color: ${colors.text.linkHover};
-      text-decoration: underline;
+    .assessment-report-version-actions {
+      position: relative;
+      z-index: 2;
     }
 
     .assessment-report-delete-dialog {
@@ -155,7 +162,7 @@ const StyledAssessmentReportsSection = styled.section`
         justify-content: space-between;
       }
 
-      .assessment-report-version-link {
+      .assessment-report-version-details {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
