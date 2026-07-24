@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   format:
-    name: Show Prettier diff
+    name: Export Prettier output
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -33,8 +33,12 @@ jobs:
             src/app/appRouter.tests/supportAppRouter.ts \
             src/app/appRouter.vitest.test.tsx
 
-      - name: Show formatting diff
-        run: |
-          git diff --no-ext-diff --unified=20 -- \
-            src/app/appRouter.tests/supportAppRouter.ts \
+      - name: Upload formatted files
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr381-prettier-output
+          path: |
+            src/app/appRouter.tests/supportAppRouter.ts
             src/app/appRouter.vitest.test.tsx
+          if-no-files-found: error
+          retention-days: 1
