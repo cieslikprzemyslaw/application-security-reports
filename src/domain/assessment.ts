@@ -24,8 +24,7 @@ export interface Assessment extends TimestampedEntity {
   overallRisk?: Severity;
   owaspTaxonomyVersion: OwaspTop10Version;
   cweCatalogVersion: CweCatalogVersion;
-  recordVersion: number;
-  archivedAt: ISODateString | null;
+  archivedAt?: ISODateString | null;
 }
 
 export interface CreateAssessmentInput {
@@ -46,7 +45,9 @@ export interface UpdateAssessmentInput {
   title?: string;
   description?: string;
   scope?: string;
+  status?: AssessmentStatus;
   startedAt?: ISODateString;
+  completedAt?: ISODateString;
   applicationName?: string;
   environment?: string;
   assessmentType?: string;
