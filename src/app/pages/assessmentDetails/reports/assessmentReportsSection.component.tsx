@@ -27,6 +27,7 @@ interface AssessmentReportsSectionProps {
   service?: Pick<ReportService, 'listByAssessmentId'>;
   versionService?: Pick<ReportVersionService, 'deleteVersion'>;
   onVersionCountChange?: (delta: number) => void;
+  readOnly?: boolean;
 }
 
 type LoadState =
@@ -67,6 +68,7 @@ const AssessmentReportsSection = ({
   service = reportService,
   versionService = reportVersionService,
   onVersionCountChange,
+  readOnly = false,
 }: AssessmentReportsSectionProps) => {
   const [reloadKey, setReloadKey] = useState(0);
   const requestKey = `${assessmentId}:${reloadKey}`;
@@ -87,11 +89,7 @@ const AssessmentReportsSection = ({
       .listByAssessmentId(assessmentId, controller.signal)
       .then(reports => {
         if (isActive) {
-          setState({
-            status: 'success',
-            requestKey,
-            reports,
-          });
+          setState({ status: 'success', requestKey, reports });
         }
       })
       .catch(error => {
@@ -118,6 +116,14 @@ const AssessmentReportsSection = ({
     };
   }, [assessmentId, requestKey, service]);
 
+  useEffect(() => {
+    if (readOnly) {
+      setDeleteTarget(null);
+      setDeleteConfirmation('');
+      setDeleteError(undefined);
+    }
+  }, [readOnly]);
+
   const requestedDeleteConfirmation = useMemo(
     () => (deleteTarget ? getDeleteConfirmationText(deleteTarget.version) : ''),
     [deleteTarget],
@@ -129,23 +135,26 @@ const AssessmentReportsSection = ({
     report: AssessmentReportListItem,
     version: ReportVersionSummary,
   ) => {
+    if (readOnly) return;
     setDeleteTarget({ report, version });
     setDeleteConfirmation('');
     setDeleteError(undefined);
   };
 
   const closeDeleteDialog = () => {
-    if (isDeleting) {
-      return;
-    }
-
+    if (isDeleting) return;
     setDeleteTarget(null);
     setDeleteConfirmation('');
     setDeleteError(undefined);
   };
 
   const confirmVersionDelete = () => {
-    if (!deleteTarget || !isDeleteConfirmationValid || isDeleting) {
+    if (
+      readOnly ||
+      !deleteTarget ||
+      !isDeleteConfirmationValid ||
+      isDeleting
+    ) {
       return;
     }
 
@@ -176,9 +185,7 @@ const AssessmentReportsSection = ({
         setReloadKey(value => value + 1);
       })
       .catch(error => {
-        if (error instanceof DOMException && error.name === 'AbortError') {
-          return;
-        }
+        if (error instanceof DOMException && error.name === 'AbortError') return;
 
         setDeleteError(
           error instanceof Error
@@ -186,9 +193,7 @@ const AssessmentReportsSection = ({
             : 'Unable to delete this Report version.',
         );
       })
-      .finally(() => {
-        setIsDeleting(false);
-      });
+      .finally(() => setIsDeleting(false));
   };
 
   if (state.requestKey !== requestKey || state.status === 'pending') {
@@ -241,27 +246,33 @@ const AssessmentReportsSection = ({
         subtitle="Saved reports and their immutable versions."
         padding="large"
       >
-        <Callout
-          className="assessment-reports-intro"
-          variant="info"
-          title="How PDF versions work"
-        >
-          <p>
-            The application stores immutable report snapshots. PDF files are
-            created by your browser from a selected saved version and are not
-            stored by the application.
-          </p>
-        </Callout>
+        {readOnly ? (
+          <Callout variant="info" title="Read-only reports">
+            <p>Restore the Assessment before deleting a Report version.</p>
+          </Callout>
+        ) : (
+          <Callout
+            className="assessment-reports-intro"
+            variant="info"
+            title="How PDF versions work"
+          >
+            <p>
+              The application stores immutable report snapshots. PDF files are
+              created by your browser from a selected saved version and are not
+              stored by the application.
+            </p>
+          </Callout>
+        )}
 
         <AssessmentReportList
           companyId={companyId}
           reports={visibleReports}
-          onDeleteRequest={requestVersionDelete}
+          onDeleteRequest={readOnly ? undefined : requestVersionDelete}
         />
       </Card>
 
       <Modal
-        isOpen={deleteTarget !== null}
+        isOpen={!readOnly && deleteTarget !== null}
         title="Delete Report version"
         description="This action removes the saved snapshot from this local workspace."
         size="small"
