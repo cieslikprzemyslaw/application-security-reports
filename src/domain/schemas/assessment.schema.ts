@@ -9,6 +9,7 @@ import {
   isoDateStringSchema,
   nonEmptyIdSchema,
   nonEmptyTextSchema,
+  nonNegativeIntegerSchema,
   severitySchema,
   timestampSchema,
   optionalTrimmedTextSchema,
@@ -40,6 +41,8 @@ export const assessmentObjectSchema = z
     overallRisk: severitySchema.optional(),
     owaspTaxonomyVersion: owaspTop10VersionSchema,
     cweCatalogVersion: cweCatalogVersionSchema,
+    recordVersion: nonNegativeIntegerSchema,
+    archivedAt: timestampSchema.nullable(),
     createdAt: timestampSchema,
     updatedAt: timestampSchema,
   })
