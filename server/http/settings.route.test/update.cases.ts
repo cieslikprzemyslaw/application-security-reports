@@ -35,10 +35,16 @@ export const runSettingsUpdateCases = async () => {
 
       assert.equal(response.status, 200);
       assert.equal(body.data.defaultReportTitle, 'Updated report title');
-      assert.equal(body.data.organisationName, defaultSettings.organisationName);
+      assert.equal(
+        body.data.organisationName,
+        defaultSettings.organisationName,
+      );
       assert.equal(calls.get, 1);
       assert.equal(calls.upsert, 1);
-      assert.equal(calls.upsertArgs?.defaultReportTitle, 'Updated report title');
+      assert.equal(
+        calls.upsertArgs?.defaultReportTitle,
+        'Updated report title',
+      );
       assert.equal(
         calls.upsertArgs?.defaultSeverity,
         defaultSettings.defaultSeverity,
