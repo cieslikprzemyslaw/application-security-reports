@@ -25,21 +25,36 @@ jobs:
           fetch-depth: 0
           path: target
 
-      - name: Apply and publish repair
+      - name: Verify target head
         working-directory: target
+        run: test "$(git rev-parse HEAD)" = "1ceab40de760fdb93474d46b3af71df7853e8f8f"
+
+      - name: Reassemble patch carrier
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "1ceab40de760fdb93474d46b3af71df7853e8f8f"
-          cat ../recovery/.recovery-patch/cwe-fix.part.* > /tmp/cwe-report-fix.patch.gz.b64
+          cat recovery/.recovery-patch/cwe-fix.part.* > /tmp/cwe-report-fix.patch.gz.b64
           echo "c4251306615c5f58e9f48fb84da6db440d7d99a31eb0815e050dc22d4de4a67a  /tmp/cwe-report-fix.patch.gz.b64" | sha256sum --check
           base64 --decode /tmp/cwe-report-fix.patch.gz.b64 > /tmp/cwe-report-fix.patch.gz
           echo "1624f1a95e688f4624301f0873c4f60fd320937db54735fd50e2ebd63284174c  /tmp/cwe-report-fix.patch.gz" | sha256sum --check
           gzip --decompress --stdout /tmp/cwe-report-fix.patch.gz > /tmp/cwe-report-fix.patch
           echo "b0f3c5986c114a7dfe792c45a58480287f3b54722d4e79a153db29575b9db58f  /tmp/cwe-report-fix.patch" | sha256sum --check
-          git apply --check /tmp/cwe-report-fix.patch
+
+      - name: Check patch application
+        working-directory: target
+        run: git apply --check /tmp/cwe-report-fix.patch
+
+      - name: Apply patch
+        working-directory: target
+        run: |
           git apply /tmp/cwe-report-fix.patch
           git diff --check
+
+      - name: Commit and push repair
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add --all
