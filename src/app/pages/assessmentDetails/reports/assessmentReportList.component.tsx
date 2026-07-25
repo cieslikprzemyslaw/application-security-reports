@@ -18,7 +18,7 @@ import type { AssessmentReportListItem, ReportVersionSummary } from '~/domain';
 interface AssessmentReportListProps {
   companyId: string;
   reports: AssessmentReportListItem[];
-  onDeleteRequest: (
+  onDeleteRequest?: (
     report: AssessmentReportListItem,
     version: ReportVersionSummary,
   ) => void;
@@ -98,15 +98,17 @@ const AssessmentReportList = ({
                       </span>
                     </div>
 
-                    <div className="assessment-report-version-actions">
-                      <Button
-                        title="Delete"
-                        ariaLabel={deleteLabel}
-                        variant="destructive"
-                        size="small"
-                        onClick={() => onDeleteRequest(report, version)}
-                      />
-                    </div>
+                    {onDeleteRequest ? (
+                      <div className="assessment-report-version-actions">
+                        <Button
+                          title="Delete"
+                          ariaLabel={deleteLabel}
+                          variant="destructive"
+                          size="small"
+                          onClick={() => onDeleteRequest(report, version)}
+                        />
+                      </div>
+                    ) : null}
                   </div>
                 </li>
               );
