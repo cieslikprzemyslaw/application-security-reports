@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
@@ -28,28 +28,14 @@ const RawHttpImportDialog = ({
   onApply,
   onClose,
 }: RawHttpImportDialogProps) => {
-  const [rawRequest, setRawRequest] = useState(exchange.rawRequest);
-  const [rawResponse, setRawResponse] = useState(exchange.rawResponse);
+  const [rawRequest, setRawRequest] = useState(exchange.rawRequest ?? '');
+  const [rawResponse, setRawResponse] = useState(exchange.rawResponse ?? '');
   const [parseResult, setParseResult] = useState<HttpExchangeParseResult>();
   const [overwriteConfirmed, setOverwriteConfirmed] = useState(false);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    setRawRequest(exchange.rawRequest);
-    setRawResponse(exchange.rawResponse);
-    setParseResult(undefined);
-    setOverwriteConfirmed(false);
-  }, [exchange.localId, exchange.rawRequest, exchange.rawResponse, isOpen]);
-
   const hasErrors = Boolean(parseResult?.errors.length);
   const hasConflicts = useMemo(
     () =>
-      parseResult
-        ? hasRawHttpImportConflicts(exchange, parseResult)
-        : false,
+      parseResult ? hasRawHttpImportConflicts(exchange, parseResult) : false,
     [exchange, parseResult],
   );
 
