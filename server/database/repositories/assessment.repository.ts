@@ -22,7 +22,6 @@ import {
   assessmentSelect,
   toAssessment,
   toAssessmentListRecord,
-  type AssessmentListRecord,
 } from './assessment.repository.shared.js';
 
 export type { AssessmentListRecord } from './assessment.repository.shared.js';
@@ -71,6 +70,10 @@ const buildArchivedCreateFields = (input: CreateAssessmentInput) => {
   };
 };
 
+const activeAssessmentWhere = {
+  status: { not: 'archived' },
+} as const;
+
 export function createAssessmentRepository(
   db: AssessmentRepositoryDb,
 ): AssessmentRepository {
@@ -83,7 +86,7 @@ export function createAssessmentRepository(
 
     async findAll() {
       const assessments = await db.assessment.findMany({
-        where: { archivedAt: null },
+        where: activeAssessmentWhere,
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
         select: assessmentListSelect,
       });
@@ -102,7 +105,7 @@ export function createAssessmentRepository(
 
     async findByCompanyId(companyId) {
       const assessments = await db.assessment.findMany({
-        where: { companyId, archivedAt: null },
+        where: { companyId, ...activeAssessmentWhere },
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
         select: assessmentListSelect,
       });
@@ -142,14 +145,14 @@ export function createAssessmentRepository(
     async update(id, input) {
       const existing = await db.assessment.findUnique({
         where: { id },
-        select: { archivedAt: true },
+        select: { status: true },
       });
 
       if (!existing) {
         throw new RepositoryNotFoundError('Assessment not found.');
       }
 
-      if (existing.archivedAt != null) {
+      if (existing.status === 'archived') {
         throw new RepositoryStateError('Archived Assessments are read-only.');
       }
 
