@@ -39,7 +39,7 @@ const handleCommandError = (error: unknown, res: Response): boolean => {
       res,
       409,
       'RESOURCE_MODIFIED',
-      'The Assessment was modified by another session.',
+      'The assessment was modified by another session.',
     );
     return true;
   }
