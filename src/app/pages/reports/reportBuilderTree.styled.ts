@@ -3,11 +3,22 @@ import { css, styled } from 'styled-components';
 const StyledReportBuilderTree = styled.section.attrs({
   className: 'report-builder-tree',
 })`
-  ${({ theme: { colors, radii, spacing, typography } }) => css`
+  ${({ theme: { colors, mq, radii, spacing, typography } }) => css`
     display: flex;
     flex-direction: column;
     gap: ${spacing.l};
     color: ${colors.text.primary};
+    scroll-margin-top: 8rem;
+
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible,
+    .report-builder-tree-configuration:focus-visible {
+      outline: 2px solid ${colors.border.focus};
+      outline-offset: 2px;
+    }
 
     .report-builder-tree-header {
       display: flex;
@@ -32,11 +43,37 @@ const StyledReportBuilderTree = styled.section.attrs({
       color: ${colors.text.secondary};
     }
 
+    .report-builder-tree-filter {
+      display: flex;
+      align-items: flex-end;
+      gap: ${spacing.xs};
+      margin-top: ${spacing.m};
+    }
+
+    .report-builder-tree-filter > div:first-child {
+      flex: 1;
+    }
+
     .report-builder-tree-configuration {
+      display: grid;
+      gap: ${spacing.m};
       margin: ${spacing.m} 0;
-      padding: ${spacing.m} 0;
-      border-top: 1px solid ${colors.border.subtle};
-      border-bottom: 1px solid ${colors.border.subtle};
+      padding: ${spacing.m};
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.md};
+      background-color: ${colors.surface.subtle};
+      scroll-margin-top: 8rem;
+    }
+
+    .report-builder-tree-configuration h3,
+    .report-builder-tree-configuration p {
+      margin: 0;
+    }
+
+    .report-builder-tree-configuration-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: ${spacing.s};
     }
 
     .report-builder-tree-state {
@@ -146,6 +183,12 @@ const StyledReportBuilderTree = styled.section.attrs({
     .report-builder-tree-empty-node {
       padding: ${spacing.xs} ${spacing.m};
       color: ${colors.text.secondary};
+    }
+
+    @media ${mq.min.tablet} {
+      .report-builder-tree-configuration-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
   `}
 `;
