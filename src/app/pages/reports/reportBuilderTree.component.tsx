@@ -151,7 +151,10 @@ const ReportBuilderTree = ({
   }, [companyId, loadHierarchy, reloadKey]);
 
   const filteredHierarchy = useMemo(
-    () => (hierarchy ? filterReportBuilderHierarchy(hierarchy, searchQuery) : undefined),
+    () =>
+      hierarchy
+        ? filterReportBuilderHierarchy(hierarchy, searchQuery)
+        : undefined,
     [hierarchy, searchQuery],
   );
   const normalizedSearchQuery = searchQuery.trim();
@@ -353,11 +356,14 @@ const ReportBuilderTree = ({
               />
             ) : hierarchy?.assessments.length && normalizedSearchQuery ? (
               <EmptyState
-                variant="search"
+                variant="no-results"
                 title="No matching report content"
                 description={`No assessments, threats or evidence match “${normalizedSearchQuery}”.`}
                 primaryAction={
-                  <Button title="Clear search" onClick={() => setSearchQuery('')} />
+                  <Button
+                    title="Clear search"
+                    onClick={() => setSearchQuery('')}
+                  />
                 }
               />
             ) : (
