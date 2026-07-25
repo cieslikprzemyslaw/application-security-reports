@@ -1,4 +1,5 @@
 import {
+  type ReportBuilderBranding,
   type ReportBuilderConfiguration,
   type ReportEvidenceSelection,
   type ReportBuilderSelection,
@@ -65,6 +66,18 @@ export const updateReportBuilderConfiguration = (
         : {
             includeEvidence: patch.includeEvidence,
           }),
+    },
+  });
+
+export const updateReportBuilderBranding = (
+  state: ReportBuilderState,
+  patch: Pick<ReportBuilderBranding, 'brandingMode'>,
+): ReportBuilderState =>
+  reportBuilderStateSchema.parse({
+    ...state,
+    branding: {
+      ...state.branding,
+      brandingMode: patch.brandingMode,
     },
   });
 
