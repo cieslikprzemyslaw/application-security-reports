@@ -129,7 +129,9 @@ describe.sequential('Assessment lifecycle API integration', () => {
       data: Array<{ id: string }>;
     };
     assert.equal(
-      listWhileArchivedBody.data.some(item => item.id === harness.assessment.id),
+      listWhileArchivedBody.data.some(
+        item => item.id === harness.assessment.id,
+      ),
       false,
     );
 
