@@ -31,6 +31,8 @@ export interface EvidenceHttpExchangeFormValue {
   responseStatusCode: string;
   responseStatusText: string;
   responseBody: string;
+  rawRequest: string;
+  rawResponse: string;
 }
 
 export interface EvidenceFormValue {
@@ -53,6 +55,8 @@ export const createEmptyEvidenceExchangeFormValue =
     responseStatusCode: '',
     responseStatusText: '',
     responseBody: '',
+    rawRequest: '',
+    rawResponse: '',
   });
 
 export const createEmptyEvidenceFormValue = (
@@ -79,6 +83,8 @@ const evidenceHttpExchangeToFormValue = (
   responseStatusCode: String(exchange.response.statusCode),
   responseStatusText: exchange.response.statusText ?? '',
   responseBody: exchange.response.body ?? '',
+  rawRequest: '',
+  rawResponse: '',
 });
 
 export const evidenceToFormValue = (evidence: Evidence): EvidenceFormValue => ({
