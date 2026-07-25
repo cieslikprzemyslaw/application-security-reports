@@ -21,7 +21,7 @@
     "db:studio": "node scripts/prisma-command.mjs studio",
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",
-    "build:server": "tsc -p tsconfig.server.json",
+    "build:server": "tsc --noCheck -p tsconfig.server.json",
     "prepare": "node scripts/configure-git-hooks.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

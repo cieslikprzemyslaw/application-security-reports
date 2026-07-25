@@ -9,6 +9,7 @@ import type {
   ReportPreviewRequest,
 } from '../../src/domain/report-preview.js';
 import type { Threat } from '../../src/domain/threat.js';
+import { selectedThreatCweMappings } from './report-preview-snapshot.service.vitest.fixtures.js';
 import { buildReportPreviewSnapshot } from './report-preview-snapshot.service.js';
 
 const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
@@ -54,24 +55,7 @@ const assessment: Assessment = {
 
 const selectedThreat: Threat = {
   cweCatalogVersion: '4.20',
-  cweMappings: [
-    {
-      id: 'CWE-79',
-      name: 'Improper Neutralization of Input During Web Page Generation',
-      status: 'Stable',
-      deprecated: false,
-      primary: true,
-      replacementIds: [],
-    },
-    {
-      id: 'CWE-89',
-      name: 'Improper Neutralization of Special Elements used in an SQL Command',
-      status: 'Stable',
-      deprecated: false,
-      primary: false,
-      replacementIds: [],
-    },
-  ],
+  cweMappings: selectedThreatCweMappings,
   id: threatId,
   assessmentId,
   title: 'Missing Server-Side Authorization',

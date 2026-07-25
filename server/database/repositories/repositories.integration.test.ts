@@ -31,119 +31,50 @@ if (!databaseUrl) {
 const databasePath = databaseUrl.startsWith('file:')
   ? `${databaseUrl.slice('file:'.length)}.${process.pid}.${Date.now()}`
   : `${databaseUrl}.${process.pid}.${Date.now()}`;
-const migrationPath = path.resolve(
-  buildDir,
-  '..',
-  '..',
-  'prisma',
-  'migrations',
+const readMigrationSql = (migrationName: string) =>
+  readFileSync(
+    path.resolve(
+      buildDir,
+      '..',
+      '..',
+      'prisma',
+      'migrations',
+      migrationName,
+      'migration.sql',
+    ),
+    'utf8',
+  );
+
+const schemaMigrationSql = readMigrationSql(
   '20260612100556_define_domain_model',
-  'migration.sql',
 );
-const migrationSql = readFileSync(migrationPath, 'utf8');
-const schemaSql = migrationSql.slice(migrationSql.indexOf('-- CreateTable'));
-const assessmentMigrationPath = path.resolve(
-  buildDir,
-  '..',
-  '..',
-  'prisma',
-  'migrations',
+const schemaSql = schemaMigrationSql.slice(
+  schemaMigrationSql.indexOf('-- CreateTable'),
+);
+const companyLogoMigrationSql = readMigrationSql('20260620090747');
+const assessmentMigrationSql = readMigrationSql(
   '20260619120000_add_owasp_taxonomy_version_to_assessment',
-  'migration.sql',
 );
-const assessmentMigrationSql = readFileSync(assessmentMigrationPath, 'utf8');
-const companyLogoMigrationPath = path.resolve(
-  buildDir,
-  '..',
-  '..',
-  'prisma',
-  'migrations',
-  '20260620090747',
-  'migration.sql',
-);
-const companyLogoMigrationSql = readFileSync(companyLogoMigrationPath, 'utf8');
-const settingsBrandingMigrationPath = path.resolve(
-  buildDir,
-  '..',
-  '..',
-  'prisma',
-  'migrations',
+const settingsBrandingMigrationSql = readMigrationSql(
   '20260617120000_extend_settings_branding',
-  'migration.sql',
 );
-const settingsBrandingMigrationSql = readFileSync(
-  settingsBrandingMigrationPath,
-  'utf8',
-);
-const threatMigrationPath = path.resolve(
-  buildDir,
-  '..',
-  '..',
-  'prisma',
-  'migrations',
+const threatMigrationSql = readMigrationSql(
   '20260616120000_add_finding_category_fields',
-  'migration.sql',
 );
-const threatMigrationSql = readFileSync(threatMigrationPath, 'utf8');
-const evidenceMigrationPath = path.resolve(
-  buildDir,
-  '..',
-  '..',
-  'prisma',
-  'migrations',
+const evidenceMigrationSql = readMigrationSql(
   '20260616190000_add_structured_evidence',
-  'migration.sql',
 );
-const evidenceMigrationSql = readFileSync(evidenceMigrationPath, 'utf8');
-const companyArchivedAtMigrationPath = path.resolve(
-  buildDir,
-  '..',
-  '..',
-  'prisma',
-  'migrations',
+const companyArchivedAtMigrationSql = readMigrationSql(
   '20260621130000_add_company_archived_at',
-  'migration.sql',
 );
-const companyArchivedAtMigrationSql = readFileSync(
-  companyArchivedAtMigrationPath,
-  'utf8',
-);
-const reportThreatPositionMigrationPath = path.resolve(
-  buildDir,
-  '..',
-  '..',
-  'prisma',
-  'migrations',
+const reportThreatPositionMigrationSql = readMigrationSql(
   '20260625193000_add_report_threat_position',
-  'migration.sql',
 );
-const reportThreatPositionMigrationSql = readFileSync(
-  reportThreatPositionMigrationPath,
-  'utf8',
+const cweCatalogMigrationSql = readMigrationSql(
+  '20260725000100_add_cwe_catalog_version_to_assessment',
 );
-const cweCatalogMigrationSql = readFileSync(
-  path.resolve(
-    buildDir,
-    '..',
-    '..',
-    'prisma',
-    'migrations',
-    '20260725000100_add_cwe_catalog_version_to_assessment',
-    'migration.sql',
-  ),
-  'utf8',
-);
-const threatCweMigrationSql = readFileSync(
-  path.resolve(
-    buildDir,
-    '..',
-    '..',
-    'prisma',
-    'migrations',
-    '20260725000200_add_threat_cwe_mappings',
-    'migration.sql',
-  ),
-  'utf8',
+const threatCweMigrationSql = readMigrationSql(
+  '20260725000200_add_threat_cwe_mappings',
 );
 const adapterUrl = databaseUrl.startsWith('file:')
   ? `file:${databasePath}`
