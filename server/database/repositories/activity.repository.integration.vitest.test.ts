@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 
 import { afterEach, beforeEach, describe, it } from 'vitest';
 
+import type { RepositoryTransactionClient } from '../repository.types.js';
 import {
   appendActivity,
   createActivityRepository,
@@ -78,7 +79,7 @@ describe.sequential('Activity repository integration', () => {
 
   it('does not leave an orphan event when the caller transaction fails', async () => {
     await assert.rejects(
-      database.prisma.$transaction(async tx => {
+      database.prisma.$transaction(async (tx: RepositoryTransactionClient) => {
         await appendActivity(
           tx,
           activityInput('assessment.completed', '2026-07-25T08:00:00.000Z'),
