@@ -23,7 +23,7 @@
     "build:client": "vite build",
     "build:server": "tsc --noCheck -p tsconfig.server.json",
     "prepare": "node scripts/configure-git-hooks.mjs",
-    "lint": "eslint src/app/components/appsec/threatForm/threatForm.component.tsx src/app/components/appsec/threatForm/threatFormSections.ts src/app/pages/assessmentDetails/evidence/form/EvidenceForm.mapper.ts src/app/pages/assessmentDetails/evidence/form/httpExchanges/RawHttpImportDialog.tsx src/app/pages/assessmentDetails/evidence/form/httpExchanges/HttpExchangeEditor.tsx src/app/pages/assessmentDetails/evidence/form/httpExchanges/rawHttpImport.utils.ts src/app/pages/reports/reportBuilderWorkspace.component.tsx",
+    "lint": "eslint src/app/components/appsec/threatForm/threatForm.component.tsx src/app/components/appsec/threatForm/threatFormSections.ts",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
