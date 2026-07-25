@@ -7,10 +7,12 @@ import { generateId } from '../../utils/id.js';
 import {
   mapPrismaError,
   RepositoryNotFoundError,
+  RepositoryStateError,
 } from '../errors.js';
 import type { RepositoryClient } from '../repository.types.js';
 import {
   createCompanyLifecycleOperations,
+  type CompanyLifecycleDb,
   type CompanyLifecycleOperations,
 } from './company-lifecycle.repository.js';
 import { toIsoString, toOptionalText } from './repository.helpers.js';
@@ -51,8 +53,9 @@ export interface CompanyRepository extends CompanyLifecycleOperations {
 
 type CompanyRepositoryDb = Pick<
   RepositoryClient,
-  'company' | 'assessment' | 'activity' | '$transaction'
->;
+  'company' | 'assessment'
+> &
+  Partial<Pick<RepositoryClient, 'activity' | '$transaction'>>;
 
 type CompanyRow = {
   id: string;
@@ -96,10 +99,75 @@ const toCompany = (row: CompanyRow): Company => ({
   updatedAt: toIsoString(row.updatedAt),
 });
 
+const hasLifecycleDb = (
+  db: CompanyRepositoryDb,
+): db is CompanyRepositoryDb & CompanyLifecycleDb =>
+  'activity' in db && typeof db.$transaction === 'function';
+
+const createLegacyLifecycleOperations = (
+  db: Pick<RepositoryClient, 'company'>,
+): CompanyLifecycleOperations => ({
+  async archive(id) {
+    const existing = await db.company.findUnique({
+      where: { id },
+      select: { archivedAt: true },
+    });
+
+    if (!existing) {
+      throw new RepositoryNotFoundError();
+    }
+
+    if (existing.archivedAt !== null) {
+      throw new RepositoryStateError('Company is already archived.');
+    }
+
+    try {
+      return toCompany(
+        await db.company.update({
+          where: { id },
+          data: { archivedAt: new Date() },
+          select: companySelect,
+        }),
+      );
+    } catch (error) {
+      throw mapPrismaError(error);
+    }
+  },
+
+  async restore(id) {
+    const existing = await db.company.findUnique({
+      where: { id },
+      select: { archivedAt: true },
+    });
+
+    if (!existing) {
+      throw new RepositoryNotFoundError();
+    }
+
+    if (existing.archivedAt === null) {
+      throw new RepositoryStateError('Company is not archived.');
+    }
+
+    try {
+      return toCompany(
+        await db.company.update({
+          where: { id },
+          data: { archivedAt: null },
+          select: companySelect,
+        }),
+      );
+    } catch (error) {
+      throw mapPrismaError(error);
+    }
+  },
+});
+
 export function createCompanyRepository(
   db: CompanyRepositoryDb,
 ): CompanyRepository {
-  const lifecycle = createCompanyLifecycleOperations(db);
+  const lifecycle = hasLifecycleDb(db)
+    ? createCompanyLifecycleOperations(db)
+    : createLegacyLifecycleOperations(db);
 
   return {
     ...lifecycle,
@@ -143,8 +211,7 @@ export function createCompanyRepository(
       }> = grouped;
 
       const countByStatus = (status: string) =>
-        groupedByStatus.find((g: { status: string }) => g.status === status)
-          ?._count._all ?? 0;
+        groupedByStatus.find(g => g.status === status)?._count._all ?? 0;
 
       const recent = await db.assessment.findMany({
         where: { companyId, archivedAt: null },
@@ -160,28 +227,15 @@ export function createCompanyRepository(
         },
       });
 
-      type RecentAssessmentRow = {
-        id: string;
-        applicationName: string | null;
-        assessmentType: string | null;
-        overallRisk: string | null;
-        status: string;
-        _count: { threats: number };
-      };
-
       return {
         company: toCompany(company),
         assessmentCounts: {
-          total: groupedByStatus.reduce(
-            (sum: number, g: { _count: { _all: number } }) =>
-              sum + g._count._all,
-            0,
-          ),
+          total: groupedByStatus.reduce((sum, g) => sum + g._count._all, 0),
           draft: countByStatus('draft'),
           inProgress: countByStatus('in-progress'),
           completed: countByStatus('completed'),
         },
-        recentAssessments: recent.map((a: RecentAssessmentRow) => ({
+        recentAssessments: recent.map(a => ({
           id: a.id,
           applicationName: a.applicationName ?? '',
           companyName: company.name,
@@ -196,20 +250,20 @@ export function createCompanyRepository(
 
     async create(input, id = generateId('company')) {
       try {
-        const company = await db.company.create({
-          data: {
-            id,
-            name: input.name,
-            description: input.description,
-            website: input.website,
-            contactName: input.contactName,
-            contactEmail: input.contactEmail,
-            footerText: input.footerText,
-          },
-          select: companySelect,
-        });
-
-        return toCompany(company);
+        return toCompany(
+          await db.company.create({
+            data: {
+              id,
+              name: input.name,
+              description: input.description,
+              website: input.website,
+              contactName: input.contactName,
+              contactEmail: input.contactEmail,
+              footerText: input.footerText,
+            },
+            select: companySelect,
+          }),
+        );
       } catch (error) {
         throw mapPrismaError(error);
       }
@@ -217,28 +271,30 @@ export function createCompanyRepository(
 
     async update(id, input) {
       try {
-        const company = await db.company.update({
-          where: { id },
-          data: {
-            ...(input.name !== undefined ? { name: input.name } : {}),
-            ...(input.description !== undefined
-              ? { description: input.description }
-              : {}),
-            ...(input.website !== undefined ? { website: input.website } : {}),
-            ...(input.contactName !== undefined
-              ? { contactName: input.contactName }
-              : {}),
-            ...(input.contactEmail !== undefined
-              ? { contactEmail: input.contactEmail }
-              : {}),
-            ...(input.footerText !== undefined
-              ? { footerText: input.footerText }
-              : {}),
-          },
-          select: companySelect,
-        });
-
-        return toCompany(company);
+        return toCompany(
+          await db.company.update({
+            where: { id },
+            data: {
+              ...(input.name !== undefined ? { name: input.name } : {}),
+              ...(input.description !== undefined
+                ? { description: input.description }
+                : {}),
+              ...(input.website !== undefined
+                ? { website: input.website }
+                : {}),
+              ...(input.contactName !== undefined
+                ? { contactName: input.contactName }
+                : {}),
+              ...(input.contactEmail !== undefined
+                ? { contactEmail: input.contactEmail }
+                : {}),
+              ...(input.footerText !== undefined
+                ? { footerText: input.footerText }
+                : {}),
+            },
+            select: companySelect,
+          }),
+        );
       } catch (error) {
         throw mapPrismaError(error);
       }
@@ -246,13 +302,13 @@ export function createCompanyRepository(
 
     async updateLogoUrl(id, logoUrl) {
       try {
-        const company = await db.company.update({
-          where: { id },
-          data: { logoUrl },
-          select: companySelect,
-        });
-
-        return toCompany(company);
+        return toCompany(
+          await db.company.update({
+            where: { id },
+            data: { logoUrl },
+            select: companySelect,
+          }),
+        );
       } catch (error) {
         throw mapPrismaError(error);
       }
