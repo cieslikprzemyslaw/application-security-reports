@@ -3,6 +3,7 @@ import type {
   AppendActivityInput,
 } from '../../../src/domain/activity.js';
 import {
+  ACTIVITY_ACTIONS,
   ACTIVITY_ACTOR_TYPES,
   ACTIVITY_EVENT_TYPES,
   ACTIVITY_RESULTS,
@@ -13,7 +14,6 @@ import {
   type ActivityEventType,
   type ActivityResult,
   type ActivitySeverity,
-  type ISODateString,
 } from '../../../src/domain/common.js';
 import { generateId } from '../../utils/id.js';
 import { mapPrismaError, RepositoryError } from '../errors.js';
@@ -21,17 +21,11 @@ import type { RepositoryClient } from '../repository.types.js';
 import {
   normalizeLimit,
   toIsoString,
+  type ActivityCreateInput,
   type ActivityFindByEntityInput,
   type ActivityScopeQuery,
+  type LegacyActivityCreateInput,
 } from './repository.helpers.js';
-
-export type LegacyActivityInput = {
-  entityType: ActivityEntityType;
-  entityId?: string;
-  action: ActivityAction;
-  message: string;
-  createdAt?: ISODateString;
-};
 
 export interface ActivityRepository {
   findById(id: string): Promise<Activity | null>;
@@ -40,20 +34,23 @@ export interface ActivityRepository {
   findByCompanyId(input: ActivityScopeQuery): Promise<Activity[]>;
   findByAssessmentId(input: ActivityScopeQuery): Promise<Activity[]>;
   append(input: AppendActivityInput): Promise<Activity>;
-  create(input: AppendActivityInput | LegacyActivityInput): Promise<Activity>;
+  create(input: ActivityCreateInput): Promise<Activity>;
 }
 
 type ActivityRepositoryDb = Pick<RepositoryClient, 'activity'>;
 
 type ActivityRow = {
   id: string;
-  eventType: string;
-  result: string;
-  severity: string;
-  actorType: string;
+  entityType: ActivityEntityType;
+  entityId: string | null;
+  action: string;
+  eventType: string | null;
+  result: string | null;
+  severity: string | null;
+  actorType: string | null;
   actorId: string | null;
-  resourceType: Activity['resource']['type'];
-  resourceId: string;
+  resourceType: ActivityEntityType | null;
+  resourceId: string | null;
   companyId: string | null;
   assessmentId: string | null;
   correlationId: string | null;
@@ -63,6 +60,9 @@ type ActivityRow = {
 
 const activitySelect = {
   id: true,
+  entityType: true,
+  entityId: true,
+  action: true,
   eventType: true,
   result: true,
   severity: true,
@@ -92,29 +92,42 @@ const includes = <T extends string>(
 ): value is T => values.includes(value as T);
 
 const toActivity = (row: ActivityRow): Activity => {
+  const eventType =
+    row.eventType && includes(ACTIVITY_EVENT_TYPES, row.eventType)
+      ? row.eventType
+      : includes(ACTIVITY_ACTIONS, row.action)
+        ? legacyEventTypeByAction[row.action]
+        : undefined;
+  const result = row.result ?? 'success';
+  const severity = row.severity ?? 'informational';
+  const actorType = row.actorType ?? 'system';
+
   if (
-    !includes(ACTIVITY_EVENT_TYPES, row.eventType) ||
-    !includes(ACTIVITY_RESULTS, row.result) ||
-    !includes(ACTIVITY_SEVERITIES, row.severity) ||
-    !includes(ACTIVITY_ACTOR_TYPES, row.actorType)
+    !eventType ||
+    !includes(ACTIVITY_RESULTS, result) ||
+    !includes(ACTIVITY_SEVERITIES, severity) ||
+    !includes(ACTIVITY_ACTOR_TYPES, actorType)
   ) {
     throw new RepositoryError(
       'Unsupported Activity vocabulary stored in database.',
     );
   }
 
+  const resourceType = row.resourceType ?? row.entityType;
+  const resourceId = row.resourceId ?? row.entityId ?? row.id;
+
   return {
     id: row.id,
-    eventType: row.eventType as ActivityEventType,
-    result: row.result as ActivityResult,
-    severity: row.severity as ActivitySeverity,
+    eventType,
+    result: result as ActivityResult,
+    severity: severity as ActivitySeverity,
     actor: {
-      type: row.actorType as ActivityActorType,
+      type: actorType as ActivityActorType,
       ...(row.actorId ? { id: row.actorId } : {}),
     },
     resource: {
-      type: row.resourceType,
-      id: row.resourceId,
+      type: resourceType,
+      id: resourceId,
       ...(row.companyId ? { companyId: row.companyId } : {}),
       ...(row.assessmentId ? { assessmentId: row.assessmentId } : {}),
     },
@@ -157,28 +170,29 @@ export const appendActivity = async (
   }
 };
 
-const toAppendInput = (
-  input: AppendActivityInput | LegacyActivityInput,
-): AppendActivityInput => {
+const toAppendInput = (input: ActivityCreateInput): AppendActivityInput => {
   if ('eventType' in input) {
     return input;
   }
 
-  const id = input.entityId ?? 'legacy';
+  const legacyInput = input as LegacyActivityCreateInput;
+  const id = legacyInput.entityId ?? 'legacy';
 
   return {
-    eventType: legacyEventTypeByAction[input.action],
+    eventType: legacyEventTypeByAction[legacyInput.action],
     result: 'success',
     severity: 'informational',
     actor: { type: 'system' },
     resource: {
-      type: input.entityType,
+      type: legacyInput.entityType,
       id,
-      ...(input.entityType === 'company' ? { companyId: id } : {}),
-      ...(input.entityType === 'assessment' ? { assessmentId: id } : {}),
+      ...(legacyInput.entityType === 'company' ? { companyId: id } : {}),
+      ...(legacyInput.entityType === 'assessment'
+        ? { assessmentId: id }
+        : {}),
     },
-    message: input.message,
-    createdAt: input.createdAt,
+    message: legacyInput.message,
+    createdAt: legacyInput.createdAt,
   };
 };
 
