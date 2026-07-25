@@ -61,7 +61,9 @@ const ThreatForm = ({
     owaspCategoryCode,
   );
   const hasSecurityError = securityFields.some(field => Boolean(errors[field]));
-  const hasAdditionalError = additionalFields.some(field => Boolean(errors[field]));
+  const hasAdditionalError = additionalFields.some(field =>
+    Boolean(errors[field]),
+  );
   const securityMustOpen =
     hasSecurityError ||
     Boolean(focusField && securityFields.includes(focusField));
