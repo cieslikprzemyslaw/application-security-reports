@@ -21,6 +21,7 @@ RUN --mount=type=secret,id=npmrc,target=/root/.npmrc,required=false \
 COPY tsconfig.server.json ./
 COPY prisma.config.ts ./
 COPY prisma ./prisma
+COPY generated/cwe ./generated/cwe
 COPY server ./server
 COPY src/domain ./src/domain
 COPY src/validation ./src/validation

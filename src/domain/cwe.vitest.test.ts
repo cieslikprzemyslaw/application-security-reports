@@ -7,7 +7,7 @@ import {
   getCweCatalogMetadata,
   normalizeCweId,
   searchCweCatalog,
-} from './cwe';
+} from './cwe.js';
 
 describe('CWE catalog', () => {
   it('exposes the pinned MITRE 4.20 catalog deterministically', () => {
