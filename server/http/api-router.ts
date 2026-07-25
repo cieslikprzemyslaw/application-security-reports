@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import type { ActivityRepository } from '../database/repositories/activity.repository.js';
 import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
 import type { AssessmentTemplateRepository } from '../database/repositories/assessmentTemplate.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
@@ -18,6 +19,7 @@ import {
 } from '../services/issuerLogoStorage.js';
 import { createAssessmentTemplatesRouter } from '../routes/assessment-templates.route.js';
 import { createAssessmentsRouter } from '../routes/assessments.route.js';
+import { createCompanyActivityRouter } from '../routes/company-activity.route.js';
 import { createEvidenceRouter } from '../routes/evidence.route.js';
 import { registerHealthRoute } from '../routes/health.route.js';
 import { createCompaniesRouter } from '../routes/companies.route.js';
@@ -31,6 +33,7 @@ import { createSettingsRouter } from '../routes/settings.route.js';
 import { createThreatsRouter } from '../routes/threats.route.js';
 
 export interface RegisterApiRoutesOptions {
+  activityRepository?: ActivityRepository;
   assessmentRepository?: AssessmentRepository;
   assessmentTemplateRepository?: AssessmentTemplateRepository;
   companyRepository?: CompanyRepository;
@@ -74,6 +77,20 @@ export const createApiRouter = (
       createAssessmentsRouter(
         options.assessmentRepository,
         options.companyRepository,
+      ),
+    );
+  }
+  if (
+    options.activityRepository &&
+    options.assessmentRepository &&
+    options.companyRepository
+  ) {
+    router.use(
+      '/companies',
+      createCompanyActivityRouter(
+        options.companyRepository,
+        options.assessmentRepository,
+        options.activityRepository,
       ),
     );
   }
