@@ -24,6 +24,8 @@ const assessmentRow = {
   overallRisk: 'medium',
   owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
   cweCatalogVersion: CWE_CATALOG_CURRENT_VERSION,
+  archivedAt: null,
+  archivedFromStatus: null,
   createdAt,
   updatedAt,
 };
@@ -73,12 +75,14 @@ describe('createAssessmentRepository', () => {
         applicationName: null,
         owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
         cweCatalogVersion: CWE_CATALOG_CURRENT_VERSION,
+        archivedAt: null,
         createdAt: createdAt.toISOString(),
         updatedAt: updatedAt.toISOString(),
         findingsCount: 2,
       }),
     ]);
     expect(assessment.findMany).toHaveBeenCalledWith({
+      where: { status: { not: 'archived' } },
       orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
       select: expect.any(Object),
     });
@@ -100,7 +104,10 @@ describe('createAssessmentRepository', () => {
     await repository.findByCompanyId(assessmentRow.companyId);
 
     expect(assessment.findMany).toHaveBeenCalledWith({
-      where: { companyId: assessmentRow.companyId },
+      where: {
+        companyId: assessmentRow.companyId,
+        status: { not: 'archived' },
+      },
       orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
       select: expect.any(Object),
     });

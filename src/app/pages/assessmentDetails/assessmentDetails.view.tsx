@@ -43,6 +43,7 @@ const actionLabelMap: Record<AssessmentDetailAction, string> = {
   complete: 'Complete',
   reopen: 'Reopen',
   archive: 'Archive',
+  restore: 'Restore',
 };
 
 const defaultActionOrder: AssessmentDetailAction[] = [
@@ -50,6 +51,7 @@ const defaultActionOrder: AssessmentDetailAction[] = [
   'complete',
   'reopen',
   'archive',
+  'restore',
 ];
 
 const getAssessmentName = (assessment: AssessmentDetailsAssessment) =>
@@ -61,12 +63,12 @@ const getAvailableActions = (
   assessment.availableActions && assessment.availableActions.length > 0
     ? assessment.availableActions
     : assessment.status === 'draft'
-      ? ['start', 'archive']
+      ? ['archive']
       : assessment.status === 'in-progress'
         ? ['complete', 'archive']
         : assessment.status === 'completed'
           ? ['reopen', 'archive']
-          : ['reopen'];
+          : ['restore'];
 
 const AssessmentDetailsView = ({
   assessment,
@@ -211,9 +213,11 @@ const AssessmentDetailsView = ({
       />
 
       {assessment.status === 'archived' && (
-        <p className="assessment-details-read-only-note">
-          Archived assessments are read-only.
-        </p>
+        <Callout variant="info" title="Archived Assessment">
+          <p>
+            This workspace is read-only. Restore the Assessment to make changes.
+          </p>
+        </Callout>
       )}
 
       <AssessmentSummary

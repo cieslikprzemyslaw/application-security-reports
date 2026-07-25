@@ -239,6 +239,8 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
     return <RouteLoadingView />;
   }
 
+  const isArchived = assessmentView.status === 'archived';
+
   return (
     <>
       {isRefreshing && (
@@ -290,6 +292,7 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
             companyId={companyId}
             assessmentId={assessmentId}
             onVersionCountChange={handleReportVersionCountChange}
+            readOnly={isArchived}
           />
         }
         onSectionChange={handleSectionChange}

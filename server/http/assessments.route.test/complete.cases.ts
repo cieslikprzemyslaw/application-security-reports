@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 
+import { RepositoryConflictError } from '../../database/errors.js';
+import type { AssessmentRepository } from '../../database/repositories/assessment.repository.js';
 import {
   startTestServer,
   readJson,
@@ -9,6 +11,41 @@ import {
   createCompanyRepository,
   createApp,
 } from './support.js';
+
+const withLifecycleOperations = (
+  repository: AssessmentRepository,
+): AssessmentRepository => {
+  const assertVersion = (recordVersion: number) => {
+    if (recordVersion !== new Date(defaultAssessment.updatedAt).getTime()) {
+      throw new RepositoryConflictError('Assessment record version is stale.');
+    }
+  };
+
+  repository.complete = async (id, recordVersion) => {
+    assertVersion(recordVersion);
+    return repository.update(id, {
+      status: 'completed',
+      completedAt: new Date().toISOString(),
+    });
+  };
+  repository.reopen = async (id, recordVersion) => {
+    assertVersion(recordVersion);
+    return repository.update(id, {
+      status: 'in-progress',
+      completedAt: undefined,
+    });
+  };
+  repository.archive = async (id, recordVersion) => {
+    assertVersion(recordVersion);
+    return repository.update(id, { status: 'archived' });
+  };
+  repository.restore = async (id, recordVersion) => {
+    assertVersion(recordVersion);
+    return repository.update(id, { status: 'in-progress' });
+  };
+
+  return repository;
+};
 
 {
   const { calls, repository } = createAssessmentRepository({
@@ -24,7 +61,7 @@ import {
   const { calls: companyCalls, repository: companyRepository } =
     createCompanyRepository();
   const server = await startTestServer(
-    createApp(repository, companyRepository),
+    createApp(withLifecycleOperations(repository), companyRepository),
   );
 
   try {
@@ -74,7 +111,7 @@ import {
   const { calls: companyCalls, repository: companyRepository } =
     createCompanyRepository();
   const server = await startTestServer(
-    createApp(repository, companyRepository),
+    createApp(withLifecycleOperations(repository), companyRepository),
   );
 
   try {

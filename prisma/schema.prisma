@@ -92,7 +92,9 @@ model Assessment {
   assessmentType       String?
   overallRisk          Severity?
   owaspTaxonomyVersion String    @default("2025")
-  cweCatalogVersion      String    @default("4.20")
+  cweCatalogVersion    String    @default("4.20")
+  archivedAt           DateTime?
+  archivedFromStatus   String?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
@@ -104,6 +106,7 @@ model Assessment {
   @@index([companyId])
   @@index([companyId, updatedAt])
   @@index([status])
+  @@index([archivedAt])
 }
 
 model Threat {
@@ -132,14 +135,13 @@ model Threat {
   assessment    Assessment       @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   evidenceLinks EvidenceThreat[]
   reportLinks   ReportThreat[]
-  cweMappings  ThreatCwe[]
+  cweMappings   ThreatCwe[]
 
   @@index([assessmentId])
   @@index([assessmentId, updatedAt])
   @@index([status])
   @@index([severity])
 }
-
 
 model ThreatCwe {
   threatId String
@@ -254,15 +256,29 @@ model ReportThreat {
 }
 
 model Activity {
-  id         String             @id
-  entityType ActivityEntityType
-  entityId   String?
-  action     String
-  message    String
-  createdAt  DateTime           @default(now())
+  id            String             @id
+  entityType    ActivityEntityType
+  entityId      String?
+  action        String
+  message       String
+  eventType     String             @default("legacy.created")
+  result        String             @default("success")
+  severity      String             @default("informational")
+  actorType     String             @default("system")
+  actorId       String?
+  resourceType  ActivityEntityType @default(settings)
+  resourceId    String             @default("legacy")
+  companyId     String?
+  assessmentId  String?
+  correlationId String?
+  createdAt     DateTime           @default(now())
 
   @@index([entityType, createdAt])
   @@index([entityId])
+  @@index([resourceType, resourceId, createdAt])
+  @@index([companyId, createdAt])
+  @@index([assessmentId, createdAt])
+  @@index([correlationId])
 }
 
 model Settings {

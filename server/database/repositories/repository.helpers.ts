@@ -1,6 +1,9 @@
-import type { Activity } from '../../../src/domain/activity.js';
-import type { ActivityEntityType } from '../../../src/domain/common.js';
-import type { ISODateString } from '../../../src/domain/common.js';
+import type { AppendActivityInput } from '../../../src/domain/activity.js';
+import type {
+  ActivityAction,
+  ActivityEntityType,
+  ISODateString,
+} from '../../../src/domain/common.js';
 
 export const toOptionalText = (
   value: string | null | undefined,
@@ -24,10 +27,26 @@ export const normalizeLimit = (
   return Math.min(maximum, Math.max(minimum, candidate));
 };
 
-export type ActivityCreateInput = Omit<Activity, 'id' | 'createdAt'>;
+export type LegacyActivityCreateInput = {
+  entityType: ActivityEntityType;
+  entityId?: string;
+  action: ActivityAction;
+  message: string;
+  createdAt?: ISODateString;
+};
+
+export type ActivityCreateInput =
+  | AppendActivityInput
+  | LegacyActivityCreateInput;
 
 export type ActivityFindByEntityInput = {
   entityType: ActivityEntityType;
   entityId?: string;
+  limit?: number;
+};
+
+export type ActivityScopeQuery = {
+  companyId?: string;
+  assessmentId?: string;
   limit?: number;
 };

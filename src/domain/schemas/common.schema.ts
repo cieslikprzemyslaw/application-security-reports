@@ -2,7 +2,11 @@ import { z } from 'zod';
 
 import {
   ACTIVITY_ACTIONS,
+  ACTIVITY_ACTOR_TYPES,
   ACTIVITY_ENTITY_TYPES,
+  ACTIVITY_EVENT_TYPES,
+  ACTIVITY_RESULTS,
+  ACTIVITY_SEVERITIES,
   ASSESSMENT_STATUSES,
   EVIDENCE_TYPES,
   REPORT_STATUSES,
@@ -107,6 +111,14 @@ export const reportVersionStatusSchema = z.enum(REPORT_VERSION_STATUSES);
 export const activityActionSchema = z.enum(ACTIVITY_ACTIONS);
 
 export const activityEntityTypeSchema = z.enum(ACTIVITY_ENTITY_TYPES);
+
+export const activityEventTypeSchema = z.enum(ACTIVITY_EVENT_TYPES);
+
+export const activityResultSchema = z.enum(ACTIVITY_RESULTS);
+
+export const activitySeveritySchema = z.enum(ACTIVITY_SEVERITIES);
+
+export const activityActorTypeSchema = z.enum(ACTIVITY_ACTOR_TYPES);
 
 export const themePreferenceSchema = z.enum(THEME_PREFERENCES);
 

@@ -22,43 +22,48 @@ export interface AssessmentCreateInput {
   assessmentType?: string;
   overallRisk?: Severity;
 }
+
 export interface AssessmentUpdateInput {
   title?: string;
   description?: string;
   scope?: string;
-  status?: AssessmentStatus;
   startedAt?: ISODateString;
-  completedAt?: ISODateString;
   applicationName?: string;
   environment?: string;
   assessmentType?: string;
   overallRisk?: Severity;
 }
+
 export interface AssessmentWorkspaceCompany {
   id: string;
   name: string;
-}
-export interface AssessmentWorkspaceAssessment extends Assessment {
-  recordVersion: number;
-  findingsCount: number;
-  evidenceCount: number;
-  reportVersionCount: number;
-  testerName?: string;
-  availableActions?: AssessmentWorkspaceCommand[];
-}
-export interface AssessmentWorkspaceOverview {
-  company: AssessmentWorkspaceCompany;
-  assessment: AssessmentWorkspaceAssessment;
-}
-export interface AssessmentDeleteResult {
-  cleanupWarnings: string[];
 }
 
 export type AssessmentWorkspaceCommand =
   | 'start'
   | 'complete'
   | 'reopen'
-  | 'archive';
+  | 'archive'
+  | 'restore';
+
+export interface AssessmentWorkspaceAssessment extends Assessment {
+  recordVersion: number;
+  archivedAt: ISODateString | null;
+  findingsCount: number;
+  evidenceCount: number;
+  reportVersionCount: number;
+  testerName?: string;
+  availableActions?: AssessmentWorkspaceCommand[];
+}
+
+export interface AssessmentWorkspaceOverview {
+  company: AssessmentWorkspaceCompany;
+  assessment: AssessmentWorkspaceAssessment;
+}
+
+export interface AssessmentDeleteResult {
+  cleanupWarnings: string[];
+}
 
 export interface AssessmentListItem {
   id: string;
@@ -168,9 +173,7 @@ const runAssessmentCommand = async (
 
 export interface AssessmentService {
   list(
-    filters?: {
-      companyId?: string;
-    },
+    filters?: { companyId?: string },
     signal?: AbortSignal,
   ): Promise<AssessmentListItem[]>;
   getById(assessmentId: string, signal?: AbortSignal): Promise<Assessment>;
@@ -208,152 +211,130 @@ export interface AssessmentService {
     recordVersion: number,
     signal?: AbortSignal,
   ): Promise<AssessmentWorkspaceOverview>;
+  restore(
+    companyId: string,
+    assessmentId: string,
+    recordVersion: number,
+    signal?: AbortSignal,
+  ): Promise<AssessmentWorkspaceOverview>;
   remove(assessmentId: string): Promise<AssessmentDeleteResult>;
 }
 
 export const createAssessmentService = (
   request: ApiRequestFn = apiRequest,
-): AssessmentService => ({
-  async list(filters, signal) {
-    const items = await requestData<AssessmentListApiItem[]>(
+): AssessmentService => {
+  const command = (
+    name: AssessmentWorkspaceCommand,
+    companyId: string,
+    assessmentId: string,
+    recordVersion: number,
+    signal?: AbortSignal,
+  ) =>
+    runAssessmentCommand(
       request,
-      '/api/assessments',
-      {
-        method: 'GET',
-        query: {
-          companyId: filters?.companyId,
+      companyId,
+      assessmentId,
+      name,
+      recordVersion,
+      signal,
+    );
+
+  return {
+    async list(filters, signal) {
+      const items = await requestData<AssessmentListApiItem[]>(
+        request,
+        '/api/assessments',
+        {
+          method: 'GET',
+          query: { companyId: filters?.companyId },
+          signal,
         },
-        signal,
-      },
-    );
+      );
 
-    return items.map(mapAssessmentListItem);
-  },
+      return items.map(mapAssessmentListItem);
+    },
 
-  async getById(assessmentId, signal) {
-    const response = await requestData<Assessment>(
-      request,
-      `/api/assessments/${assessmentId}`,
-      {
-        method: 'GET',
-        signal,
-      },
-    );
+    async getById(assessmentId, signal) {
+      const response = await requestData<Assessment>(
+        request,
+        `/api/assessments/${assessmentId}`,
+        { method: 'GET', signal },
+      );
 
-    return validateAssessmentVersion(
-      response,
-      'Unable to validate the Assessment response.',
-    );
-  },
+      return validateAssessmentVersion(
+        response,
+        'Unable to validate the Assessment response.',
+      );
+    },
 
-  async getOverview(companyId, assessmentId, signal) {
-    const response = await requestData<AssessmentWorkspaceOverview>(
-      request,
-      buildWorkspaceAssessmentUrl(companyId, assessmentId, 'overview'),
-      {
-        method: 'GET',
-        signal,
-      },
-    );
+    async getOverview(companyId, assessmentId, signal) {
+      const response = await requestData<AssessmentWorkspaceOverview>(
+        request,
+        buildWorkspaceAssessmentUrl(companyId, assessmentId, 'overview'),
+        { method: 'GET', signal },
+      );
 
-    return validateAssessmentOverview(
-      response,
-      'Unable to validate the Assessment overview response.',
-    );
-  },
+      return validateAssessmentOverview(
+        response,
+        'Unable to validate the Assessment overview response.',
+      );
+    },
 
-  async create(input) {
-    const response = await requestData<Assessment>(
-      request,
-      '/api/assessments',
-      {
-        body: input,
-        method: 'POST',
-      },
-    );
+    async create(input) {
+      const response = await requestData<Assessment>(
+        request,
+        '/api/assessments',
+        {
+          body: input,
+          method: 'POST',
+        },
+      );
 
-    return validateAssessmentVersion(
-      response,
-      'Unable to validate the created Assessment response.',
-    );
-  },
+      return validateAssessmentVersion(
+        response,
+        'Unable to validate the created Assessment response.',
+      );
+    },
 
-  async update(assessmentId, input) {
-    const response = await requestData<Assessment>(
-      request,
-      `/api/assessments/${assessmentId}`,
-      {
-        body: input,
-        method: 'PATCH',
-      },
-    );
+    async update(assessmentId, input) {
+      const response = await requestData<Assessment>(
+        request,
+        `/api/assessments/${assessmentId}`,
+        { body: input, method: 'PATCH' },
+      );
 
-    return validateAssessmentVersion(
-      response,
-      'Unable to validate the updated Assessment response.',
-    );
-  },
+      return validateAssessmentVersion(
+        response,
+        'Unable to validate the updated Assessment response.',
+      );
+    },
 
-  async start(companyId, assessmentId, recordVersion, signal) {
-    return runAssessmentCommand(
-      request,
-      companyId,
-      assessmentId,
-      'start',
-      recordVersion,
-      signal,
-    );
-  },
+    start: (companyId, assessmentId, recordVersion, signal) =>
+      command('start', companyId, assessmentId, recordVersion, signal),
+    complete: (companyId, assessmentId, recordVersion, signal) =>
+      command('complete', companyId, assessmentId, recordVersion, signal),
+    reopen: (companyId, assessmentId, recordVersion, signal) =>
+      command('reopen', companyId, assessmentId, recordVersion, signal),
+    archive: (companyId, assessmentId, recordVersion, signal) =>
+      command('archive', companyId, assessmentId, recordVersion, signal),
+    restore: (companyId, assessmentId, recordVersion, signal) =>
+      command('restore', companyId, assessmentId, recordVersion, signal),
 
-  async complete(companyId, assessmentId, recordVersion, signal) {
-    return runAssessmentCommand(
-      request,
-      companyId,
-      assessmentId,
-      'complete',
-      recordVersion,
-      signal,
-    );
-  },
+    async remove(assessmentId) {
+      const response = await request<{
+        data?: { cleanupWarnings?: unknown; warnings?: unknown };
+        warnings?: unknown;
+      }>(`/api/assessments/${assessmentId}`, { method: 'DELETE' });
 
-  async reopen(companyId, assessmentId, recordVersion, signal) {
-    return runAssessmentCommand(
-      request,
-      companyId,
-      assessmentId,
-      'reopen',
-      recordVersion,
-      signal,
-    );
-  },
-
-  async archive(companyId, assessmentId, recordVersion, signal) {
-    return runAssessmentCommand(
-      request,
-      companyId,
-      assessmentId,
-      'archive',
-      recordVersion,
-      signal,
-    );
-  },
-
-  async remove(assessmentId) {
-    const response = await request<{
-      data?: { cleanupWarnings?: unknown; warnings?: unknown };
-      warnings?: unknown;
-    }>(`/api/assessments/${assessmentId}`, {
-      method: 'DELETE',
-    });
-
-    return {
-      cleanupWarnings: normaliseCleanupWarnings(
-        response?.data?.cleanupWarnings ??
-          response?.data?.warnings ??
-          response?.warnings,
-      ),
-    };
-  },
-});
+      return {
+        cleanupWarnings: normaliseCleanupWarnings(
+          response?.data?.cleanupWarnings ??
+            response?.data?.warnings ??
+            response?.warnings,
+        ),
+      };
+    },
+  };
+};
 
 export const assessmentService = createAssessmentService();

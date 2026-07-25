@@ -101,7 +101,6 @@ export const assessmentFormValueToUpdateInput = (
   applicationName: normalize(value.applicationName),
   description: normalize(value.description) || undefined,
   scope: normalize(value.scope) || undefined,
-  status: value.status,
   assessmentType: resolveAssessmentType(value) || undefined,
 });
 

@@ -1,11 +1,7 @@
 import assert from 'node:assert/strict';
-import { createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import { ValidationError } from '../../../src/validation/index.js';
+import { createTemporaryDatabase } from '../../test/temporaryDatabase.js';
 import { RepositoryConstraintError } from '../errors.js';
 import { createActivityRepository } from './activity.repository.js';
 import { createAssessmentRepository } from './assessment.repository.js';
@@ -15,110 +11,10 @@ import { createReportRepository } from './report.repository.js';
 import { createSettingsRepository } from './settings.repository.js';
 import { createThreatRepository } from './threat.repository.js';
 
-const buildDir = process.env.APPSEC_BUILD_DIR;
-const databaseUrl = process.env.DATABASE_URL;
-
-if (!buildDir) {
-  throw new Error(
-    'APPSEC_BUILD_DIR must be set for repository integration tests.',
-  );
-}
-
-if (!databaseUrl) {
-  throw new Error('DATABASE_URL must be set for repository integration tests.');
-}
-
-const databasePath = databaseUrl.startsWith('file:')
-  ? `${databaseUrl.slice('file:'.length)}.${process.pid}.${Date.now()}`
-  : `${databaseUrl}.${process.pid}.${Date.now()}`;
-const readMigrationSql = (migrationName: string) =>
-  readFileSync(
-    path.resolve(
-      buildDir,
-      '..',
-      '..',
-      'prisma',
-      'migrations',
-      migrationName,
-      'migration.sql',
-    ),
-    'utf8',
-  );
-
-const schemaMigrationSql = readMigrationSql(
-  '20260612100556_define_domain_model',
-);
-const schemaSql = schemaMigrationSql.slice(
-  schemaMigrationSql.indexOf('-- CreateTable'),
-);
-const companyLogoMigrationSql = readMigrationSql('20260620090747');
-const assessmentMigrationSql = readMigrationSql(
-  '20260619120000_add_owasp_taxonomy_version_to_assessment',
-);
-const settingsBrandingMigrationSql = readMigrationSql(
-  '20260617120000_extend_settings_branding',
-);
-const threatMigrationSql = readMigrationSql(
-  '20260616120000_add_finding_category_fields',
-);
-const evidenceMigrationSql = readMigrationSql(
-  '20260616190000_add_structured_evidence',
-);
-const companyArchivedAtMigrationSql = readMigrationSql(
-  '20260621130000_add_company_archived_at',
-);
-const reportThreatPositionMigrationSql = readMigrationSql(
-  '20260625193000_add_report_threat_position',
-);
-const cweCatalogMigrationSql = readMigrationSql(
-  '20260725000100_add_cwe_catalog_version_to_assessment',
-);
-const threatCweMigrationSql = readMigrationSql(
-  '20260725000200_add_threat_cwe_mappings',
-);
-const adapterUrl = databaseUrl.startsWith('file:')
-  ? `file:${databasePath}`
-  : databasePath;
-const require = createRequire(import.meta.url);
-const Database = require('better-sqlite3') as new (databasePath: string) => {
-  pragma(sql: string): void;
-  exec(sql: string): void;
-  close(): void;
-};
-
-{
-  const bootstrapDb = new Database(databasePath);
-  try {
-    bootstrapDb.exec(schemaSql);
-    bootstrapDb.exec(companyLogoMigrationSql);
-    bootstrapDb.exec(assessmentMigrationSql);
-    bootstrapDb.exec(settingsBrandingMigrationSql);
-    bootstrapDb.exec(threatMigrationSql);
-    bootstrapDb.exec(evidenceMigrationSql);
-    bootstrapDb.exec(companyArchivedAtMigrationSql);
-    bootstrapDb.exec(reportThreatPositionMigrationSql);
-    bootstrapDb.exec(cweCatalogMigrationSql);
-    bootstrapDb.exec(threatCweMigrationSql);
-  } finally {
-    bootstrapDb.close();
-  }
-}
-
-const { PrismaClient } = await import(
-  pathToFileURL(path.join(buildDir, 'generated', 'prisma', 'client.js')).href
-);
-
-const adapter = new PrismaBetterSqlite3({ url: adapterUrl });
-const prisma = new PrismaClient({ adapter });
+const database = await createTemporaryDatabase();
+const { prisma } = database;
 
 try {
-  // Test-only SQLite configuration.
-  // These static PRAGMA statements are required on the Prisma connection
-  // to prevent journal-file failures in the temporary test environment.
-  // No user-controlled input is included.
-  await prisma.$executeRawUnsafe('PRAGMA journal_mode = MEMORY');
-  await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
-
   const companyRepo = createCompanyRepository(prisma);
   const assessmentRepo = createAssessmentRepository(prisma);
   const threatRepo = createThreatRepository(prisma);
@@ -335,7 +231,7 @@ try {
     error => error instanceof RepositoryConstraintError,
   );
 } finally {
-  await prisma.$disconnect();
+  await database.cleanup();
 }
 
 console.log('repository integration checks passed');

@@ -23,22 +23,16 @@ import {
   RepositoryConstraintError,
   RepositoryError,
   RepositoryNotFoundError,
+  RepositoryStateError,
 } from '../database/errors.js';
 import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
-
-const assessmentResponse = <T extends Assessment>(assessment: T): T => ({
-  ...assessment,
-});
 
 const sendAssessmentResponse = (
   res: Response,
   statusCode: number,
   assessment: Assessment,
-): Response =>
-  res.status(statusCode).json({
-    data: assessmentResponse(assessment),
-  });
+): Response => res.status(statusCode).json({ data: { ...assessment } });
 
 type AssessmentRepositoryOperation =
   | 'list'
@@ -62,7 +56,17 @@ const handleAssessmentRepositoryError = (
       res,
       409,
       'ASSESSMENT_CONFLICT',
-      'An assessment with the same unique value already exists',
+      'An Assessment with the same unique value already exists',
+    );
+    return true;
+  }
+
+  if (error instanceof RepositoryStateError && operation === 'update') {
+    sendApiError(
+      res,
+      409,
+      'ASSESSMENT_READ_ONLY',
+      'Archived Assessments are read-only',
     );
     return true;
   }
@@ -78,7 +82,7 @@ const handleAssessmentRepositoryError = (
   }
 
   if (error instanceof RepositoryError) {
-    console.error('Unexpected assessment repository error', error);
+    console.error('Unexpected Assessment repository error', error);
     sendApiError(res, 500, 'INTERNAL_SERVER_ERROR', 'Unexpected server error');
     return true;
   }
@@ -102,9 +106,7 @@ export const createAssessmentsRouter = (
 
   router.get(
     '/',
-    createRequestValidationMiddleware({
-      query: assessmentListQuerySchema,
-    }),
+    createRequestValidationMiddleware({ query: assessmentListQuerySchema }),
     asyncRoute(async (_req, res) => {
       const { companyId } = res.locals.validatedRequest?.query as {
         companyId?: string;
@@ -114,27 +116,18 @@ export const createAssessmentsRouter = (
         const assessments = companyId
           ? await assessmentRepository.findByCompanyId(companyId)
           : await assessmentRepository.findAll();
-
-        res.status(200).json({
-          data: assessments.map(assessmentResponse),
-        });
+        res.status(200).json({ data: assessments });
       } catch (error) {
-        if (!handleAssessmentRepositoryError(error, res, 'list')) {
-          throw error;
-        }
+        if (!handleAssessmentRepositoryError(error, res, 'list')) throw error;
       }
     }),
   );
 
   router.get(
     '/:id',
-    createRequestValidationMiddleware({
-      params: assessmentRouteParamsSchema,
-    }),
+    createRequestValidationMiddleware({ params: assessmentRouteParamsSchema }),
     asyncRoute(async (_req, res) => {
-      const { id } = res.locals.validatedRequest?.params as {
-        id: string;
-      };
+      const { id } = res.locals.validatedRequest?.params as { id: string };
 
       try {
         const assessment = await assessmentRepository.findById(id);
@@ -151,18 +144,15 @@ export const createAssessmentsRouter = (
 
         sendAssessmentResponse(res, 200, assessment);
       } catch (error) {
-        if (!handleAssessmentRepositoryError(error, res, 'retrieve')) {
+        if (!handleAssessmentRepositoryError(error, res, 'retrieve'))
           throw error;
-        }
       }
     }),
   );
 
   router.post(
     '/',
-    createRequestValidationMiddleware({
-      body: createAssessmentRequestSchema,
-    }),
+    createRequestValidationMiddleware({ body: createAssessmentRequestSchema }),
     asyncRoute(async (_req, res) => {
       const body = res.locals.validatedRequest?.body as CreateAssessmentInput;
 
@@ -175,24 +165,13 @@ export const createAssessmentsRouter = (
         }
 
         const assessment = await assessmentRepository.create(body);
-        const response = res.location(`/api/assessments/${assessment.id}`);
-
-        sendAssessmentResponse(response, 201, assessment);
+        sendAssessmentResponse(
+          res.location(`/api/assessments/${assessment.id}`),
+          201,
+          assessment,
+        );
       } catch (error) {
-        if (!handleAssessmentRepositoryError(error, res, 'create')) {
-          if (error instanceof RepositoryError) {
-            console.error('Unexpected assessment create error', error);
-            sendApiError(
-              res,
-              500,
-              'INTERNAL_SERVER_ERROR',
-              'Unexpected server error',
-            );
-            return;
-          }
-
-          throw error;
-        }
+        if (!handleAssessmentRepositoryError(error, res, 'create')) throw error;
       }
     }),
   );
@@ -204,40 +183,29 @@ export const createAssessmentsRouter = (
       body: updateAssessmentRequestSchema,
     }),
     asyncRoute(async (_req, res) => {
-      const { id } = res.locals.validatedRequest?.params as {
-        id: string;
-      };
+      const { id } = res.locals.validatedRequest?.params as { id: string };
       const body = res.locals.validatedRequest?.body as UpdateAssessmentInput;
 
       try {
         const updatedAssessment = await assessmentRepository.update(id, body);
-
         sendAssessmentResponse(res, 200, updatedAssessment);
       } catch (error) {
-        if (!handleAssessmentRepositoryError(error, res, 'update')) {
-          throw error;
-        }
+        if (!handleAssessmentRepositoryError(error, res, 'update')) throw error;
       }
     }),
   );
 
   router.delete(
     '/:id',
-    createRequestValidationMiddleware({
-      params: assessmentRouteParamsSchema,
-    }),
+    createRequestValidationMiddleware({ params: assessmentRouteParamsSchema }),
     asyncRoute(async (_req, res) => {
-      const { id } = res.locals.validatedRequest?.params as {
-        id: string;
-      };
+      const { id } = res.locals.validatedRequest?.params as { id: string };
 
       try {
         await assessmentRepository.delete(id);
         res.status(204).send();
       } catch (error) {
-        if (!handleAssessmentRepositoryError(error, res, 'delete')) {
-          throw error;
-        }
+        if (!handleAssessmentRepositoryError(error, res, 'delete')) throw error;
       }
     }),
   );

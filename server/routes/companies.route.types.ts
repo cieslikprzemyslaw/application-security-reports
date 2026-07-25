@@ -15,10 +15,10 @@ export const companyAssessmentOverviewRouteParamsSchema = z
   .strict();
 
 export type AssessmentWorkspaceCommand =
-  | 'start'
   | 'complete'
   | 'reopen'
-  | 'archive';
+  | 'archive'
+  | 'restore';
 
 export type AssessmentWorkspaceOverview = {
   company: {

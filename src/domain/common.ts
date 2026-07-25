@@ -109,6 +109,42 @@ export const ACTIVITY_ENTITY_TYPES = [
 
 export type ActivityEntityType = (typeof ACTIVITY_ENTITY_TYPES)[number];
 
+export const ACTIVITY_EVENT_TYPES = [
+  'assessment.completed',
+  'assessment.complete-failed',
+  'assessment.reopened',
+  'assessment.reopen-failed',
+  'assessment.archived',
+  'assessment.archive-failed',
+  'assessment.restored',
+  'assessment.restore-failed',
+  'company.archived',
+  'company.archive-failed',
+  'company.restored',
+  'company.restore-failed',
+  'legacy.created',
+  'legacy.updated',
+  'legacy.deleted',
+  'legacy.status-changed',
+  'legacy.evidence-added',
+  'legacy.report-generated',
+] as const;
+
+export type ActivityEventType = (typeof ACTIVITY_EVENT_TYPES)[number];
+
+export const ACTIVITY_RESULTS = ['success', 'failure'] as const;
+export type ActivityResult = (typeof ACTIVITY_RESULTS)[number];
+
+export const ACTIVITY_SEVERITIES = [
+  'informational',
+  'warning',
+  'error',
+] as const;
+export type ActivitySeverity = (typeof ACTIVITY_SEVERITIES)[number];
+
+export const ACTIVITY_ACTOR_TYPES = ['local-user', 'system'] as const;
+export type ActivityActorType = (typeof ACTIVITY_ACTOR_TYPES)[number];
+
 export type DomainEntityId =
   | CompanyId
   | AssessmentId

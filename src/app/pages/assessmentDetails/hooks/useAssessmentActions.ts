@@ -21,6 +21,8 @@ const getActionCommand = (
       return assessmentService.reopen(companyId, assessmentId, recordVersion);
     case 'archive':
       return assessmentService.archive(companyId, assessmentId, recordVersion);
+    case 'restore':
+      return assessmentService.restore(companyId, assessmentId, recordVersion);
     default:
       return Promise.reject(new Error('Unsupported assessment action.'));
   }

@@ -9,9 +9,10 @@ import {
   isoDateStringSchema,
   nonEmptyIdSchema,
   nonEmptyTextSchema,
+  nonNegativeIntegerSchema,
+  optionalTrimmedTextSchema,
   severitySchema,
   timestampSchema,
-  optionalTrimmedTextSchema,
 } from './common.schema.js';
 
 export const owaspTop10VersionSchema = z.custom<OwaspTop10Version>(
@@ -40,6 +41,8 @@ export const assessmentObjectSchema = z
     overallRisk: severitySchema.optional(),
     owaspTaxonomyVersion: owaspTop10VersionSchema,
     cweCatalogVersion: cweCatalogVersionSchema,
+    recordVersion: nonNegativeIntegerSchema.optional(),
+    archivedAt: timestampSchema.nullable().optional(),
     createdAt: timestampSchema,
     updatedAt: timestampSchema,
   })

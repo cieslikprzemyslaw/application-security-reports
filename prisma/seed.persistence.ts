@@ -90,6 +90,14 @@ const insertAssessments = async (
     await db.assessment.create({
       data: stripUndefined({
         ...row,
+        archivedFromStatus:
+          row.status === 'archived'
+            ? row.completedAt
+              ? 'completed'
+              : row.startedAt
+                ? 'in-progress'
+                : 'draft'
+            : undefined,
       }),
     });
   }
@@ -196,7 +204,22 @@ const insertActivities = async (
   for (const row of rows) {
     await db.activity.create({
       data: stripUndefined({
-        ...row,
+        id: row.id,
+        entityType: row.resource.type,
+        entityId: row.resource.id,
+        action: row.eventType,
+        message: row.message,
+        eventType: row.eventType,
+        result: row.result,
+        severity: row.severity,
+        actorType: row.actor.type,
+        actorId: row.actor.id,
+        resourceType: row.resource.type,
+        resourceId: row.resource.id,
+        companyId: row.resource.companyId,
+        assessmentId: row.resource.assessmentId,
+        correlationId: row.correlationId,
+        createdAt: row.createdAt,
       }),
     });
   }

@@ -139,7 +139,6 @@ describe('assessmentForm', () => {
           applicationName: 'https://portal.example',
           description: 'Assessment of the customer portal',
           scope: 'Web application',
-          status: 'in-progress',
           assessmentType: 'Portal review',
         },
       );

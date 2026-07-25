@@ -83,6 +83,8 @@ const createAssessmentBaseSchema = assessmentObjectSchema
     updatedAt: true,
     owaspTaxonomyVersion: true,
     cweCatalogVersion: true,
+    recordVersion: true,
+    archivedAt: true,
   })
   .extend({
     applicationName: nonEmptyTextSchema,
@@ -152,7 +154,9 @@ const _createAssessmentRequestSchemaCompatibilityCheck: CreateAssessmentRequestS
   : never = true;
 
 export const updateAssessmentRequestSchema = requireAtLeastOneField(
-  createAssessmentBaseSchema.omit({ companyId: true }).partial(),
+  createAssessmentBaseSchema
+    .omit({ companyId: true, status: true, completedAt: true })
+    .partial(),
   'At least one assessment field is required',
 );
 type UpdateAssessmentRequestSchemaOutput = Required<

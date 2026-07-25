@@ -1,12 +1,4 @@
-import { createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
-import { mkdtemp, rm } from 'node:fs/promises';
-import os from 'node:os';
-import path from 'node:path';
 import { createServer } from 'node:http';
-import { pathToFileURL } from 'node:url';
-
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 
 import { loadServerConfig } from '../../config.js';
 import { createAssessmentRepository } from '../../database/repositories/assessment.repository.js';
@@ -14,117 +6,13 @@ import { createCompanyRepository } from '../../database/repositories/company.rep
 import { createEvidenceRepository } from '../../database/repositories/evidence.repository.js';
 import { createReportRepository } from '../../database/repositories/report.repository.js';
 import { createThreatRepository } from '../../database/repositories/threat.repository.js';
+import { createTemporaryDatabase } from '../../test/temporaryDatabase.js';
 import { createApiApp } from '../api-app.js';
 import type { PrismaClient as PrismaClientType } from '../../../generated/prisma/client.js';
 
-const repoRoot = path.resolve(process.cwd());
-const migrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260612100556_define_domain_model',
-  'migration.sql',
-);
-const migrationSql = readFileSync(migrationPath, 'utf8');
-const schemaSql = migrationSql.slice(migrationSql.indexOf('-- CreateTable'));
-const assessmentMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260619120000_add_owasp_taxonomy_version_to_assessment',
-  'migration.sql',
-);
-const assessmentMigrationSql = readFileSync(assessmentMigrationPath, 'utf8');
-const threatMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260616120000_add_finding_category_fields',
-  'migration.sql',
-);
-const threatMigrationSql = readFileSync(threatMigrationPath, 'utf8');
-const evidenceMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260616190000_add_structured_evidence',
-  'migration.sql',
-);
-const evidenceMigrationSql = readFileSync(evidenceMigrationPath, 'utf8');
-const reportVersionMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260621120000_add_report_version',
-  'migration.sql',
-);
-const reportVersionMigrationSql = readFileSync(
-  reportVersionMigrationPath,
-  'utf8',
-);
-const companyLogoMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260620090747',
-  'migration.sql',
-);
-const companyLogoMigrationSql = readFileSync(companyLogoMigrationPath, 'utf8');
-const companyArchivedAtMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260621130000_add_company_archived_at',
-  'migration.sql',
-);
-const companyArchivedAtMigrationSql = readFileSync(
-  companyArchivedAtMigrationPath,
-  'utf8',
-);
-const reportThreatPositionMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260625193000_add_report_threat_position',
-  'migration.sql',
-);
-const reportThreatPositionMigrationSql = readFileSync(
-  reportThreatPositionMigrationPath,
-  'utf8',
-);
-const cweCatalogMigrationSql = readFileSync(
-  path.resolve(
-    repoRoot,
-    'prisma',
-    'migrations',
-    '20260725000100_add_cwe_catalog_version_to_assessment',
-    'migration.sql',
-  ),
-  'utf8',
-);
-const threatCweMigrationSql = readFileSync(
-  path.resolve(
-    repoRoot,
-    'prisma',
-    'migrations',
-    '20260725000200_add_threat_cwe_mappings',
-    'migration.sql',
-  ),
-  'utf8',
-);
-const allowedOrigin = 'http://localhost:5173';
 const config = loadServerConfig({
-  FRONTEND_ORIGIN: allowedOrigin,
+  FRONTEND_ORIGIN: 'http://localhost:5173',
 });
-
-const nodeRequire = createRequire(import.meta.url);
-const Database = nodeRequire('better-sqlite3') as new (
-  databasePath: string,
-) => {
-  exec(sql: string): void;
-  close(): void;
-  pragma(sql: string): void;
-};
 
 const startTestServer = async (app: ReturnType<typeof createApiApp>) => {
   const server = createServer(app);
@@ -155,11 +43,6 @@ const startTestServer = async (app: ReturnType<typeof createApiApp>) => {
   };
 };
 
-const prismaClientPath = pathToFileURL(
-  path.join(repoRoot, 'generated', 'prisma', 'client.js'),
-).href;
-const { PrismaClient } = await import(prismaClientPath);
-
 export type AssessmentsRouteIntegrationHarness = {
   server: Awaited<ReturnType<typeof startTestServer>>;
   prisma: PrismaClientType;
@@ -170,6 +53,7 @@ export type AssessmentsRouteIntegrationHarness = {
   assessment: {
     id: string;
     updatedAt: string;
+    recordVersion: number;
   };
   assessmentRepository: ReturnType<typeof createAssessmentRepository>;
   cleanup: () => Promise<void>;
@@ -177,42 +61,15 @@ export type AssessmentsRouteIntegrationHarness = {
 
 export const createAssessmentsRouteIntegrationHarness =
   async (): Promise<AssessmentsRouteIntegrationHarness> => {
-    const tempDir = await mkdtemp(
-      path.join(os.tmpdir(), 'appsec-assessments-'),
-    );
-    const databasePath = path.join(tempDir, 'assessments.sqlite');
-    const adapterUrl = `file:${databasePath.replaceAll('\\', '/')}`;
-    const bootstrapDb = new Database(databasePath);
+    const database = await createTemporaryDatabase();
+    const { prisma } = database;
 
     try {
-      bootstrapDb.exec(schemaSql);
-      bootstrapDb.exec(companyLogoMigrationSql);
-      bootstrapDb.exec(companyArchivedAtMigrationSql);
-      bootstrapDb.exec(assessmentMigrationSql);
-      bootstrapDb.exec(threatMigrationSql);
-      bootstrapDb.exec(evidenceMigrationSql);
-      bootstrapDb.exec(reportVersionMigrationSql);
-      bootstrapDb.exec(reportThreatPositionMigrationSql);
-      bootstrapDb.exec(cweCatalogMigrationSql);
-      bootstrapDb.exec(threatCweMigrationSql);
-    } finally {
-      bootstrapDb.close();
-    }
-
-    const prisma = new PrismaClient({
-      adapter: new PrismaBetterSqlite3({ url: adapterUrl }),
-    });
-
-    try {
-      await prisma.$executeRawUnsafe('PRAGMA journal_mode = MEMORY');
-      await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
-
       const companyRepository = createCompanyRepository(prisma);
       const assessmentRepository = createAssessmentRepository(prisma);
       const threatRepository = createThreatRepository(prisma);
       const evidenceRepository = createEvidenceRepository(prisma);
       const reportRepository = createReportRepository(prisma);
-
       const server = await startTestServer(
         createApiApp(config, {
           assessmentRepository,
@@ -239,7 +96,6 @@ export const createAssessmentsRouteIntegrationHarness =
         scope: 'Web application',
         status: 'in-progress',
         startedAt: '2026-06-01',
-        completedAt: '2026-06-10',
         applicationName: 'Customer Services Portal',
         environment: 'Production',
         assessmentType: 'Web App',
@@ -256,17 +112,16 @@ export const createAssessmentsRouteIntegrationHarness =
         assessment: {
           id: assessment.id,
           updatedAt: assessment.updatedAt,
+          recordVersion: new Date(assessment.updatedAt).getTime(),
         },
         assessmentRepository,
         cleanup: async () => {
           await server.close();
-          await prisma.$disconnect();
-          await rm(tempDir, { recursive: true, force: true });
+          await database.cleanup();
         },
       };
     } catch (error) {
-      await prisma.$disconnect();
-      await rm(tempDir, { recursive: true, force: true });
+      await database.cleanup();
       throw error;
     }
   };

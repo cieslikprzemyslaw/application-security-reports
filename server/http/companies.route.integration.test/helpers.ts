@@ -107,6 +107,16 @@ const threatCweMigrationSql = readFileSync(
   ),
   'utf8',
 );
+const lifecycleMigrationSql = readFileSync(
+  path.resolve(
+    repoRoot,
+    'prisma',
+    'migrations',
+    '20260725000300_add_assessment_lifecycle_and_activity_vocabulary',
+    'migration.sql',
+  ),
+  'utf8',
+);
 const nodeRequire = createRequire(import.meta.url);
 const Database = nodeRequire('better-sqlite3') as new (
   databasePath: string,
@@ -175,6 +185,7 @@ export const createIntegrationDatabase = async (prefix: string) => {
     bootstrapDb.exec(reportThreatPositionMigrationSql);
     bootstrapDb.exec(cweCatalogMigrationSql);
     bootstrapDb.exec(threatCweMigrationSql);
+    bootstrapDb.exec(lifecycleMigrationSql);
   } finally {
     bootstrapDb.close();
   }
