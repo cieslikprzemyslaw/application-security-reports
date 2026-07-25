@@ -30,6 +30,14 @@ const updateExchange = (
       : exchange,
   );
 
+const replaceExchange = (
+  exchanges: EvidenceHttpExchangeFormValue[],
+  replacement: EvidenceHttpExchangeFormValue,
+) =>
+  exchanges.map(exchange =>
+    exchange.localId === replacement.localId ? replacement : exchange,
+  );
+
 const removeExchange = (
   exchanges: EvidenceHttpExchangeFormValue[],
   exchangeId: string,
@@ -62,7 +70,6 @@ const moveExchange = (
   }
 
   nextExchanges.splice(nextIndex, 0, exchange);
-
   return nextExchanges;
 };
 
@@ -122,6 +129,9 @@ const HttpExchangeList = ({
           errors={exchangeErrorFor(errors.exchangeErrors, exchange.localId)}
           onChange={(exchangeId, field, value) =>
             onChange(updateExchange(exchanges, exchangeId, field, value))
+          }
+          onImport={replacement =>
+            onChange(replaceExchange(exchanges, replacement))
           }
           onMove={(exchangeId, direction) =>
             onChange(moveExchange(exchanges, exchangeId, direction))
