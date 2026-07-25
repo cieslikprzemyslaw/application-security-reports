@@ -18,104 +18,44 @@ import { createApiApp } from '../api-app.js';
 import type { PrismaClient as PrismaClientType } from '../../../generated/prisma/client.js';
 
 const repoRoot = path.resolve(process.cwd());
-const migrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260612100556_define_domain_model',
-  'migration.sql',
-);
-const migrationSql = readFileSync(migrationPath, 'utf8');
+const readMigration = (name: string) =>
+  readFileSync(
+    path.resolve(repoRoot, 'prisma', 'migrations', name, 'migration.sql'),
+    'utf8',
+  );
+
+const migrationSql = readMigration('20260612100556_define_domain_model');
 const schemaSql = migrationSql.slice(migrationSql.indexOf('-- CreateTable'));
-const assessmentMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260619120000_add_owasp_taxonomy_version_to_assessment',
-  'migration.sql',
-);
-const assessmentMigrationSql = readFileSync(assessmentMigrationPath, 'utf8');
-const threatMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260616120000_add_finding_category_fields',
-  'migration.sql',
-);
-const threatMigrationSql = readFileSync(threatMigrationPath, 'utf8');
-const evidenceMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260616190000_add_structured_evidence',
-  'migration.sql',
-);
-const evidenceMigrationSql = readFileSync(evidenceMigrationPath, 'utf8');
-const reportVersionMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260621120000_add_report_version',
-  'migration.sql',
-);
-const reportVersionMigrationSql = readFileSync(
-  reportVersionMigrationPath,
-  'utf8',
-);
-const companyLogoMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
-  '20260620090747',
-  'migration.sql',
-);
-const companyLogoMigrationSql = readFileSync(companyLogoMigrationPath, 'utf8');
-const companyArchivedAtMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
+const companyLogoMigrationSql = readMigration('20260620090747');
+const companyArchivedAtMigrationSql = readMigration(
   '20260621130000_add_company_archived_at',
-  'migration.sql',
 );
-const companyArchivedAtMigrationSql = readFileSync(
-  companyArchivedAtMigrationPath,
-  'utf8',
+const assessmentMigrationSql = readMigration(
+  '20260619120000_add_owasp_taxonomy_version_to_assessment',
 );
-const reportThreatPositionMigrationPath = path.resolve(
-  repoRoot,
-  'prisma',
-  'migrations',
+const threatMigrationSql = readMigration(
+  '20260616120000_add_finding_category_fields',
+);
+const evidenceMigrationSql = readMigration(
+  '20260616190000_add_structured_evidence',
+);
+const reportVersionMigrationSql = readMigration(
+  '20260621120000_add_report_version',
+);
+const reportThreatPositionMigrationSql = readMigration(
   '20260625193000_add_report_threat_position',
-  'migration.sql',
 );
-const reportThreatPositionMigrationSql = readFileSync(
-  reportThreatPositionMigrationPath,
-  'utf8',
+const cweCatalogMigrationSql = readMigration(
+  '20260725000100_add_cwe_catalog_version_to_assessment',
 );
-const cweCatalogMigrationSql = readFileSync(
-  path.resolve(
-    repoRoot,
-    'prisma',
-    'migrations',
-    '20260725000100_add_cwe_catalog_version_to_assessment',
-    'migration.sql',
-  ),
-  'utf8',
+const threatCweMigrationSql = readMigration(
+  '20260725000200_add_threat_cwe_mappings',
 );
-const threatCweMigrationSql = readFileSync(
-  path.resolve(
-    repoRoot,
-    'prisma',
-    'migrations',
-    '20260725000200_add_threat_cwe_mappings',
-    'migration.sql',
-  ),
-  'utf8',
+const lifecycleMigrationSql = readMigration(
+  '20260725000300_add_assessment_lifecycle_and_activity_vocabulary',
 );
 const allowedOrigin = 'http://localhost:5173';
-const config = loadServerConfig({
-  FRONTEND_ORIGIN: allowedOrigin,
-});
+const config = loadServerConfig({ FRONTEND_ORIGIN: allowedOrigin });
 
 const nodeRequire = createRequire(import.meta.url);
 const Database = nodeRequire('better-sqlite3') as new (
@@ -170,6 +110,7 @@ export type AssessmentsRouteIntegrationHarness = {
   assessment: {
     id: string;
     updatedAt: string;
+    recordVersion: number;
   };
   assessmentRepository: ReturnType<typeof createAssessmentRepository>;
   cleanup: () => Promise<void>;
@@ -195,6 +136,7 @@ export const createAssessmentsRouteIntegrationHarness =
       bootstrapDb.exec(reportThreatPositionMigrationSql);
       bootstrapDb.exec(cweCatalogMigrationSql);
       bootstrapDb.exec(threatCweMigrationSql);
+      bootstrapDb.exec(lifecycleMigrationSql);
     } finally {
       bootstrapDb.close();
     }
@@ -239,7 +181,6 @@ export const createAssessmentsRouteIntegrationHarness =
         scope: 'Web application',
         status: 'in-progress',
         startedAt: '2026-06-01',
-        completedAt: '2026-06-10',
         applicationName: 'Customer Services Portal',
         environment: 'Production',
         assessmentType: 'Web App',
@@ -256,6 +197,7 @@ export const createAssessmentsRouteIntegrationHarness =
         assessment: {
           id: assessment.id,
           updatedAt: assessment.updatedAt,
+          recordVersion: assessment.recordVersion,
         },
         assessmentRepository,
         cleanup: async () => {
