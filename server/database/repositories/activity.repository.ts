@@ -187,9 +187,7 @@ const toAppendInput = (input: ActivityCreateInput): AppendActivityInput => {
       type: legacyInput.entityType,
       id,
       ...(legacyInput.entityType === 'company' ? { companyId: id } : {}),
-      ...(legacyInput.entityType === 'assessment'
-        ? { assessmentId: id }
-        : {}),
+      ...(legacyInput.entityType === 'assessment' ? { assessmentId: id } : {}),
     },
     message: legacyInput.message,
     createdAt: legacyInput.createdAt,
