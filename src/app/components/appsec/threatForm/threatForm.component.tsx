@@ -74,7 +74,7 @@ const ThreatForm = ({
   const resolvedSecurityOpen = isSecurityOpen || securityMustOpen;
   const resolvedAdditionalOpen = isAdditionalOpen || additionalMustOpen;
 
-  const firstErrorFieldId = useMemo(() => {
+  const firstErrorField = useMemo(() => {
     const orderedFields: Array<keyof ThreatFormValue> = [
       'title',
       'owaspCategoryCode',
@@ -86,16 +86,23 @@ const ThreatForm = ({
       ...securityFields,
       ...additionalFields,
     ];
-    const errorField = orderedFields.find(field => Boolean(errors[field]));
 
-    return errorField ? fieldIdMap[errorField] : undefined;
+    return orderedFields.find(field => Boolean(errors[field]));
   }, [errors]);
-
-  const requestedFocusFieldId = focusField ? fieldIdMap[focusField] : undefined;
-  const focusTargetFieldId = firstErrorFieldId ?? requestedFocusFieldId;
+  const focusTargetField = firstErrorField ?? focusField;
+  const focusTargetFieldId = focusTargetField
+    ? fieldIdMap[focusTargetField]
+    : undefined;
+  const isFocusTargetVisible = focusTargetField
+    ? securityFields.includes(focusTargetField)
+      ? resolvedSecurityOpen
+      : additionalFields.includes(focusTargetField)
+        ? resolvedAdditionalOpen
+        : true
+    : false;
 
   useEffect(() => {
-    if (!focusTargetFieldId) {
+    if (!focusTargetFieldId || !isFocusTargetVisible) {
       return undefined;
     }
 
@@ -109,7 +116,7 @@ const ThreatForm = ({
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [focusTargetFieldId, resolvedAdditionalOpen, resolvedSecurityOpen]);
+  }, [focusTargetFieldId, isFocusTargetVisible]);
 
   return (
     <StyledThreatForm ref={formRef} onSubmit={onSubmit} noValidate>
