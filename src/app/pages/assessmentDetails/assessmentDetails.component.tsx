@@ -127,6 +127,7 @@ const AssessmentDetails = ({ activeSection }: AssessmentDetailsRouteProps) => {
     assessmentId,
     assessmentStatus: assessmentView?.status,
     assessmentOwaspTaxonomyVersion: assessmentView?.owaspTaxonomyVersion,
+    assessmentCweCatalogVersion: assessmentView?.cweCatalogVersion,
     onMutationSuccess: handleFindingsCountChange,
   });
 

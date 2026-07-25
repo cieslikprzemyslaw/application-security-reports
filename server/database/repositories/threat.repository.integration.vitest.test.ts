@@ -49,6 +49,7 @@ describe('Threat repository with temporary SQLite', () => {
         title: 'Customer Services Portal',
         status: 'draft',
         owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+        cweCatalogVersion: '4.20',
       },
     });
   });
@@ -184,5 +185,83 @@ describe('Threat repository with temporary SQLite', () => {
 
     await expect(repository.findById(created.id)).resolves.not.toBeNull();
     await expect(prisma.evidenceThreat.count()).resolves.toBe(1);
+  });
+
+  it('persists ordered CWE mappings and supports preserve, replace, and clear semantics', async () => {
+    const { prisma } = getDatabase();
+    const repository = createThreatRepository(prisma);
+
+    const created = await repository.create(
+      buildThreatInput({ cweIds: ['CWE-79', 'CWE-89'] }),
+    );
+
+    expect(created.cweCatalogVersion).toBe('4.20');
+    expect(created.cweMappings).toEqual([
+      expect.objectContaining({ id: 'CWE-79', primary: true }),
+      expect.objectContaining({ id: 'CWE-89', primary: false }),
+    ]);
+    await expect(
+      prisma.threatCwe.findMany({
+        where: { threatId: created.id },
+        orderBy: { position: 'asc' },
+      }),
+    ).resolves.toEqual([
+      { threatId: created.id, cweId: 'CWE-79', position: 0 },
+      { threatId: created.id, cweId: 'CWE-89', position: 1 },
+    ]);
+
+    const preserved = await repository.update(created.id, {
+      title: 'Title-only update',
+    });
+    expect(preserved.cweMappings.map(mapping => mapping.id)).toEqual([
+      'CWE-79',
+      'CWE-89',
+    ]);
+
+    const replaced = await repository.update(created.id, {
+      cweIds: ['CWE-22'],
+    });
+    expect(replaced.cweMappings).toEqual([
+      expect.objectContaining({ id: 'CWE-22', primary: true }),
+    ]);
+
+    const cleared = await repository.update(created.id, { cweIds: [] });
+    expect(cleared.cweMappings).toEqual([]);
+    await expect(
+      prisma.threatCwe.count({ where: { threatId: created.id } }),
+    ).resolves.toBe(0);
+  });
+
+  it('rejects invalid CWE replacements atomically and cascades mappings on delete', async () => {
+    const { prisma } = getDatabase();
+    const repository = createThreatRepository(prisma);
+    const created = await repository.create(
+      buildThreatInput({ cweIds: ['CWE-79', 'CWE-89'] }),
+    );
+
+    for (const cweIds of [
+      ['CWE-79', 'CWE-79'],
+      ['CWE-999999'],
+      ['CWE-71'],
+      ['CWE-22', 'CWE-79', 'CWE-89', 'CWE-200', 'CWE-287', 'CWE-352'],
+    ]) {
+      await expect(
+        repository.update(created.id, { cweIds }),
+      ).rejects.toBeInstanceOf(ValidationError);
+      await expect(
+        prisma.threatCwe.findMany({
+          where: { threatId: created.id },
+          orderBy: { position: 'asc' },
+        }),
+      ).resolves.toEqual([
+        { threatId: created.id, cweId: 'CWE-79', position: 0 },
+        { threatId: created.id, cweId: 'CWE-89', position: 1 },
+      ]);
+    }
+
+    await repository.delete(created.id);
+    await expect(
+      prisma.threatCwe.count({ where: { threatId: created.id } }),
+    ).resolves.toBe(0);
   });
 });

@@ -7,6 +7,11 @@ import {
 } from '../owaspTop10.js';
 
 import {
+  cweCatalogVersionSchema,
+  owaspTop10VersionSchema,
+} from './assessment.schema.js';
+
+import {
   nonEmptyIdSchema,
   nonEmptyTextSchema,
   nonNegativeIntegerSchema,
@@ -17,6 +22,31 @@ import {
   timestampSchema,
 } from './common.schema.js';
 
+export const cweIdSchema = z
+  .string()
+  .trim()
+  .regex(/^CWE-\d+$/i, 'CWE ID must use the CWE-123 format')
+  .transform(value => `CWE-${Number(value.slice(4))}`);
+
+export const cweIdListSchema = z
+  .array(cweIdSchema)
+  .max(5, 'A Threat can contain at most five CWE mappings')
+  .refine(
+    values => new Set(values).size === values.length,
+    'CWE mappings must not contain duplicates',
+  );
+
+export const threatCweMappingObjectSchema = z
+  .object({
+    id: cweIdSchema,
+    name: nonEmptyTextSchema,
+    status: z.enum(['Draft', 'Incomplete', 'Stable', 'Deprecated']),
+    deprecated: z.boolean(),
+    primary: z.boolean(),
+    replacementIds: z.array(cweIdSchema),
+  })
+  .strict();
+
 export const threatObjectSchema = z
   .object({
     id: nonEmptyIdSchema,
@@ -26,6 +56,8 @@ export const threatObjectSchema = z
     severity: severitySchema,
     strideCategories: z.array(strideCategorySchema).min(1),
     status: threatStatusSchema,
+    cweCatalogVersion: cweCatalogVersionSchema,
+    cweMappings: z.array(threatCweMappingObjectSchema).max(5),
     owaspCategoryCode: optionalTrimmedTextSchema,
     customCategory: optionalTrimmedTextSchema,
     affectedAsset: optionalTrimmedTextSchema,
@@ -47,6 +79,12 @@ export const threatObjectSchema = z
   .strict();
 
 export const threatSchema = threatObjectSchema;
+
+export const threatResponseSchema = threatObjectSchema
+  .extend({
+    assessmentOwaspTaxonomyVersion: owaspTop10VersionSchema,
+  })
+  .strict();
 
 export const createThreatOwaspCategoryCodeSchema = (
   assessmentVersion: OwaspTop10Version,

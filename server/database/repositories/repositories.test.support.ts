@@ -63,6 +63,7 @@ export const assessmentRow = {
   assessmentType: null,
   overallRisk: null,
   owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+  cweCatalogVersion: '4.20',
   createdAt,
   updatedAt,
 };
@@ -89,6 +90,11 @@ export const threatRow = {
   risk: null,
   createdAt,
   updatedAt,
+  assessment: {
+    owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+    cweCatalogVersion: '4.20',
+  },
+  cweMappings: [],
 };
 
 export const evidenceRow = {

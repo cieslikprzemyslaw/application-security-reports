@@ -387,6 +387,7 @@ export const ModelName = {
   Company: 'Company',
   Assessment: 'Assessment',
   Threat: 'Threat',
+  ThreatCwe: 'ThreatCwe',
   Evidence: 'Evidence',
   EvidenceExchange: 'EvidenceExchange',
   Report: 'Report',
@@ -410,7 +411,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "company" | "assessment" | "threat" | "evidence" | "evidenceExchange" | "report" | "reportVersion" | "evidenceThreat" | "reportThreat" | "activity" | "settings"
+    modelProps: "company" | "assessment" | "threat" | "threatCwe" | "evidence" | "evidenceExchange" | "report" | "reportVersion" | "evidenceThreat" | "reportThreat" | "activity" | "settings"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -633,6 +634,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ThreatCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ThreatCountAggregateOutputType> | number
+        }
+      }
+    }
+    ThreatCwe: {
+      payload: Prisma.$ThreatCwePayload<ExtArgs>
+      fields: Prisma.ThreatCweFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ThreatCweFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThreatCwePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ThreatCweFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThreatCwePayload>
+        }
+        findFirst: {
+          args: Prisma.ThreatCweFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThreatCwePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ThreatCweFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThreatCwePayload>
+        }
+        findMany: {
+          args: Prisma.ThreatCweFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThreatCwePayload>[]
+        }
+        create: {
+          args: Prisma.ThreatCweCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThreatCwePayload>
+        }
+        createMany: {
+          args: Prisma.ThreatCweCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ThreatCweCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThreatCwePayload>[]
+        }
+        delete: {
+          args: Prisma.ThreatCweDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThreatCwePayload>
+        }
+        update: {
+          args: Prisma.ThreatCweUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThreatCwePayload>
+        }
+        deleteMany: {
+          args: Prisma.ThreatCweDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ThreatCweUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ThreatCweUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThreatCwePayload>[]
+        }
+        upsert: {
+          args: Prisma.ThreatCweUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThreatCwePayload>
+        }
+        aggregate: {
+          args: Prisma.ThreatCweAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateThreatCwe>
+        }
+        groupBy: {
+          args: Prisma.ThreatCweGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ThreatCweGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ThreatCweCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ThreatCweCountAggregateOutputType> | number
         }
       }
     }
@@ -1295,6 +1370,7 @@ export const AssessmentScalarFieldEnum = {
   assessmentType: 'assessmentType',
   overallRisk: 'overallRisk',
   owaspTaxonomyVersion: 'owaspTaxonomyVersion',
+  cweCatalogVersion: 'cweCatalogVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1327,6 +1403,15 @@ export const ThreatScalarFieldEnum = {
 } as const
 
 export type ThreatScalarFieldEnum = (typeof ThreatScalarFieldEnum)[keyof typeof ThreatScalarFieldEnum]
+
+
+export const ThreatCweScalarFieldEnum = {
+  threatId: 'threatId',
+  cweId: 'cweId',
+  position: 'position'
+} as const
+
+export type ThreatCweScalarFieldEnum = (typeof ThreatCweScalarFieldEnum)[keyof typeof ThreatCweScalarFieldEnum]
 
 
 export const EvidenceScalarFieldEnum = {
@@ -1534,16 +1619,16 @@ export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
 
 
 /**
- * Reference to a field of type 'EvidenceType'
+ * Reference to a field of type 'Int'
  */
-export type EnumEvidenceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EvidenceType'>
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
     
 
 
 /**
- * Reference to a field of type 'Int'
+ * Reference to a field of type 'EvidenceType'
  */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+export type EnumEvidenceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EvidenceType'>
     
 
 
@@ -1708,6 +1793,7 @@ export type GlobalOmitConfig = {
   company?: Prisma.CompanyOmit
   assessment?: Prisma.AssessmentOmit
   threat?: Prisma.ThreatOmit
+  threatCwe?: Prisma.ThreatCweOmit
   evidence?: Prisma.EvidenceOmit
   evidenceExchange?: Prisma.EvidenceExchangeOmit
   report?: Prisma.ReportOmit

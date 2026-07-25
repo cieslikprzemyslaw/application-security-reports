@@ -100,9 +100,25 @@ const insertThreats = async (
   rows: Threat[],
 ) => {
   for (const row of rows) {
+    const {
+      cweCatalogVersion: _cweCatalogVersion,
+      cweMappings,
+      ...threat
+    } = row;
+
     await db.threat.create({
       data: stripUndefined({
-        ...row,
+        ...threat,
+        ...(cweMappings.length > 0
+          ? {
+              cweMappings: {
+                create: cweMappings.map((mapping, position) => ({
+                  cweId: mapping.id,
+                  position,
+                })),
+              },
+            }
+          : {}),
       }),
     });
   }

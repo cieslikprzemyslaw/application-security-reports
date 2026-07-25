@@ -41,6 +41,7 @@ const overviewResponse = {
       assessmentType: 'Web App',
       overallRisk: 'high',
       owaspTaxonomyVersion: '2025',
+      cweCatalogVersion: '4.20',
       createdAt: '2026-06-01T09:00:00.000Z',
       updatedAt: '2026-06-11T09:00:00.000Z',
       recordVersion: 3,

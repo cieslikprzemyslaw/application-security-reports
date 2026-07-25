@@ -9,6 +9,7 @@ import type {
   ReportPreviewRequest,
 } from '../../src/domain/report-preview.js';
 import type { Threat } from '../../src/domain/threat.js';
+import { selectedThreatCweMappings } from './report-preview-snapshot.service.vitest.fixtures.js';
 import { buildReportPreviewSnapshot } from './report-preview-snapshot.service.js';
 
 const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
@@ -35,6 +36,7 @@ const company: ReportPreviewCompany & {
 };
 
 const assessment: Assessment = {
+  cweCatalogVersion: '4.20',
   id: assessmentId,
   companyId,
   title: 'Customer Services Portal',
@@ -52,6 +54,8 @@ const assessment: Assessment = {
 };
 
 const selectedThreat: Threat = {
+  cweCatalogVersion: '4.20',
+  cweMappings: selectedThreatCweMappings,
   id: threatId,
   assessmentId,
   title: 'Missing Server-Side Authorization',
@@ -166,6 +170,11 @@ describe('buildReportPreviewSnapshot', () => {
     expect(snapshot.selectedThreats.map(threat => threat.id)).toEqual([
       threatId,
     ]);
+    expect(snapshot.assessment.cweCatalogVersion).toBe('4.20');
+    expect(snapshot.selectedThreats[0]?.cweCatalogVersion).toBe('4.20');
+    expect(snapshot.selectedThreats[0]?.cweMappings).toEqual(
+      selectedThreat.cweMappings,
+    );
     expect(snapshot.selectedEvidence.map(evidence => evidence.id)).toEqual([
       evidenceId,
     ]);

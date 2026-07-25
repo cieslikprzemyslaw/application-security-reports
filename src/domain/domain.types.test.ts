@@ -25,6 +25,7 @@ const assessment: Assessment = {
   completedAt: '2026-06-10',
   applicationName: 'Customer Services Portal',
   owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+  cweCatalogVersion: '4.20',
   createdAt: '2026-06-01',
   updatedAt: '2026-06-10',
 };
@@ -34,6 +35,8 @@ const criticalSeverity: Severity = 'critical';
 const strideCategories: StrideCategory[] = ['spoofing', 'tampering'];
 
 const threat: Threat = {
+  cweCatalogVersion: '4.20',
+  cweMappings: [],
   id: 'thr_1',
   assessmentId: assessment.id,
   title: 'Missing Server-Side Authorization',
@@ -127,6 +130,7 @@ const reportPreviewSnapshot: ReportPreviewSnapshot = {
     assessmentType: assessment.assessmentType,
     overallRisk: assessment.overallRisk,
     owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+    cweCatalogVersion: '4.20',
   },
   selection: reportPreviewRequest.selection,
   configuration: reportPreviewRequest.configuration,

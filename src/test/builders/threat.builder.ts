@@ -1,8 +1,12 @@
 import type { Threat } from '~/domain';
 
 export const buildThreat = (overrides: Partial<Threat> = {}): Threat => {
-  const { strideCategories = ['elevation-of-privilege'], ...properties } =
-    overrides;
+  const {
+    cweCatalogVersion = '4.20',
+    cweMappings = [],
+    strideCategories = ['elevation-of-privilege'],
+    ...properties
+  } = overrides;
 
   return {
     id: 'thr_test',
@@ -12,6 +16,11 @@ export const buildThreat = (overrides: Partial<Threat> = {}): Threat => {
       'The endpoint does not verify that the authenticated user owns the requested resource.',
     severity: 'high',
     status: 'open',
+    cweCatalogVersion,
+    cweMappings: cweMappings.map(mapping => ({
+      ...mapping,
+      replacementIds: [...mapping.replacementIds],
+    })),
     owaspCategoryCode: 'A01:2025',
     affectedAsset: 'Customer account',
     impact: 'An attacker may access another customer account.',

@@ -16,9 +16,7 @@
       "reason": "Temporary acceptance for a transitive build-time dependency. This project does not process user-supplied CSS or source-map files; a compatible lockfile update is tracked separately.",
       "expires": "2026-07-31",
       "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
-      "advisoryIds": [
-        "https://github.com/advisories/GHSA-r28c-9q8g-f849"
-      ]
+      "advisoryIds": ["https://github.com/advisories/GHSA-r28c-9q8g-f849"]
     },
     {
       "package": "react-router",
@@ -26,9 +24,7 @@
       "reason": "Temporary acceptance while the compatible remediation path is verified. The application is a client-rendered Vite SPA and does not use React Server Components or React Router RSC mode.",
       "expires": "2026-07-31",
       "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
-      "advisoryIds": [
-        "https://github.com/advisories/GHSA-qwww-vcr4-c8h2"
-      ]
+      "advisoryIds": ["https://github.com/advisories/GHSA-qwww-vcr4-c8h2"]
     },
     {
       "package": "react-router-dom",
@@ -37,6 +33,99 @@
       "expires": "2026-07-31",
       "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
       "advisoryIds": ["react-router"]
+    },
+    {
+      "package": "@eslint/eslintrc",
+      "severity": "high",
+      "reason": "Temporary acceptance for a development-only ESLint configuration dependency. It is not bundled into the application runtime; remediation requires the tracked ESLint major-version upgrade.",
+      "expires": "2026-08-31",
+      "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
+      "advisoryIds": ["minimatch"]
+    },
+    {
+      "package": "@humanwhocodes/config-array",
+      "severity": "high",
+      "reason": "Temporary acceptance for a development-only legacy ESLint configuration dependency. It is not part of the production runtime; remediation is tied to the tracked ESLint major-version upgrade.",
+      "expires": "2026-08-31",
+      "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
+      "advisoryIds": ["minimatch"]
+    },
+    {
+      "package": "@joshwooding/vite-plugin-react-docgen-typescript",
+      "severity": "high",
+      "reason": "Temporary acceptance for a Storybook documentation build dependency. It is used only during local component documentation builds and is not shipped with the application runtime.",
+      "expires": "2026-08-31",
+      "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
+      "advisoryIds": ["glob"]
+    },
+    {
+      "package": "@storybook/react-vite",
+      "severity": "high",
+      "reason": "Temporary acceptance for the development-only Storybook toolchain. The vulnerable path is not included in the production application bundle; the compatible Storybook major upgrade is tracked separately.",
+      "expires": "2026-08-31",
+      "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
+      "advisoryIds": ["@joshwooding/vite-plugin-react-docgen-typescript"]
+    },
+    {
+      "package": "brace-expansion",
+      "severity": "high",
+      "reason": "Temporary acceptance for a transitive development-tool dependency used by linting and documentation tooling. Untrusted glob patterns are not accepted from application users.",
+      "expires": "2026-08-31",
+      "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
+      "advisoryIds": ["https://github.com/advisories/GHSA-mh99-v99m-4gvg"]
+    },
+    {
+      "package": "eslint",
+      "severity": "high",
+      "reason": "Temporary acceptance for the development-only linting toolchain. ESLint is not present in the production runtime, and the available remediation requires a separately verified semver-major upgrade.",
+      "expires": "2026-08-31",
+      "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
+      "advisoryIds": [
+        "@eslint/eslintrc",
+        "@humanwhocodes/config-array",
+        "file-entry-cache",
+        "minimatch"
+      ]
+    },
+    {
+      "package": "file-entry-cache",
+      "severity": "high",
+      "reason": "Temporary acceptance for a transitive ESLint cache dependency used only during development and CI. It is not included in the deployed application runtime.",
+      "expires": "2026-08-31",
+      "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
+      "advisoryIds": ["flat-cache"]
+    },
+    {
+      "package": "flat-cache",
+      "severity": "high",
+      "reason": "Temporary acceptance for a transitive ESLint cache dependency used only during development and CI. It is not included in the deployed application runtime.",
+      "expires": "2026-08-31",
+      "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
+      "advisoryIds": ["rimraf"]
+    },
+    {
+      "package": "glob",
+      "severity": "high",
+      "reason": "Temporary acceptance for a transitive development-tool dependency used by Storybook and linting. The application does not expose arbitrary glob processing to users.",
+      "expires": "2026-08-31",
+      "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
+      "advisoryIds": ["minimatch"]
+    },
+    {
+      "package": "minimatch",
+      "severity": "high",
+      "reason": "Temporary acceptance for a transitive development-tool dependency used by linting and Storybook. The application does not evaluate user-controlled glob patterns at runtime.",
+      "expires": "2026-08-31",
+      "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
+      "advisoryIds": ["brace-expansion"]
+    },
+    {
+      "package": "rimraf",
+      "severity": "high",
+      "reason": "Temporary acceptance for a transitive development-only cleanup dependency. It is not used in the application runtime and remediation follows the tracked toolchain upgrades.",
+      "expires": "2026-08-31",
+      "issue": "https://github.com/cieslikprzemyslaw/application-security-reports/issues/389",
+      "advisoryIds": ["glob"]
     }
   ]
 }

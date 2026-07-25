@@ -1,10 +1,18 @@
-import type { OwaspTop10Version, Severity, ThreatStatus } from '~/domain';
+import type {
+  CweCatalogVersion,
+  OwaspTop10Version,
+  Severity,
+  ThreatCweMapping,
+  ThreatStatus,
+} from '~/domain';
 
 export interface ThreatTableRow {
   id: string;
   title: string;
   owaspCategoryCode?: string;
   customCategory?: string;
+  cweCatalogVersion?: CweCatalogVersion;
+  cweMappings?: ThreatCweMapping[];
   severity: Severity;
   status: ThreatStatus;
   evidenceCount?: number;

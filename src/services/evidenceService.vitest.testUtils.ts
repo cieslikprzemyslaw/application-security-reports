@@ -126,6 +126,8 @@ export const threat = {
   description: 'The endpoint returns another customer order.',
   severity: 'critical',
   strideCategories: ['spoofing', 'tampering'],
+  cweCatalogVersion: '4.20',
+  cweMappings: [],
   status: 'accepted-risk',
   affectedAsset: '/api/v1/orders/{id}',
   impact: 'Unauthorised access to customer order data',

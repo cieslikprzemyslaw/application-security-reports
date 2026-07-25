@@ -97,6 +97,8 @@ describe('services.boundary', () => {
       description: 'The endpoint returns another customer order.',
       severity: 'critical',
       strideCategories: ['spoofing', 'tampering'],
+      cweCatalogVersion: '4.20',
+      cweMappings: [],
       status: 'accepted-risk',
       createdAt: '2026-06-01T09:00:00.000Z',
       updatedAt: '2026-06-11T09:00:00.000Z',

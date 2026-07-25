@@ -74,6 +74,7 @@ export const assessment: AssessmentDetailsAssessment = {
   applicationName: 'Customer Services Portal',
   status: 'in-progress',
   owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+  cweCatalogVersion: '4.20',
   recordVersion: 3,
   findingsCount: 2,
   evidenceCount: 1,
@@ -82,6 +83,8 @@ export const assessment: AssessmentDetailsAssessment = {
 
 export const threats: Threat[] = [
   {
+    cweCatalogVersion: '4.20',
+    cweMappings: [],
     id: 'thr_00000000-0000-0000-0000-000000000001',
     assessmentId: assessment.id,
     title: 'Missing Server-Side Authorization',
@@ -100,6 +103,8 @@ export const threats: Threat[] = [
     updatedAt: '2026-06-11T09:00:00.000Z',
   },
   {
+    cweCatalogVersion: '4.20',
+    cweMappings: [],
     id: 'thr_00000000-0000-0000-0000-000000000002',
     assessmentId: assessment.id,
     title: 'Verbose error handling',

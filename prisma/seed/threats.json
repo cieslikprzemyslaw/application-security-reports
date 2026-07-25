@@ -15,7 +15,9 @@
     "affectedEndpoint": "/api/v1/orders/{id}",
     "risk": "Sensitive customer data is exposed to any authenticated user.",
     "createdAt": "2026-05-20T09:00:00.000Z",
-    "updatedAt": "2026-06-11T09:00:00.000Z"
+    "updatedAt": "2026-06-11T09:00:00.000Z",
+    "cweCatalogVersion": "4.20",
+    "cweMappings": []
   },
   {
     "id": "thr_00000000-0000-0000-0000-000000000002",
@@ -33,7 +35,9 @@
     "affectedEndpoint": "/api/v1/orders",
     "risk": "Implementation details can be used for targeted exploitation.",
     "createdAt": "2026-05-21T09:00:00.000Z",
-    "updatedAt": "2026-06-10T09:00:00.000Z"
+    "updatedAt": "2026-06-10T09:00:00.000Z",
+    "cweCatalogVersion": "4.20",
+    "cweMappings": []
   },
   {
     "id": "thr_00000000-0000-0000-0000-000000000003",
@@ -51,7 +55,9 @@
     "affectedEndpoint": "/admin/users",
     "risk": "Lack of traceability reduces incident response confidence.",
     "createdAt": "2026-05-22T09:00:00.000Z",
-    "updatedAt": "2026-06-09T09:00:00.000Z"
+    "updatedAt": "2026-06-09T09:00:00.000Z",
+    "cweCatalogVersion": "4.20",
+    "cweMappings": []
   },
   {
     "id": "thr_00000000-0000-0000-0000-000000000004",
@@ -69,6 +75,8 @@
     "affectedEndpoint": "/session",
     "risk": "Session hijacking exposure increases with the extended lifetime.",
     "createdAt": "2026-05-23T09:00:00.000Z",
-    "updatedAt": "2026-06-08T09:00:00.000Z"
+    "updatedAt": "2026-06-08T09:00:00.000Z",
+    "cweCatalogVersion": "4.20",
+    "cweMappings": []
   }
 ]

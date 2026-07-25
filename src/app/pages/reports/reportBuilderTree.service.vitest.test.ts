@@ -38,6 +38,8 @@ describe('reportBuilderHierarchyLoader', () => {
       scope: 'API endpoints',
     };
     const threatOne: Threat = {
+      cweCatalogVersion: '4.20',
+      cweMappings: [],
       id: 'thr_00000000-0000-0000-0000-000000000001',
       assessmentId: assessmentOne.id,
       title: 'Missing Server-Side Authorization',
@@ -49,6 +51,8 @@ describe('reportBuilderHierarchyLoader', () => {
       updatedAt: '2026-06-12T00:00:00.000Z',
     };
     const threatTwo: Threat = {
+      cweCatalogVersion: '4.20',
+      cweMappings: [],
       id: 'thr_00000000-0000-0000-0000-000000000002',
       assessmentId: assessmentOne.id,
       title: 'Verbose Error Messages',

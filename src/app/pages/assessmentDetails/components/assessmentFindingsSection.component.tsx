@@ -9,6 +9,7 @@ import ThreatForm from '~/app/components/appsec/threatForm';
 import ThreatTable from '~/app/components/appsec/threatTable';
 import { PageActionGroup } from '~/app/components/common';
 import IconSVG from '~/app/components/ui/iconSVG';
+import { CWE_CATALOG_CURRENT_VERSION } from '~/domain';
 
 import { threatToTableRow } from '../assessmentDetails.mapper';
 import type { AssessmentDetailsAssessment } from '../assessmentDetails.type';
@@ -78,6 +79,8 @@ const AssessmentFindingsSection = ({
   onInitialEditTargetHandled,
 }: AssessmentFindingsSectionProps) => {
   const { owaspTaxonomyVersion } = assessment;
+  const cweCatalogVersion =
+    assessment.cweCatalogVersion ?? CWE_CATALOG_CURRENT_VERSION;
   const handledTargetRef = useRef<string>();
   const [readinessFocusField] = useState(initialEditTarget?.focusField);
 
@@ -157,6 +160,7 @@ const AssessmentFindingsSection = ({
         <ThreatForm
           value={draftValue}
           owaspTaxonomyVersion={owaspTaxonomyVersion}
+          cweCatalogVersion={cweCatalogVersion}
           errors={fieldErrors}
           isSubmitting={isSubmitting}
           focusField={readinessFocusField}

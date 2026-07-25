@@ -72,6 +72,8 @@ export const setupDom = () => {
 };
 
 export const finding: Threat = {
+  cweCatalogVersion: '4.20',
+  cweMappings: [],
   id: 'thr_1',
   assessmentId: 'asm_1',
   title: 'Broken object-level authorization',
@@ -101,6 +103,7 @@ export const assessmentBase: AssessmentDetailsAssessment = {
   companyName: 'Northstar Digital',
   applicationName: 'Customer Services Portal',
   owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+  cweCatalogVersion: '4.20',
   status: 'in-progress',
   recordVersion: 3,
   findingsCount: 1,

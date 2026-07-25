@@ -9,6 +9,8 @@ const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
 const timestamp = '2026-06-23T12:00:00.000Z';
 
 const buildThreat = (severity: Severity, index = 1): Threat => ({
+  cweCatalogVersion: '4.20',
+  cweMappings: [],
   id: `thr_00000000-0000-0000-0000-${String(index).padStart(12, '0')}`,
   assessmentId,
   title: `${severity} threat`,

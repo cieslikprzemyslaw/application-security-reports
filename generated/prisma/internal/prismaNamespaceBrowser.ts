@@ -54,6 +54,7 @@ export const ModelName = {
   Company: 'Company',
   Assessment: 'Assessment',
   Threat: 'Threat',
+  ThreatCwe: 'ThreatCwe',
   Evidence: 'Evidence',
   EvidenceExchange: 'EvidenceExchange',
   Report: 'Report',
@@ -108,6 +109,7 @@ export const AssessmentScalarFieldEnum = {
   assessmentType: 'assessmentType',
   overallRisk: 'overallRisk',
   owaspTaxonomyVersion: 'owaspTaxonomyVersion',
+  cweCatalogVersion: 'cweCatalogVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -140,6 +142,15 @@ export const ThreatScalarFieldEnum = {
 } as const
 
 export type ThreatScalarFieldEnum = (typeof ThreatScalarFieldEnum)[keyof typeof ThreatScalarFieldEnum]
+
+
+export const ThreatCweScalarFieldEnum = {
+  threatId: 'threatId',
+  cweId: 'cweId',
+  position: 'position'
+} as const
+
+export type ThreatCweScalarFieldEnum = (typeof ThreatCweScalarFieldEnum)[keyof typeof ThreatCweScalarFieldEnum]
 
 
 export const EvidenceScalarFieldEnum = {

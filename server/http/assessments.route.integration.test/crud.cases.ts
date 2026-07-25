@@ -43,6 +43,7 @@ describeAssessmentsRouteIntegration(
           title: 'Payments Portal',
           applicationName: 'Payments Portal',
           owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+          cweCatalogVersion: '4.20',
         }),
       );
 
@@ -121,6 +122,7 @@ describeAssessmentsRouteIntegration(
           applicationName: 'Payments Portal Public Site',
           overallRisk: 'medium',
           owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+          cweCatalogVersion: '4.20',
         }),
       });
 
@@ -135,6 +137,7 @@ describeAssessmentsRouteIntegration(
           applicationName: 'Payments Portal Public Site',
           overallRisk: 'medium',
           owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+          cweCatalogVersion: '4.20',
         }),
       );
     });

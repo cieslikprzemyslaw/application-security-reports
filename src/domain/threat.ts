@@ -1,3 +1,4 @@
+import type { CweCatalogVersion, CweStatus } from './cwe.js';
 import type {
   AssessmentId,
   Severity,
@@ -7,6 +8,15 @@ import type {
   TimestampedEntity,
 } from './common.js';
 
+export interface ThreatCweMapping {
+  id: string;
+  name: string;
+  status: CweStatus;
+  deprecated: boolean;
+  primary: boolean;
+  replacementIds: string[];
+}
+
 export interface Threat extends TimestampedEntity {
   id: ThreatId;
   assessmentId: AssessmentId;
@@ -15,6 +25,8 @@ export interface Threat extends TimestampedEntity {
   severity: Severity;
   strideCategories: StrideCategory[];
   status: ThreatStatus;
+  cweCatalogVersion: CweCatalogVersion;
+  cweMappings: ThreatCweMapping[];
   owaspCategoryCode?: string;
   customCategory?: string;
   affectedAsset?: string;
@@ -32,6 +44,13 @@ export interface Threat extends TimestampedEntity {
   acceptedRiskJustification?: string;
 }
 
-export type CreateThreatInput = Omit<Threat, 'id' | 'createdAt' | 'updatedAt'>;
+export type CreateThreatInput = Omit<
+  Threat,
+  'id' | 'createdAt' | 'updatedAt' | 'cweCatalogVersion' | 'cweMappings'
+> & {
+  cweIds?: string[];
+};
 
-export type UpdateThreatInput = Partial<CreateThreatInput>;
+export type UpdateThreatInput = Partial<
+  Omit<CreateThreatInput, 'assessmentId'>
+>;

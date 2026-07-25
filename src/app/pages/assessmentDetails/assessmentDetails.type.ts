@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react';
 
-import type { AssessmentStatus, OwaspTop10Version, Severity } from '~/domain';
+import type {
+  AssessmentStatus,
+  CweCatalogVersion,
+  OwaspTop10Version,
+  Severity,
+} from '~/domain';
 
 export const assessmentDetailSections = [
   'overview',
@@ -42,6 +47,7 @@ export interface AssessmentDetailsAssessment {
   status: AssessmentStatus;
   overallRisk?: Severity;
   owaspTaxonomyVersion: OwaspTop10Version;
+  cweCatalogVersion?: CweCatalogVersion;
   recordVersion: number;
   findingsCount: number;
   evidenceCount: number;

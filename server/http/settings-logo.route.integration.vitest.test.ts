@@ -57,6 +57,26 @@ const config = loadServerConfig({
   FRONTEND_ORIGIN: 'http://localhost:5173',
 });
 
+const cweCatalogMigrationSql = readFileSync(
+  path.resolve(
+    repoRoot,
+    'prisma',
+    'migrations',
+    '20260725000100_add_cwe_catalog_version_to_assessment',
+    'migration.sql',
+  ),
+  'utf8',
+);
+const threatCweMigrationSql = readFileSync(
+  path.resolve(
+    repoRoot,
+    'prisma',
+    'migrations',
+    '20260725000200_add_threat_cwe_mappings',
+    'migration.sql',
+  ),
+  'utf8',
+);
 const nodeRequire = createRequire(import.meta.url);
 const Database = nodeRequire('better-sqlite3') as new (
   databasePath: string,
@@ -107,6 +127,8 @@ describe('issuer logo API integration', () => {
       bootstrapDb.exec(schemaSql);
       bootstrapDb.exec(settingsBrandingMigrationSql);
       bootstrapDb.exec(reportVersionMigrationSql);
+      bootstrapDb.exec(cweCatalogMigrationSql);
+      bootstrapDb.exec(threatCweMigrationSql);
     } finally {
       bootstrapDb.close();
     }

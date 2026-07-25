@@ -6,6 +6,7 @@ import { act, fireEvent, waitFor } from '~/test/vitestLegacyBridge';
 
 import { routes } from '~/routes';
 import {
+  CWE_CATALOG_CURRENT_VERSION,
   OWASP_TOP_10_CURRENT_VERSION,
   OWASP_TOP_10_OPTIONS,
   getOwaspTop10CategoryOption,
@@ -65,6 +66,7 @@ describe('assessmentDetails.threatForm.composition', () => {
                     assessmentType: 'Web App',
                     overallRisk: 'high',
                     owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+                    cweCatalogVersion: CWE_CATALOG_CURRENT_VERSION,
                     createdAt: '2026-06-01T09:00:00.000Z',
                     updatedAt: '2026-06-11T09:00:00.000Z',
                     recordVersion: 3,
@@ -150,6 +152,26 @@ describe('assessmentDetails.threatForm.composition', () => {
             await renderTick();
           });
 
+          const cweSearch = window.document.querySelector(
+            'input[role="combobox"]',
+          ) as HTMLInputElement | null;
+          assert.ok(cweSearch, 'Expected the create form CWE search');
+
+          await act(async () => {
+            fireEvent.change(cweSearch!, { target: { value: 'CWE-79' } });
+            await renderTick();
+          });
+
+          const cweOption = window.document.querySelector(
+            '[role="option"]',
+          ) as HTMLButtonElement | null;
+          assert.ok(cweOption, 'Expected a matching CWE option');
+
+          await act(async () => {
+            fireEvent.click(cweOption!);
+            await renderTick();
+          });
+
           const titleInput = window.document.querySelector(
             '#threat-title',
           ) as HTMLInputElement | null;
@@ -190,7 +212,15 @@ describe('assessmentDetails.threatForm.composition', () => {
               ?.owaspCategoryCode,
             owaspCategoryValue('A05'),
           );
+          assert.deepEqual(
+            (createRequestBody as { cweIds?: string[] } | undefined)?.cweIds,
+            ['CWE-79'],
+          );
           assert.equal(createSelect?.value, owaspCategoryValue('A05'));
+          assert.ok(
+            textContent(window.document.body).includes('CWE-79'),
+            'Expected the failed submit to preserve CWE selection',
+          );
           assert.ok(
             textContent(window.document.body).includes('Unable to save threat'),
           );
@@ -237,6 +267,7 @@ describe('assessmentDetails.threatForm.composition', () => {
                     assessmentType: 'Web App',
                     overallRisk: 'high',
                     owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+                    cweCatalogVersion: CWE_CATALOG_CURRENT_VERSION,
                     createdAt: '2026-06-01T09:00:00.000Z',
                     updatedAt: '2026-06-11T09:00:00.000Z',
                     recordVersion: 3,
@@ -262,6 +293,27 @@ describe('assessmentDetails.threatForm.composition', () => {
                     severity: 'high',
                     strideCategories: ['spoofing'],
                     status: 'open',
+                    cweCatalogVersion: CWE_CATALOG_CURRENT_VERSION,
+                    cweMappings: [
+                      {
+                        id: 'CWE-71',
+                        name: "DEPRECATED: Apple '.DS_Store'",
+                        status: 'Deprecated',
+                        deprecated: true,
+                        primary: true,
+                        replacementIds: ['CWE-200'],
+                      },
+                      {
+                        id: 'CWE-79',
+                        name: 'Improper Neutralization of Input During Web Page Generation',
+                        status: 'Stable',
+                        deprecated: false,
+                        primary: false,
+                        replacementIds: [],
+                      },
+                    ],
+                    assessmentOwaspTaxonomyVersion:
+                      OWASP_TOP_10_CURRENT_VERSION,
                     owaspCategoryCode: 'A01:2023',
                     affectedComponent: 'Orders API',
                     affectedEndpoint: '/api/orders/{id}',
@@ -315,6 +367,17 @@ describe('assessmentDetails.threatForm.composition', () => {
               option => option.value === 'A01:2023',
             ),
             'Expected the historical value to remain selectable',
+          );
+          const editBodyText = textContent(window.document.body);
+          assert.ok(
+            editBodyText.includes("CWE-71 - DEPRECATED: Apple '.DS_Store'"),
+            'Expected the deprecated Primary CWE to preload',
+          );
+          assert.ok(
+            editBodyText.includes(
+              'CWE-79 - Improper Neutralization of Input During Web Page Generation',
+            ),
+            'Expected the Additional CWE to preload in order',
           );
 
           await act(async () => {

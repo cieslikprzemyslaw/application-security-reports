@@ -143,6 +143,15 @@ const ReportCover = ({
                 </div>
               </div>
 
+              {(finding.cweMappings?.length ?? 0) > 0 && (
+                <p className="report-cover-finding-cwe">
+                  <strong>CWE:</strong>{' '}
+                  {finding.cweMappings
+                    ?.map(mapping => `${mapping.id} - ${mapping.name}`)
+                    .join('; ')}
+                </p>
+              )}
+
               <div className="report-cover-finding-grid">
                 <div className="report-cover-finding-section">
                   <h4>Observation</h4>

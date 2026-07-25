@@ -92,6 +92,26 @@ const reportThreatPositionMigrationSql = readFileSync(
   reportThreatPositionMigrationPath,
   'utf8',
 );
+const cweCatalogMigrationSql = readFileSync(
+  path.resolve(
+    repoRoot,
+    'prisma',
+    'migrations',
+    '20260725000100_add_cwe_catalog_version_to_assessment',
+    'migration.sql',
+  ),
+  'utf8',
+);
+const threatCweMigrationSql = readFileSync(
+  path.resolve(
+    repoRoot,
+    'prisma',
+    'migrations',
+    '20260725000200_add_threat_cwe_mappings',
+    'migration.sql',
+  ),
+  'utf8',
+);
 const allowedOrigin = 'http://localhost:5173';
 const config = loadServerConfig({
   FRONTEND_ORIGIN: allowedOrigin,
@@ -173,6 +193,8 @@ export const createAssessmentsRouteIntegrationHarness =
       bootstrapDb.exec(evidenceMigrationSql);
       bootstrapDb.exec(reportVersionMigrationSql);
       bootstrapDb.exec(reportThreatPositionMigrationSql);
+      bootstrapDb.exec(cweCatalogMigrationSql);
+      bootstrapDb.exec(threatCweMigrationSql);
     } finally {
       bootstrapDb.close();
     }

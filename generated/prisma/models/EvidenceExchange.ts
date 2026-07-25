@@ -441,14 +441,6 @@ export type EvidenceExchangeUncheckedUpdateManyWithoutEvidenceNestedInput = {
   deleteMany?: Prisma.EvidenceExchangeScalarWhereInput | Prisma.EvidenceExchangeScalarWhereInput[]
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type EvidenceExchangeCreateWithoutEvidenceInput = {
   id: string
   position: number

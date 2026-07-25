@@ -20,6 +20,7 @@ const secondEvidenceId = 'evd_00000000-0000-0000-0000-000000000002';
 const timestamp = '2026-06-23T12:00:00.000Z';
 
 const assessment: Assessment = {
+  cweCatalogVersion: '4.20',
   id: assessmentId,
   companyId,
   title: 'Customer Services Portal',
@@ -31,6 +32,8 @@ const assessment: Assessment = {
 };
 
 const buildThreat = (id: string, title: string): Threat => ({
+  cweCatalogVersion: '4.20',
+  cweMappings: [],
   id,
   assessmentId,
   title,

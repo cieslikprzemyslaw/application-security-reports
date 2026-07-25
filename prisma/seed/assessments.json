@@ -13,7 +13,8 @@
     "overallRisk": "high",
     "owaspTaxonomyVersion": "2025",
     "createdAt": "2026-05-12T09:00:00.000Z",
-    "updatedAt": "2026-06-11T09:00:00.000Z"
+    "updatedAt": "2026-06-11T09:00:00.000Z",
+    "cweCatalogVersion": "4.20"
   },
   {
     "id": "asm_00000000-0000-0000-0000-000000000002",
@@ -29,7 +30,8 @@
     "overallRisk": "critical",
     "owaspTaxonomyVersion": "2025",
     "createdAt": "2026-05-13T09:00:00.000Z",
-    "updatedAt": "2026-06-10T09:00:00.000Z"
+    "updatedAt": "2026-06-10T09:00:00.000Z",
+    "cweCatalogVersion": "4.20"
   },
   {
     "id": "asm_00000000-0000-0000-0000-000000000003",
@@ -46,7 +48,8 @@
     "overallRisk": "medium",
     "owaspTaxonomyVersion": "2025",
     "createdAt": "2026-05-14T09:00:00.000Z",
-    "updatedAt": "2026-06-08T09:00:00.000Z"
+    "updatedAt": "2026-06-08T09:00:00.000Z",
+    "cweCatalogVersion": "4.20"
   },
   {
     "id": "asm_00000000-0000-0000-0000-000000000004",
@@ -63,7 +66,8 @@
     "overallRisk": "medium",
     "owaspTaxonomyVersion": "2025",
     "createdAt": "2026-05-15T09:00:00.000Z",
-    "updatedAt": "2026-06-07T09:00:00.000Z"
+    "updatedAt": "2026-06-07T09:00:00.000Z",
+    "cweCatalogVersion": "4.20"
   },
   {
     "id": "asm_00000000-0000-0000-0000-000000000005",
@@ -80,7 +84,8 @@
     "overallRisk": "low",
     "owaspTaxonomyVersion": "2025",
     "createdAt": "2026-05-16T09:00:00.000Z",
-    "updatedAt": "2026-06-06T09:00:00.000Z"
+    "updatedAt": "2026-06-06T09:00:00.000Z",
+    "cweCatalogVersion": "4.20"
   },
   {
     "id": "asm_00000000-0000-0000-0000-000000000006",
@@ -96,6 +101,7 @@
     "overallRisk": "critical",
     "owaspTaxonomyVersion": "2025",
     "createdAt": "2026-05-18T09:00:00.000Z",
-    "updatedAt": "2026-06-09T09:00:00.000Z"
+    "updatedAt": "2026-06-09T09:00:00.000Z",
+    "cweCatalogVersion": "4.20"
   }
 ]

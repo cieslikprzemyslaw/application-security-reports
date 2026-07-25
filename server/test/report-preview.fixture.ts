@@ -42,6 +42,7 @@ export const buildReportPreviewSnapshotFixture = (
     status: 'in-progress',
     applicationName: 'Customer Services Portal',
     owaspTaxonomyVersion: '2025',
+    cweCatalogVersion: '4.20',
   },
   selection: {
     threatIds: [],

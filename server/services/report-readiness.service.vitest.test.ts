@@ -42,6 +42,8 @@ const buildCompleteSnapshot = (
     },
     selectedThreats: [
       {
+        cweCatalogVersion: '4.20',
+        cweMappings: [],
         id: reportPreviewFixtureIds.threatId,
         assessmentId: reportPreviewFixtureIds.assessmentId,
         title: 'Missing authorization',

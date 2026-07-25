@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 
+import { CWE_CATALOG_CURRENT_VERSION } from '~/domain';
+
+import CweSelector from '~/app/components/appsec/cweSelector';
 import Button from '~/app/components/ui/button';
 import Input from '~/app/components/ui/input';
 import Select from '~/app/components/ui/select';
@@ -26,6 +29,7 @@ const updateField = <K extends keyof ThreatFormValue>(
 const ThreatForm = ({
   value,
   owaspTaxonomyVersion,
+  cweCatalogVersion = CWE_CATALOG_CURRENT_VERSION,
   errors = {},
   isSubmitting = false,
   focusField,
@@ -47,6 +51,7 @@ const ThreatForm = ({
   const firstErrorFieldId = useMemo(() => {
     const orderedFields: Array<keyof ThreatFormValue> = [
       'title',
+      'cweIds',
       'owaspCategoryCode',
       'customCategory',
       'severity',
@@ -133,6 +138,16 @@ const ThreatForm = ({
             />
           </div>
         )}
+
+        <div className="threat-form-full-width">
+          <CweSelector
+            value={value.cweIds ?? []}
+            catalogVersion={cweCatalogVersion}
+            error={errors.cweIds}
+            disabled={isSubmitting}
+            onChange={cweIds => onChange(updateField(value, 'cweIds', cweIds))}
+          />
+        </div>
 
         <Select
           id="threat-severity"
