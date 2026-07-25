@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { CWE_CATALOG_CURRENT_VERSION } from '~/domain';
 
@@ -14,6 +14,7 @@ import {
   additionalFields,
   hasAnyThreatFieldValue,
   isThreatFormFieldVisible,
+  orderedThreatFields,
   securityFields,
 } from './threatFormSections';
 import {
@@ -74,22 +75,9 @@ const ThreatForm = ({
     Boolean(focusField && additionalFields.includes(focusField));
   const resolvedSecurityOpen = isSecurityOpen || securityMustOpen;
   const resolvedAdditionalOpen = isAdditionalOpen || additionalMustOpen;
-
-  const firstErrorField = useMemo(() => {
-    const orderedFields: Array<keyof ThreatFormValue> = [
-      'title',
-      'owaspCategoryCode',
-      'customCategory',
-      'cweIds',
-      'severity',
-      'status',
-      'affectedEndpoint',
-      ...securityFields,
-      ...additionalFields,
-    ];
-
-    return orderedFields.find(field => Boolean(errors[field]));
-  }, [errors]);
+  const firstErrorField = orderedThreatFields.find(field =>
+    Boolean(errors[field]),
+  );
   const focusTargetField = firstErrorField ?? focusField;
   const focusTargetFieldId = focusTargetField
     ? fieldIdMap[focusTargetField]
