@@ -1,7 +1,5 @@
 import type { Assessment } from '../../../src/domain/assessment.js';
-import {
-  isCweCatalogVersion,
-} from '../../../src/domain/cwe.js';
+import { isCweCatalogVersion } from '../../../src/domain/cwe.js';
 import { isOwaspTop10Version } from '../../../src/domain/owaspTop10.js';
 import { RepositoryError } from '../errors.js';
 import { toIsoString, toOptionalText } from './repository.helpers.js';
@@ -25,7 +23,6 @@ export type AssessmentRow = {
   overallRisk: string | null;
   owaspTaxonomyVersion: string;
   cweCatalogVersion: string;
-  recordVersion: number;
   archivedAt: Date | null;
   archivedFromStatus: string | null;
   createdAt: Date;
@@ -53,7 +50,6 @@ export const assessmentSelect = {
   overallRisk: true,
   owaspTaxonomyVersion: true,
   cweCatalogVersion: true,
-  recordVersion: true,
   archivedAt: true,
   archivedFromStatus: true,
   createdAt: true,
@@ -94,7 +90,6 @@ export const toAssessment = (row: AssessmentRow): Assessment => ({
           `Unsupported CWE catalog version: ${row.cweCatalogVersion}`,
         );
       })(),
-  recordVersion: row.recordVersion,
   archivedAt: row.archivedAt ? toIsoString(row.archivedAt) : null,
   createdAt: toIsoString(row.createdAt),
   updatedAt: toIsoString(row.updatedAt),
