@@ -147,15 +147,13 @@ const getTransitionPlan = (
   };
 };
 
-const failureEventTypes: Record<
-  AssessmentLifecycleCommand,
-  ActivityEventType
-> = {
-  complete: 'assessment.complete-failed',
-  reopen: 'assessment.reopen-failed',
-  archive: 'assessment.archive-failed',
-  restore: 'assessment.restore-failed',
-};
+const failureEventTypes: Record<AssessmentLifecycleCommand, ActivityEventType> =
+  {
+    complete: 'assessment.complete-failed',
+    reopen: 'assessment.reopen-failed',
+    archive: 'assessment.archive-failed',
+    restore: 'assessment.restore-failed',
+  };
 
 const appendFailureEvent = async (
   db: AssessmentLifecycleDb,
