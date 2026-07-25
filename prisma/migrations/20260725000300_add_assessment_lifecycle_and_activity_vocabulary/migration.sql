@@ -1,5 +1,4 @@
 -- AlterTable
-ALTER TABLE "Assessment" ADD COLUMN "recordVersion" INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE "Assessment" ADD COLUMN "archivedAt" DATETIME;
 ALTER TABLE "Assessment" ADD COLUMN "archivedFromStatus" TEXT;
 
