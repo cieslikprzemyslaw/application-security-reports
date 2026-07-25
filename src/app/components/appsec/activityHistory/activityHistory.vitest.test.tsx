@@ -8,9 +8,14 @@ const activityServiceMocks = vi.hoisted(() => ({
   listByAssessment: vi.fn(),
 }));
 
-vi.mock('~/services', () => ({
-  activityService: activityServiceMocks,
-}));
+vi.mock('~/services', async importOriginal => {
+  const actual = await importOriginal<typeof import('~/services')>();
+
+  return {
+    ...actual,
+    activityService: activityServiceMocks,
+  };
+});
 
 import ActivityHistory from './activityHistory.component';
 
