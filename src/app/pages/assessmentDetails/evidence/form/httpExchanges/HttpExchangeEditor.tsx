@@ -118,11 +118,7 @@ const HttpExchangeEditor = ({
           error={errors.responseStatusCode}
           required
           onChange={event =>
-            onChange(
-              exchange.localId,
-              'responseStatusCode',
-              event.target.value,
-            )
+            onChange(exchange.localId, 'responseStatusCode', event.target.value)
           }
         />
 
@@ -132,11 +128,7 @@ const HttpExchangeEditor = ({
           value={exchange.responseStatusText}
           error={errors.responseStatusText}
           onChange={event =>
-            onChange(
-              exchange.localId,
-              'responseStatusText',
-              event.target.value,
-            )
+            onChange(exchange.localId, 'responseStatusText', event.target.value)
           }
         />
 
@@ -157,12 +149,14 @@ const HttpExchangeEditor = ({
         <p className="evidence-form-help">At least one exchange is required.</p>
       )}
 
-      <RawHttpImportDialog
-        isOpen={isImportOpen}
-        exchange={exchange}
-        onApply={onImport}
-        onClose={() => setIsImportOpen(false)}
-      />
+      {isImportOpen && (
+        <RawHttpImportDialog
+          isOpen
+          exchange={exchange}
+          onApply={onImport}
+          onClose={() => setIsImportOpen(false)}
+        />
+      )}
     </fieldset>
   );
 };
