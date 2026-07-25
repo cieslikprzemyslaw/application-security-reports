@@ -1,33 +1,69 @@
 [
   {
     "id": "act_00000000-0000-0000-0000-000000000001",
-    "entityType": "threat",
-    "entityId": "thr_00000000-0000-0000-0000-000000000001",
-    "action": "created",
+    "eventType": "legacy.created",
+    "result": "success",
+    "severity": "informational",
+    "actor": {
+      "type": "system"
+    },
+    "resource": {
+      "type": "threat",
+      "id": "thr_00000000-0000-0000-0000-000000000001",
+      "companyId": "cmp_00000000-0000-0000-0000-000000000001",
+      "assessmentId": "asm_00000000-0000-0000-0000-000000000001"
+    },
     "message": "Alex Mercer raised a Critical finding on Customer Services Portal",
     "createdAt": "2026-06-11T17:00:00.000Z"
   },
   {
     "id": "act_00000000-0000-0000-0000-000000000002",
-    "entityType": "threat",
-    "entityId": "thr_00000000-0000-0000-0000-000000000002",
-    "action": "status-changed",
+    "eventType": "legacy.status-changed",
+    "result": "success",
+    "severity": "informational",
+    "actor": {
+      "type": "system"
+    },
+    "resource": {
+      "type": "threat",
+      "id": "thr_00000000-0000-0000-0000-000000000002",
+      "companyId": "cmp_00000000-0000-0000-0000-000000000001",
+      "assessmentId": "asm_00000000-0000-0000-0000-000000000001"
+    },
     "message": "Priya Shah marked Verbose Error Messages as Resolved",
     "createdAt": "2026-06-11T12:00:00.000Z"
   },
   {
     "id": "act_00000000-0000-0000-0000-000000000003",
-    "entityType": "threat",
-    "entityId": "thr_00000000-0000-0000-0000-000000000003",
-    "action": "updated",
+    "eventType": "legacy.updated",
+    "result": "success",
+    "severity": "informational",
+    "actor": {
+      "type": "system"
+    },
+    "resource": {
+      "type": "threat",
+      "id": "thr_00000000-0000-0000-0000-000000000003",
+      "companyId": "cmp_00000000-0000-0000-0000-000000000001",
+      "assessmentId": "asm_00000000-0000-0000-0000-000000000001"
+    },
     "message": "Retest requested for Missing Audit Logging",
     "createdAt": "2026-06-10T18:00:00.000Z"
   },
   {
     "id": "act_00000000-0000-0000-0000-000000000004",
-    "entityType": "report",
-    "entityId": "rpt_00000000-0000-0000-0000-000000000001",
-    "action": "report-generated",
+    "eventType": "legacy.report-generated",
+    "result": "success",
+    "severity": "informational",
+    "actor": {
+      "type": "system"
+    },
+    "resource": {
+      "type": "report",
+      "id": "rpt_00000000-0000-0000-0000-000000000001",
+      "companyId": "cmp_00000000-0000-0000-0000-000000000001",
+      "assessmentId": "asm_00000000-0000-0000-0000-000000000001"
+    },
     "message": "Generated the Customer Services Portal security report",
     "createdAt": "2026-05-30T15:30:00.000Z"
   }
