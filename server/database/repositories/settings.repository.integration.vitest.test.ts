@@ -69,7 +69,10 @@ describe.sequential('Settings repository integration', () => {
     );
 
     await expect(
-      repository.upsert({ ...settingsInput, organisationName: 'Not persisted' }),
+      repository.upsert({
+        ...settingsInput,
+        organisationName: 'Not persisted',
+      }),
     ).rejects.toThrow();
 
     await database.prisma.$executeRawUnsafe(
