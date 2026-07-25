@@ -1,6 +1,9 @@
 import { Router } from 'express';
 
-import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
+import {
+  hasAssessmentLifecycleOperations,
+  type AssessmentRepository,
+} from '../database/repositories/assessment.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
 import type { EvidenceRepository } from '../database/repositories/evidence.repository.js';
 import type { ReportRepository } from '../database/repositories/report.repository.js';
@@ -73,15 +76,17 @@ export const createCompanyAssessmentOverviewRouter = (
     }),
   );
 
-  router.use(
-    createAssessmentCommandsRouter(
-      companyRepository,
-      assessmentRepository,
-      threatRepository,
-      evidenceRepository,
-      reportRepository,
-    ),
-  );
+  if (hasAssessmentLifecycleOperations(assessmentRepository)) {
+    router.use(
+      createAssessmentCommandsRouter(
+        companyRepository,
+        assessmentRepository,
+        threatRepository,
+        evidenceRepository,
+        reportRepository,
+      ),
+    );
+  }
 
   return router;
 };
