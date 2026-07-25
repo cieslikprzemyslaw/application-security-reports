@@ -143,7 +143,9 @@ const runCompanyTransition = async (
       });
 
       if (!updated) {
-        throw new RepositoryNotFoundError('Company not found after transition.');
+        throw new RepositoryNotFoundError(
+          'Company not found after transition.',
+        );
       }
 
       return toCompany(updated);
