@@ -98,12 +98,7 @@ export const createCompanyActivityRouter = (
       }
 
       if (!assessment || assessment.companyId !== companyId) {
-        sendApiError(
-          res,
-          404,
-          'ASSESSMENT_NOT_FOUND',
-          'Assessment not found',
-        );
+        sendApiError(res, 404, 'ASSESSMENT_NOT_FOUND', 'Assessment not found');
         return;
       }
 
