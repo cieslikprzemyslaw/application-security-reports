@@ -82,7 +82,7 @@ describe('createAssessmentRepository', () => {
       }),
     ]);
     expect(assessment.findMany).toHaveBeenCalledWith({
-      where: { archivedAt: null },
+      where: { status: { not: 'archived' } },
       orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
       select: expect.any(Object),
     });
@@ -106,7 +106,7 @@ describe('createAssessmentRepository', () => {
     expect(assessment.findMany).toHaveBeenCalledWith({
       where: {
         companyId: assessmentRow.companyId,
-        archivedAt: null,
+        status: { not: 'archived' },
       },
       orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
       select: expect.any(Object),
