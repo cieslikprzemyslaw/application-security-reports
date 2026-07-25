@@ -116,14 +116,6 @@ const AssessmentReportsSection = ({
     };
   }, [assessmentId, requestKey, service]);
 
-  useEffect(() => {
-    if (readOnly) {
-      setDeleteTarget(null);
-      setDeleteConfirmation('');
-      setDeleteError(undefined);
-    }
-  }, [readOnly]);
-
   const requestedDeleteConfirmation = useMemo(
     () => (deleteTarget ? getDeleteConfirmationText(deleteTarget.version) : ''),
     [deleteTarget],
