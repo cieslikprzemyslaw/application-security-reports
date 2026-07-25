@@ -126,9 +126,7 @@ const ActivityHistory = ({
       <Callout
         variant="error"
         title="Unable to load activity"
-        actions={
-          <Button title="Retry" variant="secondary" onClick={retry} />
-        }
+        actions={<Button title="Retry" variant="secondary" onClick={retry} />}
       >
         <p>{loadError}</p>
       </Callout>
@@ -146,9 +144,7 @@ const ActivityHistory = ({
         <Callout
           variant="warning"
           title="Activity may be out of date"
-          actions={
-            <Button title="Retry" variant="secondary" onClick={retry} />
-          }
+          actions={<Button title="Retry" variant="secondary" onClick={retry} />}
         >
           <p>{loadError}</p>
         </Callout>
