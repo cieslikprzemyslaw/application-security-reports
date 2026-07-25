@@ -28,6 +28,7 @@ export const assessmentDetailActions = [
   'complete',
   'reopen',
   'archive',
+  'restore',
 ] as const;
 
 export type AssessmentDetailAction = (typeof assessmentDetailActions)[number];
@@ -49,6 +50,7 @@ export interface AssessmentDetailsAssessment {
   owaspTaxonomyVersion: OwaspTop10Version;
   cweCatalogVersion?: CweCatalogVersion;
   recordVersion: number;
+  archivedAt: string | null;
   findingsCount: number;
   evidenceCount: number;
   reportVersionCount: number;
