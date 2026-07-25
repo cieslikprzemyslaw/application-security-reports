@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { Assessment } from '../assessment.js';
+import { isCweCatalogVersion, type CweCatalogVersion } from '../cwe.js';
 import { isOwaspTop10Version, type OwaspTop10Version } from '../owaspTop10.js';
 
 import {
@@ -18,6 +19,11 @@ export const owaspTop10VersionSchema = z.custom<OwaspTop10Version>(
   'Unsupported OWASP taxonomy version',
 );
 
+export const cweCatalogVersionSchema = z.custom<CweCatalogVersion>(
+  value => typeof value === 'string' && isCweCatalogVersion(value),
+  'Unsupported CWE catalog version',
+);
+
 export const assessmentObjectSchema = z
   .object({
     id: nonEmptyIdSchema,
@@ -33,6 +39,7 @@ export const assessmentObjectSchema = z
     assessmentType: optionalTrimmedTextSchema,
     overallRisk: severitySchema.optional(),
     owaspTaxonomyVersion: owaspTop10VersionSchema,
+    cweCatalogVersion: cweCatalogVersionSchema,
     createdAt: timestampSchema,
     updatedAt: timestampSchema,
   })

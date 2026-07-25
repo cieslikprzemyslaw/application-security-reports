@@ -52,7 +52,8 @@
     "validate": "npm run db:validate && npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
     "db:update": "node scripts/prisma-command.mjs migrate deploy && node scripts/prisma-command.mjs generate",
     "predev": "npm run db:update",
-    "security:audit": "node scripts/check-npm-audit-policy.mjs"
+    "security:audit": "node scripts/check-npm-audit-policy.mjs",
+    "cwe:sync": "node scripts/sync-cwe-catalog.mjs"
   },
   "lint-staged": {
     "*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}": [

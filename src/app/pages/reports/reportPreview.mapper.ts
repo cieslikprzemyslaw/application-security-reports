@@ -175,6 +175,10 @@ export const toReportPreviewPresentation = (
         title: threat.title,
         severity: threat.severity,
         status: threat.status,
+        cweMappings: (threat.cweMappings ?? []).map(mapping => ({
+          ...mapping,
+          replacementIds: [...mapping.replacementIds],
+        })),
         affectedAsset:
           threat.affectedAsset ??
           threat.affectedEndpoint ??

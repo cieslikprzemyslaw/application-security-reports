@@ -42,6 +42,8 @@ export const populatedHierarchy: ReportBuilderHierarchy = {
       threats: [
         {
           threat: {
+            cweCatalogVersion: '4.20',
+            cweMappings: [],
             id: threatOneId,
             assessmentId,
             title: 'Missing Server-Side Authorization',
@@ -69,6 +71,8 @@ export const populatedHierarchy: ReportBuilderHierarchy = {
         },
         {
           threat: {
+            cweCatalogVersion: '4.20',
+            cweMappings: [],
             id: threatTwoId,
             assessmentId,
             title: 'Verbose Error Messages',

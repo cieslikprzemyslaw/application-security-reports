@@ -225,6 +225,11 @@ const createReportDb = () => {
     risk: null,
     createdAt: new Date('2026-06-12T00:00:00.000Z'),
     updatedAt: new Date('2026-06-12T01:00:00.000Z'),
+    assessment: {
+      owaspTaxonomyVersion: '2025',
+      cweCatalogVersion: '4.20',
+    },
+    cweMappings: [],
   });
   const repository = createThreatRepository(db);
 

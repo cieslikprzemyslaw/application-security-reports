@@ -29,6 +29,7 @@ describe('Report repository with temporary SQLite', () => {
         title: 'Customer Services Portal',
         status: 'draft',
         owaspTaxonomyVersion: '2025',
+        cweCatalogVersion: '4.20',
       },
     });
 

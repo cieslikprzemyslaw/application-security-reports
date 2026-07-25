@@ -17,7 +17,7 @@ import {
   settingsObjectBaseSchema,
   validateSettingsBrandingModes,
 } from './settings.schema.js';
-import { threatObjectSchema } from './threat.schema.js';
+import { cweIdListSchema, threatObjectSchema } from './threat.schema.js';
 import {
   evidenceRequestBaseSchema,
   validateEvidenceExchanges,
@@ -82,6 +82,7 @@ const createAssessmentBaseSchema = assessmentObjectSchema
     createdAt: true,
     updatedAt: true,
     owaspTaxonomyVersion: true,
+    cweCatalogVersion: true,
   })
   .extend({
     applicationName: nonEmptyTextSchema,
@@ -161,11 +162,17 @@ const _updateAssessmentRequestSchemaCompatibilityCheck: UpdateAssessmentRequestS
   ? true
   : never = true;
 
-const createThreatBaseSchema = threatObjectSchema.omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+const createThreatBaseSchema = threatObjectSchema
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    cweCatalogVersion: true,
+    cweMappings: true,
+  })
+  .extend({
+    cweIds: cweIdListSchema.optional(),
+  });
 
 export const createThreatRequestSchema = createThreatBaseSchema;
 type CreateThreatRequestSchemaOutput = Required<

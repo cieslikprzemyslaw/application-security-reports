@@ -4,7 +4,7 @@ import type {
   ISODateString,
   Severity,
 } from '~/domain';
-import { isOwaspTop10Version } from '~/domain';
+import { isCweCatalogVersion, isOwaspTop10Version } from '~/domain';
 
 import { ApiResponseParseError, apiRequest } from './apiClient.js';
 import { requestData, type ApiRequestFn } from './serviceHelpers.js';
@@ -124,7 +124,10 @@ const validateAssessmentVersion = <T extends Assessment>(
   assessment: T,
   message: string,
 ): T => {
-  if (!isOwaspTop10Version(assessment.owaspTaxonomyVersion)) {
+  if (
+    !isOwaspTop10Version(assessment.owaspTaxonomyVersion) ||
+    !isCweCatalogVersion(assessment.cweCatalogVersion)
+  ) {
     throw new ApiResponseParseError(message);
   }
 

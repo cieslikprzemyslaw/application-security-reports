@@ -128,6 +128,7 @@ export const reportPreviewAssessmentObjectSchema = assessmentObjectSchema
     assessmentType: true,
     overallRisk: true,
     owaspTaxonomyVersion: true,
+    cweCatalogVersion: true,
   })
   .strict();
 
@@ -143,6 +144,8 @@ export const reportPreviewThreatObjectSchema = threatObjectSchema
     severity: true,
     strideCategories: true,
     status: true,
+    cweCatalogVersion: true,
+    cweMappings: true,
     owaspCategoryCode: true,
     customCategory: true,
     affectedAsset: true,
@@ -260,14 +263,31 @@ export const reportPreviewRiskSummaryObjectSchema = z
 export const reportPreviewRiskSummarySchema =
   reportPreviewRiskSummaryObjectSchema;
 
+// Report snapshots are immutable historical records. Snapshots created before
+// CWE support did not include catalog metadata or mappings, so the persisted
+// snapshot schema keeps those fields optional while current live preview
+// contracts above remain strict.
+const reportPreviewSnapshotAssessmentSchema =
+  reportPreviewAssessmentObjectSchema.extend({
+    cweCatalogVersion:
+      reportPreviewAssessmentObjectSchema.shape.cweCatalogVersion.optional(),
+  });
+
+const reportPreviewSnapshotThreatSchema =
+  reportPreviewThreatObjectSchema.extend({
+    cweCatalogVersion:
+      reportPreviewThreatObjectSchema.shape.cweCatalogVersion.optional(),
+    cweMappings: reportPreviewThreatObjectSchema.shape.cweMappings.optional(),
+  });
+
 export const reportPreviewSnapshotObjectSchema = z
   .object({
     company: reportPreviewCompanySchema,
-    assessment: reportPreviewAssessmentSchema,
+    assessment: reportPreviewSnapshotAssessmentSchema,
     selection: reportPreviewSelectionSchema,
     configuration: reportPreviewConfigurationSchema,
     branding: reportPreviewBrandingSchema,
-    selectedThreats: z.array(reportPreviewThreatSchema),
+    selectedThreats: z.array(reportPreviewSnapshotThreatSchema),
     selectedEvidence: z.array(reportPreviewEvidenceSchema),
     riskSummary: reportPreviewRiskSummarySchema,
     warnings: z.array(nonEmptyTextSchema),

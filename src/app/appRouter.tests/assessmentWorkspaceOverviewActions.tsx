@@ -66,6 +66,7 @@ const setupCompleteOutcome = (outcome: CompleteOutcome) => {
           assessmentType: 'Web App',
           overallRisk: 'high',
           owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+          cweCatalogVersion: '4.20',
           createdAt: '2026-06-01T09:00:00.000Z',
           updatedAt: '2026-06-22T09:00:00.000Z',
           recordVersion: 4,

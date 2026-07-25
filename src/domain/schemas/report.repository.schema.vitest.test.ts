@@ -29,6 +29,7 @@ const validReportVersionSnapshot = {
     applicationName: 'Customer Services Portal',
     status: 'in-progress',
     owaspTaxonomyVersion: '2025',
+    cweCatalogVersion: '4.20',
   },
   selection: { threatIds: [], evidenceIds: [] },
   configuration: { includeEvidence: false },

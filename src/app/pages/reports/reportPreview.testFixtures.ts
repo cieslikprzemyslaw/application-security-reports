@@ -63,6 +63,7 @@ export const previewSnapshot: ReportPreviewSnapshot = {
     assessmentType: 'Web App',
     overallRisk: 'critical',
     owaspTaxonomyVersion: '2025',
+    cweCatalogVersion: '4.20',
   },
   selection: {
     threatIds: [previewThreatId],
@@ -91,6 +92,8 @@ export const previewSnapshot: ReportPreviewSnapshot = {
   },
   selectedThreats: [
     {
+      cweCatalogVersion: '4.20',
+      cweMappings: [],
       id: previewThreatId,
       assessmentId: previewAssessmentId,
       title: 'Missing Server-Side Authorization',

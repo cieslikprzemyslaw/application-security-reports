@@ -36,6 +36,11 @@ const threatRow = {
   references: null,
   createdAt,
   updatedAt,
+  assessment: {
+    owaspTaxonomyVersion: '2025',
+    cweCatalogVersion: '4.20',
+  },
+  cweMappings: [],
 };
 
 const buildCreateInput = (
@@ -79,6 +84,7 @@ const createDb = (
   const assessment: AssessmentDelegateMock = {
     findUnique: vi.fn().mockResolvedValue({
       owaspTaxonomyVersion: '2025',
+      cweCatalogVersion: '4.20',
     }),
     ...assessmentOverrides,
   };
@@ -130,7 +136,7 @@ describe('createThreatRepository', () => {
 
     expect(assessment.findUnique).toHaveBeenCalledWith({
       where: { id: assessmentId },
-      select: { owaspTaxonomyVersion: true },
+      select: { owaspTaxonomyVersion: true, cweCatalogVersion: true },
     });
     expect(threat.create).toHaveBeenCalledWith({
       data: expect.objectContaining({

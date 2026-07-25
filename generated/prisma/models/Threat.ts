@@ -309,6 +309,7 @@ export type ThreatWhereInput = {
   assessment?: Prisma.XOR<Prisma.AssessmentScalarRelationFilter, Prisma.AssessmentWhereInput>
   evidenceLinks?: Prisma.EvidenceThreatListRelationFilter
   reportLinks?: Prisma.ReportThreatListRelationFilter
+  cweMappings?: Prisma.ThreatCweListRelationFilter
 }
 
 export type ThreatOrderByWithRelationInput = {
@@ -336,6 +337,7 @@ export type ThreatOrderByWithRelationInput = {
   assessment?: Prisma.AssessmentOrderByWithRelationInput
   evidenceLinks?: Prisma.EvidenceThreatOrderByRelationAggregateInput
   reportLinks?: Prisma.ReportThreatOrderByRelationAggregateInput
+  cweMappings?: Prisma.ThreatCweOrderByRelationAggregateInput
 }
 
 export type ThreatWhereUniqueInput = Prisma.AtLeast<{
@@ -366,6 +368,7 @@ export type ThreatWhereUniqueInput = Prisma.AtLeast<{
   assessment?: Prisma.XOR<Prisma.AssessmentScalarRelationFilter, Prisma.AssessmentWhereInput>
   evidenceLinks?: Prisma.EvidenceThreatListRelationFilter
   reportLinks?: Prisma.ReportThreatListRelationFilter
+  cweMappings?: Prisma.ThreatCweListRelationFilter
 }, "id">
 
 export type ThreatOrderByWithAggregationInput = {
@@ -446,6 +449,7 @@ export type ThreatCreateInput = {
   assessment: Prisma.AssessmentCreateNestedOneWithoutThreatsInput
   evidenceLinks?: Prisma.EvidenceThreatCreateNestedManyWithoutThreatInput
   reportLinks?: Prisma.ReportThreatCreateNestedManyWithoutThreatInput
+  cweMappings?: Prisma.ThreatCweCreateNestedManyWithoutThreatInput
 }
 
 export type ThreatUncheckedCreateInput = {
@@ -472,6 +476,7 @@ export type ThreatUncheckedCreateInput = {
   updatedAt?: Date | string
   evidenceLinks?: Prisma.EvidenceThreatUncheckedCreateNestedManyWithoutThreatInput
   reportLinks?: Prisma.ReportThreatUncheckedCreateNestedManyWithoutThreatInput
+  cweMappings?: Prisma.ThreatCweUncheckedCreateNestedManyWithoutThreatInput
 }
 
 export type ThreatUpdateInput = {
@@ -498,6 +503,7 @@ export type ThreatUpdateInput = {
   assessment?: Prisma.AssessmentUpdateOneRequiredWithoutThreatsNestedInput
   evidenceLinks?: Prisma.EvidenceThreatUpdateManyWithoutThreatNestedInput
   reportLinks?: Prisma.ReportThreatUpdateManyWithoutThreatNestedInput
+  cweMappings?: Prisma.ThreatCweUpdateManyWithoutThreatNestedInput
 }
 
 export type ThreatUncheckedUpdateInput = {
@@ -524,6 +530,7 @@ export type ThreatUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evidenceLinks?: Prisma.EvidenceThreatUncheckedUpdateManyWithoutThreatNestedInput
   reportLinks?: Prisma.ReportThreatUncheckedUpdateManyWithoutThreatNestedInput
+  cweMappings?: Prisma.ThreatCweUncheckedUpdateManyWithoutThreatNestedInput
 }
 
 export type ThreatCreateManyInput = {
@@ -728,6 +735,20 @@ export type EnumSeverityFieldUpdateOperationsInput = {
   set?: $Enums.Severity
 }
 
+export type ThreatCreateNestedOneWithoutCweMappingsInput = {
+  create?: Prisma.XOR<Prisma.ThreatCreateWithoutCweMappingsInput, Prisma.ThreatUncheckedCreateWithoutCweMappingsInput>
+  connectOrCreate?: Prisma.ThreatCreateOrConnectWithoutCweMappingsInput
+  connect?: Prisma.ThreatWhereUniqueInput
+}
+
+export type ThreatUpdateOneRequiredWithoutCweMappingsNestedInput = {
+  create?: Prisma.XOR<Prisma.ThreatCreateWithoutCweMappingsInput, Prisma.ThreatUncheckedCreateWithoutCweMappingsInput>
+  connectOrCreate?: Prisma.ThreatCreateOrConnectWithoutCweMappingsInput
+  upsert?: Prisma.ThreatUpsertWithoutCweMappingsInput
+  connect?: Prisma.ThreatWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ThreatUpdateToOneWithWhereWithoutCweMappingsInput, Prisma.ThreatUpdateWithoutCweMappingsInput>, Prisma.ThreatUncheckedUpdateWithoutCweMappingsInput>
+}
+
 export type ThreatCreateNestedOneWithoutEvidenceLinksInput = {
   create?: Prisma.XOR<Prisma.ThreatCreateWithoutEvidenceLinksInput, Prisma.ThreatUncheckedCreateWithoutEvidenceLinksInput>
   connectOrCreate?: Prisma.ThreatCreateOrConnectWithoutEvidenceLinksInput
@@ -779,6 +800,7 @@ export type ThreatCreateWithoutAssessmentInput = {
   updatedAt?: Date | string
   evidenceLinks?: Prisma.EvidenceThreatCreateNestedManyWithoutThreatInput
   reportLinks?: Prisma.ReportThreatCreateNestedManyWithoutThreatInput
+  cweMappings?: Prisma.ThreatCweCreateNestedManyWithoutThreatInput
 }
 
 export type ThreatUncheckedCreateWithoutAssessmentInput = {
@@ -804,6 +826,7 @@ export type ThreatUncheckedCreateWithoutAssessmentInput = {
   updatedAt?: Date | string
   evidenceLinks?: Prisma.EvidenceThreatUncheckedCreateNestedManyWithoutThreatInput
   reportLinks?: Prisma.ReportThreatUncheckedCreateNestedManyWithoutThreatInput
+  cweMappings?: Prisma.ThreatCweUncheckedCreateNestedManyWithoutThreatInput
 }
 
 export type ThreatCreateOrConnectWithoutAssessmentInput = {
@@ -858,6 +881,126 @@ export type ThreatScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Threat"> | Date | string
 }
 
+export type ThreatCreateWithoutCweMappingsInput = {
+  id: string
+  title: string
+  description: string
+  severity: $Enums.Severity
+  strideCategories: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status: string
+  owaspCategoryCode?: string | null
+  customCategory?: string | null
+  affectedAsset?: string | null
+  impact?: string | null
+  recommendation?: string | null
+  remediation?: string | null
+  observation?: string | null
+  reproductionSteps?: string | null
+  affectedComponent?: string | null
+  affectedEndpoint?: string | null
+  risk?: string | null
+  references?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  assessment: Prisma.AssessmentCreateNestedOneWithoutThreatsInput
+  evidenceLinks?: Prisma.EvidenceThreatCreateNestedManyWithoutThreatInput
+  reportLinks?: Prisma.ReportThreatCreateNestedManyWithoutThreatInput
+}
+
+export type ThreatUncheckedCreateWithoutCweMappingsInput = {
+  id: string
+  assessmentId: string
+  title: string
+  description: string
+  severity: $Enums.Severity
+  strideCategories: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status: string
+  owaspCategoryCode?: string | null
+  customCategory?: string | null
+  affectedAsset?: string | null
+  impact?: string | null
+  recommendation?: string | null
+  remediation?: string | null
+  observation?: string | null
+  reproductionSteps?: string | null
+  affectedComponent?: string | null
+  affectedEndpoint?: string | null
+  risk?: string | null
+  references?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  evidenceLinks?: Prisma.EvidenceThreatUncheckedCreateNestedManyWithoutThreatInput
+  reportLinks?: Prisma.ReportThreatUncheckedCreateNestedManyWithoutThreatInput
+}
+
+export type ThreatCreateOrConnectWithoutCweMappingsInput = {
+  where: Prisma.ThreatWhereUniqueInput
+  create: Prisma.XOR<Prisma.ThreatCreateWithoutCweMappingsInput, Prisma.ThreatUncheckedCreateWithoutCweMappingsInput>
+}
+
+export type ThreatUpsertWithoutCweMappingsInput = {
+  update: Prisma.XOR<Prisma.ThreatUpdateWithoutCweMappingsInput, Prisma.ThreatUncheckedUpdateWithoutCweMappingsInput>
+  create: Prisma.XOR<Prisma.ThreatCreateWithoutCweMappingsInput, Prisma.ThreatUncheckedCreateWithoutCweMappingsInput>
+  where?: Prisma.ThreatWhereInput
+}
+
+export type ThreatUpdateToOneWithWhereWithoutCweMappingsInput = {
+  where?: Prisma.ThreatWhereInput
+  data: Prisma.XOR<Prisma.ThreatUpdateWithoutCweMappingsInput, Prisma.ThreatUncheckedUpdateWithoutCweMappingsInput>
+}
+
+export type ThreatUpdateWithoutCweMappingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  severity?: Prisma.EnumSeverityFieldUpdateOperationsInput | $Enums.Severity
+  strideCategories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  owaspCategoryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affectedAsset?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  impact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recommendation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  remediation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  observation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reproductionSteps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affectedComponent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affectedEndpoint?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  risk?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  references?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assessment?: Prisma.AssessmentUpdateOneRequiredWithoutThreatsNestedInput
+  evidenceLinks?: Prisma.EvidenceThreatUpdateManyWithoutThreatNestedInput
+  reportLinks?: Prisma.ReportThreatUpdateManyWithoutThreatNestedInput
+}
+
+export type ThreatUncheckedUpdateWithoutCweMappingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  assessmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  severity?: Prisma.EnumSeverityFieldUpdateOperationsInput | $Enums.Severity
+  strideCategories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  owaspCategoryCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affectedAsset?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  impact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recommendation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  remediation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  observation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reproductionSteps?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affectedComponent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affectedEndpoint?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  risk?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  references?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  evidenceLinks?: Prisma.EvidenceThreatUncheckedUpdateManyWithoutThreatNestedInput
+  reportLinks?: Prisma.ReportThreatUncheckedUpdateManyWithoutThreatNestedInput
+}
+
 export type ThreatCreateWithoutEvidenceLinksInput = {
   id: string
   title: string
@@ -881,6 +1024,7 @@ export type ThreatCreateWithoutEvidenceLinksInput = {
   updatedAt?: Date | string
   assessment: Prisma.AssessmentCreateNestedOneWithoutThreatsInput
   reportLinks?: Prisma.ReportThreatCreateNestedManyWithoutThreatInput
+  cweMappings?: Prisma.ThreatCweCreateNestedManyWithoutThreatInput
 }
 
 export type ThreatUncheckedCreateWithoutEvidenceLinksInput = {
@@ -906,6 +1050,7 @@ export type ThreatUncheckedCreateWithoutEvidenceLinksInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   reportLinks?: Prisma.ReportThreatUncheckedCreateNestedManyWithoutThreatInput
+  cweMappings?: Prisma.ThreatCweUncheckedCreateNestedManyWithoutThreatInput
 }
 
 export type ThreatCreateOrConnectWithoutEvidenceLinksInput = {
@@ -947,6 +1092,7 @@ export type ThreatUpdateWithoutEvidenceLinksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assessment?: Prisma.AssessmentUpdateOneRequiredWithoutThreatsNestedInput
   reportLinks?: Prisma.ReportThreatUpdateManyWithoutThreatNestedInput
+  cweMappings?: Prisma.ThreatCweUpdateManyWithoutThreatNestedInput
 }
 
 export type ThreatUncheckedUpdateWithoutEvidenceLinksInput = {
@@ -972,6 +1118,7 @@ export type ThreatUncheckedUpdateWithoutEvidenceLinksInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportLinks?: Prisma.ReportThreatUncheckedUpdateManyWithoutThreatNestedInput
+  cweMappings?: Prisma.ThreatCweUncheckedUpdateManyWithoutThreatNestedInput
 }
 
 export type ThreatCreateWithoutReportLinksInput = {
@@ -997,6 +1144,7 @@ export type ThreatCreateWithoutReportLinksInput = {
   updatedAt?: Date | string
   assessment: Prisma.AssessmentCreateNestedOneWithoutThreatsInput
   evidenceLinks?: Prisma.EvidenceThreatCreateNestedManyWithoutThreatInput
+  cweMappings?: Prisma.ThreatCweCreateNestedManyWithoutThreatInput
 }
 
 export type ThreatUncheckedCreateWithoutReportLinksInput = {
@@ -1022,6 +1170,7 @@ export type ThreatUncheckedCreateWithoutReportLinksInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   evidenceLinks?: Prisma.EvidenceThreatUncheckedCreateNestedManyWithoutThreatInput
+  cweMappings?: Prisma.ThreatCweUncheckedCreateNestedManyWithoutThreatInput
 }
 
 export type ThreatCreateOrConnectWithoutReportLinksInput = {
@@ -1063,6 +1212,7 @@ export type ThreatUpdateWithoutReportLinksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assessment?: Prisma.AssessmentUpdateOneRequiredWithoutThreatsNestedInput
   evidenceLinks?: Prisma.EvidenceThreatUpdateManyWithoutThreatNestedInput
+  cweMappings?: Prisma.ThreatCweUpdateManyWithoutThreatNestedInput
 }
 
 export type ThreatUncheckedUpdateWithoutReportLinksInput = {
@@ -1088,6 +1238,7 @@ export type ThreatUncheckedUpdateWithoutReportLinksInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evidenceLinks?: Prisma.EvidenceThreatUncheckedUpdateManyWithoutThreatNestedInput
+  cweMappings?: Prisma.ThreatCweUncheckedUpdateManyWithoutThreatNestedInput
 }
 
 export type ThreatCreateManyAssessmentInput = {
@@ -1136,6 +1287,7 @@ export type ThreatUpdateWithoutAssessmentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evidenceLinks?: Prisma.EvidenceThreatUpdateManyWithoutThreatNestedInput
   reportLinks?: Prisma.ReportThreatUpdateManyWithoutThreatNestedInput
+  cweMappings?: Prisma.ThreatCweUpdateManyWithoutThreatNestedInput
 }
 
 export type ThreatUncheckedUpdateWithoutAssessmentInput = {
@@ -1161,6 +1313,7 @@ export type ThreatUncheckedUpdateWithoutAssessmentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evidenceLinks?: Prisma.EvidenceThreatUncheckedUpdateManyWithoutThreatNestedInput
   reportLinks?: Prisma.ReportThreatUncheckedUpdateManyWithoutThreatNestedInput
+  cweMappings?: Prisma.ThreatCweUncheckedUpdateManyWithoutThreatNestedInput
 }
 
 export type ThreatUncheckedUpdateManyWithoutAssessmentInput = {
@@ -1194,11 +1347,13 @@ export type ThreatUncheckedUpdateManyWithoutAssessmentInput = {
 export type ThreatCountOutputType = {
   evidenceLinks: number
   reportLinks: number
+  cweMappings: number
 }
 
 export type ThreatCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   evidenceLinks?: boolean | ThreatCountOutputTypeCountEvidenceLinksArgs
   reportLinks?: boolean | ThreatCountOutputTypeCountReportLinksArgs
+  cweMappings?: boolean | ThreatCountOutputTypeCountCweMappingsArgs
 }
 
 /**
@@ -1223,6 +1378,13 @@ export type ThreatCountOutputTypeCountEvidenceLinksArgs<ExtArgs extends runtime.
  */
 export type ThreatCountOutputTypeCountReportLinksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ReportThreatWhereInput
+}
+
+/**
+ * ThreatCountOutputType without action
+ */
+export type ThreatCountOutputTypeCountCweMappingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ThreatCweWhereInput
 }
 
 
@@ -1251,6 +1413,7 @@ export type ThreatSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   assessment?: boolean | Prisma.AssessmentDefaultArgs<ExtArgs>
   evidenceLinks?: boolean | Prisma.Threat$evidenceLinksArgs<ExtArgs>
   reportLinks?: boolean | Prisma.Threat$reportLinksArgs<ExtArgs>
+  cweMappings?: boolean | Prisma.Threat$cweMappingsArgs<ExtArgs>
   _count?: boolean | Prisma.ThreatCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["threat"]>
 
@@ -1333,6 +1496,7 @@ export type ThreatInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   assessment?: boolean | Prisma.AssessmentDefaultArgs<ExtArgs>
   evidenceLinks?: boolean | Prisma.Threat$evidenceLinksArgs<ExtArgs>
   reportLinks?: boolean | Prisma.Threat$reportLinksArgs<ExtArgs>
+  cweMappings?: boolean | Prisma.Threat$cweMappingsArgs<ExtArgs>
   _count?: boolean | Prisma.ThreatCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ThreatIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1348,6 +1512,7 @@ export type $ThreatPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     assessment: Prisma.$AssessmentPayload<ExtArgs>
     evidenceLinks: Prisma.$EvidenceThreatPayload<ExtArgs>[]
     reportLinks: Prisma.$ReportThreatPayload<ExtArgs>[]
+    cweMappings: Prisma.$ThreatCwePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1768,6 +1933,7 @@ export interface Prisma__ThreatClient<T, Null = never, ExtArgs extends runtime.T
   assessment<T extends Prisma.AssessmentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AssessmentDefaultArgs<ExtArgs>>): Prisma.Prisma__AssessmentClient<runtime.Types.Result.GetResult<Prisma.$AssessmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   evidenceLinks<T extends Prisma.Threat$evidenceLinksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Threat$evidenceLinksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EvidenceThreatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reportLinks<T extends Prisma.Threat$reportLinksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Threat$reportLinksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReportThreatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  cweMappings<T extends Prisma.Threat$cweMappingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Threat$cweMappingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ThreatCwePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2262,6 +2428,30 @@ export type Threat$reportLinksArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.ReportThreatScalarFieldEnum | Prisma.ReportThreatScalarFieldEnum[]
+}
+
+/**
+ * Threat.cweMappings
+ */
+export type Threat$cweMappingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ThreatCwe
+   */
+  select?: Prisma.ThreatCweSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ThreatCwe
+   */
+  omit?: Prisma.ThreatCweOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ThreatCweInclude<ExtArgs> | null
+  where?: Prisma.ThreatCweWhereInput
+  orderBy?: Prisma.ThreatCweOrderByWithRelationInput | Prisma.ThreatCweOrderByWithRelationInput[]
+  cursor?: Prisma.ThreatCweWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ThreatCweScalarFieldEnum | Prisma.ThreatCweScalarFieldEnum[]
 }
 
 /**

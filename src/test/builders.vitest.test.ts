@@ -22,6 +22,8 @@ describe('test data builders', () => {
     const firstThreat = buildThreat({
       title: 'SQL injection',
       strideCategories: ['tampering'],
+      cweCatalogVersion: '4.20',
+      cweMappings: [],
     });
 
     const secondThreat = buildThreat();

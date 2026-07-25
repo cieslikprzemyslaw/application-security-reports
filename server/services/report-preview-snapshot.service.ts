@@ -79,6 +79,7 @@ const toReportPreviewAssessment = (
   assessmentType: toOptionalPreviewText(assessment.assessmentType),
   overallRisk: assessment.overallRisk,
   owaspTaxonomyVersion: assessment.owaspTaxonomyVersion,
+  cweCatalogVersion: assessment.cweCatalogVersion,
 });
 
 const toReportPreviewThreat = (threat: Threat): ReportPreviewThreat => ({
@@ -89,6 +90,11 @@ const toReportPreviewThreat = (threat: Threat): ReportPreviewThreat => ({
   severity: threat.severity,
   strideCategories: [...threat.strideCategories],
   status: threat.status,
+  cweCatalogVersion: threat.cweCatalogVersion,
+  cweMappings: threat.cweMappings.map(mapping => ({
+    ...mapping,
+    replacementIds: [...mapping.replacementIds],
+  })),
   owaspCategoryCode: toOptionalPreviewText(threat.owaspCategoryCode),
   customCategory: toOptionalPreviewText(threat.customCategory),
   affectedAsset: toOptionalPreviewText(threat.affectedAsset),

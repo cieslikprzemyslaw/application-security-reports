@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { CWE_CATALOG_CURRENT_VERSION } from '../cwe.js';
 import { OWASP_TOP_10_CURRENT_VERSION } from '../owaspTop10.js';
 import { assessmentSchema } from './assessment.schema.js';
 import {
@@ -21,6 +22,7 @@ const validPersistedAssessment = {
   assessmentType: 'Web application',
   overallRisk: 'high',
   owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+  cweCatalogVersion: CWE_CATALOG_CURRENT_VERSION,
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-10T16:30:00.000Z',
 };
@@ -105,6 +107,7 @@ describe('assessmentSchema', () => {
     const result = assessmentSchema.safeParse({
       ...validPersistedAssessment,
       owaspTaxonomyVersion: '2099',
+      cweCatalogVersion: '4.20',
     });
 
     expectInvalidAt(result, ['owaspTaxonomyVersion']);
@@ -151,6 +154,7 @@ describe('createAssessmentRequestSchema', () => {
       createAssessmentRequestSchema.safeParse({
         ...validCreateRequest,
         owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+        cweCatalogVersion: '4.20',
       }),
       [],
     );
@@ -190,6 +194,7 @@ describe('updateAssessmentRequestSchema', () => {
     expectInvalidAt(
       updateAssessmentRequestSchema.safeParse({
         owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+        cweCatalogVersion: '4.20',
       }),
       [],
     );

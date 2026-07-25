@@ -21,6 +21,7 @@ const defaultCompany: Company = {
 };
 
 const defaultAssessment: Assessment = {
+  cweCatalogVersion: '4.20',
   id: 'asm_00000000-0000-0000-0000-000000000001',
   companyId: defaultCompany.id,
   title: 'Customer Services Portal',
@@ -39,6 +40,8 @@ const defaultAssessment: Assessment = {
 };
 
 const threatA: Threat = {
+  cweCatalogVersion: '4.20',
+  cweMappings: [],
   id: 'thr_00000000-0000-0000-0000-000000000001',
   assessmentId: defaultAssessment.id,
   title: 'Missing Server-Side Authorization',

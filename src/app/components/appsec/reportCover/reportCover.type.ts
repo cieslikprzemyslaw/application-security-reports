@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react';
 
-import type { ReportPreviewEvidence, Severity, ThreatStatus } from '~/domain';
+import type {
+  ReportPreviewEvidence,
+  Severity,
+  ThreatCweMapping,
+  ThreatStatus,
+} from '~/domain';
 
 export interface ReportFinding {
   id: string;
@@ -8,6 +13,7 @@ export interface ReportFinding {
   severity: Severity;
   status: ThreatStatus;
   affectedAsset: string;
+  cweMappings?: ThreatCweMapping[];
   observation: string;
   risk: string;
   recommendation: string;

@@ -1,4 +1,8 @@
 import type { Assessment } from '../../../src/domain/assessment.js';
+import {
+  CWE_CATALOG_CURRENT_VERSION,
+  isCweCatalogVersion,
+} from '../../../src/domain/cwe.js';
 import type {
   CreateAssessmentInput,
   UpdateAssessmentInput,
@@ -41,6 +45,7 @@ type AssessmentRow = {
   assessmentType: string | null;
   overallRisk: string | null;
   owaspTaxonomyVersion: string;
+  cweCatalogVersion: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -65,6 +70,7 @@ const assessmentSelect = {
   assessmentType: true,
   overallRisk: true,
   owaspTaxonomyVersion: true,
+  cweCatalogVersion: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -94,6 +100,13 @@ const toAssessment = (row: AssessmentRow): Assessment => ({
     : (() => {
         throw new RepositoryError(
           `Unsupported OWASP taxonomy version: ${row.owaspTaxonomyVersion}`,
+        );
+      })(),
+  cweCatalogVersion: isCweCatalogVersion(row.cweCatalogVersion)
+    ? row.cweCatalogVersion
+    : (() => {
+        throw new RepositoryError(
+          `Unsupported CWE catalog version: ${row.cweCatalogVersion}`,
         );
       })(),
   createdAt: toIsoString(row.createdAt),
@@ -156,6 +169,7 @@ export function createAssessmentRepository(
             assessmentType: input.assessmentType,
             overallRisk: input.overallRisk,
             owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+            cweCatalogVersion: CWE_CATALOG_CURRENT_VERSION,
           },
           select: assessmentSelect,
         });

@@ -35,6 +35,7 @@ const company: ReportPreviewCompany & {
 };
 
 const assessment: Assessment = {
+  cweCatalogVersion: '4.20',
   id: assessmentId,
   companyId,
   title: 'Customer Services Portal',
@@ -52,6 +53,25 @@ const assessment: Assessment = {
 };
 
 const selectedThreat: Threat = {
+  cweCatalogVersion: '4.20',
+  cweMappings: [
+    {
+      id: 'CWE-79',
+      name: 'Improper Neutralization of Input During Web Page Generation',
+      status: 'Stable',
+      deprecated: false,
+      primary: true,
+      replacementIds: [],
+    },
+    {
+      id: 'CWE-89',
+      name: 'Improper Neutralization of Special Elements used in an SQL Command',
+      status: 'Stable',
+      deprecated: false,
+      primary: false,
+      replacementIds: [],
+    },
+  ],
   id: threatId,
   assessmentId,
   title: 'Missing Server-Side Authorization',
@@ -166,6 +186,11 @@ describe('buildReportPreviewSnapshot', () => {
     expect(snapshot.selectedThreats.map(threat => threat.id)).toEqual([
       threatId,
     ]);
+    expect(snapshot.assessment.cweCatalogVersion).toBe('4.20');
+    expect(snapshot.selectedThreats[0]?.cweCatalogVersion).toBe('4.20');
+    expect(snapshot.selectedThreats[0]?.cweMappings).toEqual(
+      selectedThreat.cweMappings,
+    );
     expect(snapshot.selectedEvidence.map(evidence => evidence.id)).toEqual([
       evidenceId,
     ]);

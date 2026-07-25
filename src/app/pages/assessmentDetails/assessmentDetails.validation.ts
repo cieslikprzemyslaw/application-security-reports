@@ -9,6 +9,7 @@ export interface ThreatValidationErrorMap {
 
 const threatFieldAliases: Record<string, keyof ThreatFormValue> = {
   title: 'title',
+  cweIds: 'cweIds',
   owaspCategoryCode: 'owaspCategoryCode',
   customCategory: 'customCategory',
   strideCategories: 'owaspCategoryCode',

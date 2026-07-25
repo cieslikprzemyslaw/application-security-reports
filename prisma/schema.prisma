@@ -92,6 +92,7 @@ model Assessment {
   assessmentType       String?
   overallRisk          Severity?
   owaspTaxonomyVersion String    @default("2025")
+  cweCatalogVersion      String    @default("4.20")
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
@@ -131,11 +132,25 @@ model Threat {
   assessment    Assessment       @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   evidenceLinks EvidenceThreat[]
   reportLinks   ReportThreat[]
+  cweMappings  ThreatCwe[]
 
   @@index([assessmentId])
   @@index([assessmentId, updatedAt])
   @@index([status])
   @@index([severity])
+}
+
+
+model ThreatCwe {
+  threatId String
+  cweId    String
+  position Int
+
+  threat Threat @relation(fields: [threatId], references: [id], onDelete: Cascade)
+
+  @@id([threatId, cweId])
+  @@unique([threatId, position])
+  @@index([cweId])
 }
 
 model Evidence {

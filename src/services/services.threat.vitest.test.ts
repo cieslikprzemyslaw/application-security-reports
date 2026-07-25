@@ -99,6 +99,8 @@ describe('services.threat', () => {
       environment: 'Production',
       assessmentType: 'Web App',
       overallRisk: 'high',
+      owaspTaxonomyVersion: '2025',
+      cweCatalogVersion: '4.20',
       createdAt: '2026-06-01T09:00:00.000Z',
       updatedAt: '2026-06-11T09:00:00.000Z',
     } as const;
@@ -111,6 +113,26 @@ describe('services.threat', () => {
       severity: 'critical',
       strideCategories: ['spoofing', 'tampering'],
       status: 'accepted-risk',
+      cweCatalogVersion: '4.20',
+      cweMappings: [
+        {
+          id: 'CWE-79',
+          name: 'Improper Neutralization of Input During Web Page Generation',
+          status: 'Stable',
+          deprecated: false,
+          primary: true,
+          replacementIds: [],
+        },
+        {
+          id: 'CWE-89',
+          name: 'Improper Neutralization of Special Elements used in an SQL Command',
+          status: 'Stable',
+          deprecated: false,
+          primary: false,
+          replacementIds: [],
+        },
+      ],
+      assessmentOwaspTaxonomyVersion: '2025',
       affectedAsset: '/api/v1/orders/{id}',
       impact: 'Unauthorised access to customer order data',
       recommendation: 'Apply object-level authorization on every request.',
@@ -237,6 +259,7 @@ describe('services.threat', () => {
         severity: threat.severity,
         strideCategories: [...threat.strideCategories],
         status: threat.status,
+        cweIds: ['CWE-79', 'CWE-89'],
         affectedAsset: threat.affectedAsset,
         impact: threat.impact,
         recommendation: threat.recommendation,
@@ -259,6 +282,7 @@ describe('services.threat', () => {
     {
       const input: ThreatUpdateInput = {
         title: 'Updated threat',
+        cweIds: [],
       };
       const { calls, request } = createRequestSpy({ data: threat });
       const service = createThreatService(request);

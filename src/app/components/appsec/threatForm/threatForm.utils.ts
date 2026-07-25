@@ -18,6 +18,7 @@ export const statusLabelMap: Record<ThreatFormValue['status'], string> = {
 
 export const fieldIdMap: Record<keyof ThreatFormValue, string> = {
   title: 'threat-title',
+  cweIds: 'threat-cwe-search',
   owaspCategoryCode: 'threat-owasp-category-code',
   customCategory: 'threat-custom-category',
   strideCategory: 'threat-stride-category',

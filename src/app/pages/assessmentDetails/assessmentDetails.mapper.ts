@@ -1,7 +1,9 @@
 import type { AssessmentWorkspaceOverview } from '~/services/assessmentService';
 import {
+  CWE_CATALOG_CURRENT_VERSION,
   OWASP_TOP_10_CURRENT_VERSION,
   getOwaspTop10CategoryOptions,
+  type CweCatalogVersion,
   type OwaspTop10Version,
   type Threat,
 } from '~/domain';
@@ -28,8 +30,10 @@ const getDefaultOwaspCategoryCode = (owaspTaxonomyVersion: OwaspTop10Version) =>
 
 export const createEmptyThreatFormValue = (
   owaspTaxonomyVersion: OwaspTop10Version = OWASP_TOP_10_CURRENT_VERSION,
+  _cweCatalogVersion: CweCatalogVersion = CWE_CATALOG_CURRENT_VERSION,
 ): ThreatFormValue => ({
   title: '',
+  cweIds: [],
   owaspCategoryCode: getDefaultOwaspCategoryCode(owaspTaxonomyVersion),
   customCategory: '',
   strideCategory: 'spoofing',
@@ -59,8 +63,10 @@ export const toAssessmentViewModel = (
 export const threatToFormValue = (
   threat: Threat,
   owaspTaxonomyVersion: OwaspTop10Version = OWASP_TOP_10_CURRENT_VERSION,
+  _cweCatalogVersion: CweCatalogVersion = CWE_CATALOG_CURRENT_VERSION,
 ): ThreatFormValue => ({
   title: threat.title,
+  cweIds: threat.cweMappings.map(mapping => mapping.id),
   owaspCategoryCode:
     threat.owaspCategoryCode ??
     (threat.customCategory
@@ -88,6 +94,7 @@ const threatFormValueToPayload = (
   value: ThreatFormValue,
 ): Omit<ThreatCreateInput, 'assessmentId'> => ({
   title: value.title.trim(),
+  cweIds: [...(value.cweIds ?? [])],
   severity: value.severity,
   status: value.status,
   strideCategories: value.strideCategory
@@ -133,6 +140,8 @@ export const threatToTableRow = (threat: Threat): ThreatTableRow => ({
   title: threat.title,
   owaspCategoryCode: threat.owaspCategoryCode,
   customCategory: threat.customCategory,
+  cweMappings: threat.cweMappings,
+  cweCatalogVersion: threat.cweCatalogVersion,
   severity: threat.severity,
   status: threat.status,
   evidenceCount: threat.evidenceCount,

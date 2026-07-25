@@ -188,6 +188,8 @@ assertValid(
     description: 'Example description',
     severity: 'low',
     strideCategories: ['spoofing'],
+    cweCatalogVersion: '4.20',
+    cweMappings: [],
     status: 'open',
   }).success,
   'Create threat request should pass',

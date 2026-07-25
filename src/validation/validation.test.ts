@@ -30,6 +30,8 @@ const validCompany = {
 };
 
 const validPreviewThreat: ReportPreviewThreat = {
+  cweCatalogVersion: '4.20',
+  cweMappings: [],
   id: 'thr_00000000-0000-0000-0000-000000000001',
   assessmentId: 'asm_00000000-0000-0000-0000-000000000001',
   title: 'Missing Server-Side Authorization',

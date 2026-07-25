@@ -121,6 +121,7 @@ import {
   const { calls, db } = createThreatDb({
     ...assessmentRow,
     owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+    cweCatalogVersion: '4.20',
   });
   const repository = createThreatRepository(db);
 

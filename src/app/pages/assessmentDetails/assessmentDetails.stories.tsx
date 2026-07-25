@@ -60,6 +60,7 @@ export const Default: Story = {
       status: 'in-progress',
       overallRisk: 'high',
       owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+      cweCatalogVersion: '4.20',
       recordVersion: 3,
       findingsCount: 14,
       evidenceCount: 6,

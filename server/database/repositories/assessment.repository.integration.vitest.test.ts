@@ -102,6 +102,7 @@ describe('Assessment repository with temporary SQLite', () => {
         status: 'in-progress',
         overallRisk: 'high',
         owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+        cweCatalogVersion: '4.20',
       }),
     );
 
@@ -114,6 +115,7 @@ describe('Assessment repository with temporary SQLite', () => {
         companyId,
         title: 'Customer Services Portal - retest',
         owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+        cweCatalogVersion: '4.20',
       }),
     );
   });

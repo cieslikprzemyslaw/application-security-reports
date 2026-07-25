@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
 
-import type { OwaspTop10Version, Severity, ThreatStatus } from '~/domain';
+import type {
+  CweCatalogVersion,
+  OwaspTop10Version,
+  Severity,
+  ThreatCweMapping,
+  ThreatStatus,
+} from '~/domain';
 
 import type { ThreatTableRow } from '../threatTable';
 
@@ -11,6 +17,8 @@ export interface ThreatDrawerFinding {
   status: ThreatStatus;
   owaspCategoryCode?: string;
   customCategory?: string;
+  cweCatalogVersion?: CweCatalogVersion;
+  cweMappings?: ThreatCweMapping[];
   evidenceCount?: number;
   applicationName?: string;
   companyName?: string;

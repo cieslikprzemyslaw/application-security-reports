@@ -40,6 +40,7 @@ const company: Company = {
 };
 
 const assessment: Assessment = {
+  cweCatalogVersion: '4.20',
   id: assessmentId,
   companyId,
   title: 'Customer Services Portal',
@@ -51,6 +52,8 @@ const assessment: Assessment = {
 };
 
 const threat: Threat = {
+  cweCatalogVersion: '4.20',
+  cweMappings: [],
   id: threatId,
   assessmentId,
   title: 'Missing authorization',

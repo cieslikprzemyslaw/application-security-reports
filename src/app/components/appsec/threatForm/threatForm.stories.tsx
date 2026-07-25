@@ -50,6 +50,7 @@ export const Interactive: Story = {
   args: {
     value: initialValue,
     owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+    cweCatalogVersion: '4.20',
     onChange: () => undefined,
     onSubmit: event => event.preventDefault(),
   },

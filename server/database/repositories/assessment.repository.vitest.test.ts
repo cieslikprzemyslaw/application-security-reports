@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { CWE_CATALOG_CURRENT_VERSION } from '../../../src/domain/cwe.js';
 import { OWASP_TOP_10_CURRENT_VERSION } from '../../../src/domain/owaspTop10.js';
 import { RepositoryError } from '../errors.js';
 import type { RepositoryClient } from '../repository.types.js';
@@ -22,6 +23,7 @@ const assessmentRow = {
   assessmentType: 'Web application',
   overallRisk: 'medium',
   owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+  cweCatalogVersion: CWE_CATALOG_CURRENT_VERSION,
   createdAt,
   updatedAt,
 };
@@ -70,6 +72,7 @@ describe('createAssessmentRepository', () => {
         description: undefined,
         applicationName: null,
         owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+        cweCatalogVersion: CWE_CATALOG_CURRENT_VERSION,
         createdAt: createdAt.toISOString(),
         updatedAt: updatedAt.toISOString(),
         findingsCount: 2,
@@ -138,6 +141,7 @@ describe('createAssessmentRepository', () => {
         assessmentType: assessmentRow.assessmentType,
         overallRisk: 'medium',
         owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+        cweCatalogVersion: CWE_CATALOG_CURRENT_VERSION,
       },
       select: expect.any(Object),
     });
@@ -178,6 +182,7 @@ describe('createAssessmentRepository', () => {
       findUnique: vi.fn().mockResolvedValue({
         ...assessmentRow,
         owaspTaxonomyVersion: '2099',
+        cweCatalogVersion: '4.20',
       }),
     });
     const repository = createAssessmentRepository(db);

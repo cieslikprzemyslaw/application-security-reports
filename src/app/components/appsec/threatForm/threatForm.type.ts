@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react';
 
 import type {
+  CweCatalogVersion,
   OwaspTop10Version,
   Severity,
   ThreatStatus,
@@ -11,6 +12,7 @@ export type { StrideCategory } from '~/domain';
 
 export interface ThreatFormValue {
   title: string;
+  cweIds?: string[];
   owaspCategoryCode?: string;
   customCategory?: string;
   strideCategory?: StrideCategory;
@@ -30,6 +32,7 @@ export interface ThreatFormValue {
 export interface ThreatFormProps {
   value: ThreatFormValue;
   owaspTaxonomyVersion: OwaspTop10Version;
+  cweCatalogVersion?: CweCatalogVersion;
   errors?: Partial<Record<keyof ThreatFormValue, string>>;
   isSubmitting?: boolean;
   focusField?: keyof ThreatFormValue;

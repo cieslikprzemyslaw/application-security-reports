@@ -89,6 +89,7 @@ describe('services.assessment', () => {
       assessmentType: 'Web App',
       overallRisk: 'high',
       owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+      cweCatalogVersion: '4.20',
       createdAt: '2026-06-01T09:00:00.000Z',
       updatedAt: '2026-06-11T09:00:00.000Z',
     } as const;
@@ -189,6 +190,7 @@ describe('services.assessment', () => {
           assessment: {
             ...assessmentOverview.assessment,
             owaspTaxonomyVersion: '2099',
+            cweCatalogVersion: '4.20',
           },
         },
       });

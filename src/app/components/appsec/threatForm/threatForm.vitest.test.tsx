@@ -72,6 +72,7 @@ describe('threatForm', () => {
 
     const initialValue: ThreatFormValue = {
       title: 'Missing Server-Side Authorization',
+      cweIds: [],
       owaspCategoryCode: owaspCategoryValue('A01'),
       customCategory: '',
       strideCategory: 'elevation-of-privilege',
@@ -150,6 +151,32 @@ describe('threatForm', () => {
           changeEvents.at(-1)?.owaspCategoryCode,
           owaspCategoryValue('A05'),
           'Expected the selected category code to be emitted',
+        );
+
+        const cweSearch = window.document.querySelector(
+          'input[role="combobox"]',
+        ) as HTMLInputElement | null;
+        assert.ok(cweSearch, 'Expected the CWE search input');
+
+        await act(async () => {
+          fireEvent.change(cweSearch!, { target: { value: 'CWE-79' } });
+          await renderTick();
+        });
+
+        const cweOption = window.document.querySelector(
+          '[role="option"]',
+        ) as HTMLButtonElement | null;
+        assert.ok(cweOption, 'Expected a matching CWE option');
+
+        await act(async () => {
+          fireEvent.click(cweOption!);
+          await renderTick();
+        });
+
+        assert.deepEqual(
+          changeEvents.at(-1)?.cweIds,
+          ['CWE-79'],
+          'Expected ordered CWE IDs to be emitted',
         );
 
         await act(async () => {

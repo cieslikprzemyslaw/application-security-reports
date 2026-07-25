@@ -121,6 +121,30 @@ const reportThreatPositionMigrationSql = readFileSync(
   reportThreatPositionMigrationPath,
   'utf8',
 );
+const cweCatalogMigrationSql = readFileSync(
+  path.resolve(
+    buildDir,
+    '..',
+    '..',
+    'prisma',
+    'migrations',
+    '20260725000100_add_cwe_catalog_version_to_assessment',
+    'migration.sql',
+  ),
+  'utf8',
+);
+const threatCweMigrationSql = readFileSync(
+  path.resolve(
+    buildDir,
+    '..',
+    '..',
+    'prisma',
+    'migrations',
+    '20260725000200_add_threat_cwe_mappings',
+    'migration.sql',
+  ),
+  'utf8',
+);
 const adapterUrl = databaseUrl.startsWith('file:')
   ? `file:${databasePath}`
   : databasePath;
@@ -142,6 +166,8 @@ const Database = require('better-sqlite3') as new (databasePath: string) => {
     bootstrapDb.exec(evidenceMigrationSql);
     bootstrapDb.exec(companyArchivedAtMigrationSql);
     bootstrapDb.exec(reportThreatPositionMigrationSql);
+    bootstrapDb.exec(cweCatalogMigrationSql);
+    bootstrapDb.exec(threatCweMigrationSql);
   } finally {
     bootstrapDb.close();
   }

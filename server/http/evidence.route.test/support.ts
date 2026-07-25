@@ -69,6 +69,7 @@ export const defaultAssessment: Assessment = {
   assessmentType: 'Web App',
   overallRisk: 'high',
   owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+  cweCatalogVersion: '4.20',
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-11T09:00:00.000Z',
 };
@@ -80,6 +81,8 @@ export const otherAssessment: Assessment = {
 };
 
 export const defaultThreat: Threat = {
+  cweCatalogVersion: '4.20',
+  cweMappings: [],
   id: 'thr_00000000-0000-0000-0000-000000000001',
   assessmentId: defaultAssessment.id,
   title: 'Missing Server-Side Authorization',

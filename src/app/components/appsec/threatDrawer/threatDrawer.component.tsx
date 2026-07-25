@@ -90,6 +90,27 @@ const ThreatDrawer = ({
             </section>
 
             <section className="threat-drawer-section">
+              <h3 className="threat-drawer-section-title">CWE mappings</h3>
+
+              {(threat.cweMappings?.length ?? 0) > 0 ? (
+                <ol className="threat-drawer-cwe-list">
+                  {threat.cweMappings?.map(mapping => (
+                    <li key={mapping.id}>
+                      <strong>
+                        {mapping.primary ? 'Primary' : 'Additional'}
+                      </strong>
+                      {': '}
+                      {mapping.id} - {mapping.name}
+                      {mapping.deprecated ? ' (Deprecated)' : ''}
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="threat-drawer-copy">No CWE mapping</p>
+              )}
+            </section>
+
+            <section className="threat-drawer-section">
               <h3 className="threat-drawer-section-title">
                 Reproduction steps
               </h3>

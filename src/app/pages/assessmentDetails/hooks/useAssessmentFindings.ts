@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 
-import { OWASP_TOP_10_CURRENT_VERSION } from '~/domain';
-import type { OwaspTop10Version, Threat } from '~/domain';
+import {
+  CWE_CATALOG_CURRENT_VERSION,
+  OWASP_TOP_10_CURRENT_VERSION,
+} from '~/domain';
+import type { CweCatalogVersion, OwaspTop10Version, Threat } from '~/domain';
 import { threatService } from '~/services';
 import { ApiError } from '~/services/apiClient';
 
@@ -73,18 +76,23 @@ export const useAssessmentFindings = ({
   assessmentId,
   assessmentStatus,
   assessmentOwaspTaxonomyVersion = OWASP_TOP_10_CURRENT_VERSION,
+  assessmentCweCatalogVersion = CWE_CATALOG_CURRENT_VERSION,
   onMutationSuccess,
 }: {
   assessmentId?: string;
   assessmentStatus?: AssessmentDetailsAssessment['status'];
   assessmentOwaspTaxonomyVersion?: OwaspTop10Version;
+  assessmentCweCatalogVersion?: CweCatalogVersion;
   onMutationSuccess?: (delta: number) => void;
 }): AssessmentFindingsController => {
   const collection = useAssessmentFindingsCollection(assessmentId);
   const [drawerMode, setDrawerMode] = useState<FindingDrawerMode>(null);
   const [selectedFindingId, setSelectedFindingId] = useState<string>();
   const [draftValue, setDraftValue] = useState(
-    createEmptyThreatFormValue(assessmentOwaspTaxonomyVersion),
+    createEmptyThreatFormValue(
+      assessmentOwaspTaxonomyVersion,
+      assessmentCweCatalogVersion,
+    ),
   );
   const [baselineValue, setBaselineValue] = useState(draftValue);
   const [fieldErrors, setFieldErrors] = useState<ThreatFormErrors>({});
@@ -123,7 +131,10 @@ export const useAssessmentFindings = ({
   const resetDrawerState = () => {
     setDrawerMode(null);
     setSelectedFindingId(undefined);
-    const value = createEmptyThreatFormValue(assessmentOwaspTaxonomyVersion);
+    const value = createEmptyThreatFormValue(
+      assessmentOwaspTaxonomyVersion,
+      assessmentCweCatalogVersion,
+    );
 
     setDraftValue(value);
     setBaselineValue(value);
@@ -150,7 +161,10 @@ export const useAssessmentFindings = ({
       return;
     }
 
-    const value = createEmptyThreatFormValue(assessmentOwaspTaxonomyVersion);
+    const value = createEmptyThreatFormValue(
+      assessmentOwaspTaxonomyVersion,
+      assessmentCweCatalogVersion,
+    );
 
     setSelectedFindingId(undefined);
     setDrawerMode('create');
@@ -171,7 +185,11 @@ export const useAssessmentFindings = ({
       return;
     }
 
-    const value = threatToFormValue(finding, assessmentOwaspTaxonomyVersion);
+    const value = threatToFormValue(
+      finding,
+      assessmentOwaspTaxonomyVersion,
+      assessmentCweCatalogVersion,
+    );
 
     setSelectedFindingId(finding.id);
     setDrawerMode('view');
@@ -194,7 +212,11 @@ export const useAssessmentFindings = ({
       return;
     }
 
-    const value = threatToFormValue(finding, assessmentOwaspTaxonomyVersion);
+    const value = threatToFormValue(
+      finding,
+      assessmentOwaspTaxonomyVersion,
+      assessmentCweCatalogVersion,
+    );
 
     setSelectedFindingId(finding.id);
     setDrawerMode('edit');

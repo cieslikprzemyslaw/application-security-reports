@@ -88,6 +88,33 @@ const ThreatTable = ({
           ),
         },
         {
+          id: 'cwe',
+          header: 'Primary CWE',
+          cell: threat => {
+            const mappings = threat.cweMappings ?? [];
+            const primary = mappings[0];
+            const additionalCount = Math.max(0, mappings.length - 1);
+
+            return primary ? (
+              <span
+                className="threat-table-cwe"
+                aria-label={`${primary.id}, Primary CWE${
+                  additionalCount > 0
+                    ? `, plus ${additionalCount} additional mapping${
+                        additionalCount === 1 ? '' : 's'
+                      }`
+                    : ''
+                }`}
+              >
+                <Badge label={primary.id} variant="neutral" size="small" />
+                {additionalCount > 0 && <span>+{additionalCount}</span>}
+              </span>
+            ) : (
+              <span aria-label="No CWE mapping">—</span>
+            );
+          },
+        },
+        {
           id: 'evidence',
           header: 'Evidence count',
           align: 'center',

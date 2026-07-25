@@ -19,6 +19,8 @@ const validThreat = {
   strideCategories: ['spoofing'],
   status: 'open',
   owaspCategoryCode: 'A01:2025',
+  cweCatalogVersion: '4.20',
+  cweMappings: [],
   affectedEndpoint: '/api/orders/{id}',
   createdAt: '2026-06-01T09:00:00.000Z',
   updatedAt: '2026-06-10T16:30:00.000Z',
@@ -73,6 +75,8 @@ describe('Threat runtime schemas', () => {
       createThreatRequestSchema.safeParse({
         ...validCreateRequest,
         strideCategories: [],
+        cweCatalogVersion: '4.20',
+        cweMappings: [],
       }).success,
     ).toBe(false);
     expect(
@@ -100,6 +104,7 @@ describe('Threat runtime schemas', () => {
       createThreatRequestSchema.safeParse({
         ...validCreateRequest,
         owaspTaxonomyVersion: '2021',
+        cweCatalogVersion: '4.20',
       }).success,
     ).toBe(false);
     expect(
