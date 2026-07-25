@@ -35,19 +35,22 @@ export const useAssessmentTemplateApply = ({
     const controller = new AbortController();
     let active = true;
 
-    setIsLoading(true);
-    setLoadError(undefined);
-    setSelectedTemplateId('');
-    setStatusMessage(undefined);
+    const loadTemplates = async () => {
+      setIsLoading(true);
+      setLoadError(undefined);
+      setSelectedTemplateId('');
+      setStatusMessage(undefined);
 
-    void assessmentTemplateService
-      .list(undefined, controller.signal)
-      .then(result => {
+      try {
+        const result = await assessmentTemplateService.list(
+          undefined,
+          controller.signal,
+        );
+
         if (active) {
           setTemplates(result);
         }
-      })
-      .catch(error => {
+      } catch (error) {
         if (
           active &&
           !(error instanceof DOMException && error.name === 'AbortError')
@@ -59,12 +62,14 @@ export const useAssessmentTemplateApply = ({
               : 'Assessment Templates are unavailable.',
           );
         }
-      })
-      .finally(() => {
+      } finally {
         if (active) {
           setIsLoading(false);
         }
-      });
+      }
+    };
+
+    void loadTemplates();
 
     return () => {
       active = false;

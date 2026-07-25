@@ -40,7 +40,8 @@ const archivedTemplate = {
   archivedAt: '2026-07-25T10:00:00.000Z',
 };
 
-const waitForRender = () => new Promise<void>(resolve => setTimeout(resolve, 0));
+const waitForRender = () =>
+  new Promise<void>(resolve => setTimeout(resolve, 0));
 
 const setupDom = () => {
   const dom = createTestDom(
@@ -94,12 +95,13 @@ describe('Assessment Templates management workflow', () => {
       await waitForRender();
     });
 
-    assert.match(container.textContent ?? '', /Active API template/);
-    assert.doesNotMatch(container.textContent ?? '', /Archived template/);
+    const tableText = container.querySelector('tbody')?.textContent ?? '';
+    assert.match(tableText, /Active API template/);
+    assert.doesNotMatch(tableText, /Archived template/);
 
-    const archiveButton = Array.from(
-      container.querySelectorAll('button'),
-    ).find(button => button.textContent?.trim() === 'Archive');
+    const archiveButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent?.trim() === 'Archive',
+    );
     assert.ok(archiveButton, 'Expected the Archive action to render');
 
     await act(async () => {

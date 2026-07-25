@@ -4,7 +4,9 @@ import { RepositoryStateError } from '../errors.js';
 import { createTemporaryDatabase } from '../../test/temporaryDatabase.js';
 import { createAssessmentTemplateRepository } from './assessmentTemplate.repository.js';
 
-const databases: Array<Awaited<ReturnType<typeof createTemporaryDatabase>>> = [];
+const databases: Array<
+  Awaited<ReturnType<typeof createTemporaryDatabase>>
+> = [];
 
 afterEach(async () => {
   await Promise.all(databases.splice(0).map(database => database.cleanup()));
@@ -55,7 +57,9 @@ describe('Assessment Template repository', () => {
     expect(archived.archivedAt).toBeTruthy();
     expect(archivedAgain.archivedAt).toBe(archived.archivedAt);
     expect(await repository.findAll()).toEqual([]);
-    expect((await repository.findAll({ includeArchived: true }))).toHaveLength(1);
+
+    const allTemplates = await repository.findAll({ includeArchived: true });
+    expect(allTemplates).toHaveLength(1);
 
     await expect(
       repository.update(created.id, { name: 'Blocked edit' }),

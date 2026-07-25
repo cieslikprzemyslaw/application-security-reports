@@ -20,6 +20,6 @@ export type RepositoryClient = Pick<
 
 export type RepositoryTransactionClient = Omit<
   RepositoryClient,
-  '$transaction' | 'threatCwe'
+  '$transaction' | 'threatCwe' | 'assessmentTemplate'
 > &
-  Partial<Pick<RepositoryClient, 'threatCwe'>>;
+  Partial<Pick<RepositoryClient, 'threatCwe' | 'assessmentTemplate'>>;

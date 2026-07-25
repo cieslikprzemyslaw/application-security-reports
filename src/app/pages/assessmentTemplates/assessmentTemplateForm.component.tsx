@@ -45,8 +45,7 @@ const AssessmentTemplateForm = () => {
   const navigate = useNavigate();
   const isEdit = Boolean(templateId);
   const [template, setTemplate] = useState<AssessmentTemplate>();
-  const [value, setValue] =
-    useState<CreateAssessmentTemplateInput>(emptyValue);
+  const [value, setValue] = useState<CreateAssessmentTemplateInput>(emptyValue);
   const [baseline, setBaseline] =
     useState<CreateAssessmentTemplateInput>(emptyValue);
   const [isLoading, setIsLoading] = useState(isEdit);
@@ -113,7 +112,9 @@ const AssessmentTemplateForm = () => {
   }, [templateId]);
 
   const isDirty = useMemo(
-    () => JSON.stringify(normalise(value)) !== JSON.stringify(normalise(baseline)),
+    () =>
+      JSON.stringify(normalise(value)) !==
+      JSON.stringify(normalise(baseline)),
     [baseline, value],
   );
 
@@ -200,7 +201,9 @@ const AssessmentTemplateForm = () => {
           },
           { label: isEdit ? 'Edit template' : 'New template' },
         ]}
-        documentTitle={isEdit ? 'Edit Assessment Template' : 'New Assessment Template'}
+        documentTitle={
+          isEdit ? 'Edit Assessment Template' : 'New Assessment Template'
+        }
         subtitle="Store reusable defaults without Company or Assessment-specific data."
         primaryAction={{
           id: 'save-assessment-template',
@@ -215,7 +218,9 @@ const AssessmentTemplateForm = () => {
 
       {isArchived && (
         <Callout variant="warning" title="This template is archived">
-          <p>Restore the template from the management list before editing it.</p>
+          <p>
+            Restore the template from the management list before editing it.
+          </p>
         </Callout>
       )}
 
@@ -264,9 +269,7 @@ const AssessmentTemplateForm = () => {
               label="Description"
               value={value.description ?? ''}
               disabled={isArchived}
-              onChange={event =>
-                updateField('description', event.target.value)
-              }
+              onChange={event => updateField('description', event.target.value)}
             />
           </div>
           <div className="template-form-full">

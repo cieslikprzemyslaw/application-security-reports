@@ -88,27 +88,35 @@ export const areAssessmentFormValuesEqual = (
 export const assessmentFormValueToCreateInput = (
   companyId: string,
   value: AssessmentFormValue,
-): AssessmentCreateInput => ({
-  companyId,
-  title: normalize(value.name),
-  applicationName: normalize(value.applicationName),
-  description: normalize(value.description) || undefined,
-  scope: normalize(value.scope) || undefined,
-  status: 'draft',
-  environment: normalize(value.environment) || undefined,
-  assessmentType: resolveAssessmentType(value) || undefined,
-});
+): AssessmentCreateInput => {
+  const environment = normalize(value.environment);
+
+  return {
+    companyId,
+    title: normalize(value.name),
+    applicationName: normalize(value.applicationName),
+    description: normalize(value.description) || undefined,
+    scope: normalize(value.scope) || undefined,
+    status: 'draft',
+    ...(environment ? { environment } : {}),
+    assessmentType: resolveAssessmentType(value) || undefined,
+  };
+};
 
 export const assessmentFormValueToUpdateInput = (
   value: AssessmentFormValue,
-): AssessmentUpdateInput => ({
-  title: normalize(value.name),
-  applicationName: normalize(value.applicationName),
-  description: normalize(value.description) || undefined,
-  scope: normalize(value.scope) || undefined,
-  environment: normalize(value.environment) || undefined,
-  assessmentType: resolveAssessmentType(value) || undefined,
-});
+): AssessmentUpdateInput => {
+  const environment = normalize(value.environment);
+
+  return {
+    title: normalize(value.name),
+    applicationName: normalize(value.applicationName),
+    description: normalize(value.description) || undefined,
+    scope: normalize(value.scope) || undefined,
+    ...(environment ? { environment } : {}),
+    assessmentType: resolveAssessmentType(value) || undefined,
+  };
+};
 
 export const validateAssessmentFormValue = (
   value: AssessmentFormValue,

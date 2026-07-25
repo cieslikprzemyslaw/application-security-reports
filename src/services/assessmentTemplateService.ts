@@ -25,7 +25,9 @@ const parseTemplateList = (
   value: unknown,
   message: string,
 ): AssessmentTemplate[] => {
-  const result = assessmentTemplateListResponseSchema.safeParse({ data: value });
+  const result = assessmentTemplateListResponseSchema.safeParse({
+    data: value,
+  });
 
   if (!result.success) {
     throw new ApiResponseParseError(message);
@@ -59,7 +61,7 @@ export const createAssessmentTemplateService = (
     const data = await requestData<unknown>(
       request,
       `/api/assessment-templates/${encodeURIComponent(id)}/${command}`,
-      { method: 'POST' },
+      { body: {}, method: 'POST' },
     );
 
     return parseTemplate(

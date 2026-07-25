@@ -40,12 +40,7 @@ const handleRepositoryError = (error: unknown, res: Response): boolean => {
   }
 
   if (error instanceof RepositoryStateError) {
-    sendApiError(
-      res,
-      409,
-      'ASSESSMENT_TEMPLATE_STATE_CONFLICT',
-      error.message,
-    );
+    sendApiError(res, 409, 'ASSESSMENT_TEMPLATE_STATE_CONFLICT', error.message);
     return true;
   }
 

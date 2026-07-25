@@ -34,17 +34,11 @@ import { ReportsRoute, SettingsRoute, ThreatsRoute } from './routerPages';
 
 const AssessmentDetails = lazy(() => import('./pages/assessmentDetails'));
 const ReportDetails = lazy(() => import('./pages/reportDetails'));
-const AssessmentTemplates = lazy(
-  () =>
-    import(
-      './pages/assessmentTemplates/assessmentTemplates.component'
-    ),
+const AssessmentTemplates = lazy(() =>
+  import('./pages/assessmentTemplates/assessmentTemplates.component'),
 );
-const AssessmentTemplateForm = lazy(
-  () =>
-    import(
-      './pages/assessmentTemplates/assessmentTemplateForm.component'
-    ),
+const AssessmentTemplateForm = lazy(() =>
+  import('./pages/assessmentTemplates/assessmentTemplateForm.component'),
 );
 
 interface AssessmentDetailsRouteProps {

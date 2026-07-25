@@ -12,7 +12,10 @@ import {
 } from '../errors.js';
 import type { RepositoryClient } from '../repository.types.js';
 
-type AssessmentTemplateRepositoryDb = Pick<RepositoryClient, 'assessmentTemplate'>;
+type AssessmentTemplateRepositoryDb = Pick<
+  RepositoryClient,
+  'assessmentTemplate'
+>;
 
 const assessmentTemplateSelect = {
   id: true,
@@ -38,7 +41,9 @@ type AssessmentTemplateRow = {
   updatedAt: Date;
 };
 
-const toAssessmentTemplate = (row: AssessmentTemplateRow): AssessmentTemplate => ({
+const toAssessmentTemplate = (
+  row: AssessmentTemplateRow,
+): AssessmentTemplate => ({
   id: row.id,
   name: row.name,
   assessmentType: row.assessmentType,
@@ -51,7 +56,9 @@ const toAssessmentTemplate = (row: AssessmentTemplateRow): AssessmentTemplate =>
 });
 
 export interface AssessmentTemplateRepository {
-  findAll(options?: AssessmentTemplateListOptions): Promise<AssessmentTemplate[]>;
+  findAll(
+    options?: AssessmentTemplateListOptions,
+  ): Promise<AssessmentTemplate[]>;
   findById(id: string): Promise<AssessmentTemplate | null>;
   create(input: CreateAssessmentTemplateInput): Promise<AssessmentTemplate>;
   update(

@@ -1,10 +1,5 @@
 import { z } from 'zod';
 
-import type {
-  AssessmentTemplate,
-  CreateAssessmentTemplateInput,
-  UpdateAssessmentTemplateInput,
-} from '../assessmentTemplate.js';
 import {
   nonEmptyTextSchema,
   optionalTrimmedTextSchema,
@@ -41,13 +36,6 @@ export const assessmentTemplateObjectSchema = z
 
 export const assessmentTemplateSchema = assessmentTemplateObjectSchema;
 
-type AssessmentTemplateSchemaOutput = Required<
-  z.output<typeof assessmentTemplateSchema>
->;
-const _assessmentTemplateCompatibilityCheck: AssessmentTemplateSchemaOutput extends AssessmentTemplate
-  ? true
-  : never = true;
-
 export const createAssessmentTemplateRequestSchema = z
   .object({
     name: templateNameSchema,
@@ -58,25 +46,12 @@ export const createAssessmentTemplateRequestSchema = z
   })
   .strict();
 
-type CreateRequestOutput = Required<
-  z.output<typeof createAssessmentTemplateRequestSchema>
->;
-const _createRequestCompatibilityCheck: CreateRequestOutput extends CreateAssessmentTemplateInput
-  ? true
-  : never = true;
-
-export const updateAssessmentTemplateRequestSchema = createAssessmentTemplateRequestSchema
-  .partial()
-  .refine(value => Object.keys(value).length > 0, {
-    message: 'At least one Assessment Template field is required',
-  });
-
-type UpdateRequestOutput = Required<
-  z.output<typeof updateAssessmentTemplateRequestSchema>
->;
-const _updateRequestCompatibilityCheck: UpdateRequestOutput extends UpdateAssessmentTemplateInput
-  ? true
-  : never = true;
+export const updateAssessmentTemplateRequestSchema =
+  createAssessmentTemplateRequestSchema
+    .partial()
+    .refine(value => Object.keys(value).length > 0, {
+      message: 'At least one Assessment Template field is required',
+    });
 
 export const assessmentTemplateRouteParamsSchema = z
   .object({

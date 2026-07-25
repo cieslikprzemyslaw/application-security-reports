@@ -1,4 +1,8 @@
-import type { AssessmentTemplateId, ISODateString, TimestampedEntity } from './common.js';
+import type {
+  AssessmentTemplateId,
+  ISODateString,
+  TimestampedEntity,
+} from './common.js';
 
 export interface AssessmentTemplate extends TimestampedEntity {
   id: AssessmentTemplateId;
