@@ -133,13 +133,19 @@ export const createAssessmentsRouter = (
         const assessment = await assessmentRepository.findById(id);
 
         if (!assessment) {
-          sendApiError(res, 404, 'ASSESSMENT_NOT_FOUND', 'Assessment not found');
+          sendApiError(
+            res,
+            404,
+            'ASSESSMENT_NOT_FOUND',
+            'Assessment not found',
+          );
           return;
         }
 
         sendAssessmentResponse(res, 200, assessment);
       } catch (error) {
-        if (!handleAssessmentRepositoryError(error, res, 'retrieve')) throw error;
+        if (!handleAssessmentRepositoryError(error, res, 'retrieve'))
+          throw error;
       }
     }),
   );
