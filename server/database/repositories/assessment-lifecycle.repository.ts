@@ -20,7 +20,7 @@ import type {
 } from '../repository.types.js';
 import { appendActivity } from './activity.repository.js';
 import {
-  assessmentSelect,
+  lifecycleAssessmentSelect,
   toAssessment,
   type AssessmentRow,
 } from './assessment.repository.shared.js';
@@ -72,6 +72,9 @@ const restorableStatuses = new Set<AssessmentStatus>([
 
 const toDateOnly = (date: Date): string => date.toISOString().slice(0, 10);
 const toRecordVersion = (updatedAt: Date): number => updatedAt.getTime();
+
+const nextTransitionTime = (updatedAt: Date): Date =>
+  new Date(Math.max(Date.now(), updatedAt.getTime() + 1));
 
 const getTransitionPlan = (
   command: AssessmentLifecycleCommand,
@@ -190,7 +193,7 @@ const runTransition = async (
   const correlationId = context.correlationId ?? randomUUID();
   const current = await db.assessment.findUnique({
     where: { id },
-    select: assessmentSelect,
+    select: lifecycleAssessmentSelect,
   });
 
   if (!current) {
@@ -209,10 +212,11 @@ const runTransition = async (
     throw new RepositoryConflictError('Assessment record version is stale.');
   }
 
+  const transitionTime = nextTransitionTime(current.updatedAt);
   let plan: TransitionPlan;
 
   try {
-    plan = getTransitionPlan(command, current, new Date());
+    plan = getTransitionPlan(command, current, transitionTime);
   } catch (error) {
     await appendFailureEvent(db, command, id, current.companyId, {
       ...context,
@@ -230,7 +234,10 @@ const runTransition = async (
           status: current.status,
           archivedAt: current.archivedAt,
         },
-        data: plan.data,
+        data: {
+          ...plan.data,
+          updatedAt: transitionTime,
+        },
       });
 
       if (result.count !== 1) {
@@ -259,7 +266,7 @@ const runTransition = async (
 
       const updated = await tx.assessment.findUnique({
         where: { id },
-        select: assessmentSelect,
+        select: lifecycleAssessmentSelect,
       });
 
       if (!updated) {
