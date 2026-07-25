@@ -7,10 +7,7 @@ import type {
 const includesQuery = (value: string | undefined, query: string) =>
   value?.toLocaleLowerCase().includes(query) ?? false;
 
-const threatMatches = (
-  node: ReportBuilderHierarchyThreatNode,
-  query: string,
-) =>
+const threatMatches = (node: ReportBuilderHierarchyThreatNode, query: string) =>
   includesQuery(node.threat.title, query) ||
   includesQuery(node.threat.severity, query) ||
   includesQuery(node.threat.affectedEndpoint, query);
