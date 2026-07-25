@@ -38,6 +38,7 @@ export const buildAssessmentWorkspaceOverview = async (
     },
     assessment: {
       ...assessment,
+      recordVersion: new Date(assessment.updatedAt).getTime(),
       findingsCount: threats.length,
       evidenceCount: evidence.length,
       reportVersionCount: reports.reduce(
