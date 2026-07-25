@@ -44,11 +44,10 @@ const ThreatFormSection = ({
             <span>{title}</span>
             <small>{description}</small>
           </span>
-          {hasError && <span className="threat-form-section-error">Check fields</span>}
-          <IconSVG
-            name={isOpen ? 'chevronUp' : 'chevronDown'}
-            size="small"
-          />
+          {hasError && (
+            <span className="threat-form-section-error">Check fields</span>
+          )}
+          <IconSVG name={isOpen ? 'chevronUp' : 'chevronDown'} size="small" />
         </button>
       </h3>
 
