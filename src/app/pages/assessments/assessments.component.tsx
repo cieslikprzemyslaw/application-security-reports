@@ -18,10 +18,10 @@ import {
 } from '~/app/components/common';
 import { routes } from '~/routes';
 
+import AssessmentTemplateApply from './assessmentTemplateApply.component';
 import StyledAssessments from './assessments.styled';
 import type { AssessmentsProps } from './assessments.type';
 import { useAssessmentsController } from './useAssessmentsController';
-import { useAssessmentTemplateApply } from './useAssessmentTemplateApply';
 import {
   assessmentSortOptions,
   assessmentStatusOptions,
@@ -87,12 +87,6 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
     clearFilters,
     setDraftValue,
   } = controller;
-
-  const templateApply = useAssessmentTemplateApply({
-    drawerMode,
-    draftValue,
-    setDraftValue,
-  });
 
   const emptyState = showEmptyWorkspace ? (
     <EmptyState
@@ -313,62 +307,10 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
         size="large"
       >
         {drawerMode === 'create' && (
-          <section aria-labelledby="assessment-template-selector-heading">
-            <h3 id="assessment-template-selector-heading">
-              Start from template
-            </h3>
-            <p>
-              Selecting a template does not change the form until you choose
-              Apply.
-            </p>
-
-            {templateApply.loadError && (
-              <Callout variant="warning" title="Templates are unavailable">
-                <p>
-                  {templateApply.loadError} You can still create the Assessment
-                  manually.
-                </p>
-              </Callout>
-            )}
-
-            <div className="assessment-template-apply">
-              <Select
-                label="Assessment Template"
-                value={templateApply.selectedTemplateId}
-                disabled={templateApply.isLoading}
-                options={[
-                  {
-                    label: templateApply.isLoading
-                      ? 'Loading templates...'
-                      : 'Choose a template',
-                    value: '',
-                  },
-                  ...templateApply.templates.map(template => ({
-                    label: `${template.name} — ${template.environment}`,
-                    value: template.id,
-                  })),
-                ]}
-                onChange={event =>
-                  templateApply.setSelectedTemplateId(event.target.value)
-                }
-              />
-              <Button
-                title="Apply template"
-                variant="secondary"
-                disabled={
-                  templateApply.isLoading ||
-                  templateApply.selectedTemplateId.length === 0
-                }
-                onClick={templateApply.applyTemplate}
-              />
-            </div>
-
-            {templateApply.statusMessage && (
-              <p role="status" aria-live="polite">
-                {templateApply.statusMessage}
-              </p>
-            )}
-          </section>
+          <AssessmentTemplateApply
+            value={draftValue}
+            onChange={setDraftValue}
+          />
         )}
 
         <AssessmentForm
