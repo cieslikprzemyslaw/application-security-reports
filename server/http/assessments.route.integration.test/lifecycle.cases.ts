@@ -46,7 +46,11 @@ const requireRecordVersion = (
   body: Awaited<ReturnType<typeof readBody>>,
 ): number => {
   const recordVersion = body.data?.assessment.recordVersion;
-  assert.equal(typeof recordVersion, 'number');
+
+  if (typeof recordVersion !== 'number') {
+    throw new Error('Expected Assessment response recordVersion.');
+  }
+
   return recordVersion;
 };
 
