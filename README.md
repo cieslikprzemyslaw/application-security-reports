@@ -79,17 +79,16 @@ Route handlers do not access Prisma Client directly.
 The API currently includes:
 
 - Companies CRUD, overview, archive/restore, and company-logo upload/read/delete
-- Assessments CRUD, company-scoped listing, workspace overview, and complete command
+- Assessments CRUD, company-scoped listing, workspace overview, and lifecycle commands
+- Company- and Assessment-scoped Activity history reads
 - Threats CRUD with assessment scoping
 - Evidence CRUD with assessment and threat relationship validation
 - Settings read/update
-- Report view assembly through `GET /api/reports/:id`
+- Report creation, readiness, preview, immutable versions, and report-view reads
 - health endpoint
 - safe API error envelopes and local CORS restrictions
 
-There is no public Activity API route.
-
-The report API currently assembles a report view and snapshot for reading. The schema and repository support immutable `ReportVersion` snapshots, but public report-version creation/list endpoints are not implemented yet.
+Activity history is append-only in the repository layer. Public reads are limited to Company and Assessment scopes; the API does not expose a global Activity endpoint.
 
 ## Frontend scope
 
@@ -102,9 +101,11 @@ Company workspace
     → Threats
     → Evidence
     → Reports
+    → History
+  → Activity
 ```
 
-Company and assessment workflows use the frontend service layer and API. Some global presentation screens still use local fixture data, including the global Threats view, Activity feed, and parts of report preview navigation. See [Frontend architecture](docs/public/frontend.md).
+Company and assessment workflows use the frontend service layer and API. Company Activity and Assessment History load scoped Activity records from the API. Some global presentation screens still use local fixture data, including the global Threats view and parts of report preview navigation. See [Frontend architecture](docs/public/frontend.md).
 
 ## Local storage boundaries
 

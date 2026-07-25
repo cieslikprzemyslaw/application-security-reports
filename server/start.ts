@@ -60,6 +60,7 @@ export const startApiServer = async (
   const app =
     options.app ??
     createApiApp(config, {
+      activityRepository: options.activityRepository,
       assessmentRepository: options.assessmentRepository,
       assessmentTemplateRepository: options.assessmentTemplateRepository,
       companyRepository: options.companyRepository,
@@ -72,7 +73,6 @@ export const startApiServer = async (
       threatRepository: options.threatRepository,
       registerRoutes: options.registerRoutes,
     });
-
   await prismaClient.$connect();
 
   try {

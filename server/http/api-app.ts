@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { type Express, type RequestHandler } from 'express';
 import type { Router } from 'express';
 
+import type { ActivityRepository } from '../database/repositories/activity.repository.js';
 import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
 import type { AssessmentTemplateRepository } from '../database/repositories/assessmentTemplate.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
@@ -19,6 +20,7 @@ import { createEvidenceStaticRouter } from './evidence-static.js';
 import { apiErrorHandler, apiNotFoundHandler } from './error-handler.js';
 
 export interface ApiAppOptions {
+  activityRepository?: ActivityRepository;
   assessmentRepository?: AssessmentRepository;
   assessmentTemplateRepository?: AssessmentTemplateRepository;
   companyRepository?: CompanyRepository;
