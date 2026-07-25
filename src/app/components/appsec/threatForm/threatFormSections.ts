@@ -11,6 +11,18 @@ export const securityFields: Array<keyof ThreatFormValue> = [
 
 export const additionalFields: Array<keyof ThreatFormValue> = ['references'];
 
+export const orderedThreatFields: Array<keyof ThreatFormValue> = [
+  'title',
+  'owaspCategoryCode',
+  'customCategory',
+  'cweIds',
+  'severity',
+  'status',
+  'affectedEndpoint',
+  ...securityFields,
+  ...additionalFields,
+];
+
 export const hasAnyThreatFieldValue = (
   value: ThreatFormValue,
   fields: Array<keyof ThreatFormValue>,
