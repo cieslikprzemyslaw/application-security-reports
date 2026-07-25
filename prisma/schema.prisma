@@ -109,6 +109,21 @@ model Assessment {
   @@index([archivedAt])
 }
 
+model AssessmentTemplate {
+  id             String    @id
+  name           String
+  assessmentType String
+  environment    String
+  description    String?
+  scope          String?
+  archivedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([archivedAt])
+  @@index([updatedAt])
+}
+
 model Threat {
   id                String   @id
   assessmentId      String

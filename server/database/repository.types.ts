@@ -4,6 +4,7 @@ export type RepositoryClient = Pick<
   PrismaClient,
   | 'company'
   | 'assessment'
+  | 'assessmentTemplate'
   | 'threat'
   | 'threatCwe'
   | 'evidence'

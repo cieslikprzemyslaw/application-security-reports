@@ -7,6 +7,7 @@ import { randomUUID } from 'node:crypto';
 const ENTITY_PREFIXES = {
   company: 'cmp_',
   assessment: 'asm_',
+  assessmentTemplate: 'tpl_',
   threat: 'thr_',
   evidence: 'evd_',
   evidenceExchange: 'evx_',
