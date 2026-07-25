@@ -28,11 +28,8 @@ const Select = ({
 }: SelectProps) => {
   const generatedId = useId();
   const selectId = id ?? generatedId;
-
   const descriptionId = description ? `${selectId}-description` : undefined;
-
   const errorId = error ? `${selectId}-error` : undefined;
-
   const describedBy =
     [descriptionId, errorId].filter(Boolean).join(' ') || undefined;
 
@@ -68,6 +65,7 @@ const Select = ({
           required={required}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy}
+          aria-errormessage={errorId}
           {...rest}
         >
           {placeholder && <option value="">{placeholder}</option>}
@@ -89,7 +87,7 @@ const Select = ({
       </div>
 
       {error && (
-        <p className="select-error" id={errorId}>
+        <p className="select-error" id={errorId} role="alert">
           {error}
         </p>
       )}
