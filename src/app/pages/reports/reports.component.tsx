@@ -11,11 +11,13 @@ import {
 import {
   createDefaultReportBuilderState,
   restoreReportBuilderRouteState,
+  updateReportBuilderBranding,
   updateReportBuilderConfiguration,
   updateReportBuilderSelection,
 } from './reportBuilderState';
 import { useReportActionsController } from './reportActions.controller';
 import { useReportBootstrapController } from './reportBootstrap.controller';
+import ReportBuilderDataView from './reportBuilderDataView.component';
 import ReportBuilderPreview from './reportBuilderPreview.component';
 import { useReportDraftSaveController } from './reportDraftSave.controller';
 import { useReportFinalSaveController } from './reportFinalSave.controller';
@@ -23,7 +25,6 @@ import { useReportPreviewController } from './reportPreview.controller';
 import { useReportReadinessController } from './reportReadiness.controller';
 import ReportReadinessPanel from './reportReadinessPanel.component';
 import { useReportReadinessTargetNavigation } from './reportReadinessTargetNavigation';
-import ReportBuilderTree from './reportBuilderTree.component';
 import ReportsShell, { fallbackReportCover } from './reportsShell.component';
 
 import type { ReportBuilderSelection, ReportBuilderState } from '~/domain';
@@ -95,12 +96,10 @@ const ReportBuilderReports = ({
     },
     [onStateChange],
   );
-
   const bootstrapController = useReportBootstrapController({
     builderState,
     onBuilderStateChange: handleBuilderStateChange,
   });
-
   const bootstrapAssessment = useMemo(() => {
     const assessment = previewController.snapshot?.assessment;
 
@@ -112,7 +111,6 @@ const ReportBuilderReports = ({
         }
       : undefined;
   }, [previewController.snapshot]);
-
   const draftSaveController = useReportDraftSaveController({
     builderState,
     assessment: bootstrapAssessment,
@@ -185,29 +183,36 @@ const ReportBuilderReports = ({
         selectedEvidenceIds: exactSelection.selectedEvidenceIds,
         selectedEvidenceSelections: exactSelection.selectedEvidenceSelections,
       });
-
       builderStateRef.current = nextState;
-
       return nextState;
     });
   };
 
-  const handleIncludeEvidenceChange = (includeEvidence: boolean) => {
+  const updateBuilderState = (
+    update: (current: ReportBuilderState) => ReportBuilderState,
+  ) => {
     clearSelectedVersions();
     setBuilderState(current => {
-      const nextState = updateReportBuilderConfiguration(current, {
-        includeEvidence,
-      });
-
+      const nextState = update(current);
       builderStateRef.current = nextState;
-
       return nextState;
     });
   };
+  const handleConfigurationChange = (
+    patch: Parameters<typeof updateReportBuilderConfiguration>[1],
+  ) =>
+    updateBuilderState(current =>
+      updateReportBuilderConfiguration(current, patch),
+    );
+  const handleBrandingModeChange = (
+    brandingMode: Parameters<typeof updateReportBuilderBranding>[1]['brandingMode'],
+  ) =>
+    updateBuilderState(current =>
+      updateReportBuilderBranding(current, { brandingMode }),
+    );
 
   const selectedVersion =
     finalSaveController.selectedVersion ?? draftSaveController.selectedVersion;
-
   const selectedVersionId = selectedVersion?.id;
 
   useEffect(() => {
@@ -224,7 +229,6 @@ const ReportBuilderReports = ({
   const displayedErrorMessage = selectedVersion
     ? undefined
     : previewController.errorMessage;
-
   const previewCover = displayedSnapshot
     ? {
         ...cover,
@@ -234,7 +238,6 @@ const ReportBuilderReports = ({
         reportId: displayedSnapshot.assessment.id,
       }
     : cover;
-
   const selectedAssessmentId = builderState.selection.selectedAssessmentId;
   const hasCurrentAssessmentPreview =
     previewController.snapshot?.assessment.id === selectedAssessmentId;
@@ -259,9 +262,8 @@ const ReportBuilderReports = ({
     retryPreview: previewController.retry,
     onViewChange,
   });
-
   const assessmentCode = selectedVersion
-    ? `${selectedVersion.reportId} Â· v${formatReportVersionNumber(
+    ? `${selectedVersion.reportId} · v${formatReportVersionNumber(
         selectedVersion.version,
       )}`
     : previewCover.reportId;
@@ -311,20 +313,16 @@ const ReportBuilderReports = ({
           />
         }
         dataView={
-          <ReportBuilderTree
+          <ReportBuilderDataView
+            builderState={builderState}
+            selectionState={selectionState}
             companyId={companyId}
             companyName={companyName}
-            includeEvidence={builderState.configuration.includeEvidence}
-            selection={builderState.selection}
-            selectionState={selectionState}
-            lockedAssessmentId={
-              builderState.reportId
-                ? builderState.selection.selectedAssessmentId
-                : undefined
-            }
+            readinessStatus={readinessController.status}
             focusTarget={readinessTargetNavigation.focusTarget}
             onSelectionChange={handleSelectionChange}
-            onIncludeEvidenceChange={handleIncludeEvidenceChange}
+            onConfigurationChange={handleConfigurationChange}
+            onBrandingModeChange={handleBrandingModeChange}
           />
         }
       />
