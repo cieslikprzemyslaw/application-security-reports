@@ -166,8 +166,8 @@ const ReportBuilderWorkspace = ({
           <p className="report-builder-progress-eyebrow">Readiness</p>
           <h2 id="report-builder-readiness-heading">Validation status</h2>
           <p>
-            {readinessLabel(readinessStatus)}. The backend readiness result above
-            remains authoritative for save and finalisation actions.
+            {readinessLabel(readinessStatus)}. The backend readiness result
+            above remains authoritative for save and finalisation actions.
           </p>
         </div>
       </section>
