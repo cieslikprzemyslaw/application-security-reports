@@ -1,4 +1,6 @@
 import type { CweCatalogVersion, CweStatus } from './cwe.js';
+import type { OwaspTop10Version } from './owaspTop10.js';
+import type { ThreatReviewAction } from './threatReview.js';
 import type {
   AssessmentId,
   Severity,
@@ -54,3 +56,9 @@ export type CreateThreatInput = Omit<
 export type UpdateThreatInput = Partial<
   Omit<CreateThreatInput, 'assessmentId'>
 >;
+
+export interface ThreatResponse extends Threat {
+  assessmentOwaspTaxonomyVersion: OwaspTop10Version;
+  recordVersion: number;
+  reviewActions: ThreatReviewAction[];
+}

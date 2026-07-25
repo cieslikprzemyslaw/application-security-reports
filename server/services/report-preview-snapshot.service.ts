@@ -12,6 +12,10 @@ import type {
   EvidenceHttpExchange,
 } from '../../src/domain/evidence.js';
 import type { Threat } from '../../src/domain/threat.js';
+import {
+  getOwaspTop10CategoryByValue,
+  type OwaspTop10Version,
+} from '../../src/domain/owaspTop10.js';
 import { computeReportPreviewRiskSummary } from './report-preview-risk-summary.service.js';
 import type { ResolvedReportPreviewRecords } from './report-preview-selection.service.js';
 
@@ -82,7 +86,28 @@ const toReportPreviewAssessment = (
   cweCatalogVersion: assessment.cweCatalogVersion,
 });
 
-const toReportPreviewThreat = (threat: Threat): ReportPreviewThreat => ({
+const resolveOwaspCategoryLabel = (
+  threat: Threat,
+  assessmentVersion: OwaspTop10Version,
+): string | undefined => {
+  if (threat.owaspCategoryCode === 'custom') {
+    return toOptionalPreviewText(threat.customCategory);
+  }
+
+  if (!threat.owaspCategoryCode) {
+    return undefined;
+  }
+
+  return getOwaspTop10CategoryByValue(
+    threat.owaspCategoryCode,
+    assessmentVersion,
+  )?.label;
+};
+
+const toReportPreviewThreat = (
+  threat: Threat,
+  assessmentVersion: OwaspTop10Version,
+): ReportPreviewThreat => ({
   id: threat.id,
   assessmentId: threat.assessmentId,
   title: threat.title,
@@ -96,6 +121,7 @@ const toReportPreviewThreat = (threat: Threat): ReportPreviewThreat => ({
     replacementIds: [...mapping.replacementIds],
   })),
   owaspCategoryCode: toOptionalPreviewText(threat.owaspCategoryCode),
+  owaspCategoryLabel: resolveOwaspCategoryLabel(threat, assessmentVersion),
   customCategory: toOptionalPreviewText(threat.customCategory),
   affectedAsset: toOptionalPreviewText(threat.affectedAsset),
   impact: toOptionalPreviewText(threat.impact),
@@ -239,7 +265,9 @@ export const buildReportPreviewSnapshot = ({
       includeEvidence: request.configuration.includeEvidence,
     },
     branding: copyReportPreviewBranding(branding, request.brandingMode),
-    selectedThreats: records.threats.map(toReportPreviewThreat),
+    selectedThreats: records.threats.map(threat =>
+      toReportPreviewThreat(threat, records.assessment.owaspTaxonomyVersion),
+    ),
     selectedEvidence: records.evidence.map(toReportPreviewEvidence),
     riskSummary: computeReportPreviewRiskSummary(records),
     warnings: [...warnings],

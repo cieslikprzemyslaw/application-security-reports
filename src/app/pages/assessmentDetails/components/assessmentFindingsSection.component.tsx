@@ -7,7 +7,7 @@ import EmptyState from '~/app/components/ui/emptyState';
 import ThreatDrawer from '~/app/components/appsec/threatDrawer';
 import ThreatForm from '~/app/components/appsec/threatForm';
 import ThreatTable from '~/app/components/appsec/threatTable';
-import { PageActionGroup } from '~/app/components/common';
+import { DirtyFormGuard, PageActionGroup } from '~/app/components/common';
 import IconSVG from '~/app/components/ui/iconSVG';
 import { CWE_CATALOG_CURRENT_VERSION } from '~/domain';
 
@@ -36,6 +36,8 @@ interface AssessmentFindingsSectionProps extends Pick<
   | 'isSubmitting'
   | 'isDeleting'
   | 'deleteError'
+  | 'pendingReviewAction'
+  | 'reviewError'
   | 'canEditFindings'
   | 'reloadFindings'
   | 'openCreateFinding'
@@ -45,6 +47,8 @@ interface AssessmentFindingsSectionProps extends Pick<
   | 'handleFindingChange'
   | 'handleFindingSave'
   | 'handleFindingDelete'
+  | 'handleReviewAction'
+  | 'dirtyFormGuard'
 > {
   assessment: AssessmentDetailsAssessment;
   initialEditTarget?: AssessmentFindingsInitialEditTarget;
@@ -66,6 +70,8 @@ const AssessmentFindingsSection = ({
   isSubmitting,
   isDeleting,
   deleteError,
+  pendingReviewAction,
+  reviewError,
   canEditFindings,
   reloadFindings,
   openCreateFinding,
@@ -75,6 +81,8 @@ const AssessmentFindingsSection = ({
   handleFindingChange,
   handleFindingSave,
   handleFindingDelete,
+  handleReviewAction,
+  dirtyFormGuard,
   initialEditTarget,
   onInitialEditTargetHandled,
 }: AssessmentFindingsSectionProps) => {
@@ -85,7 +93,7 @@ const AssessmentFindingsSection = ({
   const [readinessFocusField] = useState(initialEditTarget?.focusField);
 
   useEffect(() => {
-    if (!initialEditTarget || isLoading) {
+    if (!initialEditTarget || isLoading || !hasLoadedFindings) {
       return undefined;
     }
 
@@ -95,17 +103,22 @@ const AssessmentFindingsSection = ({
       return undefined;
     }
 
-    handledTargetRef.current = targetKey;
     const targetThreat = threats.find(
       threat => threat.id === initialEditTarget.threatId,
     );
+
+    if (!targetThreat) {
+      handledTargetRef.current = targetKey;
+      onInitialEditTargetHandled?.();
+      return undefined;
+    }
+
+    handledTargetRef.current = targetKey;
     const frameId = window.requestAnimationFrame(() => {
-      if (targetThreat) {
-        if (canEditFindings) {
-          openEditFinding(targetThreat);
-        } else {
-          openFindingDetails(targetThreat);
-        }
+      if (canEditFindings) {
+        openEditFinding(targetThreat);
+      } else {
+        openFindingDetails(targetThreat);
       }
 
       onInitialEditTargetHandled?.();
@@ -116,6 +129,7 @@ const AssessmentFindingsSection = ({
     };
   }, [
     canEditFindings,
+    hasLoadedFindings,
     initialEditTarget,
     isLoading,
     onInitialEditTargetHandled,
@@ -277,7 +291,39 @@ const AssessmentFindingsSection = ({
             : undefined
         }
         footer={
-          deleteError ? (
+          drawerMode === 'view' && selectedFinding ? (
+            <div>
+              {reviewError && (
+                <Callout variant="error" title="Unable to update review state">
+                  <p>{reviewError}</p>
+                </Callout>
+              )}
+              {deleteError && (
+                <Callout variant="error" title="Unable to delete threat">
+                  <p>{deleteError}</p>
+                </Callout>
+              )}
+              {canEditFindings &&
+                selectedFinding.reviewActions?.map(action => (
+                  <div key={action.command}>
+                    <Button
+                      title={action.label}
+                      variant={
+                        action.command === 'request-changes'
+                          ? 'secondary'
+                          : 'primary'
+                      }
+                      disabled={!action.allowed || Boolean(pendingReviewAction)}
+                      isLoading={pendingReviewAction === action.command}
+                      onClick={() => {
+                        void handleReviewAction(action.command);
+                      }}
+                    />
+                    {!action.allowed && action.reason && <p>{action.reason}</p>}
+                  </div>
+                ))}
+            </div>
+          ) : deleteError ? (
             <Callout variant="error" title="Unable to delete threat">
               <p>{deleteError}</p>
             </Callout>
@@ -298,6 +344,11 @@ const AssessmentFindingsSection = ({
             : undefined
         }
         children={drawerContent}
+      />
+      <DirtyFormGuard
+        isBlocked={dirtyFormGuard.isBlocked}
+        onCancel={dirtyFormGuard.cancel}
+        onProceed={dirtyFormGuard.proceed}
       />
     </>
   );

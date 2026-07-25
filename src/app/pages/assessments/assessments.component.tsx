@@ -12,6 +12,7 @@ import Pagination from '~/app/components/ui/pagination';
 import SearchInput from '~/app/components/ui/searchInput';
 import Select from '~/app/components/ui/select';
 import {
+  DirtyFormGuard,
   FilterToolbar,
   PageHeader,
   TableFooter,
@@ -86,6 +87,7 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
     handlePageChange,
     clearFilters,
     setDraftValue,
+    dirtyFormGuard,
   } = controller;
 
   const emptyState = showEmptyWorkspace ? (
@@ -327,6 +329,11 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
           onCancel={requestCloseDrawer}
         />
       </Drawer>
+      <DirtyFormGuard
+        isBlocked={dirtyFormGuard.isBlocked}
+        onCancel={dirtyFormGuard.cancel}
+        onProceed={dirtyFormGuard.proceed}
+      />
     </StyledAssessments>
   );
 };

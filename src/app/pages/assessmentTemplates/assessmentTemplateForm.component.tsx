@@ -1,12 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  unstable_usePrompt,
-  useBeforeUnload,
-  useNavigate,
-  useParams,
-} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
-import { PageHeader } from '~/app/components/common';
+import { DirtyFormGuard, PageHeader } from '~/app/components/common';
+import { useDirtyFormGuard } from '~/app/hooks/useDirtyFormGuard';
 import {
   EntityNotFoundView,
   RouteLoadingView,
@@ -117,17 +113,7 @@ const AssessmentTemplateForm = () => {
     [baseline, value],
   );
 
-  useBeforeUnload(event => {
-    if (isDirty && !isSaving) {
-      event.preventDefault();
-      event.returnValue = '';
-    }
-  });
-
-  unstable_usePrompt({
-    when: isDirty && !isSaving,
-    message: 'Discard unsaved Assessment Template changes?',
-  });
+  const dirtyFormGuard = useDirtyFormGuard(isDirty && !isSaving);
 
   if (isLoading) {
     return <RouteLoadingView />;
@@ -297,6 +283,11 @@ const AssessmentTemplateForm = () => {
           />
         </div>
       </form>
+      <DirtyFormGuard
+        isBlocked={dirtyFormGuard.isBlocked}
+        onCancel={dirtyFormGuard.cancel}
+        onProceed={dirtyFormGuard.proceed}
+      />
     </StyledAssessmentTemplates>
   );
 };

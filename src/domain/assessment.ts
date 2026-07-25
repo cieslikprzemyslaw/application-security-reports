@@ -59,3 +59,19 @@ export type AssessmentLifecycleCommand =
   | 'reopen'
   | 'archive'
   | 'restore';
+
+export interface AssessmentDeletionImpact {
+  assessmentId: AssessmentId;
+  recordVersion: number;
+  threatCount: number;
+  evidenceCount: number;
+  evidenceAttachmentCount: number;
+  reportCount: number;
+  reportVersionCount: number;
+  canDelete: boolean;
+  warnings: string[];
+}
+
+export interface AssessmentPermanentDeleteResult {
+  cleanupWarnings: string[];
+}

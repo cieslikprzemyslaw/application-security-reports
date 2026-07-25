@@ -1,4 +1,4 @@
-import type { Threat } from '~/domain';
+import type { Threat, ThreatResponse, ThreatReviewCommand } from '~/domain';
 import { threatResponseSchema } from '~/domain/schemas';
 
 import { ApiResponseParseError, apiRequest } from './apiClient.js';
@@ -15,7 +15,7 @@ export type ThreatUpdateInput = Partial<
   Omit<ThreatCreateInput, 'assessmentId'>
 >;
 
-const parseThreat = (value: unknown): Threat => {
+const parseThreat = (value: unknown): ThreatResponse => {
   const result = threatResponseSchema.safeParse(value);
 
   if (!result.success) {
@@ -25,7 +25,7 @@ const parseThreat = (value: unknown): Threat => {
   return result.data;
 };
 
-const parseThreatList = (value: unknown): Threat[] => {
+const parseThreatList = (value: unknown): ThreatResponse[] => {
   if (!Array.isArray(value)) {
     throw new ApiResponseParseError(
       'Unable to validate the Threat list response.',
@@ -39,10 +39,15 @@ export interface ThreatService {
   listByAssessment(
     assessmentId: string,
     signal?: AbortSignal,
-  ): Promise<Threat[]>;
-  getById(threatId: string, signal?: AbortSignal): Promise<Threat>;
-  create(input: ThreatCreateInput): Promise<Threat>;
-  update(threatId: string, input: ThreatUpdateInput): Promise<Threat>;
+  ): Promise<ThreatResponse[]>;
+  getById(threatId: string, signal?: AbortSignal): Promise<ThreatResponse>;
+  create(input: ThreatCreateInput): Promise<ThreatResponse>;
+  update(threatId: string, input: ThreatUpdateInput): Promise<ThreatResponse>;
+  transitionReview(
+    threatId: string,
+    command: ThreatReviewCommand,
+    recordVersion: number,
+  ): Promise<ThreatResponse>;
   remove(threatId: string): Promise<void>;
 }
 
@@ -83,6 +88,16 @@ export const createThreatService = (
       request,
       `/api/threats/${threatId}`,
       { body: input, method: 'PATCH' },
+    );
+
+    return parseThreat(response);
+  },
+
+  async transitionReview(threatId, command, recordVersion) {
+    const response = await requestData<unknown>(
+      request,
+      `/api/threats/${threatId}/commands/${command}`,
+      { body: { recordVersion }, method: 'POST' },
     );
 
     return parseThreat(response);

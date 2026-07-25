@@ -55,6 +55,8 @@ const buildThreat = (overrides = {}) => ({
   cweCatalogVersion: '4.20',
   cweMappings: [],
   status: 'accepted-risk',
+  owaspCategoryCode: 'A01:2025',
+  owaspCategoryLabel: 'Broken Access Control',
   affectedAsset: '/api/v1/orders/{id}',
   impact: 'Unauthorised access to customer order data',
   recommendation: 'Apply object-level authorization on every request.',

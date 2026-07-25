@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 
+import type { AssessmentDeletionImpact } from '~/domain';
 import { assessmentService } from '~/services';
 import { ApiError } from '~/services/apiClient';
 
@@ -71,8 +72,11 @@ export interface PermanentAssessmentDeletionController {
   deleteTarget?: AssessmentDetailsAssessment;
   deleteTargetName: string;
   confirmationValue: string;
+  deletionImpact?: AssessmentDeletionImpact;
   cleanupWarnings: string[];
+  impactError?: string;
   deleteError?: string;
+  isLoadingImpact: boolean;
   isDeleting: boolean;
   isConfirmationValid: boolean;
   requestPermanentDelete: (
@@ -96,23 +100,33 @@ export const usePermanentAssessmentDeletion = ({
     AssessmentDetailsAssessment | undefined
   >();
   const [confirmationValue, setConfirmationValue] = useState('');
+  const [deletionImpact, setDeletionImpact] =
+    useState<AssessmentDeletionImpact>();
   const [cleanupWarnings, setCleanupWarnings] = useState<string[]>([]);
+  const [impactError, setImpactError] = useState<string | undefined>();
   const [deleteError, setDeleteError] = useState<string | undefined>();
+  const [isLoadingImpact, setIsLoadingImpact] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const deleteInvokerRef = useRef<HTMLElement | null>(null);
+  const impactRequestRef = useRef<AbortController | undefined>(undefined);
 
   const deleteTargetName = useMemo(
     () => (deleteTarget ? getAssessmentDeleteName(deleteTarget) : ''),
     [deleteTarget],
   );
   const isConfirmationValid =
-    Boolean(deleteTarget) && confirmationValue === deleteTargetName;
+    Boolean(deleteTarget) &&
+    deletionImpact?.canDelete === true &&
+    confirmationValue === deleteTargetName;
 
   const reset = () => {
     setDeleteTarget(undefined);
     setConfirmationValue('');
+    setDeletionImpact(undefined);
     setCleanupWarnings([]);
+    setImpactError(undefined);
     setDeleteError(undefined);
+    setIsLoadingImpact(false);
   };
 
   const requestPermanentDelete = (
@@ -130,10 +144,39 @@ export const usePermanentAssessmentDeletion = ({
         ? document.activeElement
         : null);
 
+    impactRequestRef.current?.abort();
+    const controller = new AbortController();
+    impactRequestRef.current = controller;
+
     setDeleteTarget(assessment);
     setConfirmationValue('');
+    setDeletionImpact(undefined);
     setCleanupWarnings([]);
+    setImpactError(undefined);
     setDeleteError(undefined);
+    setIsLoadingImpact(true);
+
+    void assessmentService
+      .getDeletionImpact(assessment.id, controller.signal)
+      .then(impact => {
+        if (!controller.signal.aborted) {
+          setDeletionImpact(impact);
+        }
+      })
+      .catch(error => {
+        if (!controller.signal.aborted) {
+          setImpactError(
+            error instanceof Error && error.message.trim().length > 0
+              ? error.message
+              : 'Unable to load deletion impact.',
+          );
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsLoadingImpact(false);
+        }
+      });
   };
 
   const cancelPermanentDelete = () => {
@@ -143,13 +186,20 @@ export const usePermanentAssessmentDeletion = ({
 
     const invoker = deleteInvokerRef.current;
 
+    impactRequestRef.current?.abort();
+    impactRequestRef.current = undefined;
     reset();
     deleteInvokerRef.current = null;
     scheduleFocus(() => invoker);
   };
 
   const confirmPermanentDelete = async () => {
-    if (!deleteTarget || !isConfirmationValid || isDeleting) {
+    if (
+      !deleteTarget ||
+      !deletionImpact ||
+      !isConfirmationValid ||
+      isDeleting
+    ) {
       return;
     }
 
@@ -160,13 +210,17 @@ export const usePermanentAssessmentDeletion = ({
     setDeleteError(undefined);
 
     try {
-      const result = await assessmentService.remove(target.id);
+      const result = await assessmentService.remove(
+        target.id,
+        deletionImpact.recordVersion,
+      );
       const safeCleanupWarnings = normaliseCleanupWarnings(
         result.cleanupWarnings,
       );
 
       setIsDeleting(false);
       reset();
+      impactRequestRef.current = undefined;
       deleteInvokerRef.current = null;
       onDeleted({ assessment: target, cleanupWarnings: safeCleanupWarnings });
     } catch (error) {
@@ -184,8 +238,11 @@ export const usePermanentAssessmentDeletion = ({
     deleteTarget,
     deleteTargetName,
     confirmationValue,
+    deletionImpact,
     cleanupWarnings,
+    impactError,
     deleteError,
+    isLoadingImpact,
     isDeleting,
     isConfirmationValid,
     requestPermanentDelete,

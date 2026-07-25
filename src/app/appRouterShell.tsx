@@ -182,6 +182,7 @@ const RouterShell = () => {
   const [isCompaniesLoading, setIsCompaniesLoading] = useState(true);
   const [hasLoadedCompanies, setHasLoadedCompanies] = useState(false);
   const hasLoadedCompaniesRef = useRef(false);
+  const companiesMutationVersionRef = useRef(0);
   const [companiesLoadError, setCompaniesLoadError] = useState<
     string | undefined
   >();
@@ -200,6 +201,8 @@ const RouterShell = () => {
     const controller = new AbortController();
     let isActive = true;
 
+    const loadVersion = companiesMutationVersionRef.current;
+
     const loadCompanies = async () => {
       setIsCompaniesLoading(true);
       setCompaniesLoadError(undefined);
@@ -207,7 +210,7 @@ const RouterShell = () => {
       try {
         const nextCompanies = await companyService.list(controller.signal);
 
-        if (isActive) {
+        if (isActive && companiesMutationVersionRef.current === loadVersion) {
           setCompanies(nextCompanies);
           hasLoadedCompaniesRef.current = true;
           setHasLoadedCompanies(true);
@@ -220,6 +223,10 @@ const RouterShell = () => {
           return;
         }
 
+        if (companiesMutationVersionRef.current !== loadVersion) {
+          return;
+        }
+
         if (!hasLoadedCompaniesRef.current) {
           setCompanies([]);
         }
@@ -228,7 +235,7 @@ const RouterShell = () => {
           error instanceof Error ? error.message : 'Unable to load companies.',
         );
       } finally {
-        if (isActive) {
+        if (isActive && companiesMutationVersionRef.current === loadVersion) {
           setIsCompaniesLoading(false);
         }
       }
@@ -276,7 +283,10 @@ const RouterShell = () => {
   };
   const handleCompaniesChange = useCallback(
     (nextCompanies: CompanyListItem[]) => {
+      companiesMutationVersionRef.current += 1;
       setCompanies(nextCompanies);
+      setCompaniesLoadError(undefined);
+      setIsCompaniesLoading(false);
       hasLoadedCompaniesRef.current = true;
       setHasLoadedCompanies(true);
     },

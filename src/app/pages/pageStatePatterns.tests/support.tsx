@@ -9,7 +9,11 @@ import {
 } from '~/test/vitestLegacyBridge';
 
 import React from 'react';
-import { MemoryRouter, useLocation } from 'react-router-dom';
+import {
+  createMemoryRouter,
+  RouterProvider,
+  useLocation,
+} from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 
 import type { GlobalThreatRow } from '~/app/components/appsec/globalThreatTable';
@@ -103,14 +107,25 @@ export const renderComponent = async (
 ) => {
   const { container } = setupDom(localStorageEntries);
   const root = createTestingLibraryRoot(container);
+  const router = createMemoryRouter(
+    [
+      {
+        path: '*',
+        element: (
+          <>
+            {element}
+            <LocationProbe />
+          </>
+        ),
+      },
+    ],
+    { initialEntries: [initialEntry] },
+  );
 
   await act(async () => {
     root.render(
       <ThemeProvider theme={defaultTheme}>
-        <MemoryRouter initialEntries={[initialEntry]}>
-          {element}
-          <LocationProbe />
-        </MemoryRouter>
+        <RouterProvider router={router} />
       </ThemeProvider>,
     );
     await renderTick();

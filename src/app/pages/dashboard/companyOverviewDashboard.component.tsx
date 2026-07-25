@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
 import CompanyForm from '~/app/components/appsec/companyForm';
+import { DirtyFormGuard } from '~/app/components/common';
 import { RouteLoadingView } from '~/app/components/routeStateViews';
+import { useDirtyFormGuard } from '~/app/hooks/useDirtyFormGuard';
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import Drawer from '~/app/components/ui/drawer';
@@ -114,26 +116,6 @@ const CompanyOverviewDashboard = ({
     };
   }, [companyId, reloadKey]);
 
-  useEffect(() => {
-    const isDirty =
-      isEditDrawerOpen && !areCompanyFormValuesEqual(draftValue, baselineValue);
-
-    if (!isDirty) {
-      return undefined;
-    }
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [baselineValue, draftValue, isEditDrawerOpen]);
-
   const resetDrawerState = () => {
     setIsEditDrawerOpen(false);
     setDraftValue(createEmptyCompanyFormValue());
@@ -146,29 +128,21 @@ const CompanyOverviewDashboard = ({
   const hasUnsavedChanges =
     isEditDrawerOpen && !areCompanyFormValuesEqual(draftValue, baselineValue);
 
-  const confirmDiscardChanges = () => {
-    if (!hasUnsavedChanges) {
-      return true;
-    }
-
-    return window.confirm('Discard unsaved company changes?');
-  };
+  const dirtyFormGuard = useDirtyFormGuard(hasUnsavedChanges && !isSubmitting);
 
   const openEditDrawer = () => {
     if (!overview) {
       return;
     }
 
-    if (!confirmDiscardChanges()) {
-      return;
-    }
-
-    const value = companyToFormValue(overview.company);
-    setDraftValue(value);
-    setBaselineValue(value);
-    setFieldErrors({});
-    setFormErrorMessage(undefined);
-    setIsEditDrawerOpen(true);
+    dirtyFormGuard.requestDiscard(() => {
+      const value = companyToFormValue(overview.company);
+      setDraftValue(value);
+      setBaselineValue(value);
+      setFieldErrors({});
+      setFormErrorMessage(undefined);
+      setIsEditDrawerOpen(true);
+    });
   };
 
   const requestCloseDrawer = () => {
@@ -176,11 +150,7 @@ const CompanyOverviewDashboard = ({
       return;
     }
 
-    if (!confirmDiscardChanges()) {
-      return;
-    }
-
-    resetDrawerState();
+    dirtyFormGuard.requestDiscard(resetDrawerState);
   };
 
   const handleEditSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -334,6 +304,11 @@ const CompanyOverviewDashboard = ({
           onCancel={requestCloseDrawer}
         />
       </Drawer>
+      <DirtyFormGuard
+        isBlocked={dirtyFormGuard.isBlocked}
+        onCancel={dirtyFormGuard.cancel}
+        onProceed={dirtyFormGuard.proceed}
+      />
     </StyledDashboard>
   );
 };

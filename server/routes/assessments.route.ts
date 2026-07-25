@@ -12,6 +12,7 @@ import type {
 } from '../../src/domain/assessment.js';
 import {
   assessmentListQuerySchema,
+  assessmentPermanentDeleteRequestSchema,
   assessmentRouteParamsSchema,
   createAssessmentRequestSchema,
   updateAssessmentRequestSchema,
@@ -25,7 +26,10 @@ import {
   RepositoryNotFoundError,
   RepositoryStateError,
 } from '../database/errors.js';
-import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
+import {
+  hasAssessmentDeletionOperations,
+  type AssessmentRepository,
+} from '../database/repositories/assessment.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
 
 const sendAssessmentResponse = (
@@ -52,11 +56,31 @@ const handleAssessmentRepositoryError = (
   }
 
   if (error instanceof RepositoryConflictError) {
+    if (operation === 'delete') {
+      sendApiError(
+        res,
+        409,
+        'RESOURCE_MODIFIED',
+        'The Assessment changed before permanent deletion',
+      );
+      return true;
+    }
+
     sendApiError(
       res,
       409,
       'ASSESSMENT_CONFLICT',
       'An Assessment with the same unique value already exists',
+    );
+    return true;
+  }
+
+  if (error instanceof RepositoryStateError && operation === 'delete') {
+    sendApiError(
+      res,
+      409,
+      'ASSESSMENT_DELETE_CONFLICT',
+      'Only archived Assessments can be permanently deleted',
     );
     return true;
   }
@@ -195,15 +219,58 @@ export const createAssessmentsRouter = (
     }),
   );
 
-  router.delete(
-    '/:id',
+  router.get(
+    '/:id/deletion-impact',
     createRequestValidationMiddleware({ params: assessmentRouteParamsSchema }),
     asyncRoute(async (_req, res) => {
       const { id } = res.locals.validatedRequest?.params as { id: string };
 
+      if (!hasAssessmentDeletionOperations(assessmentRepository)) {
+        sendApiError(
+          res,
+          500,
+          'INTERNAL_SERVER_ERROR',
+          'Unexpected server error',
+        );
+        return;
+      }
+
       try {
-        await assessmentRepository.delete(id);
-        res.status(204).send();
+        const impact = await assessmentRepository.getDeletionImpact(id);
+        res.status(200).json({ data: impact });
+      } catch (error) {
+        if (!handleAssessmentRepositoryError(error, res, 'retrieve')) {
+          throw error;
+        }
+      }
+    }),
+  );
+
+  router.delete(
+    '/:id',
+    createRequestValidationMiddleware({
+      params: assessmentRouteParamsSchema,
+      body: assessmentPermanentDeleteRequestSchema,
+    }),
+    asyncRoute(async (_req, res) => {
+      const { id } = res.locals.validatedRequest?.params as { id: string };
+
+      const { recordVersion } = (res.locals.validatedRequest?.body ?? {}) as {
+        recordVersion?: number;
+      };
+
+      try {
+        if (!hasAssessmentDeletionOperations(assessmentRepository)) {
+          await assessmentRepository.delete(id);
+          res.status(204).send();
+          return;
+        }
+
+        const result = await assessmentRepository.deletePermanently(
+          id,
+          recordVersion,
+        );
+        res.status(200).json({ data: result });
       } catch (error) {
         if (!handleAssessmentRepositoryError(error, res, 'delete')) throw error;
       }

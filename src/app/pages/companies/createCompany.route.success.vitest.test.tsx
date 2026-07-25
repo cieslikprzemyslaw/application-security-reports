@@ -128,6 +128,69 @@ describe('Create Company success route', () => {
     api.verifyAllHandlersUsed();
   }, 15_000);
 
+  it('keeps the first created company when the initial empty list resolves late', async () => {
+    const companyId = 'cmp_00000000-0000-0000-0000-000000000050';
+    const createdCompany = buildCompany({
+      id: companyId,
+      name: 'Late List Labs',
+      logoUrl: null,
+    });
+
+    let resolveInitialList:
+      | ((value: { body: { data: never[] } }) => void)
+      | undefined;
+    const initialList = new Promise<{ body: { data: never[] } }>(resolve => {
+      resolveInitialList = resolve;
+    });
+
+    const api = mockApi({
+      'GET /api/companies': () => initialList,
+      'POST /api/companies': {
+        status: 201,
+        body: { data: createdCompany },
+      },
+      [`GET /api/companies/${companyId}/overview`]: {
+        body: {
+          data: {
+            company: createdCompany,
+            assessmentCounts: {
+              total: 0,
+              draft: 0,
+              inProgress: 0,
+              completed: 0,
+            },
+            recentAssessments: [],
+          },
+        },
+      },
+    });
+
+    const { user } = renderRoute('/companies/new');
+
+    await screen.findByRole('heading', { name: 'Create company' });
+    await fillTextbox(user, 'Company name', 'Late List Labs');
+    await clickButton(user, 'Create company');
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe(
+        routes.companyWorkspaceOverview(companyId),
+      );
+    });
+    await screen.findAllByText('Late List Labs');
+
+    resolveInitialList?.({ body: { data: [] } });
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe(
+        routes.companyWorkspaceOverview(companyId),
+      );
+      expect(screen.getAllByText('Late List Labs').length).toBeGreaterThan(0);
+    });
+
+    expect(api.requestCount('POST /api/companies')).toBe(1);
+    api.verifyAllHandlersUsed();
+  });
+
   it('keeps the created company and retries a failed logo upload without creating it again', async () => {
     const companyId = 'cmp_00000000-0000-0000-0000-000000000020';
 

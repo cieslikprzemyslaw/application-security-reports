@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import CompanyForm from '~/app/components/appsec/companyForm';
 import type { CompanyFormValue } from '~/app/components/appsec/companyForm';
 import Button from '~/app/components/ui/button';
-import { PageHeader } from '~/app/components/common';
+import { DirtyFormGuard, PageHeader } from '~/app/components/common';
 import IconSVG from '~/app/components/ui/iconSVG';
 import PageContent from '~/app/layouts/pageContent';
 import { useDirtyFormGuard } from '~/app/hooks/useDirtyFormGuard';
@@ -116,18 +116,6 @@ const CreateCompany = ({
     cancel: cancelNavigation,
   } = useDirtyFormGuard(isDirty && !isSubmitting);
 
-  useEffect(() => {
-    if (!isNavigationBlocked) {
-      return;
-    }
-
-    if (window.confirm('Discard unsaved company changes?')) {
-      proceedNavigation();
-      return;
-    }
-
-    cancelNavigation();
-  }, [cancelNavigation, isNavigationBlocked, proceedNavigation]);
   useEffect(() => {
     if (!completedCompany) {
       return;
@@ -332,6 +320,12 @@ const CreateCompany = ({
         onChange={handleDraftChange}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
+      />
+
+      <DirtyFormGuard
+        isBlocked={isNavigationBlocked}
+        onCancel={cancelNavigation}
+        onProceed={proceedNavigation}
       />
     </PageContent>
   );

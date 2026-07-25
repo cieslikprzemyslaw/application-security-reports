@@ -4,6 +4,7 @@ import type { CreateThreatInput } from '../../../src/domain/threat.js';
 import { OWASP_TOP_10_CURRENT_VERSION } from '../../../src/domain/owaspTop10.js';
 import { ValidationError } from '../../../src/validation/index.js';
 import {
+  RepositoryConflictError,
   RepositoryConstraintError,
   RepositoryNotFoundError,
 } from '../errors.js';
@@ -11,7 +12,10 @@ import {
   createTemporaryDatabase,
   type TemporaryDatabase,
 } from '../../test/temporaryDatabase.js';
-import { createThreatRepository } from './threat.repository.js';
+import {
+  createThreatRepository,
+  hasThreatReviewOperations,
+} from './threat.repository.js';
 
 const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
 const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
@@ -263,5 +267,65 @@ describe('Threat repository with temporary SQLite', () => {
     await expect(
       prisma.threatCwe.count({ where: { threatId: created.id } }),
     ).resolves.toBe(0);
+  });
+
+  it('applies explicit Threat review transitions with stale-write protection', async () => {
+    const repository = createThreatRepository(getDatabase().prisma);
+    const created = await repository.create(
+      buildThreatInput({
+        affectedComponent: 'Orders API',
+        reproductionSteps: 'Request another customer order by ID.',
+        impact: 'Customer records are exposed.',
+        remediation: 'Enforce object ownership on every request.',
+        references: 'OWASP API1:2023',
+      }),
+    );
+
+    expect(hasThreatReviewOperations(repository)).toBe(true);
+
+    if (!hasThreatReviewOperations(repository)) {
+      throw new Error('Expected Threat review operations.');
+    }
+
+    const openVersion = new Date(created.updatedAt).getTime();
+    await repository.transitionReview(created.id, 'submit-review', openVersion);
+
+    const inReview = await repository.findById(created.id);
+    expect(inReview?.status).toBe('in-review');
+
+    await expect(
+      repository.transitionReview(created.id, 'approve', openVersion),
+    ).rejects.toBeInstanceOf(RepositoryConflictError);
+
+    await repository.transitionReview(
+      created.id,
+      'request-changes',
+      new Date(inReview!.updatedAt).getTime(),
+    );
+    const reopenedForChanges = await repository.findById(created.id);
+    expect(reopenedForChanges?.status).toBe('open');
+
+    await repository.transitionReview(
+      created.id,
+      'submit-review',
+      new Date(reopenedForChanges!.updatedAt).getTime(),
+    );
+    const secondReview = await repository.findById(created.id);
+    await repository.transitionReview(
+      created.id,
+      'approve',
+      new Date(secondReview!.updatedAt).getTime(),
+    );
+    const resolved = await repository.findById(created.id);
+    expect(resolved?.status).toBe('resolved');
+
+    await repository.transitionReview(
+      created.id,
+      'reopen',
+      new Date(resolved!.updatedAt).getTime(),
+    );
+    await expect(repository.findById(created.id)).resolves.toEqual(
+      expect.objectContaining({ status: 'open' }),
+    );
   });
 });

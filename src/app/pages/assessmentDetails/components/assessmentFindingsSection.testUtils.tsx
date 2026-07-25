@@ -12,7 +12,7 @@ import { ThemeProvider } from 'styled-components';
 import {
   OWASP_TOP_10_CURRENT_VERSION,
   getOwaspTop10CategoryOption,
-  type Threat,
+  type ThreatResponse,
 } from '~/domain';
 import { defaultTheme } from '~/theme';
 
@@ -71,7 +71,16 @@ export const setupDom = () => {
   };
 };
 
-export const finding: Threat = {
+export const finding: ThreatResponse = {
+  assessmentOwaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
+  recordVersion: Date.parse('2026-06-15T09:30:00.000Z'),
+  reviewActions: [
+    {
+      command: 'submit-review',
+      label: 'Submit for review',
+      allowed: true,
+    },
+  ],
   cweCatalogVersion: '4.20',
   cweMappings: [],
   id: 'thr_1',
@@ -114,7 +123,7 @@ export const assessmentBase: AssessmentDetailsAssessment = {
 export const textContent = (node: ParentNode) => node.textContent ?? '';
 
 interface RenderHarnessOptions {
-  threats?: Threat[];
+  threats?: ThreatResponse[];
   isLoading?: boolean;
   isRefreshing?: boolean;
   hasLoadedFindings?: boolean;
@@ -141,12 +150,13 @@ export const renderHarness = async (
     const [drawerMode, setDrawerMode] = React.useState<
       'view' | 'create' | 'edit' | null
     >(null);
-    const [selectedFinding, setSelectedFinding] = React.useState<Threat>();
+    const [selectedFinding, setSelectedFinding] =
+      React.useState<ThreatResponse>();
     const [draftValue, setDraftValue] = React.useState(
       createEmptyThreatFormValue(assessmentBase.owaspTaxonomyVersion),
     );
 
-    const openFindingDetails = (threat: Threat | ThreatTableRow) => {
+    const openFindingDetails = (threat: ThreatResponse | ThreatTableRow) => {
       const nextFinding =
         'strideCategories' in threat ? threat : (renderedThreats[0] ?? finding);
 
@@ -158,7 +168,7 @@ export const renderHarness = async (
       setDrawerMode('view');
     };
 
-    const openEditFinding = (threat?: Threat | ThreatTableRow) => {
+    const openEditFinding = (threat?: ThreatResponse | ThreatTableRow) => {
       const nextFinding =
         threat && 'strideCategories' in threat
           ? threat
@@ -198,6 +208,8 @@ export const renderHarness = async (
         isSubmitting={false}
         isDeleting={false}
         deleteError={undefined}
+        pendingReviewAction={undefined}
+        reviewError={undefined}
         canEditFindings={assessment.status !== 'archived'}
         reloadFindings={() => events.push('reload')}
         openCreateFinding={openCreateFinding}
@@ -215,6 +227,18 @@ export const renderHarness = async (
           events.push(
             `delete:${threat?.id ?? selectedFinding?.id ?? 'unknown'}`,
           );
+        }}
+        handleReviewAction={async command => {
+          events.push(`review:${command}`);
+        }}
+        dirtyFormGuard={{
+          isBlocked: false,
+          proceed: () => undefined,
+          cancel: () => undefined,
+          requestDiscard: action => {
+            action();
+            return true;
+          },
         }}
       />
     );

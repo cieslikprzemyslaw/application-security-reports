@@ -3,6 +3,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import type { CompanyListItem } from '~/domain';
 import { ApiError } from '~/services/apiClient';
 import { companyService } from '~/services';
+import { useDirtyFormGuard } from '~/app/hooks/useDirtyFormGuard';
 
 import type { CompanyFormValue } from '~/app/components/appsec/companyForm';
 import {
@@ -81,27 +82,6 @@ export const useCompaniesController = ({
   const activeCompanyId = activeCompany?.id;
 
   useEffect(() => {
-    const isDirty =
-      drawerMode !== null &&
-      !areCompanyFormValuesEqual(draftValue, baselineValue);
-
-    if (!isDirty) {
-      return undefined;
-    }
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [baselineValue, draftValue, drawerMode]);
-
-  useEffect(() => {
     const controller = new AbortController();
     let isActive = true;
 
@@ -159,32 +139,24 @@ export const useCompaniesController = ({
     drawerMode !== null &&
     !areCompanyFormValuesEqual(draftValue, baselineValue);
 
-  const confirmDiscardChanges = () => {
-    if (!hasUnsavedChanges) {
-      return true;
-    }
-
-    return window.confirm('Discard unsaved company changes?');
-  };
+  const dirtyFormGuard = useDirtyFormGuard(hasUnsavedChanges && !isSubmitting);
 
   const openEditDrawer = (companyId: string) => {
-    if (!confirmDiscardChanges()) {
-      return;
-    }
+    dirtyFormGuard.requestDiscard(() => {
+      const company = companies.find(item => item.id === companyId);
 
-    const company = companies.find(item => item.id === companyId);
+      if (!company) {
+        return;
+      }
 
-    if (!company) {
-      return;
-    }
-
-    setDrawerMode('edit');
-    setSelectedCompanyId(company.id);
-    const value = companyToFormValue(company);
-    setDraftValue(value);
-    setBaselineValue(value);
-    setFieldErrors({});
-    setFormErrorMessage(undefined);
+      setDrawerMode('edit');
+      setSelectedCompanyId(company.id);
+      const value = companyToFormValue(company);
+      setDraftValue(value);
+      setBaselineValue(value);
+      setFieldErrors({});
+      setFormErrorMessage(undefined);
+    });
   };
 
   const requestCloseDrawer = () => {
@@ -192,11 +164,7 @@ export const useCompaniesController = ({
       return;
     }
 
-    if (!confirmDiscardChanges()) {
-      return;
-    }
-
-    resetDrawerState();
+    dirtyFormGuard.requestDiscard(resetDrawerState);
   };
 
   const handleSave = async (event: FormEvent<HTMLFormElement>) => {
@@ -364,6 +332,7 @@ export const useCompaniesController = ({
     formErrorMessage,
     isSubmitting,
     selectedCompanyLogoUrl,
+    dirtyFormGuard,
     showEmptyWorkspace,
     showNoResults,
     setDraftValue,

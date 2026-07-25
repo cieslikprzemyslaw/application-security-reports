@@ -1,15 +1,13 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { DirtyFormGuard } from '~/app/components/common';
 import {
   RouteErrorView,
   RouteLoadingView,
 } from '~/app/components/routeStateViews';
 import { ApiError } from '~/services/apiClient';
 import { settingsService } from '~/services';
-import {
-  useBeforeUnload,
-  useLocation,
-  unstable_usePrompt,
-} from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useDirtyFormGuard } from '~/app/hooks/useDirtyFormGuard';
 
 import { useThemePreference } from '~/theme';
 
@@ -95,19 +93,7 @@ const SettingsRoute = () => {
     valueToSettingsPatch(value, baselineValue),
   );
 
-  useBeforeUnload(event => {
-    if (!isDirty || isSaving) {
-      return;
-    }
-
-    event.preventDefault();
-    event.returnValue = '';
-  });
-
-  unstable_usePrompt({
-    when: isDirty && !isSaving,
-    message: 'Discard unsaved settings changes?',
-  });
+  const dirtyFormGuard = useDirtyFormGuard(isDirty && !isSaving);
 
   useLayoutEffect(() => {
     const focusFieldName = focusFieldNameRef.current;
@@ -222,17 +208,24 @@ const SettingsRoute = () => {
   };
 
   return (
-    <SettingsView
-      value={value}
-      fieldErrors={fieldErrors}
-      statusMessage={statusMessage}
-      errorMessage={errorMessage}
-      isDirty={isDirty}
-      isSaving={isSaving}
-      previewTheme={previewTheme}
-      onChange={handleChange}
-      onSubmit={handleSubmit}
-    />
+    <>
+      <SettingsView
+        value={value}
+        fieldErrors={fieldErrors}
+        statusMessage={statusMessage}
+        errorMessage={errorMessage}
+        isDirty={isDirty}
+        isSaving={isSaving}
+        previewTheme={previewTheme}
+        onChange={handleChange}
+        onSubmit={handleSubmit}
+      />
+      <DirtyFormGuard
+        isBlocked={dirtyFormGuard.isBlocked}
+        onCancel={dirtyFormGuard.cancel}
+        onProceed={dirtyFormGuard.proceed}
+      />
+    </>
   );
 };
 

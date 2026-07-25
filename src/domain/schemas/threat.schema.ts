@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-import type { Threat } from '../threat.js';
+import type { Threat, ThreatResponse } from '../threat.js';
+import { THREAT_REVIEW_COMMANDS } from '../threatReview.js';
 import {
   getOwaspTop10CategoryByValue,
   type OwaspTop10Version,
@@ -83,8 +84,26 @@ export const threatSchema = threatObjectSchema;
 export const threatResponseSchema = threatObjectSchema
   .extend({
     assessmentOwaspTaxonomyVersion: owaspTop10VersionSchema,
+    recordVersion: nonNegativeIntegerSchema.optional(),
+    reviewActions: z
+      .array(
+        z
+          .object({
+            command: z.enum(THREAT_REVIEW_COMMANDS),
+            label: nonEmptyTextSchema,
+            allowed: z.boolean(),
+            reason: optionalTrimmedTextSchema,
+          })
+          .strict(),
+      )
+      .optional(),
   })
-  .strict();
+  .strict()
+  .transform(value => ({
+    ...value,
+    recordVersion: value.recordVersion ?? new Date(value.updatedAt).getTime(),
+    reviewActions: value.reviewActions ?? [],
+  }));
 
 export const createThreatOwaspCategoryCodeSchema = (
   assessmentVersion: OwaspTop10Version,
@@ -105,3 +124,25 @@ const threatSchemaCompatibilityCheck: ThreatSchemaOutput extends Threat
   : never = true;
 
 export const threatsFileSchema = z.array(threatSchema);
+
+export const threatReviewCommandSchema = z.enum(THREAT_REVIEW_COMMANDS);
+
+export const threatReviewCommandRequestSchema = z
+  .object({
+    recordVersion: nonNegativeIntegerSchema,
+  })
+  .strict();
+
+export const threatReviewCommandRouteParamsSchema = z
+  .object({
+    id: nonEmptyIdSchema,
+    command: threatReviewCommandSchema,
+  })
+  .strict();
+
+type ThreatResponseSchemaOutput = Required<
+  z.output<typeof threatResponseSchema>
+>;
+const threatResponseSchemaCompatibilityCheck: ThreatResponseSchemaOutput extends ThreatResponse
+  ? true
+  : never = true;

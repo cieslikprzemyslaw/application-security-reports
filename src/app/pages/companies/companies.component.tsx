@@ -11,6 +11,7 @@ import IconSVG from '~/app/components/ui/iconSVG';
 import Pagination from '~/app/components/ui/pagination';
 import SearchInput from '~/app/components/ui/searchInput';
 import {
+  DirtyFormGuard,
   FilterToolbar,
   PageHeader,
   PaginationSummary,
@@ -45,6 +46,7 @@ const Companies = ({
     formErrorMessage,
     isSubmitting,
     selectedCompanyLogoUrl,
+    dirtyFormGuard,
     showEmptyWorkspace,
     showNoResults,
     setDraftValue,
@@ -195,6 +197,11 @@ const Companies = ({
           onCancel={requestCloseDrawer}
         />
       </Drawer>
+      <DirtyFormGuard
+        isBlocked={dirtyFormGuard.isBlocked}
+        onCancel={dirtyFormGuard.cancel}
+        onProceed={dirtyFormGuard.proceed}
+      />
     </StyledCompanies>
   );
 };

@@ -27,9 +27,22 @@ import {
 
     assert.equal(response.status, 200);
     assert.deepEqual(
-      await readJson<{ data: Array<typeof defaultThreat> }>(response),
+      await readJson<{
+        data: Array<
+          typeof defaultThreat & {
+            recordVersion: number;
+            reviewActions: string[];
+          }
+        >;
+      }>(response),
       {
-        data: [defaultThreat],
+        data: [
+          {
+            ...defaultThreat,
+            recordVersion: new Date(defaultThreat.updatedAt).getTime(),
+            reviewActions: [],
+          },
+        ],
       },
     );
     assert.equal(assessmentCalls.findById, 1);

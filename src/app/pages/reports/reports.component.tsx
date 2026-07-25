@@ -1,12 +1,15 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import ReportPreviewShell from '~/app/components/appsec/reportPreviewShell';
+import { DirtyFormGuard } from '~/app/components/common';
+import { useDirtyFormGuard } from '~/app/hooks/useDirtyFormGuard';
 
 import {
   createReportBuilderSelectionTreeState,
   type ReportBuilderSelectionTreeState,
 } from './reportBuilderSelectionTree';
 import {
+  createDefaultReportBuilderState,
   restoreReportBuilderRouteState,
   updateReportBuilderConfiguration,
   updateReportBuilderSelection,
@@ -21,68 +24,16 @@ import { useReportReadinessController } from './reportReadiness.controller';
 import ReportReadinessPanel from './reportReadinessPanel.component';
 import { useReportReadinessTargetNavigation } from './reportReadinessTargetNavigation';
 import ReportBuilderTree from './reportBuilderTree.component';
-import ReportsShell, {
-  fallbackReportCover,
-  type ReportsShellProps,
-} from './reportsShell.component';
+import ReportsShell, { fallbackReportCover } from './reportsShell.component';
 
 import type { ReportBuilderSelection, ReportBuilderState } from '~/domain';
 import { routes } from '~/routes';
-import type { ReportPreviewShellTab } from '~/app/components/appsec/reportPreviewShell';
-import type { ReportBuilderFocusTarget, ReportsProps } from './reports.type';
-
-const formatReportVersionNumber = (version: number): string => {
-  const major = Math.floor(version / 10);
-  const minor = version % 10;
-
-  return `${major}.${minor}`;
-};
-
-const hasSameReportBuilderSelection = (
-  left: ReportBuilderState['selection'],
-  right: ReportBuilderState['selection'],
-): boolean => JSON.stringify(left) === JSON.stringify(right);
-
-const preserveCurrentReportIdForStaleRouteState = (
-  restoredState: ReportBuilderState,
-  currentState: ReportBuilderState,
-): ReportBuilderState => {
-  if (restoredState.reportId || !currentState.reportId) {
-    return restoredState;
-  }
-
-  if (
-    !hasSameReportBuilderSelection(
-      restoredState.selection,
-      currentState.selection,
-    )
-  ) {
-    return restoredState;
-  }
-
-  return {
-    ...restoredState,
-    reportId: currentState.reportId,
-  };
-};
-
-interface ReportBuilderReportsProps extends Omit<
-  ReportsShellProps,
-  'dataView'
-> {
-  companyId: string;
-  companyName: string;
-  routeState?: unknown;
-  activeView: ReportPreviewShellTab;
-  focusTarget?: ReportBuilderFocusTarget;
-  focusKey?: string;
-  onViewChange?: (
-    view: ReportPreviewShellTab,
-    state: ReportBuilderState,
-  ) => void;
-  onStateChange?: (state: ReportBuilderState) => void;
-  onReadinessTargetNavigate?: ReportsProps['onReadinessTargetNavigate'];
-}
+import {
+  formatReportVersionNumber,
+  preserveCurrentReportIdForStaleRouteState,
+  type ReportBuilderReportsProps,
+} from './reportBuilderReports.helpers';
+import type { ReportsProps } from './reports.type';
 
 const ReportBuilderReports = ({
   cover,
@@ -103,10 +54,38 @@ const ReportBuilderReports = ({
     useState<ReportBuilderSelectionTreeState>(() =>
       createReportBuilderSelectionTreeState(builderState.selection),
     );
+  const [savedStateFingerprint, setSavedStateFingerprint] = useState(() =>
+    JSON.stringify(
+      builderState.reportId
+        ? builderState
+        : createDefaultReportBuilderState(companyId),
+    ),
+  );
   const builderStateRef = useRef(builderState);
   const previewTabRef = useRef<HTMLButtonElement>(null);
   const previewHeadingRef = useRef<HTMLHeadingElement>(null);
   const previewController = useReportPreviewController(builderState);
+  const builderStateFingerprint = useMemo(
+    () => JSON.stringify(builderState),
+    [builderState],
+  );
+  const shouldBlockReportNavigation = useCallback(
+    (currentPathname: string, nextPathname: string) => {
+      const reportPaths = new Set([
+        routes.companyWorkspaceReports(companyId),
+        routes.companyWorkspaceReportsPreview(companyId),
+      ]);
+
+      return !(
+        reportPaths.has(currentPathname) && reportPaths.has(nextPathname)
+      );
+    },
+    [companyId],
+  );
+  const dirtyFormGuard = useDirtyFormGuard(
+    builderStateFingerprint !== savedStateFingerprint,
+    shouldBlockReportNavigation,
+  );
 
   const handleBuilderStateChange = useCallback(
     (nextState: ReportBuilderState) => {
@@ -228,6 +207,15 @@ const ReportBuilderReports = ({
 
   const selectedVersion =
     finalSaveController.selectedVersion ?? draftSaveController.selectedVersion;
+
+  const selectedVersionId = selectedVersion?.id;
+
+  useEffect(() => {
+    if (selectedVersionId) {
+      setSavedStateFingerprint(JSON.stringify(builderStateRef.current));
+    }
+  }, [selectedVersionId]);
+
   const displayedSnapshot =
     selectedVersion?.snapshot ?? previewController.snapshot;
   const displayedStatus = selectedVersion
@@ -279,66 +267,73 @@ const ReportBuilderReports = ({
     : previewCover.reportId;
 
   return (
-    <ReportPreviewShell
-      applicationName={previewCover.applicationName}
-      assessmentCode={assessmentCode}
-      autoSaved={false}
-      activeTab={activeView}
-      onActiveTabChange={nextView => onViewChange?.(nextView, builderState)}
-      previewTabRef={previewTabRef}
-      titleRef={previewHeadingRef}
-      reportActions={reportActionsController.reportActions}
-      reportActionStatus={reportActionsController.reportActionStatus}
-      context={[
-        { label: 'Companies', href: routes.companies },
-        {
-          label: companyName,
-          href: routes.companyWorkspaceOverview(companyId),
-        },
-        { label: 'Reports' },
-      ]}
-      documentTitle={`Reports for ${companyName}`}
-      readiness={
-        readinessController.status === 'idle' ? undefined : (
-          <ReportReadinessPanel
-            status={readinessController.status}
-            result={readinessController.result}
-            message={readinessController.message}
-            onTargetActivate={readinessTargetNavigation.activateTarget}
+    <>
+      <ReportPreviewShell
+        applicationName={previewCover.applicationName}
+        assessmentCode={assessmentCode}
+        autoSaved={false}
+        activeTab={activeView}
+        onActiveTabChange={nextView => onViewChange?.(nextView, builderState)}
+        previewTabRef={previewTabRef}
+        titleRef={previewHeadingRef}
+        reportActions={reportActionsController.reportActions}
+        reportActionStatus={reportActionsController.reportActionStatus}
+        context={[
+          { label: 'Companies', href: routes.companies },
+          {
+            label: companyName,
+            href: routes.companyWorkspaceOverview(companyId),
+          },
+          { label: 'Reports' },
+        ]}
+        documentTitle={`Reports for ${companyName}`}
+        readiness={
+          readinessController.status === 'idle' ? undefined : (
+            <ReportReadinessPanel
+              status={readinessController.status}
+              result={readinessController.result}
+              message={readinessController.message}
+              onTargetActivate={readinessTargetNavigation.activateTarget}
+            />
+          )
+        }
+        preview={
+          <ReportBuilderPreview
+            status={displayedStatus}
+            snapshot={displayedSnapshot}
+            errorMessage={displayedErrorMessage}
+            reportId={selectedVersion?.reportId ?? builderState.reportId}
+            issuedDate={selectedVersion?.generatedAt}
+            onRetry={() => {
+              clearSelectedVersions();
+              previewController.retry();
+            }}
           />
-        )
-      }
-      preview={
-        <ReportBuilderPreview
-          status={displayedStatus}
-          snapshot={displayedSnapshot}
-          errorMessage={displayedErrorMessage}
-          reportId={selectedVersion?.reportId ?? builderState.reportId}
-          issuedDate={selectedVersion?.generatedAt}
-          onRetry={() => {
-            clearSelectedVersions();
-            previewController.retry();
-          }}
-        />
-      }
-      dataView={
-        <ReportBuilderTree
-          companyId={companyId}
-          companyName={companyName}
-          includeEvidence={builderState.configuration.includeEvidence}
-          selection={builderState.selection}
-          selectionState={selectionState}
-          lockedAssessmentId={
-            builderState.reportId
-              ? builderState.selection.selectedAssessmentId
-              : undefined
-          }
-          focusTarget={readinessTargetNavigation.focusTarget}
-          onSelectionChange={handleSelectionChange}
-          onIncludeEvidenceChange={handleIncludeEvidenceChange}
-        />
-      }
-    />
+        }
+        dataView={
+          <ReportBuilderTree
+            companyId={companyId}
+            companyName={companyName}
+            includeEvidence={builderState.configuration.includeEvidence}
+            selection={builderState.selection}
+            selectionState={selectionState}
+            lockedAssessmentId={
+              builderState.reportId
+                ? builderState.selection.selectedAssessmentId
+                : undefined
+            }
+            focusTarget={readinessTargetNavigation.focusTarget}
+            onSelectionChange={handleSelectionChange}
+            onIncludeEvidenceChange={handleIncludeEvidenceChange}
+          />
+        }
+      />
+      <DirtyFormGuard
+        isBlocked={dirtyFormGuard.isBlocked}
+        onCancel={dirtyFormGuard.cancel}
+        onProceed={dirtyFormGuard.proceed}
+      />
+    </>
   );
 };
 
