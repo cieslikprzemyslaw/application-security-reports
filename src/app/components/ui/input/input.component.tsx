@@ -69,6 +69,7 @@ const Input = ({
           required={required}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy}
+          aria-errormessage={errorId}
           {...rest}
         />
 
@@ -80,7 +81,7 @@ const Input = ({
       </div>
 
       {error && (
-        <p className="input-error" id={errorId}>
+        <p className="input-error" id={errorId} role="alert">
           {error}
         </p>
       )}
