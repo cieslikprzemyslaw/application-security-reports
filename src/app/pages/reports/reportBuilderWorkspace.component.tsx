@@ -1,10 +1,7 @@
 import React from 'react';
 
 import Select from '~/app/components/ui/select';
-import type {
-  ReportBrandingMode,
-  ReportBuilderState,
-} from '~/domain';
+import type { ReportBrandingMode, ReportBuilderState } from '~/domain';
 
 import StyledReportBuilderWorkspace from './reportBuilderWorkspace.styled';
 
@@ -29,9 +26,8 @@ const focusSection = (sectionId: string) => {
     return;
   }
 
-  const reduceMotion = window.matchMedia(
-    '(prefers-reduced-motion: reduce)',
-  ).matches;
+  const reduceMotion =
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
   section.scrollIntoView({
     behavior: reduceMotion ? 'auto' : 'smooth',
@@ -170,8 +166,8 @@ const ReportBuilderWorkspace = ({
           <p className="report-builder-progress-eyebrow">Readiness</p>
           <h2 id="report-builder-readiness-heading">Validation status</h2>
           <p>
-            {readinessLabel(readinessStatus)}. The backend readiness result shown
-            above remains authoritative for save and finalisation actions.
+            {readinessLabel(readinessStatus)}. The backend readiness result above
+            remains authoritative for save and finalisation actions.
           </p>
         </div>
       </section>
