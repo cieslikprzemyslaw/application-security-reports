@@ -63,9 +63,7 @@ describe('Activity service', () => {
     );
 
     await expect(
-      service.listByCompany(
-        'cmp_00000000-0000-0000-0000-000000000001',
-      ),
+      service.listByCompany('cmp_00000000-0000-0000-0000-000000000001'),
     ).rejects.toBeInstanceOf(ApiResponseParseError);
   });
 });
