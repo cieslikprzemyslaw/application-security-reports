@@ -1,8 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Activity } from '~/domain';
+import { renderWithProviders, screen, waitFor } from '~/test/render';
 
 const activityServiceMocks = vi.hoisted(() => ({
   listByCompany: vi.fn(),
@@ -45,7 +44,7 @@ describe('ActivityHistory', () => {
   it('renders loading and populated Company activity states', async () => {
     activityServiceMocks.listByCompany.mockResolvedValue([activity]);
 
-    render(<ActivityHistory scope={companyScope} />);
+    renderWithProviders(<ActivityHistory scope={companyScope} />);
 
     expect(screen.getByRole('status')).toHaveTextContent('Loading activity');
     expect(await screen.findByText('Assessment completed.')).toBeVisible();
@@ -59,7 +58,7 @@ describe('ActivityHistory', () => {
   it('renders an explicit empty state', async () => {
     activityServiceMocks.listByCompany.mockResolvedValue([]);
 
-    render(
+    renderWithProviders(
       <ActivityHistory
         scope={companyScope}
         emptyMessage="No Company activity yet."
@@ -70,12 +69,13 @@ describe('ActivityHistory', () => {
   });
 
   it('renders an error and retries the same scope', async () => {
-    const user = userEvent.setup();
     activityServiceMocks.listByCompany
       .mockRejectedValueOnce(new Error('Activity unavailable.'))
       .mockResolvedValueOnce([activity]);
 
-    render(<ActivityHistory scope={companyScope} />);
+    const { user } = renderWithProviders(
+      <ActivityHistory scope={companyScope} />,
+    );
 
     expect(await screen.findByText('Activity unavailable.')).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Retry' }));
@@ -88,7 +88,7 @@ describe('ActivityHistory', () => {
   it('uses the Assessment-scoped service for History', async () => {
     activityServiceMocks.listByAssessment.mockResolvedValue([activity]);
 
-    render(
+    renderWithProviders(
       <ActivityHistory
         scope={{
           type: 'assessment',
