@@ -49,7 +49,6 @@ const StyledEvidenceForm = styled.form.attrs({ className: 'evidence-form' })`
     .evidence-form-exchange {
       margin: 0;
       padding: 0;
-
       border: 0;
     }
 
@@ -84,7 +83,6 @@ const StyledEvidenceForm = styled.form.attrs({ className: 'evidence-form' })`
 
     .evidence-form-exchange {
       padding: ${spacing.s};
-
       border: 1px solid ${colors.border.subtle};
       border-radius: ${radii.lg};
       background-color: ${colors.surface.subtle};
@@ -92,7 +90,6 @@ const StyledEvidenceForm = styled.form.attrs({ className: 'evidence-form' })`
 
     .evidence-form-exchange-legend {
       margin-bottom: ${spacing.xxs};
-
       font-size: ${typography.body.medium.size};
       line-height: ${typography.body.medium.lineHeight};
       font-weight: ${typography.fontWeights.semibold};
@@ -105,6 +102,46 @@ const StyledEvidenceForm = styled.form.attrs({ className: 'evidence-form' })`
       margin-top: ${spacing.s};
     }
 
+    .evidence-raw-http-dialog {
+      display: grid;
+      gap: ${spacing.m};
+    }
+
+    .evidence-raw-http-preview {
+      padding: ${spacing.m};
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.md};
+      background-color: ${colors.surface.subtle};
+    }
+
+    .evidence-raw-http-preview h3 {
+      margin: 0 0 ${spacing.s};
+      font-size: ${typography.headings.h5.size};
+    }
+
+    .evidence-raw-http-preview dl {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: ${spacing.xs};
+      margin: 0 0 ${spacing.s};
+    }
+
+    .evidence-raw-http-preview dl > div {
+      display: grid;
+      gap: ${spacing.xxxs};
+    }
+
+    .evidence-raw-http-preview dt {
+      color: ${colors.text.muted};
+      font-size: ${typography.label.small.size};
+      font-weight: ${typography.label.small.weight};
+    }
+
+    .evidence-raw-http-preview dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
     .evidence-form-actions {
       justify-content: flex-end;
       padding-top: ${spacing.s};
@@ -112,7 +149,8 @@ const StyledEvidenceForm = styled.form.attrs({ className: 'evidence-form' })`
     }
 
     @container evidence-section (min-width: 48rem) {
-      .evidence-form-grid {
+      .evidence-form-grid,
+      .evidence-raw-http-preview dl {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
