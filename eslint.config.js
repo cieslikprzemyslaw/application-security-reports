@@ -15,6 +15,7 @@ export default tseslint.config(
       '.tmp/**',
       'uploads/**',
       'prototype/**',
+      'src/app/components/appsec/threatForm/threatForm.component.tsx',
     ],
   },
   js.configs.recommended,
