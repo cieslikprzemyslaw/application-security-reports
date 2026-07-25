@@ -8,7 +8,9 @@ const parseActivityList = (value: unknown): Activity[] => {
   const parsed = activityFileSchema.safeParse(value);
 
   if (!parsed.success) {
-    throw new ApiResponseParseError('Unable to validate the Activity response.');
+    throw new ApiResponseParseError(
+      'Unable to validate the Activity response.',
+    );
   }
 
   return parsed.data;
