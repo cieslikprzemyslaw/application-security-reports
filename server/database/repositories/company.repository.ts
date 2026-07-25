@@ -7,9 +7,12 @@ import { generateId } from '../../utils/id.js';
 import {
   mapPrismaError,
   RepositoryNotFoundError,
-  RepositoryStateError,
 } from '../errors.js';
 import type { RepositoryClient } from '../repository.types.js';
+import {
+  createCompanyLifecycleOperations,
+  type CompanyLifecycleOperations,
+} from './company-lifecycle.repository.js';
 import { toIsoString, toOptionalText } from './repository.helpers.js';
 
 export interface CompanyOverviewCounts {
@@ -36,7 +39,7 @@ export interface CompanyOverview {
   recentReports: null;
 }
 
-export interface CompanyRepository {
+export interface CompanyRepository extends CompanyLifecycleOperations {
   findAll(): Promise<Company[]>;
   findById(id: string): Promise<Company | null>;
   findOverview(companyId: string): Promise<CompanyOverview | null>;
@@ -44,11 +47,12 @@ export interface CompanyRepository {
   update(id: string, input: UpdateCompanyInput): Promise<Company>;
   updateLogoUrl(id: string, logoUrl: string | null): Promise<Company>;
   delete(id: string): Promise<void>;
-  archive(id: string): Promise<Company>;
-  restore(id: string): Promise<Company>;
 }
 
-type CompanyRepositoryDb = Pick<RepositoryClient, 'company' | 'assessment'>;
+type CompanyRepositoryDb = Pick<
+  RepositoryClient,
+  'company' | 'assessment' | 'activity' | '$transaction'
+>;
 
 type CompanyRow = {
   id: string;
@@ -95,7 +99,11 @@ const toCompany = (row: CompanyRow): Company => ({
 export function createCompanyRepository(
   db: CompanyRepositoryDb,
 ): CompanyRepository {
+  const lifecycle = createCompanyLifecycleOperations(db);
+
   return {
+    ...lifecycle,
+
     async findAll() {
       const companies = await db.company.findMany({
         orderBy: { name: 'asc' },
@@ -125,7 +133,7 @@ export function createCompanyRepository(
 
       const grouped = await db.assessment.groupBy({
         by: ['status'],
-        where: { companyId },
+        where: { companyId, archivedAt: null },
         _count: { _all: true },
       });
 
@@ -139,7 +147,7 @@ export function createCompanyRepository(
           ?._count._all ?? 0;
 
       const recent = await db.assessment.findMany({
-        where: { companyId },
+        where: { companyId, archivedAt: null },
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
         take: 5,
         select: {
@@ -257,58 +265,6 @@ export function createCompanyRepository(
         if (error instanceof RepositoryNotFoundError) {
           throw error;
         }
-        throw mapPrismaError(error);
-      }
-    },
-
-    async archive(id) {
-      const existing = await db.company.findUnique({
-        where: { id },
-        select: { archivedAt: true },
-      });
-
-      if (!existing) {
-        throw new RepositoryNotFoundError();
-      }
-
-      if (existing.archivedAt !== null) {
-        throw new RepositoryStateError('Company is already archived.');
-      }
-
-      try {
-        const company = await db.company.update({
-          where: { id },
-          data: { archivedAt: new Date() },
-          select: companySelect,
-        });
-        return toCompany(company);
-      } catch (error) {
-        throw mapPrismaError(error);
-      }
-    },
-
-    async restore(id) {
-      const existing = await db.company.findUnique({
-        where: { id },
-        select: { archivedAt: true },
-      });
-
-      if (!existing) {
-        throw new RepositoryNotFoundError();
-      }
-
-      if (existing.archivedAt === null) {
-        throw new RepositoryStateError('Company is not archived.');
-      }
-
-      try {
-        const company = await db.company.update({
-          where: { id },
-          data: { archivedAt: null },
-          select: companySelect,
-        });
-        return toCompany(company);
-      } catch (error) {
         throw mapPrismaError(error);
       }
     },
