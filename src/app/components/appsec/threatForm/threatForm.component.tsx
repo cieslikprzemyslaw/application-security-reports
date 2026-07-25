@@ -69,8 +69,20 @@ const ThreatForm = ({
     owaspTaxonomyVersion,
     owaspCategoryCode,
   );
-  const hasSecurityError = securityFields.some(field => Boolean(errors[field]));
-  const hasAdditionalError = additionalFields.some(field => Boolean(errors[field]));
+  const hasSecurityError = securityFields.some(field =>
+    Boolean(errors[field]),
+  );
+  const hasAdditionalError = additionalFields.some(field =>
+    Boolean(errors[field]),
+  );
+  const securityMustOpen =
+    hasSecurityError ||
+    Boolean(focusField && securityFields.includes(focusField));
+  const additionalMustOpen =
+    hasAdditionalError ||
+    Boolean(focusField && additionalFields.includes(focusField));
+  const resolvedSecurityOpen = isSecurityOpen || securityMustOpen;
+  const resolvedAdditionalOpen = isAdditionalOpen || additionalMustOpen;
 
   const firstErrorFieldId = useMemo(() => {
     const orderedFields: Array<keyof ThreatFormValue> = [
@@ -93,19 +105,6 @@ const ThreatForm = ({
   const focusTargetFieldId = firstErrorFieldId ?? requestedFocusFieldId;
 
   useEffect(() => {
-    if (hasSecurityError || (focusField && securityFields.includes(focusField))) {
-      setIsSecurityOpen(true);
-    }
-
-    if (
-      hasAdditionalError ||
-      (focusField && additionalFields.includes(focusField))
-    ) {
-      setIsAdditionalOpen(true);
-    }
-  }, [focusField, hasAdditionalError, hasSecurityError]);
-
-  useEffect(() => {
     if (!focusTargetFieldId) {
       return undefined;
     }
@@ -120,7 +119,7 @@ const ThreatForm = ({
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [focusTargetFieldId, isAdditionalOpen, isSecurityOpen]);
+  }, [focusTargetFieldId, resolvedAdditionalOpen, resolvedSecurityOpen]);
 
   return (
     <StyledThreatForm ref={formRef} onSubmit={onSubmit} noValidate>
@@ -257,9 +256,13 @@ const ThreatForm = ({
       <ThreatFormSection
         title="Security details"
         description="Capture the affected component, reproduction, impact and remediation."
-        isOpen={isSecurityOpen}
+        isOpen={resolvedSecurityOpen}
         hasError={hasSecurityError}
-        onToggle={() => setIsSecurityOpen(current => !current)}
+        onToggle={() => {
+          if (!securityMustOpen) {
+            setIsSecurityOpen(current => !current);
+          }
+        }}
       >
         <div className="threat-form-grid">
           <Input
@@ -359,9 +362,13 @@ const ThreatForm = ({
       <ThreatFormSection
         title="Additional information"
         description="Add external references and supporting standards when useful."
-        isOpen={isAdditionalOpen}
+        isOpen={resolvedAdditionalOpen}
         hasError={hasAdditionalError}
-        onToggle={() => setIsAdditionalOpen(current => !current)}
+        onToggle={() => {
+          if (!additionalMustOpen) {
+            setIsAdditionalOpen(current => !current);
+          }
+        }}
       >
         <Input
           id="threat-references"
