@@ -47,6 +47,8 @@ export type AssessmentWorkspaceCommand =
   | 'restore';
 
 export interface AssessmentWorkspaceAssessment extends Assessment {
+  recordVersion: number;
+  archivedAt: ISODateString | null;
   findingsCount: number;
   evidenceCount: number;
   reportVersionCount: number;
@@ -279,10 +281,14 @@ export const createAssessmentService = (
     },
 
     async create(input) {
-      const response = await requestData<Assessment>(request, '/api/assessments', {
-        body: input,
-        method: 'POST',
-      });
+      const response = await requestData<Assessment>(
+        request,
+        '/api/assessments',
+        {
+          body: input,
+          method: 'POST',
+        },
+      );
 
       return validateAssessmentVersion(
         response,
