@@ -18,15 +18,13 @@ const template = {
 
 describe('Assessment Template service', () => {
   it('uses the shared API boundary for list, create and transitions', async () => {
-    const request = vi.fn(
-      async (input: RequestInfo | URL, init) => ({
-        data:
-          String(input).endsWith('/assessment-templates') &&
-          init?.method === 'GET'
-            ? [template]
-            : template,
-      }),
-    ) as unknown as ApiRequestFn;
+    const request = vi.fn(async (input: RequestInfo | URL, init) => ({
+      data:
+        String(input).endsWith('/assessment-templates') &&
+        init?.method === 'GET'
+          ? [template]
+          : template,
+    })) as unknown as ApiRequestFn;
     const service = createAssessmentTemplateService(request);
 
     await expect(service.list({ includeArchived: true })).resolves.toEqual([

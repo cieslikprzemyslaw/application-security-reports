@@ -99,9 +99,7 @@ const AssessmentTemplateApply = ({
 
       {loadError && (
         <Callout variant="warning" title="Templates are unavailable">
-          <p>
-            {loadError} You can still create the Assessment manually.
-          </p>
+          <p>{loadError} You can still create the Assessment manually.</p>
         </Callout>
       )}
 

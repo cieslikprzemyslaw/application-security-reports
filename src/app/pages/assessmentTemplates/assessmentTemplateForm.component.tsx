@@ -113,8 +113,7 @@ const AssessmentTemplateForm = () => {
 
   const isDirty = useMemo(
     () =>
-      JSON.stringify(normalise(value)) !==
-      JSON.stringify(normalise(baseline)),
+      JSON.stringify(normalise(value)) !== JSON.stringify(normalise(baseline)),
     [baseline, value],
   );
 

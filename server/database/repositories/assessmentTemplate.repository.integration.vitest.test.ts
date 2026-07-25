@@ -4,9 +4,8 @@ import { RepositoryStateError } from '../errors.js';
 import { createTemporaryDatabase } from '../../test/temporaryDatabase.js';
 import { createAssessmentTemplateRepository } from './assessmentTemplate.repository.js';
 
-const databases: Array<
-  Awaited<ReturnType<typeof createTemporaryDatabase>>
-> = [];
+const databases: Array<Awaited<ReturnType<typeof createTemporaryDatabase>>> =
+  [];
 
 afterEach(async () => {
   await Promise.all(databases.splice(0).map(database => database.cleanup()));
