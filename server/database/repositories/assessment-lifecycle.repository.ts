@@ -14,7 +14,10 @@ import {
   RepositoryNotFoundError,
   RepositoryStateError,
 } from '../errors.js';
-import type { RepositoryClient } from '../repository.types.js';
+import type {
+  RepositoryClient,
+  RepositoryTransactionClient,
+} from '../repository.types.js';
 import { appendActivity } from './activity.repository.js';
 import {
   assessmentSelect,
@@ -50,7 +53,7 @@ export interface AssessmentLifecycleOperations {
   ): Promise<Assessment>;
 }
 
-type AssessmentLifecycleDb = Pick<
+export type AssessmentLifecycleDb = Pick<
   RepositoryClient,
   'assessment' | 'activity' | '$transaction'
 >;
@@ -58,9 +61,7 @@ type AssessmentLifecycleDb = Pick<
 type TransitionPlan = {
   data: Record<string, unknown>;
   successEventType: ActivityEventType;
-  failureEventType: ActivityEventType;
   successMessage: string;
-  failureMessage: string;
 };
 
 const restorableStatuses = new Set<AssessmentStatus>([
@@ -70,6 +71,7 @@ const restorableStatuses = new Set<AssessmentStatus>([
 ]);
 
 const toDateOnly = (date: Date): string => date.toISOString().slice(0, 10);
+const toRecordVersion = (updatedAt: Date): number => updatedAt.getTime();
 
 const getTransitionPlan = (
   command: AssessmentLifecycleCommand,
@@ -86,9 +88,7 @@ const getTransitionPlan = (
     return {
       data: { status: 'completed', completedAt: toDateOnly(now) },
       successEventType: 'assessment.completed',
-      failureEventType: 'assessment.complete-failed',
       successMessage: 'Assessment completed.',
-      failureMessage: 'Assessment completion was rejected.',
     };
   }
 
@@ -102,9 +102,7 @@ const getTransitionPlan = (
     return {
       data: { status: 'in-progress', completedAt: null },
       successEventType: 'assessment.reopened',
-      failureEventType: 'assessment.reopen-failed',
       successMessage: 'Assessment reopened.',
-      failureMessage: 'Assessment reopen was rejected.',
     };
   }
 
@@ -120,9 +118,7 @@ const getTransitionPlan = (
         archivedFromStatus: current.status,
       },
       successEventType: 'assessment.archived',
-      failureEventType: 'assessment.archive-failed',
       successMessage: 'Assessment archived.',
-      failureMessage: 'Assessment archive was rejected.',
     };
   }
 
@@ -144,24 +140,19 @@ const getTransitionPlan = (
       ...(restoredStatus === 'completed' ? {} : { completedAt: null }),
     },
     successEventType: 'assessment.restored',
-    failureEventType: 'assessment.restore-failed',
     successMessage: 'Assessment restored.',
-    failureMessage: 'Assessment restore was rejected.',
   };
 };
 
-const getFailureEventType = (
-  command: AssessmentLifecycleCommand,
-): ActivityEventType =>
-  ({
-    complete: 'assessment.complete-failed',
-    reopen: 'assessment.reopen-failed',
-    archive: 'assessment.archive-failed',
-    restore: 'assessment.restore-failed',
-  })[command];
-
-const getFailureMessage = (command: AssessmentLifecycleCommand): string =>
-  `Assessment ${command} was rejected.`;
+const failureEventTypes: Record<
+  AssessmentLifecycleCommand,
+  ActivityEventType
+> = {
+  complete: 'assessment.complete-failed',
+  reopen: 'assessment.reopen-failed',
+  archive: 'assessment.archive-failed',
+  restore: 'assessment.restore-failed',
+};
 
 const appendFailureEvent = async (
   db: AssessmentLifecycleDb,
@@ -171,7 +162,7 @@ const appendFailureEvent = async (
   context: AssessmentLifecycleContext,
 ): Promise<void> => {
   await appendActivity(db, {
-    eventType: getFailureEventType(command),
+    eventType: failureEventTypes[command],
     result: 'failure',
     severity: 'warning',
     actor: {
@@ -185,7 +176,7 @@ const appendFailureEvent = async (
       assessmentId,
     },
     correlationId: context.correlationId ?? randomUUID(),
-    message: getFailureMessage(command),
+    message: `Assessment ${command} was rejected.`,
   });
 };
 
@@ -210,7 +201,7 @@ const runTransition = async (
     throw new RepositoryNotFoundError('Assessment not found.');
   }
 
-  if (current.recordVersion !== recordVersion) {
+  if (toRecordVersion(current.updatedAt) !== recordVersion) {
     await appendFailureEvent(db, command, id, current.companyId, {
       ...context,
       correlationId,
@@ -231,22 +222,21 @@ const runTransition = async (
   }
 
   try {
-    return await db.$transaction(async tx => {
+    return await db.$transaction(async (tx: RepositoryTransactionClient) => {
       const result = await tx.assessment.updateMany({
         where: {
           id,
-          recordVersion,
+          updatedAt: current.updatedAt,
           status: current.status,
           archivedAt: current.archivedAt,
         },
-        data: {
-          ...plan.data,
-          recordVersion: { increment: 1 },
-        },
+        data: plan.data,
       });
 
       if (result.count !== 1) {
-        throw new RepositoryConflictError('Assessment changed during transition.');
+        throw new RepositoryConflictError(
+          'Assessment changed during transition.',
+        );
       }
 
       await appendActivity(tx, {
@@ -273,7 +263,9 @@ const runTransition = async (
       });
 
       if (!updated) {
-        throw new RepositoryNotFoundError('Assessment not found after transition.');
+        throw new RepositoryNotFoundError(
+          'Assessment not found after transition.',
+        );
       }
 
       return toAssessment(updated);
