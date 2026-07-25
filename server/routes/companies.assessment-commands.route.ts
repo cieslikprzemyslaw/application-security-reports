@@ -45,12 +45,7 @@ const handleCommandError = (error: unknown, res: Response): boolean => {
   }
 
   if (error instanceof RepositoryStateError) {
-    sendApiError(
-      res,
-      409,
-      'ASSESSMENT_TRANSITION_NOT_ALLOWED',
-      error.message,
-    );
+    sendApiError(res, 409, 'ASSESSMENT_TRANSITION_NOT_ALLOWED', error.message);
     return true;
   }
 
