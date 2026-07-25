@@ -141,12 +141,7 @@ const AssessmentReportsSection = ({
   };
 
   const confirmVersionDelete = () => {
-    if (
-      readOnly ||
-      !deleteTarget ||
-      !isDeleteConfirmationValid ||
-      isDeleting
-    ) {
+    if (readOnly || !deleteTarget || !isDeleteConfirmationValid || isDeleting) {
       return;
     }
 
@@ -177,7 +172,8 @@ const AssessmentReportsSection = ({
         setReloadKey(value => value + 1);
       })
       .catch(error => {
-        if (error instanceof DOMException && error.name === 'AbortError') return;
+        if (error instanceof DOMException && error.name === 'AbortError')
+          return;
 
         setDeleteError(
           error instanceof Error
