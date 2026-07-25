@@ -1,7 +1,9 @@
 import { styled, css } from 'styled-components';
 
 const StyledAppShell = styled.div.attrs({ className: 'app-shell' })`
-  ${({ theme: { colors, layoutSizes, mq, radii, spacing, transitions, zIndices } }) => css`
+  ${({
+    theme: { colors, layoutSizes, mq, radii, spacing, transitions, zIndices },
+  }) => css`
     min-height: 100vh;
     background-color: ${colors.surface.page};
 
