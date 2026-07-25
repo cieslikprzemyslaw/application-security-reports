@@ -205,7 +205,9 @@ const ReportBuilderReports = ({
       updateReportBuilderConfiguration(current, patch),
     );
   const handleBrandingModeChange = (
-    brandingMode: Parameters<typeof updateReportBuilderBranding>[1]['brandingMode'],
+    brandingMode: Parameters<
+      typeof updateReportBuilderBranding
+    >[1]['brandingMode'],
   ) =>
     updateBuilderState(current =>
       updateReportBuilderBranding(current, { brandingMode }),
