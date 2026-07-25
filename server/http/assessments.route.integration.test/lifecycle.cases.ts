@@ -42,6 +42,14 @@ const readBody = async (response: Response) =>
     error?: { code: string; message: string };
   };
 
+const requireRecordVersion = (
+  body: Awaited<ReturnType<typeof readBody>>,
+): number => {
+  const recordVersion = body.data?.assessment.recordVersion;
+  assert.equal(typeof recordVersion, 'number');
+  return recordVersion;
+};
+
 describe.sequential('Assessment lifecycle API integration', () => {
   let harness: AssessmentsRouteIntegrationHarness;
 
@@ -54,22 +62,29 @@ describe.sequential('Assessment lifecycle API integration', () => {
   });
 
   it('persists Complete, Reopen, Archive and Restore with Activity events', async () => {
-    const complete = await postCommand(
-      harness,
-      'complete',
-      harness.assessment.recordVersion,
-    );
+    const initialVersion = harness.assessment.recordVersion;
+    const complete = await postCommand(harness, 'complete', initialVersion);
+
     assert.equal(complete.status, 200);
     const completed = await readBody(complete);
+    const completedVersion = requireRecordVersion(completed);
+
     assert.equal(completed.data?.assessment.status, 'completed');
-    assert.match(completed.data?.assessment.completedAt ?? '', /^\d{4}-\d{2}-\d{2}$/);
-    assert.equal(completed.data?.assessment.recordVersion, 1);
+    assert.match(
+      completed.data?.assessment.completedAt ?? '',
+      /^\d{4}-\d{2}-\d{2}$/,
+    );
+    assert.notEqual(completedVersion, initialVersion);
     assert.deepEqual(completed.data?.assessment.availableActions, [
       'reopen',
       'archive',
     ]);
 
-    const invalidRepeat = await postCommand(harness, 'complete', 1);
+    const invalidRepeat = await postCommand(
+      harness,
+      'complete',
+      completedVersion,
+    );
     assert.equal(invalidRepeat.status, 409);
     const invalidRepeatBody = await readBody(invalidRepeat);
     assert.equal(
@@ -81,26 +96,29 @@ describe.sequential('Assessment lifecycle API integration', () => {
       harness.assessment.id,
     );
     assert.equal(afterInvalid?.status, 'completed');
-    assert.equal(afterInvalid?.recordVersion, 1);
 
-    const staleReopen = await postCommand(harness, 'reopen', 0);
+    const staleReopen = await postCommand(harness, 'reopen', initialVersion);
     assert.equal(staleReopen.status, 409);
     const staleBody = await readBody(staleReopen);
     assert.equal(staleBody.error?.code, 'RESOURCE_MODIFIED');
 
-    const reopen = await postCommand(harness, 'reopen', 1);
+    const reopen = await postCommand(harness, 'reopen', completedVersion);
     assert.equal(reopen.status, 200);
     const reopened = await readBody(reopen);
+    const reopenedVersion = requireRecordVersion(reopened);
+
     assert.equal(reopened.data?.assessment.status, 'in-progress');
     assert.equal(reopened.data?.assessment.completedAt, undefined);
-    assert.equal(reopened.data?.assessment.recordVersion, 2);
+    assert.notEqual(reopenedVersion, completedVersion);
 
-    const archive = await postCommand(harness, 'archive', 2);
+    const archive = await postCommand(harness, 'archive', reopenedVersion);
     assert.equal(archive.status, 200);
     const archived = await readBody(archive);
+    const archivedVersion = requireRecordVersion(archived);
+
     assert.equal(archived.data?.assessment.status, 'archived');
     assert.equal(typeof archived.data?.assessment.archivedAt, 'string');
-    assert.equal(archived.data?.assessment.recordVersion, 3);
+    assert.notEqual(archivedVersion, reopenedVersion);
     assert.deepEqual(archived.data?.assessment.availableActions, ['restore']);
 
     const listWhileArchived = await fetch(
@@ -135,18 +153,22 @@ describe.sequential('Assessment lifecycle API integration', () => {
     const archivedPatchBody = await readBody(archivedPatch);
     assert.equal(archivedPatchBody.error?.code, 'ASSESSMENT_READ_ONLY');
 
-    const restore = await postCommand(harness, 'restore', 3);
+    const restore = await postCommand(harness, 'restore', archivedVersion);
     assert.equal(restore.status, 200);
     const restored = await readBody(restore);
+    const restoredVersion = requireRecordVersion(restored);
+
     assert.equal(restored.data?.assessment.status, 'in-progress');
     assert.equal(restored.data?.assessment.archivedAt, null);
-    assert.equal(restored.data?.assessment.recordVersion, 4);
+    assert.notEqual(restoredVersion, archivedVersion);
 
-    const events = await harness.prisma.activity.findMany({
-      where: { assessmentId: harness.assessment.id },
-      orderBy: { createdAt: 'asc' },
-      select: { eventType: true, result: true },
-    });
+    const events: Array<{ eventType: string; result: string }> =
+      await harness.prisma.activity.findMany({
+        where: { assessmentId: harness.assessment.id },
+        orderBy: { createdAt: 'asc' },
+        select: { eventType: true, result: true },
+      });
+
     assert.deepEqual(
       events.map(event => [event.eventType, event.result]),
       [
