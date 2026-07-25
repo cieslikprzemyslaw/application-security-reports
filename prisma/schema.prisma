@@ -93,7 +93,6 @@ model Assessment {
   overallRisk          Severity?
   owaspTaxonomyVersion String    @default("2025")
   cweCatalogVersion    String    @default("4.20")
-  recordVersion        Int       @default(0)
   archivedAt           DateTime?
   archivedFromStatus   String?
   createdAt            DateTime  @default(now())
