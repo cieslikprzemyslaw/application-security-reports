@@ -71,6 +71,15 @@ type CompanyRow = {
   updatedAt: Date;
 };
 
+type RecentAssessmentRow = {
+  id: string;
+  applicationName: string | null;
+  assessmentType: string | null;
+  overallRisk: string | null;
+  status: string;
+  _count: { threats: number };
+};
+
 const companySelect = {
   id: true,
   name: true,
@@ -201,20 +210,21 @@ export function createCompanyRepository(
 
       const grouped = await db.assessment.groupBy({
         by: ['status'],
-        where: { companyId, archivedAt: null },
+        where: { companyId },
         _count: { _all: true },
       });
-
       const groupedByStatus: Array<{
         status: string;
         _count: { _all: number };
       }> = grouped;
-
+      const activeGroups = groupedByStatus.filter(
+        group => group.status !== 'archived',
+      );
       const countByStatus = (status: string) =>
-        groupedByStatus.find(g => g.status === status)?._count._all ?? 0;
+        activeGroups.find(group => group.status === status)?._count._all ?? 0;
 
-      const recent = await db.assessment.findMany({
-        where: { companyId, archivedAt: null },
+      const recent: RecentAssessmentRow[] = await db.assessment.findMany({
+        where: { companyId },
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
         take: 5,
         select: {
@@ -226,23 +236,26 @@ export function createCompanyRepository(
           _count: { select: { threats: true } },
         },
       });
+      const activeRecent = recent.filter(
+        assessment => assessment.status !== 'archived',
+      );
 
       return {
         company: toCompany(company),
         assessmentCounts: {
-          total: groupedByStatus.reduce((sum, g) => sum + g._count._all, 0),
+          total: activeGroups.reduce((sum, group) => sum + group._count._all, 0),
           draft: countByStatus('draft'),
           inProgress: countByStatus('in-progress'),
           completed: countByStatus('completed'),
         },
-        recentAssessments: recent.map(a => ({
-          id: a.id,
-          applicationName: a.applicationName ?? '',
+        recentAssessments: activeRecent.map(assessment => ({
+          id: assessment.id,
+          applicationName: assessment.applicationName ?? '',
           companyName: company.name,
-          assessmentType: a.assessmentType ?? '',
-          severity: a.overallRisk ?? 'informational',
-          findingsCount: a._count.threats,
-          status: a.status,
+          assessmentType: assessment.assessmentType ?? '',
+          severity: assessment.overallRisk ?? 'informational',
+          findingsCount: assessment._count.threats,
+          status: assessment.status,
         })),
         recentReports: null,
       };
