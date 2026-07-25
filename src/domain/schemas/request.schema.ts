@@ -247,7 +247,7 @@ export const createReportRequestSchema = createReportBaseSchema;
 type CreateReportRequestSchemaOutput = Required<
   z.output<typeof createReportRequestSchema>
 >;
-const _createReportRequestSchemaCompatibilityCheck: CreateReportRequestRequestSchemaOutput extends CreateReportRequest
+const _createReportRequestSchemaCompatibilityCheck: CreateReportRequestSchemaOutput extends CreateReportRequest
   ? true
   : never = true;
 
