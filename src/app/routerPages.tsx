@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 
 import { reportCover, threats } from './appData';
 import Button from '~/app/components/ui/button';
@@ -164,4 +164,11 @@ export const ThreatsRoute = () => {
 
 export const ReportsRoute = () => <Reports cover={reportCover} />;
 
-export const SettingsRoute = () => <Settings />;
+export const SettingsRoute = () => (
+  <>
+    <nav aria-label="Settings sections">
+      <Link to={routes.assessmentTemplates}>Manage Assessment Templates</Link>
+    </nav>
+    <Settings />
+  </>
+);

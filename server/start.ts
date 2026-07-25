@@ -61,6 +61,7 @@ export const startApiServer = async (
     options.app ??
     createApiApp(config, {
       assessmentRepository: options.assessmentRepository,
+      assessmentTemplateRepository: options.assessmentTemplateRepository,
       companyRepository: options.companyRepository,
       evidenceRepository: options.evidenceRepository,
       logoStorage: options.logoStorage,

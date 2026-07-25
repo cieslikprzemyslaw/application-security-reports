@@ -1,5 +1,6 @@
 export type CompanyId = string;
 export type AssessmentId = string;
+export type AssessmentTemplateId = string;
 export type ThreatId = string;
 export type EvidenceId = string;
 export type ReportId = string;
@@ -148,6 +149,7 @@ export type ActivityActorType = (typeof ACTIVITY_ACTOR_TYPES)[number];
 export type DomainEntityId =
   | CompanyId
   | AssessmentId
+  | AssessmentTemplateId
   | ThreatId
   | EvidenceId
   | ReportId

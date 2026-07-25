@@ -18,6 +18,7 @@ const main = async (): Promise<void> => {
   const { config, shutdown } = await startApiServer({
     prismaClient: prisma,
     assessmentRepository: repositories.assessment,
+    assessmentTemplateRepository: repositories.assessmentTemplate,
     companyRepository: repositories.company,
     evidenceRepository: repositories.evidence,
     reportRepository: repositories.report,

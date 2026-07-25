@@ -18,6 +18,7 @@ import {
 } from '~/app/components/common';
 import { routes } from '~/routes';
 
+import AssessmentTemplateApply from './assessmentTemplateApply.component';
 import StyledAssessments from './assessments.styled';
 import type { AssessmentsProps } from './assessments.type';
 import { useAssessmentsController } from './useAssessmentsController';
@@ -305,6 +306,13 @@ const Assessments = ({ companyId, companyName }: AssessmentsProps) => {
         onClose={requestCloseDrawer}
         size="large"
       >
+        {drawerMode === 'create' && (
+          <AssessmentTemplateApply
+            value={draftValue}
+            onChange={setDraftValue}
+          />
+        )}
+
         <AssessmentForm
           mode={drawerMode === 'edit' ? 'edit' : 'create'}
           value={draftValue}

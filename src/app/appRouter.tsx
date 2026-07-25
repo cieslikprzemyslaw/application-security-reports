@@ -34,6 +34,12 @@ import { ReportsRoute, SettingsRoute, ThreatsRoute } from './routerPages';
 
 const AssessmentDetails = lazy(() => import('./pages/assessmentDetails'));
 const ReportDetails = lazy(() => import('./pages/reportDetails'));
+const AssessmentTemplates = lazy(
+  () => import('./pages/assessmentTemplates/assessmentTemplates.component'),
+);
+const AssessmentTemplateForm = lazy(
+  () => import('./pages/assessmentTemplates/assessmentTemplateForm.component'),
+);
 
 interface AssessmentDetailsRouteProps {
   section: AssessmentDetailSection;
@@ -149,6 +155,18 @@ const createAppRouter = () =>
             <Route path={routePatterns.threats} element={<ThreatsRoute />} />
             <Route path={routePatterns.reports} element={<ReportsRoute />} />
             <Route path={routePatterns.settings} element={<SettingsRoute />} />
+            <Route
+              path={routePatterns.assessmentTemplates}
+              element={<AssessmentTemplates />}
+            />
+            <Route
+              path={routePatterns.assessmentTemplatesNew}
+              element={<AssessmentTemplateForm />}
+            />
+            <Route
+              path={routePatterns.assessmentTemplateEdit}
+              element={<AssessmentTemplateForm />}
+            />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Route>

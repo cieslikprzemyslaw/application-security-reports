@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
+import type { AssessmentTemplateRepository } from '../database/repositories/assessmentTemplate.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
 import type { EvidenceRepository } from '../database/repositories/evidence.repository.js';
 import type { ReportRepository } from '../database/repositories/report.repository.js';
@@ -15,6 +16,7 @@ import {
   createIssuerLogoStorage,
   type IssuerLogoStorage,
 } from '../services/issuerLogoStorage.js';
+import { createAssessmentTemplatesRouter } from '../routes/assessment-templates.route.js';
 import { createAssessmentsRouter } from '../routes/assessments.route.js';
 import { createEvidenceRouter } from '../routes/evidence.route.js';
 import { registerHealthRoute } from '../routes/health.route.js';
@@ -30,6 +32,7 @@ import { createThreatsRouter } from '../routes/threats.route.js';
 
 export interface RegisterApiRoutesOptions {
   assessmentRepository?: AssessmentRepository;
+  assessmentTemplateRepository?: AssessmentTemplateRepository;
   companyRepository?: CompanyRepository;
   evidenceRepository?: EvidenceRepository;
   logoStorage?: CompanyLogoStorage;
@@ -50,6 +53,12 @@ export const createApiRouter = (
     options.issuerLogoStorage ?? createIssuerLogoStorage();
 
   registerHealthRoute(router);
+  if (options.assessmentTemplateRepository) {
+    router.use(
+      '/assessment-templates',
+      createAssessmentTemplatesRouter(options.assessmentTemplateRepository),
+    );
+  }
   if (options.assessmentRepository && options.threatRepository) {
     router.use(
       '/threats',

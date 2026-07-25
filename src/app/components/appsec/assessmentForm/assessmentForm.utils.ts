@@ -13,6 +13,7 @@ export const createEmptyAssessmentFormValue = (): AssessmentFormValue => ({
   typeMode: 'preset',
   presetType: assessmentPresetTypes[0],
   customType: '',
+  environment: '',
   description: '',
   scope: '',
   status: 'draft',
@@ -31,6 +32,7 @@ type AssessmentFormSource = {
   applicationName?: string | null;
   type?: string;
   assessmentType?: string;
+  environment?: string;
   description?: string;
   scope?: string;
   status: AssessmentFormValue['status'];
@@ -62,6 +64,7 @@ export const assessmentToFormValue = (
     )
       ? ''
       : assessmentType,
+    environment: normalize(assessment.environment),
     description: normalize(assessment.description ?? ''),
     scope: normalize(assessment.scope ?? ''),
     status: assessment.status,
@@ -77,6 +80,7 @@ export const areAssessmentFormValuesEqual = (
   first.typeMode === second.typeMode &&
   first.presetType === second.presetType &&
   first.customType.trim() === second.customType.trim() &&
+  first.environment.trim() === second.environment.trim() &&
   first.description.trim() === second.description.trim() &&
   first.scope.trim() === second.scope.trim() &&
   first.status === second.status;
@@ -84,25 +88,35 @@ export const areAssessmentFormValuesEqual = (
 export const assessmentFormValueToCreateInput = (
   companyId: string,
   value: AssessmentFormValue,
-): AssessmentCreateInput => ({
-  companyId,
-  title: normalize(value.name),
-  applicationName: normalize(value.applicationName),
-  description: normalize(value.description) || undefined,
-  scope: normalize(value.scope) || undefined,
-  status: 'draft',
-  assessmentType: resolveAssessmentType(value) || undefined,
-});
+): AssessmentCreateInput => {
+  const environment = normalize(value.environment);
+
+  return {
+    companyId,
+    title: normalize(value.name),
+    applicationName: normalize(value.applicationName),
+    description: normalize(value.description) || undefined,
+    scope: normalize(value.scope) || undefined,
+    status: 'draft',
+    ...(environment ? { environment } : {}),
+    assessmentType: resolveAssessmentType(value) || undefined,
+  };
+};
 
 export const assessmentFormValueToUpdateInput = (
   value: AssessmentFormValue,
-): AssessmentUpdateInput => ({
-  title: normalize(value.name),
-  applicationName: normalize(value.applicationName),
-  description: normalize(value.description) || undefined,
-  scope: normalize(value.scope) || undefined,
-  assessmentType: resolveAssessmentType(value) || undefined,
-});
+): AssessmentUpdateInput => {
+  const environment = normalize(value.environment);
+
+  return {
+    title: normalize(value.name),
+    applicationName: normalize(value.applicationName),
+    description: normalize(value.description) || undefined,
+    scope: normalize(value.scope) || undefined,
+    ...(environment ? { environment } : {}),
+    assessmentType: resolveAssessmentType(value) || undefined,
+  };
+};
 
 export const validateAssessmentFormValue = (
   value: AssessmentFormValue,

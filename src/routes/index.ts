@@ -65,6 +65,9 @@ export const routePatterns = {
   reports: '/reports',
   reportDetails: '/companies/:companyId/reports/:reportId',
   settings: '/settings',
+  assessmentTemplates: '/settings/assessment-templates',
+  assessmentTemplatesNew: '/settings/assessment-templates/new',
+  assessmentTemplateEdit: '/settings/assessment-templates/:templateId',
 } as const;
 
 export const routes = {
@@ -137,6 +140,14 @@ export const routes = {
     )}?${query.toString()}`;
   },
   settings: routePatterns.settings,
+  assessmentTemplates: routePatterns.assessmentTemplates,
+  assessmentTemplatesNew: routePatterns.assessmentTemplatesNew,
+  assessmentTemplateEdit: (templateId: string) =>
+    buildRouteWithId(
+      routePatterns.assessmentTemplates,
+      templateId,
+      'assessmentTemplateEdit',
+    ),
 } as const;
 
 export type RoutePatterns = typeof routePatterns;

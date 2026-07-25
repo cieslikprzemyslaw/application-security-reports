@@ -3,6 +3,7 @@ import express, { type Express, type RequestHandler } from 'express';
 import type { Router } from 'express';
 
 import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
+import type { AssessmentTemplateRepository } from '../database/repositories/assessmentTemplate.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
 import type { EvidenceRepository } from '../database/repositories/evidence.repository.js';
 import type { ReportRepository } from '../database/repositories/report.repository.js';
@@ -19,6 +20,7 @@ import { apiErrorHandler, apiNotFoundHandler } from './error-handler.js';
 
 export interface ApiAppOptions {
   assessmentRepository?: AssessmentRepository;
+  assessmentTemplateRepository?: AssessmentTemplateRepository;
   companyRepository?: CompanyRepository;
   evidenceRepository?: EvidenceRepository;
   logoStorage?: CompanyLogoStorage;

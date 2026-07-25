@@ -1,6 +1,7 @@
 export * from './common.schema.js';
 export * from './company.schema.js';
 export * from './assessment.schema.js';
+export * from './assessmentTemplate.schema.js';
 export * from './threat.schema.js';
 export * from './evidence.schema.js';
 export * from './report.schema.js';

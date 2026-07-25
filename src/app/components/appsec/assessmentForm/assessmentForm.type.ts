@@ -14,6 +14,7 @@ export type AssessmentFormFieldName =
   | 'typeMode'
   | 'presetType'
   | 'customType'
+  | 'environment'
   | 'description'
   | 'scope'
   | 'status';
@@ -24,6 +25,7 @@ export interface AssessmentFormValue {
   typeMode: AssessmentTypeMode;
   presetType: AssessmentPresetType;
   customType: string;
+  environment: string;
   description: string;
   scope: string;
   status: AssessmentStatus;
