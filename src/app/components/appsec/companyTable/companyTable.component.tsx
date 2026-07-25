@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import CompanyAvatar from '~/app/components/appsec/companyAvatar';
 import IconSVG from '~/app/components/ui/iconSVG';
@@ -15,27 +15,62 @@ const CompanyTable = ({
   emptyState,
 }: CompanyTableProps) => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuButtonRefs = useRef(new Map<string, HTMLButtonElement>());
+  const menuItemRefs = useRef(new Map<string, HTMLButtonElement>());
 
   useEffect(() => {
     if (openMenuId === null) return undefined;
 
+    const frameId = window.requestAnimationFrame(() => {
+      menuItemRefs.current.get(openMenuId)?.focus();
+    });
     const handleDocumentClick = () => setOpenMenuId(null);
     document.addEventListener('click', handleDocumentClick);
-    return () => document.removeEventListener('click', handleDocumentClick);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      document.removeEventListener('click', handleDocumentClick);
+    };
   }, [openMenuId]);
+
+  const closeMenu = (companyId: string, restoreFocus = true) => {
+    setOpenMenuId(null);
+
+    if (restoreFocus) {
+      window.requestAnimationFrame(() => {
+        menuButtonRefs.current.get(companyId)?.focus();
+      });
+    }
+  };
 
   return (
     <StyledCompanyTable>
       <table className="company-table__table">
         <thead className="company-table__head">
           <tr>
-            <th className="company-table__header-cell">Company</th>
-            <th className="company-table__header-cell">Website</th>
-            <th className="company-table__header-cell">Primary contact</th>
-            <th className="company-table__header-cell">Assessments</th>
-            <th className="company-table__header-cell">Open threats</th>
-            <th className="company-table__header-cell">Risk posture</th>
-            <th className="company-table__header-cell" aria-label="Actions" />
+            <th className="company-table__header-cell" scope="col">
+              Company
+            </th>
+            <th className="company-table__header-cell" scope="col">
+              Website
+            </th>
+            <th className="company-table__header-cell" scope="col">
+              Primary contact
+            </th>
+            <th className="company-table__header-cell" scope="col">
+              Assessments
+            </th>
+            <th className="company-table__header-cell" scope="col">
+              Open threats
+            </th>
+            <th className="company-table__header-cell" scope="col">
+              Risk posture
+            </th>
+            <th
+              className="company-table__header-cell"
+              scope="col"
+              aria-label="Actions"
+            />
           </tr>
         </thead>
 
@@ -51,6 +86,7 @@ const CompanyTable = ({
           {companies.map(company => {
             const isActive = company.id === activeCompanyId;
             const isMenuOpen = openMenuId === company.id;
+            const menuId = `company-actions-${company.id}`;
 
             return (
               <tr
@@ -68,7 +104,7 @@ const CompanyTable = ({
                 onKeyDown={event => {
                   if (event.key === 'Escape' && isMenuOpen) {
                     event.stopPropagation();
-                    setOpenMenuId(null);
+                    closeMenu(company.id);
                     return;
                   }
                   if (
@@ -173,11 +209,16 @@ const CompanyTable = ({
                 <td className="company-table__cell company-table__cell--actions">
                   <div className="company-table__menu-wrapper">
                     <button
+                      ref={element => {
+                        if (element) menuButtonRefs.current.set(company.id, element);
+                        else menuButtonRefs.current.delete(company.id);
+                      }}
                       type="button"
                       className="company-table__menu-button"
                       aria-label={`Actions for ${company.name}`}
                       aria-expanded={isMenuOpen}
                       aria-haspopup="menu"
+                      aria-controls={isMenuOpen ? menuId : undefined}
                       onClick={event => {
                         event.stopPropagation();
                         setOpenMenuId(isMenuOpen ? null : company.id);
@@ -187,14 +228,30 @@ const CompanyTable = ({
                     </button>
 
                     {isMenuOpen && (
-                      <div className="company-table__menu" role="menu">
+                      <div
+                        id={menuId}
+                        className="company-table__menu"
+                        role="menu"
+                        aria-label={`Actions for ${company.name}`}
+                        onKeyDown={event => {
+                          if (event.key === 'Escape') {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            closeMenu(company.id);
+                          }
+                        }}
+                      >
                         <button
+                          ref={element => {
+                            if (element) menuItemRefs.current.set(company.id, element);
+                            else menuItemRefs.current.delete(company.id);
+                          }}
                           type="button"
                           className="company-table__menu-item"
                           role="menuitem"
                           onClick={event => {
                             event.stopPropagation();
-                            setOpenMenuId(null);
+                            closeMenu(company.id, false);
                             onEditCompany?.(company);
                           }}
                         >
