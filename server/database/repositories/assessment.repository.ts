@@ -26,8 +26,7 @@ import {
 
 export type { AssessmentListRecord } from './assessment.repository.shared.js';
 
-export interface AssessmentRepository
-  extends Partial<AssessmentLifecycleOperations> {
+export interface AssessmentRepository extends Partial<AssessmentLifecycleOperations> {
   findAll(): Promise<Assessment[]>;
   findById(id: string): Promise<Assessment | null>;
   findByCompanyId(companyId: string): Promise<Assessment[]>;
