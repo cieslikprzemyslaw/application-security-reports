@@ -1,11 +1,9 @@
-import type { Assessment } from '../../../src/domain/assessment.js';
-import {
-  CWE_CATALOG_CURRENT_VERSION,
-} from '../../../src/domain/cwe.js';
 import type {
+  Assessment,
   CreateAssessmentInput,
   UpdateAssessmentInput,
 } from '../../../src/domain/assessment.js';
+import { CWE_CATALOG_CURRENT_VERSION } from '../../../src/domain/cwe.js';
 import { OWASP_TOP_10_CURRENT_VERSION } from '../../../src/domain/owaspTop10.js';
 import { generateId } from '../../utils/id.js';
 import {
@@ -16,6 +14,7 @@ import {
 import type { RepositoryClient } from '../repository.types.js';
 import {
   createAssessmentLifecycleOperations,
+  type AssessmentLifecycleDb,
   type AssessmentLifecycleOperations,
 } from './assessment-lifecycle.repository.js';
 import {
@@ -28,7 +27,8 @@ import {
 
 export type { AssessmentListRecord } from './assessment.repository.shared.js';
 
-export interface AssessmentRepository extends AssessmentLifecycleOperations {
+export interface AssessmentRepository
+  extends Partial<AssessmentLifecycleOperations> {
   findAll(): Promise<Assessment[]>;
   findById(id: string): Promise<Assessment | null>;
   findByCompanyId(companyId: string): Promise<Assessment[]>;
@@ -37,10 +37,24 @@ export interface AssessmentRepository extends AssessmentLifecycleOperations {
   delete(id: string): Promise<void>;
 }
 
-type AssessmentRepositoryDb = Pick<
-  RepositoryClient,
-  'assessment' | 'activity' | '$transaction'
->;
+export type AssessmentLifecycleRepository = AssessmentRepository &
+  AssessmentLifecycleOperations;
+
+type AssessmentRepositoryDb = Pick<RepositoryClient, 'assessment'> &
+  Partial<Pick<RepositoryClient, 'activity' | '$transaction'>>;
+
+const hasLifecycleDb = (
+  db: AssessmentRepositoryDb,
+): db is AssessmentRepositoryDb & AssessmentLifecycleDb =>
+  'activity' in db && typeof db.$transaction === 'function';
+
+export const hasAssessmentLifecycleOperations = (
+  repository: AssessmentRepository,
+): repository is AssessmentLifecycleRepository =>
+  typeof repository.complete === 'function' &&
+  typeof repository.reopen === 'function' &&
+  typeof repository.archive === 'function' &&
+  typeof repository.restore === 'function';
 
 const buildArchivedCreateFields = (input: CreateAssessmentInput) => {
   if (input.status !== 'archived') {
@@ -60,7 +74,9 @@ const buildArchivedCreateFields = (input: CreateAssessmentInput) => {
 export function createAssessmentRepository(
   db: AssessmentRepositoryDb,
 ): AssessmentRepository {
-  const lifecycle = createAssessmentLifecycleOperations(db);
+  const lifecycle = hasLifecycleDb(db)
+    ? createAssessmentLifecycleOperations(db)
+    : {};
 
   return {
     ...lifecycle,
@@ -112,7 +128,6 @@ export function createAssessmentRepository(
             overallRisk: input.overallRisk,
             owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
             cweCatalogVersion: CWE_CATALOG_CURRENT_VERSION,
-            recordVersion: 0,
             ...buildArchivedCreateFields(input),
           },
           select: assessmentSelect,
@@ -134,17 +149,14 @@ export function createAssessmentRepository(
         throw new RepositoryNotFoundError('Assessment not found.');
       }
 
-      if (existing.archivedAt !== null) {
+      if (existing.archivedAt != null) {
         throw new RepositoryStateError('Archived Assessments are read-only.');
       }
 
       try {
         const assessment = await db.assessment.update({
           where: { id },
-          data: {
-            ...input,
-            recordVersion: { increment: 1 },
-          },
+          data: input,
           select: assessmentSelect,
         });
 
