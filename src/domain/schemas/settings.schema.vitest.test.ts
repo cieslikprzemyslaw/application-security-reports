@@ -32,7 +32,10 @@ describe('Settings schema', () => {
       }).success,
     ).toBe(false);
     expect(
-      settingsSchema.safeParse({ ...validSettings, apiToken: 'secret' }).success,
+      settingsSchema.safeParse({
+        ...validSettings,
+        apiToken: 'secret',
+      }).success,
     ).toBe(false);
   });
 
@@ -44,7 +47,10 @@ describe('Settings schema', () => {
       }).success,
     ).toBe(false);
     expect(
-      settingsSchema.safeParse({ ...validSettings, theme: 'solarized' }).success,
+      settingsSchema.safeParse({
+        ...validSettings,
+        theme: 'solarized',
+      }).success,
     ).toBe(false);
   });
 });
