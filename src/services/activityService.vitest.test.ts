@@ -31,10 +31,7 @@ describe('Activity service', () => {
     const service = createActivityService(request);
 
     await expect(
-      service.listByCompany(
-        'cmp_00000000-0000-0000-0000-000000000001',
-        25,
-      ),
+      service.listByCompany('cmp_00000000-0000-0000-0000-000000000001', 25),
     ).resolves.toEqual([activity]);
     expect(request).toHaveBeenCalledWith(
       '/api/companies/cmp_00000000-0000-0000-0000-000000000001/activity?limit=25',
