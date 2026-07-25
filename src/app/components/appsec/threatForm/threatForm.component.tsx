@@ -11,22 +11,17 @@ import Textarea from '~/app/components/ui/textarea';
 import StyledThreatForm from './threatForm.styled';
 import ThreatFormSection from './threatFormSection.component';
 import {
+  additionalFields,
+  hasAnyThreatFieldValue,
+  securityFields,
+} from './threatFormSections';
+import {
   buildOwaspCategoryOptions,
   fieldIdMap,
   statusLabelMap,
 } from './threatForm.utils';
 
 import type { ThreatFormProps, ThreatFormValue } from './threatForm.type';
-
-const securityFields: Array<keyof ThreatFormValue> = [
-  'affectedComponent',
-  'observation',
-  'risk',
-  'recommendation',
-  'resolutionNote',
-  'acceptedRiskJustification',
-];
-const additionalFields: Array<keyof ThreatFormValue> = ['references'];
 
 const updateField = <K extends keyof ThreatFormValue>(
   value: ThreatFormValue,
@@ -36,11 +31,6 @@ const updateField = <K extends keyof ThreatFormValue>(
   ...value,
   [field]: fieldValue,
 });
-
-const hasAnyValue = (
-  value: ThreatFormValue,
-  fields: Array<keyof ThreatFormValue>,
-) => fields.some(field => String(value[field] ?? '').trim().length > 0);
 
 const ThreatForm = ({
   value,
@@ -55,10 +45,10 @@ const ThreatForm = ({
 }: ThreatFormProps) => {
   const formRef = useRef<HTMLFormElement | null>(null);
   const [isSecurityOpen, setIsSecurityOpen] = useState(() =>
-    hasAnyValue(value, securityFields),
+    hasAnyThreatFieldValue(value, securityFields),
   );
   const [isAdditionalOpen, setIsAdditionalOpen] = useState(() =>
-    hasAnyValue(value, additionalFields),
+    hasAnyThreatFieldValue(value, additionalFields),
   );
   const owaspCategoryCode = value.owaspCategoryCode ?? '';
   const showCustomCategory = owaspCategoryCode === 'custom';
