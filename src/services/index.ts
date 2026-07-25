@@ -7,4 +7,5 @@ export * from './settingsService.js';
 export * from './evidenceService.js';
 export * from './reportService.js';
 export * from './reportVersionService.js';
+export * from './activityService.js';
 export type { ReportView } from '~/domain';
