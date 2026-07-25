@@ -13,6 +13,7 @@ import ThreatFormSection from './threatFormSection.component';
 import {
   additionalFields,
   hasAnyThreatFieldValue,
+  isThreatFormFieldVisible,
   securityFields,
 } from './threatFormSections';
 import {
@@ -93,13 +94,11 @@ const ThreatForm = ({
   const focusTargetFieldId = focusTargetField
     ? fieldIdMap[focusTargetField]
     : undefined;
-  const isFocusTargetVisible = focusTargetField
-    ? securityFields.includes(focusTargetField)
-      ? resolvedSecurityOpen
-      : additionalFields.includes(focusTargetField)
-        ? resolvedAdditionalOpen
-        : true
-    : false;
+  const isFocusTargetVisible = isThreatFormFieldVisible(
+    focusTargetField,
+    resolvedSecurityOpen,
+    resolvedAdditionalOpen,
+  );
 
   useEffect(() => {
     if (!focusTargetFieldId || !isFocusTargetVisible) {
