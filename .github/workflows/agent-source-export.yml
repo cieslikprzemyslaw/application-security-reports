@@ -34,13 +34,7 @@ jobs:
           echo "83740e520285f6848fa697551e792e6a267c2b01e0fddb9f7352b58c4b56995a  .agent/patch.part.03" | sha256sum --check
           echo "7c5e3226498a0946c18514e078adec5e863c06d3a4c920a55c797d3226b498b2  .agent/patch.part.04" | sha256sum --check
           echo "fa8a01e140a64dae254acec86421d1d7f39174bed671db5675a523d0c4c922dc  .agent/patch.part.05" | sha256sum --check
-          cat \
-            .agent/patch.part.00 \
-            .agent/patch.part.01 \
-            .agent/patch.part.02 \
-            .agent/patch.part.03 \
-            .agent/patch.part.04 \
-            .agent/patch.part.05 > /tmp/cwe-final.patch.gz.b64
+          cat .agent/patch.part.00 .agent/patch.part.01 .agent/patch.part.02 .agent/patch.part.03 .agent/patch.part.04 .agent/patch.part.05 > /tmp/cwe-final.patch.gz.b64
           base64 --decode /tmp/cwe-final.patch.gz.b64 > /tmp/cwe-final.patch.gz
           echo "1e76dc7c4e33599f157f937fe88f2d9c9f0ae0586e404c2460a15dffa9007c51  /tmp/cwe-final.patch.gz" | sha256sum --check
           gzip --decompress --stdout /tmp/cwe-final.patch.gz > /tmp/cwe-final.patch
@@ -54,8 +48,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate implementation
-        run: npm run validate
+      - name: Validate Prisma schema
+        run: npm run db:validate
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run typecheck
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build application
+        run: npm run build
 
       - name: Validate dependency policy
         run: npm run security:audit
