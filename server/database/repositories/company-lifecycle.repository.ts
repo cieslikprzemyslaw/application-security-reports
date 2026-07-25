@@ -8,7 +8,10 @@ import {
   RepositoryNotFoundError,
   RepositoryStateError,
 } from '../errors.js';
-import type { RepositoryClient } from '../repository.types.js';
+import type {
+  RepositoryClient,
+  RepositoryTransactionClient,
+} from '../repository.types.js';
 import { appendActivity } from './activity.repository.js';
 import { toIsoString, toOptionalText } from './repository.helpers.js';
 
@@ -17,7 +20,7 @@ export interface CompanyLifecycleOperations {
   restore(id: string): Promise<Company>;
 }
 
-type CompanyLifecycleDb = Pick<
+export type CompanyLifecycleDb = Pick<
   RepositoryClient,
   'company' | 'activity' | '$transaction'
 >;
@@ -112,7 +115,7 @@ const runCompanyTransition = async (
   }
 
   try {
-    return await db.$transaction(async tx => {
+    return await db.$transaction(async (tx: RepositoryTransactionClient) => {
       const result = await tx.company.updateMany({
         where: { id, archivedAt: current.archivedAt },
         data: { archivedAt: command === 'archive' ? new Date() : null },
