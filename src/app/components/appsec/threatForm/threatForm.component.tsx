@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { CWE_CATALOG_CURRENT_VERSION } from '~/domain';
 
@@ -45,7 +45,6 @@ const ThreatForm = ({
   onChange,
   onSubmit,
 }: ThreatFormProps) => {
-  const formRef = useRef<HTMLFormElement | null>(null);
   const [isSecurityOpen, setIsSecurityOpen] = useState(() =>
     hasAnyThreatFieldValue(value, securityFields),
   );
@@ -94,9 +93,7 @@ const ThreatForm = ({
     }
 
     const frameId = window.requestAnimationFrame(() => {
-      const field = formRef.current?.querySelector<HTMLElement>(
-        `#${CSS.escape(focusTargetFieldId)}`,
-      );
+      const field = document.getElementById(focusTargetFieldId);
 
       field?.scrollIntoView({ block: 'center' });
       field?.focus();
@@ -106,7 +103,7 @@ const ThreatForm = ({
   }, [focusTargetFieldId, isFocusTargetVisible]);
 
   return (
-    <StyledThreatForm ref={formRef} onSubmit={onSubmit} noValidate>
+    <StyledThreatForm onSubmit={onSubmit} noValidate>
       <fieldset className="threat-form-core">
         <legend>Core details</legend>
         <p className="threat-form-section-description">
