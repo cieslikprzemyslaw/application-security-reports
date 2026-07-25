@@ -51,10 +51,7 @@ export interface CompanyRepository extends CompanyLifecycleOperations {
   delete(id: string): Promise<void>;
 }
 
-type CompanyRepositoryDb = Pick<
-  RepositoryClient,
-  'company' | 'assessment'
-> &
+type CompanyRepositoryDb = Pick<RepositoryClient, 'company' | 'assessment'> &
   Partial<Pick<RepositoryClient, 'activity' | '$transaction'>>;
 
 type CompanyRow = {
@@ -243,7 +240,10 @@ export function createCompanyRepository(
       return {
         company: toCompany(company),
         assessmentCounts: {
-          total: activeGroups.reduce((sum, group) => sum + group._count._all, 0),
+          total: activeGroups.reduce(
+            (sum, group) => sum + group._count._all,
+            0,
+          ),
           draft: countByStatus('draft'),
           inProgress: countByStatus('in-progress'),
           completed: countByStatus('completed'),
