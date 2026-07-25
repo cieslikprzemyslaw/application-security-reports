@@ -19,9 +19,7 @@ const parsedFieldValues = (
   requestMethod: result.request?.method ?? '',
   requestUrl: result.request?.target ?? '',
   requestBody: result.request?.body ?? '',
-  responseStatusCode: result.response
-    ? String(result.response.statusCode)
-    : '',
+  responseStatusCode: result.response ? String(result.response.statusCode) : '',
   responseStatusText: result.response?.reasonPhrase ?? '',
   responseBody: result.response?.body ?? '',
 });
