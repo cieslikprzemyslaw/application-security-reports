@@ -50,19 +50,21 @@ const Drawer = ({
       '[tabindex]:not([tabindex="-1"])',
     ].join(',');
 
-    const focusFirstElement = () => {
-      const focusableElement =
-        panelRef.current?.querySelector<HTMLElement>(focusableSelector);
-
-      (focusableElement ?? panelRef.current)?.focus();
-    };
-
     const getFocusableElements = () =>
       panelRef.current
         ? Array.from(
             panelRef.current.querySelectorAll<HTMLElement>(focusableSelector),
           ).filter(element => !element.hasAttribute('disabled'))
         : [];
+
+    const focusFirstElement = () => {
+      const preferredElement = panelRef.current?.querySelector<HTMLElement>(
+        '[data-drawer-autofocus="true"]',
+      );
+      const firstElement = getFocusableElements()[0];
+
+      (preferredElement ?? firstElement ?? panelRef.current)?.focus();
+    };
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -89,23 +91,26 @@ const Drawer = ({
 
       if (event.shiftKey && activeElement === firstElement) {
         event.preventDefault();
-        lastElement.focus();
+        lastElement?.focus();
       } else if (!event.shiftKey && activeElement === lastElement) {
         event.preventDefault();
-        firstElement.focus();
+        firstElement?.focus();
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
-
     document.body.style.overflow = 'hidden';
     focusFirstElement();
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-
       document.body.style.overflow = '';
-      previouslyFocusedElementRef.current?.focus();
+
+      const previouslyFocusedElement = previouslyFocusedElementRef.current;
+      if (previouslyFocusedElement?.isConnected) {
+        previouslyFocusedElement.focus();
+      }
+      previouslyFocusedElementRef.current = null;
     };
   }, [isOpen]);
 
