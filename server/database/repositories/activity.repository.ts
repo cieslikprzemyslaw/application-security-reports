@@ -7,10 +7,13 @@ import {
   ACTIVITY_EVENT_TYPES,
   ACTIVITY_RESULTS,
   ACTIVITY_SEVERITIES,
+  type ActivityAction,
   type ActivityActorType,
+  type ActivityEntityType,
   type ActivityEventType,
   type ActivityResult,
   type ActivitySeverity,
+  type ISODateString,
 } from '../../../src/domain/common.js';
 import { generateId } from '../../utils/id.js';
 import { mapPrismaError, RepositoryError } from '../errors.js';
@@ -22,6 +25,14 @@ import {
   type ActivityScopeQuery,
 } from './repository.helpers.js';
 
+export type LegacyActivityInput = {
+  entityType: ActivityEntityType;
+  entityId?: string;
+  action: ActivityAction;
+  message: string;
+  createdAt?: ISODateString;
+};
+
 export interface ActivityRepository {
   findById(id: string): Promise<Activity | null>;
   findRecent(limit?: number): Promise<Activity[]>;
@@ -29,7 +40,7 @@ export interface ActivityRepository {
   findByCompanyId(input: ActivityScopeQuery): Promise<Activity[]>;
   findByAssessmentId(input: ActivityScopeQuery): Promise<Activity[]>;
   append(input: AppendActivityInput): Promise<Activity>;
-  create(input: AppendActivityInput): Promise<Activity>;
+  create(input: AppendActivityInput | LegacyActivityInput): Promise<Activity>;
 }
 
 type ActivityRepositoryDb = Pick<RepositoryClient, 'activity'>;
@@ -66,8 +77,19 @@ const activitySelect = {
   createdAt: true,
 } as const;
 
-const includes = <T extends string>(values: readonly T[], value: string): value is T =>
-  values.includes(value as T);
+const legacyEventTypeByAction: Record<ActivityAction, ActivityEventType> = {
+  created: 'legacy.created',
+  updated: 'legacy.updated',
+  deleted: 'legacy.deleted',
+  'status-changed': 'legacy.status-changed',
+  'evidence-added': 'legacy.evidence-added',
+  'report-generated': 'legacy.report-generated',
+};
+
+const includes = <T extends string>(
+  values: readonly T[],
+  value: string,
+): value is T => values.includes(value as T);
 
 const toActivity = (row: ActivityRow): Activity => {
   if (
@@ -76,7 +98,9 @@ const toActivity = (row: ActivityRow): Activity => {
     !includes(ACTIVITY_SEVERITIES, row.severity) ||
     !includes(ACTIVITY_ACTOR_TYPES, row.actorType)
   ) {
-    throw new RepositoryError('Unsupported Activity vocabulary stored in database.');
+    throw new RepositoryError(
+      'Unsupported Activity vocabulary stored in database.',
+    );
   }
 
   return {
@@ -133,6 +157,31 @@ export const appendActivity = async (
   }
 };
 
+const toAppendInput = (
+  input: AppendActivityInput | LegacyActivityInput,
+): AppendActivityInput => {
+  if ('eventType' in input) {
+    return input;
+  }
+
+  const id = input.entityId ?? 'legacy';
+
+  return {
+    eventType: legacyEventTypeByAction[input.action],
+    result: 'success',
+    severity: 'informational',
+    actor: { type: 'system' },
+    resource: {
+      type: input.entityType,
+      id,
+      ...(input.entityType === 'company' ? { companyId: id } : {}),
+      ...(input.entityType === 'assessment' ? { assessmentId: id } : {}),
+    },
+    message: input.message,
+    createdAt: input.createdAt,
+  };
+};
+
 export function createActivityRepository(
   db: ActivityRepositoryDb,
 ): ActivityRepository {
@@ -184,7 +233,7 @@ export function createActivityRepository(
     },
 
     create(input) {
-      return appendActivity(db, input);
+      return appendActivity(db, toAppendInput(input));
     },
   };
 }
