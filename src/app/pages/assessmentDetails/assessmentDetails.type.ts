@@ -49,8 +49,8 @@ export interface AssessmentDetailsAssessment {
   overallRisk?: Severity;
   owaspTaxonomyVersion: OwaspTop10Version;
   cweCatalogVersion?: CweCatalogVersion;
-  recordVersion: number;
-  archivedAt: string | null;
+  recordVersion?: number;
+  archivedAt?: string | null;
   findingsCount: number;
   evidenceCount: number;
   reportVersionCount: number;
