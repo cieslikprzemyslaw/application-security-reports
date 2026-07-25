@@ -26,6 +26,7 @@ export type AssessmentWorkspaceOverview = {
     name: string;
   };
   assessment: Assessment & {
+    recordVersion: number;
     findingsCount: number;
     evidenceCount: number;
     reportVersionCount: number;
