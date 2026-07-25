@@ -7,4 +7,5 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
   isSidebarOpen?: boolean;
   onSidebarClose?: () => void;
   sidebarId?: string;
+  mainContentId?: string;
 }
