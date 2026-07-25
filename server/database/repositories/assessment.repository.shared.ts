@@ -23,10 +23,10 @@ export type AssessmentRow = {
   overallRisk: string | null;
   owaspTaxonomyVersion: string;
   cweCatalogVersion: string;
-  archivedAt: Date | null;
-  archivedFromStatus: string | null;
   createdAt: Date;
   updatedAt: Date;
+  archivedAt?: Date | null;
+  archivedFromStatus?: string | null;
 };
 
 export type AssessmentListRow = AssessmentRow & {
@@ -50,10 +50,14 @@ export const assessmentSelect = {
   overallRisk: true,
   owaspTaxonomyVersion: true,
   cweCatalogVersion: true,
-  archivedAt: true,
-  archivedFromStatus: true,
   createdAt: true,
   updatedAt: true,
+} as const;
+
+export const lifecycleAssessmentSelect = {
+  ...assessmentSelect,
+  archivedAt: true,
+  archivedFromStatus: true,
 } as const;
 
 export const assessmentListSelect = {
@@ -90,7 +94,14 @@ export const toAssessment = (row: AssessmentRow): Assessment => ({
           `Unsupported CWE catalog version: ${row.cweCatalogVersion}`,
         );
       })(),
-  archivedAt: row.archivedAt ? toIsoString(row.archivedAt) : null,
+  archivedAt:
+    row.archivedAt !== undefined
+      ? row.archivedAt
+        ? toIsoString(row.archivedAt)
+        : null
+      : row.status === 'archived'
+        ? toIsoString(row.updatedAt)
+        : null,
   createdAt: toIsoString(row.createdAt),
   updatedAt: toIsoString(row.updatedAt),
 });
