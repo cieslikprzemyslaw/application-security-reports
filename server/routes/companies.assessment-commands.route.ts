@@ -7,7 +7,7 @@ import {
   RepositoryNotFoundError,
   RepositoryStateError,
 } from '../database/errors.js';
-import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
+import type { AssessmentLifecycleRepository } from '../database/repositories/assessment.repository.js';
 import type { CompanyRepository } from '../database/repositories/company.repository.js';
 import type { EvidenceRepository } from '../database/repositories/evidence.repository.js';
 import type { ReportRepository } from '../database/repositories/report.repository.js';
@@ -65,7 +65,7 @@ const handleCommandError = (error: unknown, res: Response): boolean => {
 
 export const createAssessmentCommandsRouter = (
   companyRepository: CompanyRepository,
-  assessmentRepository: AssessmentRepository,
+  assessmentRepository: AssessmentLifecycleRepository,
   threatRepository: ThreatRepository,
   evidenceRepository: EvidenceRepository,
   reportRepository: ReportRepository,
