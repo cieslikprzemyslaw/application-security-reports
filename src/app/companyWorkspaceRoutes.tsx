@@ -9,7 +9,6 @@ import {
   type To,
 } from 'react-router-dom';
 
-import { ActivityFeed, PageHeader } from '~/app/components/common';
 import {
   EntityNotFoundView,
   RouteLoadingView,
@@ -25,7 +24,7 @@ import type {
 import type { ReportPreviewShellTab } from '~/app/components/appsec/reportPreviewShell';
 import { routes } from '~/routes';
 
-import { recentActivity, reportCover } from './appData';
+import { reportCover } from './appData';
 import CompanyOverviewDashboard from './pages/dashboard/companyOverviewDashboard.component';
 import Assessments from './pages/assessments';
 import Reports from './pages/reports';
@@ -347,36 +346,7 @@ export const CompanyReportsRoute = ({
   );
 };
 
-export const CompanyActivityRoute = ({
-  companyName,
-}: CompanyWorkspaceRouteProps) => {
-  const companyId = useCompanyId();
-
-  return (
-    <section>
-      <PageHeader
-        eyebrow="Company workspace"
-        title="Activity"
-        context={[
-          { label: 'Companies', href: routes.companies },
-          {
-            label: companyName ?? 'Company',
-            href: companyId
-              ? routes.companyWorkspaceOverview(companyId)
-              : routes.companies,
-          },
-          { label: 'Activity' },
-        ]}
-        documentTitle={
-          companyName ? `Activity for ${companyName}` : 'Company activity'
-        }
-        subtitle="Recent actions across the active company workspace."
-      />
-
-      <ActivityFeed key={companyId} items={recentActivity.slice(0, 5)} />
-    </section>
-  );
-};
+export { default as CompanyActivityRoute } from './companyActivityRoute';
 
 export const CompanyWorkspaceNotFoundRoute = () => {
   const companyId = useCompanyId();
