@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 
-import {
-  assessmentPresetTypes,
-  type AssessmentFormValue,
-  type AssessmentPresetType,
-} from '~/app/components/appsec/assessmentForm';
+import type { AssessmentFormValue } from '~/app/components/appsec/assessmentForm';
 import type { AssessmentTemplate } from '~/domain';
 import { assessmentTemplateService } from '~/services';
+
+import {
+  applyAssessmentTemplateToForm,
+  hasAssessmentTemplateOverwriteTargets,
+} from './assessmentTemplateApply.utils';
 
 interface UseAssessmentTemplateApplyOptions {
   drawerMode: 'create' | 'edit' | null;
@@ -28,9 +29,7 @@ export const useAssessmentTemplateApply = ({
 
   useEffect(() => {
     if (drawerMode !== 'create') {
-      setSelectedTemplateId('');
-      setStatusMessage(undefined);
-      return;
+      return undefined;
     }
 
     const controller = new AbortController();
@@ -38,6 +37,8 @@ export const useAssessmentTemplateApply = ({
 
     setIsLoading(true);
     setLoadError(undefined);
+    setSelectedTemplateId('');
+    setStatusMessage(undefined);
 
     void assessmentTemplateService
       .list(undefined, controller.signal)
@@ -82,16 +83,8 @@ export const useAssessmentTemplateApply = ({
       return;
     }
 
-    const defaultPreset = assessmentPresetTypes[0];
-    const hasExistingValues =
-      draftValue.environment.trim().length > 0 ||
-      draftValue.description.trim().length > 0 ||
-      draftValue.scope.trim().length > 0 ||
-      draftValue.typeMode === 'custom' ||
-      draftValue.presetType !== defaultPreset;
-
     if (
-      hasExistingValues &&
+      hasAssessmentTemplateOverwriteTargets(draftValue) &&
       !window.confirm(
         'Replace the current assessment type, environment, description, and scope?',
       )
@@ -99,21 +92,9 @@ export const useAssessmentTemplateApply = ({
       return;
     }
 
-    const isPreset = assessmentPresetTypes.includes(
-      selectedTemplate.assessmentType as AssessmentPresetType,
+    setDraftValue(current =>
+      applyAssessmentTemplateToForm(current, selectedTemplate),
     );
-
-    setDraftValue(current => ({
-      ...current,
-      typeMode: isPreset ? 'preset' : 'custom',
-      presetType: isPreset
-        ? (selectedTemplate.assessmentType as AssessmentPresetType)
-        : current.presetType,
-      customType: isPreset ? '' : selectedTemplate.assessmentType,
-      environment: selectedTemplate.environment,
-      description: selectedTemplate.description ?? '',
-      scope: selectedTemplate.scope ?? '',
-    }));
     setStatusMessage(`Applied "${selectedTemplate.name}".`);
   };
 
