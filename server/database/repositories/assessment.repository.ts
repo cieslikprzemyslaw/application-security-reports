@@ -1,26 +1,34 @@
 import type { Assessment } from '../../../src/domain/assessment.js';
 import {
   CWE_CATALOG_CURRENT_VERSION,
-  isCweCatalogVersion,
 } from '../../../src/domain/cwe.js';
 import type {
   CreateAssessmentInput,
   UpdateAssessmentInput,
 } from '../../../src/domain/assessment.js';
-import {
-  OWASP_TOP_10_CURRENT_VERSION,
-  isOwaspTop10Version,
-} from '../../../src/domain/owaspTop10.js';
+import { OWASP_TOP_10_CURRENT_VERSION } from '../../../src/domain/owaspTop10.js';
 import { generateId } from '../../utils/id.js';
-import { mapPrismaError, RepositoryError } from '../errors.js';
+import {
+  mapPrismaError,
+  RepositoryNotFoundError,
+  RepositoryStateError,
+} from '../errors.js';
 import type { RepositoryClient } from '../repository.types.js';
-import { toIsoString, toOptionalText } from './repository.helpers.js';
+import {
+  createAssessmentLifecycleOperations,
+  type AssessmentLifecycleOperations,
+} from './assessment-lifecycle.repository.js';
+import {
+  assessmentListSelect,
+  assessmentSelect,
+  toAssessment,
+  toAssessmentListRecord,
+  type AssessmentListRecord,
+} from './assessment.repository.shared.js';
 
-export interface AssessmentListRecord extends Assessment {
-  findingsCount: number;
-}
+export type { AssessmentListRecord } from './assessment.repository.shared.js';
 
-export interface AssessmentRepository {
+export interface AssessmentRepository extends AssessmentLifecycleOperations {
   findAll(): Promise<Assessment[]>;
   findById(id: string): Promise<Assessment | null>;
   findByCompanyId(companyId: string): Promise<Assessment[]>;
@@ -29,103 +37,37 @@ export interface AssessmentRepository {
   delete(id: string): Promise<void>;
 }
 
-type AssessmentRepositoryDb = Pick<RepositoryClient, 'assessment'>;
+type AssessmentRepositoryDb = Pick<
+  RepositoryClient,
+  'assessment' | 'activity' | '$transaction'
+>;
 
-type AssessmentRow = {
-  id: string;
-  companyId: string;
-  title: string;
-  description: string | null;
-  scope: string | null;
-  status: string;
-  startedAt: string | null;
-  completedAt: string | null;
-  applicationName: string | null;
-  environment: string | null;
-  assessmentType: string | null;
-  overallRisk: string | null;
-  owaspTaxonomyVersion: string;
-  cweCatalogVersion: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
+const buildArchivedCreateFields = (input: CreateAssessmentInput) => {
+  if (input.status !== 'archived') {
+    return {};
+  }
 
-type AssessmentListRow = AssessmentRow & {
-  _count: {
-    threats: number;
+  return {
+    archivedAt: new Date(),
+    archivedFromStatus: input.completedAt
+      ? 'completed'
+      : input.startedAt
+        ? 'in-progress'
+        : 'draft',
   };
 };
-
-const assessmentSelect = {
-  id: true,
-  companyId: true,
-  title: true,
-  description: true,
-  scope: true,
-  status: true,
-  startedAt: true,
-  completedAt: true,
-  applicationName: true,
-  environment: true,
-  assessmentType: true,
-  overallRisk: true,
-  owaspTaxonomyVersion: true,
-  cweCatalogVersion: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
-
-const assessmentListSelect = {
-  ...assessmentSelect,
-  _count: {
-    select: { threats: true },
-  },
-} as const;
-
-const toAssessment = (row: AssessmentRow): Assessment => ({
-  id: row.id,
-  companyId: row.companyId,
-  title: row.title,
-  description: toOptionalText(row.description),
-  scope: toOptionalText(row.scope),
-  status: row.status as Assessment['status'],
-  startedAt: toOptionalText(row.startedAt) as Assessment['startedAt'],
-  completedAt: toOptionalText(row.completedAt) as Assessment['completedAt'],
-  applicationName: row.applicationName,
-  environment: toOptionalText(row.environment),
-  assessmentType: toOptionalText(row.assessmentType),
-  overallRisk: toOptionalText(row.overallRisk) as Assessment['overallRisk'],
-  owaspTaxonomyVersion: isOwaspTop10Version(row.owaspTaxonomyVersion)
-    ? row.owaspTaxonomyVersion
-    : (() => {
-        throw new RepositoryError(
-          `Unsupported OWASP taxonomy version: ${row.owaspTaxonomyVersion}`,
-        );
-      })(),
-  cweCatalogVersion: isCweCatalogVersion(row.cweCatalogVersion)
-    ? row.cweCatalogVersion
-    : (() => {
-        throw new RepositoryError(
-          `Unsupported CWE catalog version: ${row.cweCatalogVersion}`,
-        );
-      })(),
-  createdAt: toIsoString(row.createdAt),
-  updatedAt: toIsoString(row.updatedAt),
-});
-
-const toAssessmentListRecord = (
-  row: AssessmentListRow,
-): AssessmentListRecord => ({
-  ...toAssessment(row),
-  findingsCount: row._count.threats,
-});
 
 export function createAssessmentRepository(
   db: AssessmentRepositoryDb,
 ): AssessmentRepository {
+  const lifecycle = createAssessmentLifecycleOperations(db);
+
   return {
+    ...lifecycle,
+
     async findAll() {
       const assessments = await db.assessment.findMany({
+        where: { archivedAt: null },
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
         select: assessmentListSelect,
       });
@@ -144,7 +86,7 @@ export function createAssessmentRepository(
 
     async findByCompanyId(companyId) {
       const assessments = await db.assessment.findMany({
-        where: { companyId },
+        where: { companyId, archivedAt: null },
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
         select: assessmentListSelect,
       });
@@ -170,6 +112,8 @@ export function createAssessmentRepository(
             overallRisk: input.overallRisk,
             owaspTaxonomyVersion: OWASP_TOP_10_CURRENT_VERSION,
             cweCatalogVersion: CWE_CATALOG_CURRENT_VERSION,
+            recordVersion: 0,
+            ...buildArchivedCreateFields(input),
           },
           select: assessmentSelect,
         });
@@ -181,10 +125,26 @@ export function createAssessmentRepository(
     },
 
     async update(id, input) {
+      const existing = await db.assessment.findUnique({
+        where: { id },
+        select: { archivedAt: true },
+      });
+
+      if (!existing) {
+        throw new RepositoryNotFoundError('Assessment not found.');
+      }
+
+      if (existing.archivedAt !== null) {
+        throw new RepositoryStateError('Archived Assessments are read-only.');
+      }
+
       try {
         const assessment = await db.assessment.update({
           where: { id },
-          data: input,
+          data: {
+            ...input,
+            recordVersion: { increment: 1 },
+          },
           select: assessmentSelect,
         });
 
