@@ -212,7 +212,9 @@ const CompanyTable = ({
                       ref={element => {
                         if (element) {
                           menuButtonRefs.current.set(company.id, element);
-                        } else menuButtonRefs.current.delete(company.id);
+                        } else {
+                          menuButtonRefs.current.delete(company.id);
+                        }
                       }}
                       type="button"
                       className="company-table__menu-button"
@@ -246,7 +248,9 @@ const CompanyTable = ({
                           ref={element => {
                             if (element) {
                               menuItemRefs.current.set(company.id, element);
-                            } else menuItemRefs.current.delete(company.id);
+                            } else {
+                              menuItemRefs.current.delete(company.id);
+                            }
                           }}
                           type="button"
                           className="company-table__menu-item"
