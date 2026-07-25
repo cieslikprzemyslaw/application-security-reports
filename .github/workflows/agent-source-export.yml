@@ -47,7 +47,7 @@ jobs:
       - name: Apply patch
         working-directory: target
         run: |
-          git apply /tmp/cwe-report-fix.patch
+          git apply --whitespace=fix /tmp/cwe-report-fix.patch
           git diff --check
 
       - name: Commit and push repair
