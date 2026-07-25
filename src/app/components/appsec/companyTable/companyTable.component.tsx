@@ -210,8 +210,9 @@ const CompanyTable = ({
                   <div className="company-table__menu-wrapper">
                     <button
                       ref={element => {
-                        if (element) menuButtonRefs.current.set(company.id, element);
-                        else menuButtonRefs.current.delete(company.id);
+                        if (element) {
+                          menuButtonRefs.current.set(company.id, element);
+                        } else menuButtonRefs.current.delete(company.id);
                       }}
                       type="button"
                       className="company-table__menu-button"
@@ -243,8 +244,9 @@ const CompanyTable = ({
                       >
                         <button
                           ref={element => {
-                            if (element) menuItemRefs.current.set(company.id, element);
-                            else menuItemRefs.current.delete(company.id);
+                            if (element) {
+                              menuItemRefs.current.set(company.id, element);
+                            } else menuItemRefs.current.delete(company.id);
                           }}
                           type="button"
                           className="company-table__menu-item"
