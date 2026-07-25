@@ -45,11 +45,7 @@ const AppShell = ({
         {topbar}
       </div>
 
-      <main
-        id={mainContentId}
-        className="app-shell-content"
-        tabIndex={-1}
-      >
+      <main id={mainContentId} className="app-shell-content" tabIndex={-1}>
         {children}
       </main>
     </div>
