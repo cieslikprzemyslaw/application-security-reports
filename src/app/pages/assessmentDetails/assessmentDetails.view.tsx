@@ -1,4 +1,5 @@
 import React from 'react';
+import ActivityHistory from '~/app/components/appsec/activityHistory';
 import AssessmentSummary from '~/app/components/appsec/assessmentSummary';
 import Callout from '~/app/components/ui/callout';
 import Card from '~/app/components/ui/card';
@@ -29,13 +30,12 @@ const sectionLabelMap: Record<AssessmentDetailSection, string> = {
 };
 
 const sectionPlaceholderCopy: Record<
-  Exclude<AssessmentDetailSection, 'overview'>,
+  Exclude<AssessmentDetailSection, 'overview' | 'history'>,
   string
 > = {
   findings: 'Finding details will be added in a later issue.',
   evidence: 'Evidence management will be added in a later issue.',
   reports: 'Assessment report details will be added in a later issue.',
-  history: 'Version history details will be added in a later issue.',
 };
 
 const actionLabelMap: Record<AssessmentDetailAction, string> = {
@@ -147,7 +147,7 @@ const AssessmentDetailsView = ({
   );
 
   const renderPlaceholderPanel = (
-    section: Exclude<AssessmentDetailSection, 'overview'>,
+    section: Exclude<AssessmentDetailSection, 'overview' | 'history'>,
   ) => (
     <Card title={sectionLabelMap[section]} padding="large">
       <p className="assessment-details-placeholder-copy">
@@ -282,7 +282,16 @@ const AssessmentDetailsView = ({
           {
             id: 'history',
             label: 'History',
-            content: renderPlaceholderPanel('history'),
+            content: (
+              <ActivityHistory
+                scope={{
+                  type: 'assessment',
+                  companyId: assessment.companyId,
+                  assessmentId: assessment.id,
+                }}
+                emptyMessage="No Assessment activity has been recorded yet."
+              />
+            ),
           },
         ]}
       />
