@@ -35,7 +35,7 @@ const StyledThreatForm = styled.form.attrs({ className: 'threat-form' })`
     }
 
     .threat-form-section--has-error {
-      border-color: ${colors.border.danger};
+      border-color: ${colors.feedback.error};
     }
 
     .threat-form-section-heading {
@@ -83,7 +83,7 @@ const StyledThreatForm = styled.form.attrs({ className: 'threat-form' })`
 
     .threat-form-section-error {
       flex: 0 0 auto;
-      color: ${colors.text.danger};
+      color: ${colors.feedback.error};
       font-size: ${typography.label.small.size};
       font-weight: ${typography.label.small.weight};
     }
