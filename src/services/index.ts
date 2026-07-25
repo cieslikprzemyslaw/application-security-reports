@@ -1,6 +1,7 @@
 export * from './serviceHelpers.js';
 export * from './companyService.js';
 export * from './assessmentService.js';
+export * from './assessmentTemplateService.js';
 export * from './threatService.js';
 export * from './settingsService.js';
 export * from './evidenceService.js';

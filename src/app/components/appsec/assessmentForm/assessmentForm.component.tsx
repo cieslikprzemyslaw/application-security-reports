@@ -36,6 +36,7 @@ const fieldIdMap: Record<AssessmentFormFieldName, string> = {
   typeMode: 'assessment-type-mode',
   presetType: 'assessment-preset-type',
   customType: 'assessment-custom-type',
+  environment: 'assessment-environment',
   description: 'assessment-description',
   scope: 'assessment-scope',
   status: 'assessment-status-draft',
@@ -70,6 +71,7 @@ const AssessmentForm = ({
       'typeMode',
       'presetType',
       'customType',
+      'environment',
       'description',
       'scope',
       'status',
@@ -196,6 +198,19 @@ const AssessmentForm = ({
             }
           />
         )}
+
+        <div className="assessment-form-full-width">
+          <Input
+            id="assessment-environment"
+            label="Environment"
+            value={value.environment}
+            error={errors.environment}
+            description="Optional. For example: Production, Staging, or Local."
+            onChange={event =>
+              onChange(updateField(value, 'environment', event.target.value))
+            }
+          />
+        </div>
 
         <div className="assessment-form-full-width">
           <Textarea

@@ -13,6 +13,7 @@ export const createEmptyAssessmentFormValue = (): AssessmentFormValue => ({
   typeMode: 'preset',
   presetType: assessmentPresetTypes[0],
   customType: '',
+  environment: '',
   description: '',
   scope: '',
   status: 'draft',
@@ -31,6 +32,7 @@ type AssessmentFormSource = {
   applicationName?: string | null;
   type?: string;
   assessmentType?: string;
+  environment?: string;
   description?: string;
   scope?: string;
   status: AssessmentFormValue['status'];
@@ -62,6 +64,7 @@ export const assessmentToFormValue = (
     )
       ? ''
       : assessmentType,
+    environment: normalize(assessment.environment),
     description: normalize(assessment.description ?? ''),
     scope: normalize(assessment.scope ?? ''),
     status: assessment.status,
@@ -77,6 +80,7 @@ export const areAssessmentFormValuesEqual = (
   first.typeMode === second.typeMode &&
   first.presetType === second.presetType &&
   first.customType.trim() === second.customType.trim() &&
+  first.environment.trim() === second.environment.trim() &&
   first.description.trim() === second.description.trim() &&
   first.scope.trim() === second.scope.trim() &&
   first.status === second.status;
@@ -91,6 +95,7 @@ export const assessmentFormValueToCreateInput = (
   description: normalize(value.description) || undefined,
   scope: normalize(value.scope) || undefined,
   status: 'draft',
+  environment: normalize(value.environment) || undefined,
   assessmentType: resolveAssessmentType(value) || undefined,
 });
 
@@ -101,6 +106,7 @@ export const assessmentFormValueToUpdateInput = (
   applicationName: normalize(value.applicationName),
   description: normalize(value.description) || undefined,
   scope: normalize(value.scope) || undefined,
+  environment: normalize(value.environment) || undefined,
   assessmentType: resolveAssessmentType(value) || undefined,
 });
 
