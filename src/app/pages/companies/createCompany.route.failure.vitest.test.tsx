@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { routes } from '~/routes';
 import { buildCompany, buildCompanyListItem } from '~/test/builders';
@@ -121,11 +121,6 @@ describe('Create Company failure route', () => {
       },
     });
 
-    const confirmMock = vi
-      .spyOn(window, 'confirm')
-      .mockReturnValueOnce(false)
-      .mockReturnValueOnce(true);
-
     const { user } = renderRoute('/companies/new');
 
     await screen.findByRole('heading', {
@@ -154,16 +149,24 @@ describe('Create Company failure route', () => {
 
     await clickButton(user, 'Cancel');
 
-    await waitFor(() => {
-      expect(confirmMock).toHaveBeenCalledTimes(1);
-    });
+    expect(
+      await screen.findByRole('dialog', { name: 'Unsaved changes' }),
+    ).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/companies/new');
 
+    const keepEditingButton = screen
+      .getAllByRole('button', { name: 'Keep editing' })
+      .find(button => button.textContent?.trim() === 'Keep editing');
+
+    expect(keepEditingButton).toBeDefined();
+    await user.click(keepEditingButton!);
     expect(window.location.pathname).toBe('/companies/new');
 
     await clickButton(user, 'Cancel');
+    await screen.findByRole('dialog', { name: 'Unsaved changes' });
+    await clickButton(user, 'Discard changes');
 
     await waitFor(() => {
-      expect(confirmMock).toHaveBeenCalledTimes(2);
       expect(window.location.pathname).toBe(routes.companies);
     });
 

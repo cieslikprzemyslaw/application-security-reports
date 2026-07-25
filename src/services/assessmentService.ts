@@ -1,10 +1,15 @@
 import type {
   Assessment,
+  AssessmentDeletionImpact,
   AssessmentStatus,
   ISODateString,
   Severity,
 } from '~/domain';
 import { isCweCatalogVersion, isOwaspTop10Version } from '~/domain';
+import {
+  assessmentDeletionImpactSchema,
+  assessmentPermanentDeleteResultSchema,
+} from '~/domain/schemas';
 
 import { ApiResponseParseError, apiRequest } from './apiClient.js';
 import { requestData, type ApiRequestFn } from './serviceHelpers.js';
@@ -217,7 +222,14 @@ export interface AssessmentService {
     recordVersion: number,
     signal?: AbortSignal,
   ): Promise<AssessmentWorkspaceOverview>;
-  remove(assessmentId: string): Promise<AssessmentDeleteResult>;
+  getDeletionImpact(
+    assessmentId: string,
+    signal?: AbortSignal,
+  ): Promise<AssessmentDeletionImpact>;
+  remove(
+    assessmentId: string,
+    recordVersion?: number,
+  ): Promise<AssessmentDeleteResult>;
 }
 
 export const createAssessmentService = (
@@ -320,18 +332,40 @@ export const createAssessmentService = (
     restore: (companyId, assessmentId, recordVersion, signal) =>
       command('restore', companyId, assessmentId, recordVersion, signal),
 
-    async remove(assessmentId) {
-      const response = await request<{
-        data?: { cleanupWarnings?: unknown; warnings?: unknown };
-        warnings?: unknown;
-      }>(`/api/assessments/${assessmentId}`, { method: 'DELETE' });
+    async getDeletionImpact(assessmentId, signal) {
+      const response = await requestData<unknown>(
+        request,
+        `/api/assessments/${assessmentId}/deletion-impact`,
+        { method: 'GET', signal },
+      );
+      const result = assessmentDeletionImpactSchema.safeParse(response);
+
+      if (!result.success) {
+        throw new ApiResponseParseError(
+          'Unable to validate the Assessment deletion impact response.',
+        );
+      }
+
+      return result.data;
+    },
+
+    async remove(assessmentId, recordVersion) {
+      const response = await requestData<unknown>(
+        request,
+        `/api/assessments/${assessmentId}`,
+        {
+          body: recordVersion === undefined ? {} : { recordVersion },
+          method: 'DELETE',
+        },
+      );
+      const result = assessmentPermanentDeleteResultSchema.safeParse(response);
+
+      if (!result.success) {
+        return { cleanupWarnings: [] };
+      }
 
       return {
-        cleanupWarnings: normaliseCleanupWarnings(
-          response?.data?.cleanupWarnings ??
-            response?.data?.warnings ??
-            response?.warnings,
-        ),
+        cleanupWarnings: normaliseCleanupWarnings(result.data.cleanupWarnings),
       };
     },
   };

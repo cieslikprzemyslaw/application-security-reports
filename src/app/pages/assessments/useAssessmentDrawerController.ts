@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { Dispatch, FormEvent, SetStateAction } from 'react';
 
 import {
@@ -13,6 +13,8 @@ import {
 import type { AssessmentListItem } from '~/services';
 import { assessmentService } from '~/services';
 import { ApiError } from '~/services/apiClient';
+import { useDirtyFormGuard } from '~/app/hooks/useDirtyFormGuard';
+import type { DirtyFormGuardControls } from '~/app/hooks/useDirtyFormGuard';
 
 import { createAssessmentValidationErrorMap } from './assessments.utils';
 
@@ -29,6 +31,7 @@ export interface AssessmentDrawerController {
   openEditDrawer: (assessment: AssessmentListItem) => void;
   requestCloseDrawer: () => void;
   handleSave: (event: FormEvent<HTMLFormElement>) => Promise<void>;
+  dirtyFormGuard: DirtyFormGuardControls;
 }
 
 export const useAssessmentDrawerController = ({
@@ -58,22 +61,7 @@ export const useAssessmentDrawerController = ({
     drawerMode !== null &&
     !areAssessmentFormValuesEqual(draftValue, baselineValue);
 
-  useEffect(() => {
-    if (!hasUnsavedChanges) {
-      return undefined;
-    }
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [hasUnsavedChanges]);
+  const dirtyFormGuard = useDirtyFormGuard(hasUnsavedChanges && !isSubmitting);
 
   const resetDrawerState = () => {
     setDrawerMode(null);
@@ -85,48 +73,36 @@ export const useAssessmentDrawerController = ({
     setIsSubmitting(false);
   };
 
-  const confirmDiscardChanges = () => {
-    if (!hasUnsavedChanges) {
-      return true;
-    }
-
-    return window.confirm('Discard unsaved assessment changes?');
-  };
-
   const openCreateDrawer = () => {
-    if (!confirmDiscardChanges()) {
-      return;
-    }
-
-    const value = createEmptyAssessmentFormValue();
-    setDrawerMode('create');
-    setSelectedAssessmentId(undefined);
-    setDraftValue(value);
-    setBaselineValue(value);
-    setFieldErrors({});
-    setFormErrorMessage(undefined);
+    dirtyFormGuard.requestDiscard(() => {
+      const value = createEmptyAssessmentFormValue();
+      setDrawerMode('create');
+      setSelectedAssessmentId(undefined);
+      setDraftValue(value);
+      setBaselineValue(value);
+      setFieldErrors({});
+      setFormErrorMessage(undefined);
+    });
   };
 
   const openEditDrawer = (assessment: AssessmentListItem) => {
-    if (!confirmDiscardChanges()) {
-      return;
-    }
+    dirtyFormGuard.requestDiscard(() => {
+      const value = assessmentToFormValue({
+        title: assessment.name,
+        applicationName: assessment.applicationName,
+        assessmentType: assessment.type,
+        description: assessment.description,
+        scope: assessment.scope,
+        status: assessment.status,
+      });
 
-    const value = assessmentToFormValue({
-      title: assessment.name,
-      applicationName: assessment.applicationName,
-      assessmentType: assessment.type,
-      description: assessment.description,
-      scope: assessment.scope,
-      status: assessment.status,
+      setDrawerMode('edit');
+      setSelectedAssessmentId(assessment.id);
+      setDraftValue(value);
+      setBaselineValue(value);
+      setFieldErrors({});
+      setFormErrorMessage(undefined);
     });
-
-    setDrawerMode('edit');
-    setSelectedAssessmentId(assessment.id);
-    setDraftValue(value);
-    setBaselineValue(value);
-    setFieldErrors({});
-    setFormErrorMessage(undefined);
   };
 
   const requestCloseDrawer = () => {
@@ -134,11 +110,7 @@ export const useAssessmentDrawerController = ({
       return;
     }
 
-    if (!confirmDiscardChanges()) {
-      return;
-    }
-
-    resetDrawerState();
+    dirtyFormGuard.requestDiscard(resetDrawerState);
   };
 
   const handleSave = async (event: FormEvent<HTMLFormElement>) => {
@@ -208,5 +180,6 @@ export const useAssessmentDrawerController = ({
     openEditDrawer,
     requestCloseDrawer,
     handleSave,
+    dirtyFormGuard,
   };
 };

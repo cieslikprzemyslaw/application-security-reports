@@ -78,6 +78,7 @@ export const setupDom = () => {
 
 const TestForm = () => {
   const [isDirty, setIsDirty] = useState(false);
+  const [manualActionResult, setManualActionResult] = useState('pending');
   const guard = useDirtyFormGuard(isDirty);
 
   return (
@@ -90,6 +91,16 @@ const TestForm = () => {
         Reset clean
       </button>
       <Link to="/other">Navigate away</Link>
+      <button
+        id="manual-action"
+        type="button"
+        onClick={() =>
+          guard.requestDiscard(() => setManualActionResult('completed'))
+        }
+      >
+        Run manual action
+      </button>
+      <output id="manual-action-result">{manualActionResult}</output>
       <DirtyFormGuard
         isBlocked={guard.isBlocked}
         onProceed={guard.proceed}

@@ -134,7 +134,20 @@ describe('assessmentFindingsSection.component.content', () => {
                 fieldErrors={{}}
                 formError={undefined}
                 isSubmitting={false}
+                isDeleting={false}
+                deleteError={undefined}
+                pendingReviewAction={undefined}
+                reviewError={undefined}
                 canEditFindings={true}
+                dirtyFormGuard={{
+                  isBlocked: false,
+                  proceed: () => undefined,
+                  cancel: () => undefined,
+                  requestDiscard: action => {
+                    action();
+                    return true;
+                  },
+                }}
                 reloadFindings={() => undefined}
                 openCreateFinding={() => undefined}
                 openEditFinding={() => undefined}
@@ -144,8 +157,8 @@ describe('assessmentFindingsSection.component.content', () => {
                 handleFindingSave={async event => {
                   event.preventDefault();
                 }}
-                isDeleting={false}
                 handleFindingDelete={async () => {}}
+                handleReviewAction={async () => {}}
               />
             </ThemeProvider>,
           );

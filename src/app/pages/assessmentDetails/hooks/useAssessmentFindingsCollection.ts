@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { Threat } from '~/domain';
+import type { ThreatResponse } from '~/domain';
 import { threatService } from '~/services';
 
 export const useAssessmentFindingsCollection = (assessmentId?: string) => {
-  const [threats, setThreats] = useState<Threat[]>([]);
+  const [threats, setThreats] = useState<ThreatResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedFindings, setHasLoadedFindings] = useState(false);
   const hasLoadedFindingsRef = useRef(false);
@@ -75,5 +75,11 @@ export const useAssessmentFindingsCollection = (assessmentId?: string) => {
     hasLoadedFindings,
     loadError,
     reloadFindings: () => setReloadKey(key => key + 1),
+    replaceFinding: (nextFinding: ThreatResponse) =>
+      setThreats(current =>
+        current.map(threat =>
+          threat.id === nextFinding.id ? nextFinding : threat,
+        ),
+      ),
   };
 };

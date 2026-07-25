@@ -56,3 +56,23 @@ const _assessmentSchemaCompatibilityCheck: AssessmentSchemaOutput extends Assess
   : never = true;
 
 export const assessmentsFileSchema = z.array(assessmentSchema);
+
+export const assessmentDeletionImpactSchema = z
+  .object({
+    assessmentId: nonEmptyIdSchema,
+    recordVersion: nonNegativeIntegerSchema,
+    threatCount: nonNegativeIntegerSchema,
+    evidenceCount: nonNegativeIntegerSchema,
+    evidenceAttachmentCount: nonNegativeIntegerSchema,
+    reportCount: nonNegativeIntegerSchema,
+    reportVersionCount: nonNegativeIntegerSchema,
+    canDelete: z.boolean(),
+    warnings: z.array(nonEmptyTextSchema),
+  })
+  .strict();
+
+export const assessmentPermanentDeleteResultSchema = z
+  .object({
+    cleanupWarnings: z.array(nonEmptyTextSchema),
+  })
+  .strict();

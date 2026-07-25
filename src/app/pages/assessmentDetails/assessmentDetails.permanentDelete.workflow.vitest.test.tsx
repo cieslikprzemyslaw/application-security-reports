@@ -78,8 +78,27 @@ describe('assessmentDetails.permanentDelete', () => {
         return createJsonResponse(createArchivedAssessmentOverview());
       }
 
+      if (path === '/api/assessments/asm_archived/deletion-impact') {
+        return createJsonResponse({
+          data: {
+            assessmentId: 'asm_archived',
+            recordVersion: 2,
+            threatCount: 4,
+            evidenceCount: 2,
+            evidenceAttachmentCount: 1,
+            reportCount: 1,
+            reportVersionCount: 0,
+            canDelete: true,
+            warnings: [
+              'Evidence attachment files are stored outside the database transaction and may require separate cleanup.',
+            ],
+          },
+        });
+      }
+
       if (path === '/api/assessments/asm_archived') {
         assert.equal(init?.method, 'DELETE');
+        assert.deepEqual(JSON.parse(String(init?.body)), { recordVersion: 2 });
 
         return createJsonResponse({
           data: {
@@ -105,9 +124,18 @@ describe('assessmentDetails.permanentDelete', () => {
 
       const { dialog } = await openPermanentDeleteDialog();
 
-      assert.ok(textContent(dialog).includes('4 Threats'));
-      assert.ok(textContent(dialog).includes('2 Evidence items'));
-      assert.ok(textContent(dialog).includes('1 Report version'));
+      await waitFor(() => {
+        assert.ok(textContent(dialog).includes('4 Threats'));
+        assert.ok(textContent(dialog).includes('2 Evidence items'));
+        assert.ok(textContent(dialog).includes('1 Evidence attachment'));
+        assert.ok(textContent(dialog).includes('1 Report'));
+        assert.ok(textContent(dialog).includes('0 Report versions'));
+        assert.ok(
+          textContent(dialog).includes(
+            'Evidence attachment files are stored outside the database transaction',
+          ),
+        );
+      });
       assert.ok(textContent(dialog).includes('different from Archive'));
 
       const confirmButton = findButtonByName('Permanent delete', dialog);
@@ -184,8 +212,27 @@ describe('assessmentDetails.permanentDelete', () => {
         return createJsonResponse(createArchivedAssessmentOverview());
       }
 
+      if (path === '/api/assessments/asm_archived/deletion-impact') {
+        return createJsonResponse({
+          data: {
+            assessmentId: 'asm_archived',
+            recordVersion: 2,
+            threatCount: 4,
+            evidenceCount: 2,
+            evidenceAttachmentCount: 1,
+            reportCount: 1,
+            reportVersionCount: 0,
+            canDelete: true,
+            warnings: [
+              'Evidence attachment files are stored outside the database transaction and may require separate cleanup.',
+            ],
+          },
+        });
+      }
+
       if (path === '/api/assessments/asm_archived') {
         assert.equal(init?.method, 'DELETE');
+        assert.deepEqual(JSON.parse(String(init?.body)), { recordVersion: 2 });
 
         return createJsonResponse(
           {
@@ -216,6 +263,10 @@ describe('assessmentDetails.permanentDelete', () => {
 
       assert.ok(input, 'Expected exact-name confirmation input');
       assert.ok(confirmButton, 'Expected confirm delete button');
+
+      await waitFor(() => {
+        assert.equal(input!.disabled, false);
+      });
 
       await act(async () => {
         fireEvent.change(input!, {

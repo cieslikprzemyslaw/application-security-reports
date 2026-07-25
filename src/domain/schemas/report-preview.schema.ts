@@ -163,6 +163,7 @@ export const reportPreviewThreatObjectSchema = threatObjectSchema
     acceptedRiskJustification: true,
   })
   .extend({
+    owaspCategoryLabel: optionalTrimmedTextSchema,
     // Preview and readiness must work for incomplete draft or legacy Threats.
     // Final-readiness rules remain backend-owned and are evaluated separately.
     strideCategories: z.array(strideCategorySchema),

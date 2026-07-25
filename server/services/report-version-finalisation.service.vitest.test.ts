@@ -27,6 +27,7 @@ import {
 } from './report-version-finalisation.service.js';
 const readyThreat = {
   ...threat,
+  owaspCategoryCode: 'A01:2025',
   impact: 'Customer data may be exposed.',
   recommendation: 'Apply object-level authorization.',
 };
@@ -202,6 +203,9 @@ describe('finaliseReportVersion', () => {
       });
       if (result.status === 'created') {
         expect(result.reportVersion.snapshot.reportTitle).toBe(report.title);
+        expect(
+          result.reportVersion.snapshot.selectedThreats[0]?.owaspCategoryLabel,
+        ).toBe('Broken Access Control');
       }
       expect(harness.updateReportLatestVersionIfCurrent).toHaveBeenCalledWith(
         report.id,

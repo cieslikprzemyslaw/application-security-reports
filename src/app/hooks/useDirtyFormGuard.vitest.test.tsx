@@ -294,6 +294,66 @@ describe('useDirtyFormGuard', () => {
       });
     })();
 
+    await (async () => {
+      // Manual close/switch actions use the same confirmation and preserve state.
+      const { root, window } = await renderTest();
+
+      await clickById(window, 'make-dirty');
+      await clickById(window, 'manual-action');
+
+      assert.ok(
+        window.document.querySelector('[role="dialog"]'),
+        'Expected dialog for a dirty manual action',
+      );
+      assert.equal(
+        window.document.getElementById('manual-action-result')?.textContent,
+        'pending',
+      );
+
+      const keepEditing = findDialogButton(window, 'Keep editing');
+      assert.ok(keepEditing, 'Expected Keep editing for manual action');
+
+      await act(async () => {
+        keepEditing!.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
+
+      assert.equal(
+        window.document.getElementById('manual-action-result')?.textContent,
+        'pending',
+      );
+
+      await clickById(window, 'manual-action');
+      const discard = findDialogButton(window, 'Discard changes');
+      assert.ok(discard, 'Expected Discard changes for manual action');
+
+      await act(async () => {
+        discard!.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+      });
+
+      assert.equal(
+        window.document.getElementById('manual-action-result')?.textContent,
+        'completed',
+      );
+
+      await act(async () => {
+        root.unmount();
+      });
+    })();
+
     console.log('useDirtyFormGuard tests passed');
   });
 });

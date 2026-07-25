@@ -23,7 +23,7 @@ import {
 
 const reportId = 'rpt_00000000-0000-0000-0000-000000000232';
 
-const findButton = (container: HTMLElement, label: string) =>
+const findButton = (container: ParentNode, label: string) =>
   Array.from(container.querySelectorAll('button')).find(
     button => button.textContent?.trim() === label,
   ) as HTMLButtonElement | undefined;
@@ -332,6 +332,20 @@ describe('Report readiness through the production Report Builder route', () => {
 
       await act(async () => {
         targetButton.click();
+        await renderTick();
+        await renderTick();
+      });
+
+      await waitFor(() => {
+        assert.ok(textContent(document.body).includes('Unsaved changes'));
+      });
+
+      const discardButton = findButton(document.body, 'Discard changes');
+
+      assert.ok(discardButton);
+
+      await act(async () => {
+        discardButton.click();
         await renderTick();
         await renderTick();
       });

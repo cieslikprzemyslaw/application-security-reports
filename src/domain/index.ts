@@ -5,6 +5,7 @@ export * from './assessmentTemplate.js';
 export * from './owaspTop10.js';
 export * from './cwe.js';
 export * from './threat.js';
+export * from './threatReview.js';
 export * from './evidence.js';
 export * from './report.js';
 export * from './report-list.js';

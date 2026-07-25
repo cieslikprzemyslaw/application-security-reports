@@ -145,6 +145,13 @@ export const assessmentCommandRequestSchema = z
   })
   .strict();
 
+export const assessmentPermanentDeleteRequestSchema = z
+  .object({
+    recordVersion: nonNegativeIntegerSchema.optional(),
+  })
+  .strict()
+  .default({});
+
 export const createAssessmentRequestSchema = createAssessmentBaseSchema;
 type CreateAssessmentRequestSchemaOutput = Required<
   z.output<typeof createAssessmentRequestSchema>

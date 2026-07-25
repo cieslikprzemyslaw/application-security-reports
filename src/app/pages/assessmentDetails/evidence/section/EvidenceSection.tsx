@@ -4,7 +4,7 @@ import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
 import Card from '~/app/components/ui/card';
 import IconSVG from '~/app/components/ui/iconSVG';
-import { PageActionGroup } from '~/app/components/common';
+import { DirtyFormGuard, PageActionGroup } from '~/app/components/common';
 import type { Threat } from '~/domain';
 
 import type { AssessmentDetailsAssessment } from '../../assessmentDetails.type';
@@ -134,6 +134,11 @@ const AssessmentEvidenceSection = ({
         controller={controller}
       />
       <DeleteEvidenceModal controller={controller} />
+      <DirtyFormGuard
+        isBlocked={controller.dirtyFormGuard.isBlocked}
+        onCancel={controller.dirtyFormGuard.cancel}
+        onProceed={controller.dirtyFormGuard.proceed}
+      />
     </StyledAssessmentEvidenceSection>
   );
 };

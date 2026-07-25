@@ -1,12 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 
 import {
   CWE_CATALOG_CURRENT_VERSION,
   OWASP_TOP_10_CURRENT_VERSION,
 } from '~/domain';
-import type { CweCatalogVersion, OwaspTop10Version, Threat } from '~/domain';
+import type {
+  CweCatalogVersion,
+  OwaspTop10Version,
+  ThreatResponse,
+  ThreatReviewCommand,
+} from '~/domain';
 import { threatService } from '~/services';
+import { useDirtyFormGuard } from '~/app/hooks/useDirtyFormGuard';
+import type { DirtyFormGuardControls } from '~/app/hooks/useDirtyFormGuard';
 import { ApiError } from '~/services/apiClient';
 
 import type { ThreatFormValue } from '~/app/components/appsec/threatForm';
@@ -48,28 +55,34 @@ const focusThreatDeleteSuccessTarget = () => {
 };
 
 export interface AssessmentFindingsController {
-  threats: Threat[];
+  threats: ThreatResponse[];
   isLoading: boolean;
   isRefreshing: boolean;
   hasLoadedFindings: boolean;
   loadError?: string;
   drawerMode: FindingDrawerMode;
-  selectedFinding?: Threat;
+  selectedFinding?: ThreatResponse;
   draftValue: ThreatFormValue;
   fieldErrors: ThreatFormErrors;
   formError?: string;
   isSubmitting: boolean;
   isDeleting: boolean;
   deleteError?: string;
+  pendingReviewAction?: ThreatReviewCommand;
+  reviewError?: string;
   canEditFindings: boolean;
   reloadFindings: () => void;
   openCreateFinding: () => void;
-  openEditFinding: (threat?: Threat | ThreatTableRow) => void;
-  openFindingDetails: (threat: Threat | ThreatTableRow) => void;
+  openEditFinding: (threat?: ThreatResponse | ThreatTableRow) => void;
+  openFindingDetails: (threat: ThreatResponse | ThreatTableRow) => void;
   closeFindingDrawer: () => void;
   handleFindingChange: (value: ThreatFormValue) => void;
   handleFindingSave: (event: FormEvent<HTMLFormElement>) => Promise<void>;
-  handleFindingDelete: (threat?: Threat | ThreatTableRow) => Promise<void>;
+  handleFindingDelete: (
+    threat?: ThreatResponse | ThreatTableRow,
+  ) => Promise<void>;
+  handleReviewAction: (command: ThreatReviewCommand) => Promise<void>;
+  dirtyFormGuard: DirtyFormGuardControls;
 }
 
 export const useAssessmentFindings = ({
@@ -100,28 +113,16 @@ export const useAssessmentFindings = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | undefined>();
+  const [pendingReviewAction, setPendingReviewAction] = useState<
+    ThreatReviewCommand | undefined
+  >();
+  const [reviewError, setReviewError] = useState<string | undefined>();
 
-  useEffect(() => {
-    const isDirty =
-      drawerMode !== null &&
-      drawerMode !== 'view' &&
-      !areThreatFormValuesEqual(draftValue, baselineValue);
-
-    if (!isDirty) {
-      return undefined;
-    }
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [baselineValue, draftValue, drawerMode]);
+  const isDirty =
+    drawerMode !== null &&
+    drawerMode !== 'view' &&
+    !areThreatFormValuesEqual(draftValue, baselineValue);
+  const dirtyFormGuard = useDirtyFormGuard(isDirty && !isSubmitting);
 
   const selectedFinding = useMemo(
     () => collection.threats.find(threat => threat.id === selectedFindingId),
@@ -142,65 +143,56 @@ export const useAssessmentFindings = ({
     setFormError(undefined);
     setIsSubmitting(false);
     setDeleteError(undefined);
-  };
-
-  const confirmDiscardChanges = () => {
-    if (
-      drawerMode === null ||
-      drawerMode === 'view' ||
-      areThreatFormValuesEqual(draftValue, baselineValue)
-    ) {
-      return true;
-    }
-
-    return window.confirm('Discard unsaved finding changes?');
+    setReviewError(undefined);
   };
 
   const openCreateFinding = () => {
-    if (!confirmDiscardChanges()) {
-      return;
-    }
+    dirtyFormGuard.requestDiscard(() => {
+      const value = createEmptyThreatFormValue(
+        assessmentOwaspTaxonomyVersion,
+        assessmentCweCatalogVersion,
+      );
 
-    const value = createEmptyThreatFormValue(
-      assessmentOwaspTaxonomyVersion,
-      assessmentCweCatalogVersion,
-    );
-
-    setSelectedFindingId(undefined);
-    setDrawerMode('create');
-    setDraftValue(value);
-    setBaselineValue(value);
-    setFieldErrors({});
-    setFormError(undefined);
-    setDeleteError(undefined);
+      setSelectedFindingId(undefined);
+      setDrawerMode('create');
+      setDraftValue(value);
+      setBaselineValue(value);
+      setFieldErrors({});
+      setFormError(undefined);
+      setDeleteError(undefined);
+      setReviewError(undefined);
+    });
   };
 
-  const openFindingDetails = (threat: Threat | ThreatTableRow) => {
+  const openFindingDetails = (threat: ThreatResponse | ThreatTableRow) => {
     const finding =
       'strideCategories' in threat
         ? threat
         : collection.threats.find(item => item.id === threat.id);
 
-    if (!finding || !confirmDiscardChanges()) {
+    if (!finding) {
       return;
     }
 
-    const value = threatToFormValue(
-      finding,
-      assessmentOwaspTaxonomyVersion,
-      assessmentCweCatalogVersion,
-    );
+    dirtyFormGuard.requestDiscard(() => {
+      const value = threatToFormValue(
+        finding,
+        assessmentOwaspTaxonomyVersion,
+        assessmentCweCatalogVersion,
+      );
 
-    setSelectedFindingId(finding.id);
-    setDrawerMode('view');
-    setDraftValue(value);
-    setBaselineValue(value);
-    setFieldErrors({});
-    setFormError(undefined);
-    setDeleteError(undefined);
+      setSelectedFindingId(finding.id);
+      setDrawerMode('view');
+      setDraftValue(value);
+      setBaselineValue(value);
+      setFieldErrors({});
+      setFormError(undefined);
+      setDeleteError(undefined);
+      setReviewError(undefined);
+    });
   };
 
-  const openEditFinding = (threat?: Threat | ThreatTableRow) => {
+  const openEditFinding = (threat?: ThreatResponse | ThreatTableRow) => {
     const finding =
       threat && 'strideCategories' in threat
         ? threat
@@ -208,31 +200,34 @@ export const useAssessmentFindings = ({
           ? collection.threats.find(item => item.id === threat.id)
           : selectedFinding;
 
-    if (!finding || !confirmDiscardChanges()) {
+    if (!finding) {
       return;
     }
 
-    const value = threatToFormValue(
-      finding,
-      assessmentOwaspTaxonomyVersion,
-      assessmentCweCatalogVersion,
-    );
+    dirtyFormGuard.requestDiscard(() => {
+      const value = threatToFormValue(
+        finding,
+        assessmentOwaspTaxonomyVersion,
+        assessmentCweCatalogVersion,
+      );
 
-    setSelectedFindingId(finding.id);
-    setDrawerMode('edit');
-    setDraftValue(value);
-    setBaselineValue(value);
-    setFieldErrors({});
-    setFormError(undefined);
-    setDeleteError(undefined);
+      setSelectedFindingId(finding.id);
+      setDrawerMode('edit');
+      setDraftValue(value);
+      setBaselineValue(value);
+      setFieldErrors({});
+      setFormError(undefined);
+      setDeleteError(undefined);
+      setReviewError(undefined);
+    });
   };
 
   const closeFindingDrawer = () => {
-    if (isSubmitting || !confirmDiscardChanges()) {
+    if (isSubmitting) {
       return;
     }
 
-    resetDrawerState();
+    dirtyFormGuard.requestDiscard(resetDrawerState);
   };
 
   const handleFindingSave = async (event: FormEvent<HTMLFormElement>) => {
@@ -296,7 +291,48 @@ export const useAssessmentFindings = ({
     setFormError(undefined);
   };
 
-  const handleFindingDelete = async (threat?: Threat | ThreatTableRow) => {
+  const handleReviewAction = async (command: ThreatReviewCommand) => {
+    if (!selectedFinding || pendingReviewAction) {
+      return;
+    }
+
+    const action = selectedFinding.reviewActions.find(
+      candidate => candidate.command === command,
+    );
+
+    if (!action?.allowed) {
+      setReviewError(
+        action?.reason ?? 'This review action is not currently available.',
+      );
+      return;
+    }
+
+    setPendingReviewAction(command);
+    setReviewError(undefined);
+
+    try {
+      const updated = await threatService.transitionReview(
+        selectedFinding.id,
+        command,
+        selectedFinding.recordVersion,
+      );
+      collection.replaceFinding(updated);
+      setSelectedFindingId(updated.id);
+      collection.reloadFindings();
+    } catch (error) {
+      setReviewError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to update the Threat review state.',
+      );
+    } finally {
+      setPendingReviewAction(undefined);
+    }
+  };
+
+  const handleFindingDelete = async (
+    threat?: ThreatResponse | ThreatTableRow,
+  ) => {
     if (isDeleting) {
       return;
     }
@@ -344,6 +380,8 @@ export const useAssessmentFindings = ({
     isSubmitting,
     isDeleting,
     deleteError,
+    pendingReviewAction,
+    reviewError,
     canEditFindings: assessmentStatus !== 'archived',
     openCreateFinding,
     openEditFinding,
@@ -352,5 +390,7 @@ export const useAssessmentFindings = ({
     handleFindingChange,
     handleFindingSave,
     handleFindingDelete,
+    handleReviewAction,
+    dirtyFormGuard,
   };
 };

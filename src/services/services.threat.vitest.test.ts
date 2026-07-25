@@ -133,6 +133,8 @@ describe('services.threat', () => {
         },
       ],
       assessmentOwaspTaxonomyVersion: '2025',
+      recordVersion: Date.parse('2026-06-11T09:00:00.000Z'),
+      reviewActions: [],
       affectedAsset: '/api/v1/orders/{id}',
       impact: 'Unauthorised access to customer order data',
       recommendation: 'Apply object-level authorization on every request.',
@@ -292,6 +294,36 @@ describe('services.threat', () => {
         input: `/api/threats/${threat.id}`,
         method: 'PATCH',
         body: input,
+      });
+    }
+
+    {
+      const reviewThreat = {
+        ...threat,
+        status: 'in-review' as const,
+        reviewActions: [
+          {
+            command: 'approve' as const,
+            label: 'Approve resolution',
+            allowed: true,
+          },
+        ],
+      };
+      const { calls, request } = createRequestSpy({ data: reviewThreat });
+      const service = createThreatService(request);
+
+      assert.deepEqual(
+        await service.transitionReview(
+          threat.id,
+          'approve',
+          threat.recordVersion,
+        ),
+        reviewThreat,
+      );
+      expectSingleCall(calls, {
+        input: `/api/threats/${threat.id}/commands/approve`,
+        method: 'POST',
+        body: { recordVersion: threat.recordVersion },
       });
     }
 

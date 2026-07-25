@@ -9,6 +9,7 @@ import {
 } from '~/test/vitestLegacyBridge';
 
 import { useEffect, useRef } from 'react';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 
 import {
@@ -345,10 +346,20 @@ export const renderHarness = async (
       records = records.filter(item => item.id !== id);
     });
 
+  const router = createMemoryRouter(
+    [
+      {
+        path: '*',
+        element: <Harness />,
+      },
+    ],
+    { initialEntries: ['/'] },
+  );
+
   await act(async () => {
     root.render(
       <ThemeProvider theme={defaultTheme}>
-        <Harness />
+        <RouterProvider router={router} />
       </ThemeProvider>,
     );
     await renderTick();

@@ -212,7 +212,9 @@ describe('services.boundary', () => {
     }
 
     {
-      const { calls, request } = createRequestSpy(undefined);
+      const { calls, request } = createRequestSpy({
+        data: { cleanupWarnings: [] },
+      });
       const service = createAssessmentService(request);
 
       await service.remove(assessment.id);

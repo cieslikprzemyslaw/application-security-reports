@@ -1,149 +1,33 @@
-import {
-  Router,
-  type NextFunction,
-  type Request,
-  type Response,
-} from 'express';
+import { Router } from 'express';
 
-import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
-import type { ThreatRepository } from '../database/repositories/threat.repository.js';
-import {
-  RepositoryConflictError,
-  RepositoryConstraintError,
-  RepositoryError,
-  RepositoryNotFoundError,
-} from '../database/errors.js';
-import type { Assessment } from '../../src/domain/assessment.js';
-import type { OwaspTop10Version } from '../../src/domain/owaspTop10.js';
+import type { ThreatReviewCommand } from '../../src/domain/threatReview.js';
 import type {
   CreateThreatInput,
-  Threat,
   UpdateThreatInput,
 } from '../../src/domain/threat.js';
 import {
-  threatListQuerySchema,
-  threatRouteParamsSchema,
   createThreatRequestSchema,
+  threatListQuerySchema,
+  threatReviewCommandRequestSchema,
+  threatReviewCommandRouteParamsSchema,
+  threatRouteParamsSchema,
   updateThreatRequestSchema,
 } from '../../src/domain/schemas/index.js';
+import type { AssessmentRepository } from '../database/repositories/assessment.repository.js';
+import {
+  hasThreatReviewOperations,
+  type ThreatRepository,
+} from '../database/repositories/threat.repository.js';
 import { sendApiError } from '../http/api-errors.js';
 import { createRequestValidationMiddleware } from '../http/request-validation.js';
-
-type ThreatResponse = Threat & {
-  assessmentOwaspTaxonomyVersion: OwaspTop10Version;
-};
-
-type ThreatValidatedRequest = {
-  body?: CreateThreatInput | UpdateThreatInput;
-  params?: {
-    id: string;
-  };
-  query?: {
-    assessmentId: string;
-  };
-};
-
-const threatResponse = (
-  threat: Threat,
-  assessmentVersion: OwaspTop10Version,
-): ThreatResponse => ({
-  ...threat,
-  assessmentOwaspTaxonomyVersion: assessmentVersion,
-});
-
-const sendThreatResponse = (
-  res: Response,
-  statusCode: number,
-  threat: Threat,
-  assessmentVersion: OwaspTop10Version,
-): Response =>
-  res.status(statusCode).json({
-    data: threatResponse(threat, assessmentVersion),
-  });
-
-type ThreatRepositoryOperation =
-  | 'list'
-  | 'retrieve'
-  | 'create'
-  | 'update'
-  | 'delete';
-
-const handleThreatRepositoryError = (
-  error: unknown,
-  res: Response,
-  operation: ThreatRepositoryOperation,
-): boolean => {
-  if (error instanceof RepositoryNotFoundError) {
-    if (operation === 'create' || operation === 'list') {
-      sendApiError(res, 404, 'ASSESSMENT_NOT_FOUND', 'Assessment not found');
-      return true;
-    }
-
-    sendApiError(res, 404, 'THREAT_NOT_FOUND', 'Threat not found');
-    return true;
-  }
-
-  if (error instanceof RepositoryConflictError) {
-    sendApiError(
-      res,
-      409,
-      'THREAT_CONFLICT',
-      'A threat with the same unique value already exists',
-    );
-    return true;
-  }
-
-  if (error instanceof RepositoryConstraintError) {
-    if (operation === 'delete') {
-      sendApiError(
-        res,
-        409,
-        'THREAT_DELETE_CONFLICT',
-        'Threat cannot be deleted while related evidence or reports exist',
-      );
-      return true;
-    }
-
-    sendApiError(
-      res,
-      409,
-      'THREAT_CONFLICT',
-      'A threat with the same unique value already exists',
-    );
-    return true;
-  }
-
-  if (error instanceof RepositoryError) {
-    console.error('Unexpected threat repository error', error);
-    sendApiError(res, 500, 'INTERNAL_SERVER_ERROR', 'Unexpected server error');
-    return true;
-  }
-
-  return false;
-};
-
-const asyncRoute =
-  (
-    handler: (req: Request, res: Response, next: NextFunction) => Promise<void>,
-  ) =>
-  (req: Request, res: Response, next: NextFunction): void => {
-    void handler(req, res, next).catch(next);
-  };
-
-const ensureAssessmentExists = async (
-  assessmentRepository: AssessmentRepository,
-  assessmentId: string,
-  res: Response,
-): Promise<Assessment | null> => {
-  const assessment = await assessmentRepository.findById(assessmentId);
-
-  if (!assessment) {
-    sendApiError(res, 404, 'ASSESSMENT_NOT_FOUND', 'Assessment not found');
-    return null;
-  }
-
-  return assessment;
-};
+import {
+  asyncRoute,
+  ensureAssessmentExists,
+  handleThreatRepositoryError,
+  sendThreatResponse,
+  toThreatResponse,
+  type ThreatValidatedRequest,
+} from './threats.route.helpers.js';
 
 export const createThreatsRouter = (
   assessmentRepository: AssessmentRepository,
@@ -153,18 +37,16 @@ export const createThreatsRouter = (
 
   router.get(
     '/',
-    createRequestValidationMiddleware({
-      query: threatListQuerySchema,
-    }),
+    createRequestValidationMiddleware({ query: threatListQuerySchema }),
     asyncRoute(async (_req, res) => {
       const validatedRequest = res.locals
         .validatedRequest as ThreatValidatedRequest;
-      const { assessmentId: validatedAssessmentId } =
-        validatedRequest.query as { assessmentId: string };
-
+      const { assessmentId } = validatedRequest.query as {
+        assessmentId: string;
+      };
       const assessment = await ensureAssessmentExists(
         assessmentRepository,
-        validatedAssessmentId,
+        assessmentId,
         res,
       );
 
@@ -173,14 +55,10 @@ export const createThreatsRouter = (
       }
 
       try {
-        const threats = await threatRepository.findByAssessmentId(
-          validatedAssessmentId,
-        );
+        const threats = await threatRepository.findByAssessmentId(assessmentId);
 
         res.status(200).json({
-          data: threats.map(threat =>
-            threatResponse(threat, assessment.owaspTaxonomyVersion!),
-          ),
+          data: threats.map(threat => toThreatResponse(threat, assessment)),
         });
       } catch (error) {
         if (!handleThreatRepositoryError(error, res, 'list')) {
@@ -192,9 +70,7 @@ export const createThreatsRouter = (
 
   router.get(
     '/:id',
-    createRequestValidationMiddleware({
-      params: threatRouteParamsSchema,
-    }),
+    createRequestValidationMiddleware({ params: threatRouteParamsSchema }),
     asyncRoute(async (_req, res) => {
       const validatedRequest = res.locals
         .validatedRequest as ThreatValidatedRequest;
@@ -218,7 +94,7 @@ export const createThreatsRouter = (
           return;
         }
 
-        sendThreatResponse(res, 200, threat, assessment.owaspTaxonomyVersion!);
+        sendThreatResponse(res, 200, threat, assessment);
       } catch (error) {
         if (!handleThreatRepositoryError(error, res, 'retrieve')) {
           throw error;
@@ -229,9 +105,7 @@ export const createThreatsRouter = (
 
   router.post(
     '/',
-    createRequestValidationMiddleware({
-      body: createThreatRequestSchema,
-    }),
+    createRequestValidationMiddleware({ body: createThreatRequestSchema }),
     asyncRoute(async (_req, res) => {
       const validatedRequest = res.locals
         .validatedRequest as ThreatValidatedRequest;
@@ -251,12 +125,7 @@ export const createThreatsRouter = (
         const threat = await threatRepository.create(body);
         const response = res.location(`/api/threats/${threat.id}`);
 
-        sendThreatResponse(
-          response,
-          201,
-          threat,
-          assessment.owaspTaxonomyVersion!,
-        );
+        sendThreatResponse(response, 201, threat, assessment);
       } catch (error) {
         if (!handleThreatRepositoryError(error, res, 'create')) {
           throw error;
@@ -297,12 +166,7 @@ export const createThreatsRouter = (
 
         const updatedThreat = await threatRepository.update(id, body);
 
-        sendThreatResponse(
-          res,
-          200,
-          updatedThreat,
-          assessment.owaspTaxonomyVersion!,
-        );
+        sendThreatResponse(res, 200, updatedThreat, assessment);
       } catch (error) {
         if (!handleThreatRepositoryError(error, res, 'update')) {
           throw error;
@@ -311,11 +175,81 @@ export const createThreatsRouter = (
     }),
   );
 
+  router.post(
+    '/:id/commands/:command',
+    createRequestValidationMiddleware({
+      params: threatReviewCommandRouteParamsSchema,
+      body: threatReviewCommandRequestSchema,
+    }),
+    asyncRoute(async (_req, res) => {
+      const validatedRequest = res.locals
+        .validatedRequest as ThreatValidatedRequest;
+      const { id, command } = validatedRequest.params as {
+        id: string;
+        command: ThreatReviewCommand;
+      };
+      const { recordVersion } = validatedRequest.body as {
+        recordVersion: number;
+      };
+
+      if (!hasThreatReviewOperations(threatRepository)) {
+        sendApiError(
+          res,
+          500,
+          'INTERNAL_SERVER_ERROR',
+          'Unexpected server error',
+        );
+        return;
+      }
+
+      try {
+        const existingThreat = await threatRepository.findById(id);
+
+        if (!existingThreat) {
+          sendApiError(res, 404, 'THREAT_NOT_FOUND', 'Threat not found');
+          return;
+        }
+
+        const assessment = await ensureAssessmentExists(
+          assessmentRepository,
+          existingThreat.assessmentId,
+          res,
+        );
+
+        if (!assessment) {
+          return;
+        }
+
+        if (assessment.status === 'archived') {
+          sendApiError(
+            res,
+            409,
+            'THREAT_TRANSITION_NOT_ALLOWED',
+            'Archived Assessments are read-only',
+          );
+          return;
+        }
+
+        await threatRepository.transitionReview(id, command, recordVersion);
+        const updatedThreat = await threatRepository.findById(id);
+
+        if (!updatedThreat) {
+          sendApiError(res, 404, 'THREAT_NOT_FOUND', 'Threat not found');
+          return;
+        }
+
+        sendThreatResponse(res, 200, updatedThreat, assessment);
+      } catch (error) {
+        if (!handleThreatRepositoryError(error, res, 'transition')) {
+          throw error;
+        }
+      }
+    }),
+  );
+
   router.delete(
     '/:id',
-    createRequestValidationMiddleware({
-      params: threatRouteParamsSchema,
-    }),
+    createRequestValidationMiddleware({ params: threatRouteParamsSchema }),
     asyncRoute(async (_req, res) => {
       const validatedRequest = res.locals
         .validatedRequest as ThreatValidatedRequest;

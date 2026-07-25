@@ -13,6 +13,11 @@ import {
 } from '../errors.js';
 import type { RepositoryClient } from '../repository.types.js';
 import {
+  createAssessmentDeletionOperations,
+  type AssessmentDeletionDb,
+  type AssessmentDeletionOperations,
+} from './assessment-deletion.repository.js';
+import {
   createAssessmentLifecycleOperations,
   type AssessmentLifecycleDb,
   type AssessmentLifecycleOperations,
@@ -26,7 +31,10 @@ import {
 
 export type { AssessmentListRecord } from './assessment.repository.shared.js';
 
-export interface AssessmentRepository extends Partial<AssessmentLifecycleOperations> {
+export interface AssessmentRepository
+  extends
+    Partial<AssessmentLifecycleOperations>,
+    Partial<AssessmentDeletionOperations> {
   findAll(): Promise<Assessment[]>;
   findById(id: string): Promise<Assessment | null>;
   findByCompanyId(companyId: string): Promise<Assessment[]>;
@@ -39,12 +47,45 @@ export type AssessmentLifecycleRepository = AssessmentRepository &
   AssessmentLifecycleOperations;
 
 type AssessmentRepositoryDb = Pick<RepositoryClient, 'assessment'> &
-  Partial<Pick<RepositoryClient, 'activity' | '$transaction'>>;
+  Partial<
+    Pick<
+      RepositoryClient,
+      | 'activity'
+      | 'threat'
+      | 'threatCwe'
+      | 'evidence'
+      | 'evidenceExchange'
+      | 'evidenceThreat'
+      | 'report'
+      | 'reportVersion'
+      | 'reportThreat'
+      | '$transaction'
+    >
+  >;
+
+const hasDeletionDb = (
+  db: AssessmentRepositoryDb,
+): db is AssessmentRepositoryDb & AssessmentDeletionDb =>
+  typeof db.$transaction === 'function' &&
+  'threat' in db &&
+  'threatCwe' in db &&
+  'evidence' in db &&
+  'evidenceExchange' in db &&
+  'evidenceThreat' in db &&
+  'report' in db &&
+  'reportVersion' in db &&
+  'reportThreat' in db;
 
 const hasLifecycleDb = (
   db: AssessmentRepositoryDb,
 ): db is AssessmentRepositoryDb & AssessmentLifecycleDb =>
   'activity' in db && typeof db.$transaction === 'function';
+
+export const hasAssessmentDeletionOperations = (
+  repository: AssessmentRepository,
+): repository is AssessmentRepository & AssessmentDeletionOperations =>
+  typeof repository.getDeletionImpact === 'function' &&
+  typeof repository.deletePermanently === 'function';
 
 export const hasAssessmentLifecycleOperations = (
   repository: AssessmentRepository,
@@ -79,9 +120,13 @@ export function createAssessmentRepository(
   const lifecycle = hasLifecycleDb(db)
     ? createAssessmentLifecycleOperations(db)
     : {};
+  const deletion = hasDeletionDb(db)
+    ? createAssessmentDeletionOperations(db)
+    : {};
 
   return {
     ...lifecycle,
+    ...deletion,
 
     async findAll() {
       const assessments = await db.assessment.findMany({

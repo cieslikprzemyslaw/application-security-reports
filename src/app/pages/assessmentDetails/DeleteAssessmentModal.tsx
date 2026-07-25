@@ -22,7 +22,7 @@ const DeleteAssessmentModal = ({
   const isOpen = target !== undefined;
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isOpen || controller.isLoadingImpact) {
       return;
     }
 
@@ -33,17 +33,30 @@ const DeleteAssessmentModal = ({
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
-  }, [isOpen]);
+  }, [controller.isLoadingImpact, isOpen]);
 
   if (!target) {
     return null;
   }
 
-  const dependencyCounts = [
-    formatCount(target.findingsCount, 'Threat'),
-    formatCount(target.evidenceCount, 'Evidence item', 'Evidence items'),
-    formatCount(target.reportVersionCount, 'Report version', 'Report versions'),
-  ];
+  const impact = controller.deletionImpact;
+  const dependencyCounts = impact
+    ? [
+        formatCount(impact.threatCount, 'Threat'),
+        formatCount(impact.evidenceCount, 'Evidence item', 'Evidence items'),
+        formatCount(
+          impact.evidenceAttachmentCount,
+          'Evidence attachment',
+          'Evidence attachments',
+        ),
+        formatCount(impact.reportCount, 'Report'),
+        formatCount(
+          impact.reportVersionCount,
+          'Report version',
+          'Report versions',
+        ),
+      ]
+    : [];
 
   return (
     <Modal
@@ -65,7 +78,11 @@ const DeleteAssessmentModal = ({
             title={controller.isDeleting ? 'Deleting' : 'Permanent delete'}
             variant="destructive"
             isLoading={controller.isDeleting}
-            disabled={controller.isDeleting || !controller.isConfirmationValid}
+            disabled={
+              controller.isDeleting ||
+              controller.isLoadingImpact ||
+              !controller.isConfirmationValid
+            }
             data-assessment-permanent-delete-confirm="true"
             onClick={() => void controller.confirmPermanentDelete()}
           />
@@ -81,21 +98,43 @@ const DeleteAssessmentModal = ({
           </p>
         </Callout>
 
-        <div className="assessment-details-delete-counts" aria-live="polite">
+        <div
+          className="assessment-details-delete-counts"
+          aria-live="polite"
+          aria-busy={controller.isLoadingImpact}
+        >
           <h3>Dependency counts loaded before confirmation</h3>
-          <ul>
-            {dependencyCounts.map(item => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
+          {controller.isLoadingImpact ? (
+            <p>Checking dependent records…</p>
+          ) : (
+            <ul>
+              {dependencyCounts.map(item => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          )}
         </div>
+
+        {impact?.warnings.map(warning => (
+          <Callout key={warning} variant="warning" title="Deletion limitation">
+            <p>{warning}</p>
+          </Callout>
+        ))}
+
+        {controller.impactError && (
+          <div role="alert">
+            <Callout variant="error" title="Unable to check dependencies">
+              <p>{controller.impactError}</p>
+            </Callout>
+          </div>
+        )}
 
         <Input
           id="assessment-permanent-delete-confirmation"
           label="Type the Assessment name to confirm"
           description={`Enter exactly: ${controller.deleteTargetName}`}
           value={controller.confirmationValue}
-          disabled={controller.isDeleting}
+          disabled={controller.isDeleting || controller.isLoadingImpact}
           autoComplete="off"
           data-modal-autofocus="true"
           onChange={event =>

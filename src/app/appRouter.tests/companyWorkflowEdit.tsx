@@ -60,9 +60,13 @@ const click = async (element: HTMLElement) => {
   });
 };
 
+const findButton = (text: string) =>
+  Array.from(
+    window.document.querySelectorAll<HTMLButtonElement>('button'),
+  ).find(button => button.textContent?.trim() === text);
+
 export const runCompanyWorkflowEditTests = async () => {
   let updateAttempts = 0;
-  let originalConfirm: typeof window.confirm | undefined;
 
   setFetch(async (input, init) => {
     const request = getRequestDetails(input, init);
@@ -85,7 +89,6 @@ export const runCompanyWorkflowEditTests = async () => {
 
   try {
     const { container, root } = await renderApp('/companies');
-    originalConfirm = window.confirm;
 
     const actionsButton = container.querySelector<HTMLButtonElement>(
       `button[aria-label="Actions for ${company.name}"]`,
@@ -129,17 +132,6 @@ export const runCompanyWorkflowEditTests = async () => {
       'Expected the logo dropzone after removing the logo',
     );
 
-    let discardConfirmationAttempts = 0;
-
-    Object.defineProperty(window, 'confirm', {
-      value: () => {
-        discardConfirmationAttempts += 1;
-        return false;
-      },
-      configurable: true,
-      writable: true,
-    });
-
     const cancelButton = Array.from(
       window.document.querySelectorAll<HTMLButtonElement>(
         '.drawer-panel button',
@@ -150,11 +142,14 @@ export const runCompanyWorkflowEditTests = async () => {
 
     await click(cancelButton);
 
-    assert.equal(
-      discardConfirmationAttempts,
-      1,
+    const keepEditingButton = findButton('Keep editing');
+
+    assert.ok(
+      keepEditingButton,
       'Expected the dirty form discard confirmation',
     );
+    await click(keepEditingButton);
+
     assert.ok(
       window.document.querySelector('.drawer-panel'),
       'Expected rejected discard confirmation to keep the drawer open',
@@ -187,12 +182,6 @@ export const runCompanyWorkflowEditTests = async () => {
       'Expected failed save to preserve confirmed table state',
     );
 
-    Object.defineProperty(window, 'confirm', {
-      value: () => true,
-      configurable: true,
-      writable: true,
-    });
-
     const finalCancelButton = Array.from(
       window.document.querySelectorAll<HTMLButtonElement>(
         '.drawer-panel button',
@@ -202,6 +191,11 @@ export const runCompanyWorkflowEditTests = async () => {
     assert.ok(finalCancelButton, 'Expected the final cancel action');
 
     await click(finalCancelButton);
+
+    const discardButton = findButton('Discard changes');
+
+    assert.ok(discardButton, 'Expected the confirmed discard action');
+    await click(discardButton);
 
     assert.equal(
       window.document.querySelector('.drawer-panel'),
@@ -213,14 +207,6 @@ export const runCompanyWorkflowEditTests = async () => {
       root.unmount();
     });
   } finally {
-    if (originalConfirm) {
-      Object.defineProperty(window, 'confirm', {
-        value: originalConfirm,
-        configurable: true,
-        writable: true,
-      });
-    }
-
     restoreFetch();
   }
 };

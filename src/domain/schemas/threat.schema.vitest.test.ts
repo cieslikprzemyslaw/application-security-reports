@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   createThreatOwaspCategoryCodeSchema,
   createThreatRequestSchema,
+  threatResponseSchema,
+  threatReviewCommandRequestSchema,
+  threatReviewCommandRouteParamsSchema,
   threatSchema,
   updateThreatRequestSchema,
 } from './index.js';
@@ -117,6 +120,47 @@ describe('Threat runtime schemas', () => {
 
   it('requires a non-empty PATCH payload', () => {
     expect(updateThreatRequestSchema.safeParse({}).success).toBe(false);
+  });
+
+  it('validates server-owned Threat review commands and response actions', () => {
+    expect(
+      threatReviewCommandRouteParamsSchema.safeParse({
+        id: threatId,
+        command: 'submit-review',
+      }).success,
+    ).toBe(true);
+    expect(
+      threatReviewCommandRouteParamsSchema.safeParse({
+        id: threatId,
+        command: 'delete',
+      }).success,
+    ).toBe(false);
+    expect(
+      threatReviewCommandRequestSchema.safeParse({ recordVersion: 123 })
+        .success,
+    ).toBe(true);
+    expect(
+      threatReviewCommandRequestSchema.safeParse({ recordVersion: -1 }).success,
+    ).toBe(false);
+
+    const result = threatResponseSchema.safeParse({
+      ...validThreat,
+      assessmentOwaspTaxonomyVersion: '2025',
+      recordVersion: Date.parse(validThreat.updatedAt),
+      reviewActions: [
+        {
+          command: 'submit-review',
+          label: 'Submit for review',
+          allowed: false,
+          reason: 'Complete required details.',
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.reviewActions[0]?.command).toBe('submit-review');
+    }
   });
 
   it('validates OWASP category codes against the Assessment taxonomy version', () => {

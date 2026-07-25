@@ -303,6 +303,49 @@ describe('services.assessment', () => {
       });
     }
 
+    {
+      const impact = {
+        assessmentId: assessment.id,
+        recordVersion: 4,
+        threatCount: 2,
+        evidenceCount: 3,
+        evidenceAttachmentCount: 1,
+        reportCount: 1,
+        reportVersionCount: 0,
+        canDelete: true,
+        warnings: ['Attachment cleanup is separate.'],
+      };
+      const controller = new AbortController();
+      const { calls, request } = createRequestSpy({ data: impact });
+      const service = createAssessmentService(request);
+
+      assert.deepEqual(
+        await service.getDeletionImpact(assessment.id, controller.signal),
+        impact,
+      );
+      expectSingleCall(calls, {
+        input: `/api/assessments/${assessment.id}/deletion-impact`,
+        method: 'GET',
+      });
+      assert.equal(calls[0]?.init?.signal, controller.signal);
+    }
+
+    {
+      const { calls, request } = createRequestSpy({
+        data: { cleanupWarnings: ['Attachment cleanup is separate.'] },
+      });
+      const service = createAssessmentService(request);
+
+      assert.deepEqual(await service.remove(assessment.id, 4), {
+        cleanupWarnings: ['Attachment cleanup is separate.'],
+      });
+      expectSingleCall(calls, {
+        input: `/api/assessments/${assessment.id}`,
+        method: 'DELETE',
+        body: { recordVersion: 4 },
+      });
+    }
+
     console.log('assessment service checks passed');
   });
 });

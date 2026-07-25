@@ -20,17 +20,25 @@ import type {
   RepositoryClient,
   RepositoryTransactionClient,
 } from '../repository.types.js';
-import { toIsoString, toOptionalText } from './repository.helpers.js';
+import { toOptionalText } from './repository.helpers.js';
+import {
+  threatSelect,
+  toThreat,
+  type ThreatRow,
+} from './threat.repository.mapping.js';
+import {
+  createThreatReviewOperations,
+  type ThreatReviewDb,
+  type ThreatReviewOperations,
+} from './threat-review.repository.js';
 import {
   parseAssessmentCweCatalogVersion,
   toOrderedThreatCweLinks,
-  toThreatCweMappings,
   validateNewThreatCweIds,
   type AssessmentThreatTaxonomyRow,
-  type ThreatCweRow,
 } from './threat-cwe.repository.js';
 
-export interface ThreatRepository {
+export interface ThreatRepository extends Partial<ThreatReviewOperations> {
   findById(id: string): Promise<Threat | null>;
   findByAssessmentId(assessmentId: string): Promise<Threat[]>;
   create(input: CreateThreatInput): Promise<Threat>;
@@ -45,6 +53,16 @@ type ThreatTransactionDb = Pick<
   'assessment' | 'threat'
 > &
   Partial<Pick<RepositoryTransactionClient, 'threatCwe'>>;
+const hasThreatReviewDb = (
+  db: ThreatRepositoryDb,
+): db is ThreatRepositoryDb & ThreatReviewDb =>
+  typeof db.$transaction === 'function';
+
+export const hasThreatReviewOperations = (
+  repository: ThreatRepository,
+): repository is ThreatRepository & ThreatReviewOperations =>
+  typeof repository.transitionReview === 'function';
+
 type ThreatReadDb =
   | Pick<ThreatRepositoryDb, 'threat'>
   | Pick<ThreatTransactionDb, 'threat'>;
@@ -67,66 +85,6 @@ const requireThreatCweDelegate = (db: ThreatTransactionDb) => {
 
   return db.threatCwe;
 };
-
-type ThreatRow = {
-  id: string;
-  assessmentId: string;
-  title: string;
-  description: string;
-  severity: string;
-  strideCategories: unknown;
-  status: string;
-  owaspCategoryCode: string | null;
-  customCategory: string | null;
-  affectedAsset: string | null;
-  impact: string | null;
-  recommendation: string | null;
-  remediation: string | null;
-  observation: string | null;
-  reproductionSteps: string | null;
-  affectedComponent: string | null;
-  affectedEndpoint: string | null;
-  risk: string | null;
-  references: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  assessment: AssessmentThreatTaxonomyRow;
-  cweMappings: ThreatCweRow[];
-};
-
-const threatSelect = {
-  id: true,
-  assessmentId: true,
-  title: true,
-  description: true,
-  severity: true,
-  strideCategories: true,
-  status: true,
-  owaspCategoryCode: true,
-  customCategory: true,
-  affectedAsset: true,
-  impact: true,
-  recommendation: true,
-  remediation: true,
-  observation: true,
-  reproductionSteps: true,
-  affectedComponent: true,
-  affectedEndpoint: true,
-  risk: true,
-  references: true,
-  createdAt: true,
-  updatedAt: true,
-  assessment: {
-    select: {
-      owaspTaxonomyVersion: true,
-      cweCatalogVersion: true,
-    },
-  },
-  cweMappings: {
-    select: { cweId: true, position: true },
-    orderBy: [{ position: 'asc' as const }, { cweId: 'asc' as const }],
-  },
-} as const;
 
 const assessmentTaxonomySelect = {
   owaspTaxonomyVersion: true,
@@ -182,11 +140,6 @@ const validateThreatCategory = (
   }
 };
 
-const normalizeCustomCategoryForRead = (
-  code?: string | null,
-  custom?: string | null,
-) => (code === 'custom' ? toOptionalText(custom) : undefined);
-
 const normalizeCustomCategoryForWrite = (
   code?: string | null,
   custom?: string | null,
@@ -227,41 +180,6 @@ const toThreatWriteData = (input: CreateThreatInput | UpdateThreatInput) => {
   return data;
 };
 
-const toThreat = (row: ThreatRow): Threat => {
-  const cweCatalogVersion = parseAssessmentCweCatalogVersion(row.assessment);
-
-  return {
-    id: row.id,
-    assessmentId: row.assessmentId,
-    title: row.title,
-    description: row.description,
-    severity: row.severity as Threat['severity'],
-    strideCategories: Array.isArray(row.strideCategories)
-      ? (row.strideCategories as Threat['strideCategories'])
-      : [],
-    status: row.status as Threat['status'],
-    cweCatalogVersion,
-    cweMappings: toThreatCweMappings(row.cweMappings, cweCatalogVersion),
-    owaspCategoryCode: toOptionalText(row.owaspCategoryCode),
-    customCategory: normalizeCustomCategoryForRead(
-      row.owaspCategoryCode,
-      row.customCategory,
-    ),
-    affectedAsset: toOptionalText(row.affectedAsset),
-    impact: toOptionalText(row.impact),
-    recommendation: toOptionalText(row.recommendation),
-    remediation: toOptionalText(row.remediation),
-    observation: toOptionalText(row.observation),
-    reproductionSteps: toOptionalText(row.reproductionSteps),
-    affectedComponent: toOptionalText(row.affectedComponent),
-    affectedEndpoint: toOptionalText(row.affectedEndpoint),
-    risk: toOptionalText(row.risk),
-    references: toOptionalText(row.references),
-    createdAt: toIsoString(row.createdAt),
-    updatedAt: toIsoString(row.updatedAt),
-  };
-};
-
 const loadThreatById = async (db: ThreatReadDb, id: string) => {
   const row = (await db.threat.findUnique({
     where: { id },
@@ -274,7 +192,10 @@ const loadThreatById = async (db: ThreatReadDb, id: string) => {
 export function createThreatRepository(
   db: ThreatRepositoryDb,
 ): ThreatRepository {
+  const review = hasThreatReviewDb(db) ? createThreatReviewOperations(db) : {};
+
   return {
+    ...review,
     findById: id => loadThreatById(db, id),
 
     async findByAssessmentId(assessmentId) {

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import type { Evidence } from '~/domain';
 import { evidenceService } from '~/services';
+import { useDirtyFormGuard } from '~/app/hooks/useDirtyFormGuard';
 import { ApiError } from '~/services/apiClient';
 
 import {
@@ -50,22 +51,7 @@ export const useEvidenceEditor = (evidence: Evidence[]) => {
     drawerMode !== 'view' &&
     !areEvidenceFormValuesEqual(draftValue, baselineValue);
 
-  useEffect(() => {
-    if (!isDirty) {
-      return undefined;
-    }
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [isDirty]);
+  const dirtyFormGuard = useDirtyFormGuard(isDirty);
 
   const clearFormFeedback = () => {
     setFieldErrors(createEmptyEvidenceFormErrors());
@@ -87,14 +73,6 @@ export const useEvidenceEditor = (evidence: Evidence[]) => {
 
   const cancelPendingDetailLoad = () => {
     detailRequestTokenRef.current += 1;
-  };
-
-  const confirmDiscardChanges = () => {
-    if (!isDirty) {
-      return true;
-    }
-
-    return window.confirm('Discard unsaved evidence changes?');
   };
 
   const loadEvidenceRecord = async (
@@ -151,66 +129,65 @@ export const useEvidenceEditor = (evidence: Evidence[]) => {
     }
   };
 
-  const openCreateEvidence = () => {
-    if (!confirmDiscardChanges()) {
-      return false;
-    }
+  const openCreateEvidence = (onOpen?: () => void) =>
+    dirtyFormGuard.requestDiscard(() => {
+      cancelPendingDetailLoad();
+      const value = createEmptyEvidenceFormValue();
 
-    cancelPendingDetailLoad();
-    const value = createEmptyEvidenceFormValue();
+      setSelectedEvidenceId(undefined);
+      setSelectedEvidence(undefined);
+      setDrawerMode('create');
+      setDraftValue(value);
+      setBaselineValue(value);
+      clearFormFeedback();
+      onOpen?.();
+    });
 
-    setSelectedEvidenceId(undefined);
-    setSelectedEvidence(undefined);
-    setDrawerMode('create');
-    setDraftValue(value);
-    setBaselineValue(value);
-    clearFormFeedback();
+  const openEvidenceDetails = (
+    evidenceOrId: Evidence | string,
+    onOpen?: () => void,
+  ) =>
+    dirtyFormGuard.requestDiscard(() => {
+      void loadEvidenceRecord(deriveEvidenceId(evidenceOrId), 'view');
+      onOpen?.();
+    });
 
-    return true;
-  };
-
-  const openEvidenceDetails = (evidenceOrId: Evidence | string) => {
-    if (!confirmDiscardChanges()) {
-      return false;
-    }
-
-    void loadEvidenceRecord(deriveEvidenceId(evidenceOrId), 'view');
-    return true;
-  };
-
-  const openEditEvidence = (evidenceOrId?: Evidence | string) => {
+  const openEditEvidence = (
+    evidenceOrId?: Evidence | string,
+    onOpen?: () => void,
+  ) => {
     const evidenceId =
       evidenceOrId !== undefined
         ? deriveEvidenceId(evidenceOrId)
         : selectedEvidenceRecord?.id;
 
-    if (!evidenceId || !confirmDiscardChanges()) {
+    if (!evidenceId) {
       return false;
     }
 
-    if (selectedEvidenceRecord?.id === evidenceId) {
-      const nextValue = evidenceToFormValue(selectedEvidenceRecord);
+    return dirtyFormGuard.requestDiscard(() => {
+      if (selectedEvidenceRecord?.id === evidenceId) {
+        const nextValue = evidenceToFormValue(selectedEvidenceRecord);
 
-      setDrawerMode('edit');
-      setDraftValue(nextValue);
-      setBaselineValue(nextValue);
-      clearFormFeedback();
-      return true;
-    }
+        setDrawerMode('edit');
+        setDraftValue(nextValue);
+        setBaselineValue(nextValue);
+        clearFormFeedback();
+        onOpen?.();
+        return;
+      }
 
-    void loadEvidenceRecord(evidenceId, 'edit');
-    return true;
+      void loadEvidenceRecord(evidenceId, 'edit');
+      onOpen?.();
+    });
   };
 
-  const closeEvidenceDrawer = () => {
-    if (!confirmDiscardChanges()) {
-      return false;
-    }
-
-    cancelPendingDetailLoad();
-    resetEditor();
-    return true;
-  };
+  const closeEvidenceDrawer = (onClose?: () => void) =>
+    dirtyFormGuard.requestDiscard(() => {
+      cancelPendingDetailLoad();
+      resetEditor();
+      onClose?.();
+    });
 
   const handleEvidenceChange = (value: EvidenceFormValue) => {
     setDraftValue(value);
@@ -250,5 +227,6 @@ export const useEvidenceEditor = (evidence: Evidence[]) => {
     closeEvidenceDrawer,
     handleEvidenceChange,
     retrySelectedEvidenceLoad,
+    dirtyFormGuard,
   };
 };

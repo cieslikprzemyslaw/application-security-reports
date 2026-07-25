@@ -162,17 +162,6 @@ describe('settings.controller', () => {
         return field;
       });
 
-    const setWindowConfirm = (
-      targetWindow: TestWindow,
-      value: typeof targetWindow.confirm,
-    ) => {
-      Object.defineProperty(targetWindow, 'confirm', {
-        value,
-        configurable: true,
-        writable: true,
-      });
-    };
-
     await (async () => {
       const baselineSettings: Settings = {
         id: 'settings_1',
@@ -223,14 +212,8 @@ describe('settings.controller', () => {
         throw new Error(`Unexpected request method: ${method}`);
       });
 
-      let originalConfirm: ((message?: string) => boolean) | undefined;
-      let testWindow: TestWindow | undefined;
-
       try {
         const { container, root, router, window } = await renderComponent();
-        testWindow = window;
-        originalConfirm = window.confirm;
-
         assert.equal(requestCount, 1);
         assert.equal(router.state.location.pathname, '/settings');
 
@@ -285,9 +268,6 @@ describe('settings.controller', () => {
           root.unmount();
         });
       } finally {
-        if (originalConfirm && testWindow) {
-          setWindowConfirm(testWindow, originalConfirm);
-        }
         restoreFetch();
       }
     })();
@@ -315,14 +295,8 @@ describe('settings.controller', () => {
         }),
       );
 
-      let originalConfirm: ((message?: string) => boolean) | undefined;
-      let testWindow: TestWindow | undefined;
-
       try {
         const { container, root, router, window } = await renderComponent();
-        testWindow = window;
-        originalConfirm = window.confirm;
-
         const consultantNameInput = await waitForField(
           window,
           'consultantName',
@@ -348,10 +322,27 @@ describe('settings.controller', () => {
 
         assert.equal(beforeUnloadEvent.defaultPrevented, true);
 
-        setWindowConfirm(window, () => false);
-
         await act(async () => {
           await router.navigate('/dashboard');
+          await renderTick();
+        });
+
+        assert.equal(router.state.location.pathname, '/settings');
+        const keepEditingButton = Array.from(
+          window.document.querySelectorAll<HTMLButtonElement>(
+            '[role="dialog"] button',
+          ),
+        ).find(button => button.textContent?.includes('Keep editing'));
+        assert.ok(keepEditingButton, 'Expected shared dirty-form dialog');
+
+        await act(async () => {
+          keepEditingButton!.dispatchEvent(
+            new window.MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+              button: 0,
+            }),
+          );
           await renderTick();
         });
 
@@ -362,10 +353,27 @@ describe('settings.controller', () => {
           'Expected navigation to stay on settings when the prompt is cancelled',
         );
 
-        setWindowConfirm(window, () => true);
-
         await act(async () => {
           void router.navigate('/dashboard');
+          await renderTick();
+        });
+
+        const discardButton = Array.from(
+          window.document.querySelectorAll<HTMLButtonElement>(
+            '[role="dialog"] button',
+          ),
+        ).find(button => button.textContent?.includes('Discard changes'));
+        assert.ok(discardButton, 'Expected discard action in shared dialog');
+
+        await act(async () => {
+          discardButton!.dispatchEvent(
+            new window.MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+              button: 0,
+            }),
+          );
+          await renderTick();
           await renderTick();
         });
 
@@ -378,9 +386,6 @@ describe('settings.controller', () => {
           root.unmount();
         });
       } finally {
-        if (originalConfirm && testWindow) {
-          setWindowConfirm(testWindow, originalConfirm);
-        }
         restoreFetch();
       }
     })();

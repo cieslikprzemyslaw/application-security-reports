@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import type { DirtyFormGuardControls } from '~/app/hooks/useDirtyFormGuard';
 import type { Evidence } from '~/domain';
 
 import type { AssessmentDetailsAssessment } from '../../assessmentDetails.type';
@@ -53,6 +54,7 @@ export interface AssessmentEvidenceController {
   retrySelectedEvidenceLoad: () => void;
   reloadEvidence: () => void;
   setStatusMessage: (value?: string) => void;
+  dirtyFormGuard: DirtyFormGuardControls;
 }
 
 export const useAssessmentEvidence = ({
@@ -106,15 +108,17 @@ export const useAssessmentEvidence = ({
     onSuccess: handleSuccessfulSave,
   });
 
+  const resetEditorSideEffects = () => {
+    deletion.resetDeletion();
+    download.setDownloadError(undefined);
+  };
+
   const closeEvidenceDrawer = () => {
     if (submission.isSubmitting || deletion.isDeleting) {
       return;
     }
 
-    if (editor.closeEvidenceDrawer()) {
-      deletion.resetDeletion();
-      download.setDownloadError(undefined);
-    }
+    editor.closeEvidenceDrawer(resetEditorSideEffects);
   };
 
   return {
@@ -140,23 +144,16 @@ export const useAssessmentEvidence = ({
     downloadTargetId: download.downloadTargetId,
     downloadError: download.downloadError,
     openCreateEvidence: () => {
-      if (editor.openCreateEvidence()) {
+      editor.openCreateEvidence(() => {
         setStatusMessage(undefined);
-        deletion.resetDeletion();
-        download.setDownloadError(undefined);
-      }
+        resetEditorSideEffects();
+      });
     },
     openEvidenceDetails: evidence => {
-      if (editor.openEvidenceDetails(evidence)) {
-        deletion.resetDeletion();
-        download.setDownloadError(undefined);
-      }
+      editor.openEvidenceDetails(evidence, resetEditorSideEffects);
     },
     openEditEvidence: evidence => {
-      if (editor.openEditEvidence(evidence)) {
-        deletion.resetDeletion();
-        download.setDownloadError(undefined);
-      }
+      editor.openEditEvidence(evidence, resetEditorSideEffects);
     },
     closeEvidenceDrawer,
     handleEvidenceChange: value => {
@@ -172,5 +169,6 @@ export const useAssessmentEvidence = ({
     retrySelectedEvidenceLoad: editor.retrySelectedEvidenceLoad,
     reloadEvidence: collection.reloadEvidence,
     setStatusMessage,
+    dirtyFormGuard: editor.dirtyFormGuard,
   };
 };

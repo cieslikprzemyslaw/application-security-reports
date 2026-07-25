@@ -284,6 +284,57 @@ describe('assessmentFindingsSection.component', () => {
     })();
   }, 15_000);
 
+  it('renders only backend-provided review actions and invokes the selected command', async () => {
+    const { container, root, window, events } =
+      await renderHarness('in-progress');
+
+    const row = Array.from(
+      container.querySelectorAll('.data-table-row--clickable'),
+    ).find(item => item.textContent?.includes(finding.title));
+
+    assert.ok(row, 'Expected the Threat row');
+
+    await act(async () => {
+      row!.dispatchEvent(
+        new window.MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+        }),
+      );
+      await renderTick();
+    });
+
+    const reviewButton = Array.from(
+      window.document.body.querySelectorAll<HTMLButtonElement>('button'),
+    ).find(button => button.textContent?.trim() === 'Submit for review');
+
+    assert.ok(reviewButton, 'Expected the server-provided review action');
+    assert.equal(
+      Array.from(window.document.body.querySelectorAll('button')).some(
+        button => button.textContent?.trim() === 'Approve resolution',
+      ),
+      false,
+    );
+
+    await act(async () => {
+      reviewButton!.dispatchEvent(
+        new window.MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+        }),
+      );
+      await renderTick();
+    });
+
+    assert.ok(events.includes('review:submit-review'));
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
   it('keeps confirmed threats visible when a background refetch fails', async () => {
     const { container, root, window, events } = await renderHarness(
       'in-progress',

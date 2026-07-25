@@ -61,6 +61,7 @@ const threat: Threat = {
   severity: 'high',
   strideCategories: ['elevation-of-privilege'],
   status: 'open',
+  owaspCategoryCode: 'A01:2025',
   evidenceCount: 1,
   createdAt: timestamp,
   updatedAt: timestamp,
@@ -258,6 +259,9 @@ describe('createDraftReportVersion', () => {
       expect(created.snapshot.reportTitle).toBe(report.title);
       expect(created.snapshot.selection).toEqual(selectedRequest.selection);
       expect(created.snapshot.selectedThreats[0]?.id).toBe(threatId);
+      expect(created.snapshot.selectedThreats[0]?.owaspCategoryLabel).toBe(
+        'Broken Access Control',
+      );
       expect(created.snapshot.selectedEvidence[0]?.id).toBe(evidenceId);
       expect(versionRepository.updateReportLatestVersion).toHaveBeenCalledWith(
         reportId,
@@ -318,6 +322,7 @@ describe('createDraftReportVersion', () => {
 
     const created = await createDraft(dependencies);
     mutableThreat.title = 'Changed after save';
+    mutableThreat.owaspCategoryCode = 'A02:2025';
     selectedRequest.selection.threatIds.push(
       'thr_00000000-0000-0000-0000-000000000099',
     );
@@ -326,6 +331,9 @@ describe('createDraftReportVersion', () => {
       'Missing authorization',
     );
     expect(created.snapshot.selection.threatIds).toEqual([threatId]);
+    expect(created.snapshot.selectedThreats[0]?.owaspCategoryLabel).toBe(
+      'Broken Access Control',
+    );
 
     selectedRequest.selection.threatIds.pop();
   });
