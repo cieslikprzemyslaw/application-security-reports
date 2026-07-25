@@ -7,6 +7,7 @@ export {
   serializeReportBuilderState,
 } from './reportBuilderState.route.js';
 export {
+  updateReportBuilderBranding,
   updateReportBuilderConfiguration,
   updateReportBuilderReportId,
   updateReportBuilderSelection,
