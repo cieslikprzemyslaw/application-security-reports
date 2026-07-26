@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
@@ -90,8 +90,8 @@ const AssessmentFindingsSection = ({
   const cweCatalogVersion =
     assessment.cweCatalogVersion ?? CWE_CATALOG_CURRENT_VERSION;
   const handledTargetRef = useRef<string>();
-  const readinessFocusTargetRef =
-    useRef<AssessmentFindingsInitialEditTarget>();
+  const [readinessFocusTarget, setReadinessFocusTarget] =
+    useState(initialEditTarget);
 
   useEffect(() => {
     if (!initialEditTarget || isLoading || !hasLoadedFindings) {
@@ -116,10 +116,8 @@ const AssessmentFindingsSection = ({
     }
 
     if (canEditFindings) {
-      readinessFocusTargetRef.current = initialEditTarget;
       openEditFinding(targetThreat);
     } else {
-      readinessFocusTargetRef.current = undefined;
       openFindingDetails(targetThreat);
     }
 
@@ -159,7 +157,6 @@ const AssessmentFindingsSection = ({
       : drawerMode === 'edit'
         ? 'Edit threat'
         : 'Threat details';
-  const readinessFocusTarget = readinessFocusTargetRef.current;
   const drawerContent =
     drawerMode === 'create' || drawerMode === 'edit' ? (
       <>
@@ -190,7 +187,7 @@ const AssessmentFindingsSection = ({
     ) : undefined;
   const showInitialError = Boolean(loadError && !hasLoadedFindings);
   const handleDrawerClose = () => {
-    readinessFocusTargetRef.current = undefined;
+    setReadinessFocusTarget(undefined);
     closeFindingDrawer();
   };
 
@@ -339,7 +336,7 @@ const AssessmentFindingsSection = ({
         onEdit={
           drawerMode === 'view' && selectedFinding && canEditFindings
             ? () => {
-                readinessFocusTargetRef.current = undefined;
+                setReadinessFocusTarget(undefined);
                 openEditFinding(selectedFinding);
               }
             : undefined
