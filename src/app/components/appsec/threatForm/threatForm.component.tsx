@@ -87,17 +87,13 @@ const ThreatForm = ({
 
   useEffect(() => {
     if (!focusTargetFieldId || !isFocusTargetVisible) {
-      return undefined;
+      return;
     }
 
-    const frameId = window.requestAnimationFrame(() => {
-      const field = document.getElementById(focusTargetFieldId);
+    const field = document.getElementById(focusTargetFieldId);
 
-      field?.scrollIntoView({ block: 'center' });
-      field?.focus();
-    });
-
-    return () => window.cancelAnimationFrame(frameId);
+    field?.scrollIntoView({ block: 'center' });
+    field?.focus();
   }, [focusTargetFieldId, isFocusTargetVisible]);
 
   return (
