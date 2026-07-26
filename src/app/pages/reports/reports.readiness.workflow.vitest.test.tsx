@@ -34,7 +34,7 @@ const findCheckbox = (container: HTMLElement, value: string) =>
   ) as HTMLInputElement | undefined;
 
 describe('Report readiness through the production Report Builder route', () => {
-  it('navigates to the returned Threat target after confirmation', async () => {
+  it('renders backend blockers and warnings, blocks Final, keeps Draft, and focuses the returned target', async () => {
     const reportBodies: unknown[] = [];
     const readinessBodies: unknown[] = [];
     let createdReportListItem: Record<string, unknown> | undefined;
@@ -292,6 +292,34 @@ describe('Report readiness through the production Report Builder route', () => {
         assert.ok(
           textContent(container).includes('Threat description is required.'),
         );
+        assert.ok(textContent(container).includes('No Evidence is selected.'));
+      });
+
+      const checklist = container.querySelector('.report-readiness-checklist');
+      const finalButton = findButton(container, 'Save as final');
+      const draftButton = findButton(container, 'Save draft');
+
+      assert.ok(checklist);
+      assert.equal(checklist.getAttribute('data-print-hidden'), 'true');
+      assert.equal(checklist.closest('.report-preview-shell-paper'), null);
+      assert.ok(finalButton);
+      assert.equal(finalButton.disabled, true);
+      assert.ok(draftButton);
+      assert.equal(draftButton.disabled, false);
+
+      assert.equal(reportBodies.length, 1);
+      assert.equal(readinessBodies.length, 1);
+      assert.deepEqual(readinessBodies[0], {
+        companyId: previewCompanyId,
+        assessmentId: previewAssessmentId,
+        selection: {
+          threatIds: [previewThreatId],
+          evidenceIds: [],
+        },
+        configuration: {
+          includeEvidence: true,
+        },
+        brandingMode: 'issuer',
       });
 
       const targetButton = Array.from(
@@ -324,10 +352,13 @@ describe('Report readiness through the production Report Builder route', () => {
 
       await waitFor(() => {
         assert.equal(window.location.pathname, findingsPath);
-      });
 
-      assert.equal(reportBodies.length, 1);
-      assert.equal(readinessBodies.length, 1);
+        const descriptionField = document.getElementById('threat-observation');
+
+        assert.ok(descriptionField);
+        assert.equal(document.activeElement, descriptionField);
+        assert.ok(document.body.textContent?.includes('Edit threat'));
+      });
 
       await act(async () => {
         root.unmount();
