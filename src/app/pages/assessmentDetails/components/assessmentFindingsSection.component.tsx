@@ -175,7 +175,8 @@ const AssessmentFindingsSection = ({
           errors={fieldErrors}
           isSubmitting={isSubmitting}
           focusField={
-            selectedFinding?.id === readinessFocusTarget?.threatId
+            readinessFocusTarget &&
+            selectedFinding?.id === readinessFocusTarget.threatId
               ? readinessFocusTarget.focusField
               : undefined
           }
