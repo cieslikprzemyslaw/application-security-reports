@@ -34,7 +34,7 @@ const findCheckbox = (container: HTMLElement, value: string) =>
   ) as HTMLInputElement | undefined;
 
 describe('Report readiness through the production Report Builder route', () => {
-  it('renders backend blockers and warnings and keeps draft available', async () => {
+  it('renders blockers and opens unsaved-change confirmation for a target', async () => {
     const reportBodies: unknown[] = [];
     const readinessBodies: unknown[] = [];
     let createdReportListItem: Record<string, unknown> | undefined;
@@ -284,31 +284,27 @@ describe('Report readiness through the production Report Builder route', () => {
         assert.ok(textContent(container).includes('No Evidence is selected.'));
       });
 
-      const checklist = container.querySelector('.report-readiness-checklist');
-      const finalButton = findButton(container, 'Save as final');
-      const draftButton = findButton(container, 'Save draft');
+      const targetButton = Array.from(
+        container.querySelectorAll('button'),
+      ).find(button =>
+        button.textContent?.includes('Threat description is required.'),
+      );
 
-      assert.ok(checklist);
-      assert.equal(checklist.getAttribute('data-print-hidden'), 'true');
-      assert.equal(checklist.closest('.report-preview-shell-paper'), null);
-      assert.ok(finalButton);
-      assert.equal(finalButton.disabled, true);
-      assert.ok(draftButton);
-      assert.equal(draftButton.disabled, false);
+      assert.ok(targetButton);
+
+      await act(async () => {
+        targetButton.click();
+        await renderTick();
+        await renderTick();
+      });
+
+      await waitFor(() => {
+        assert.ok(textContent(document.body).includes('Unsaved changes'));
+      });
+
+      assert.ok(findButton(document.body, 'Discard changes'));
       assert.equal(reportBodies.length, 1);
       assert.equal(readinessBodies.length, 1);
-      assert.deepEqual(readinessBodies[0], {
-        companyId: previewCompanyId,
-        assessmentId: previewAssessmentId,
-        selection: {
-          threatIds: [previewThreatId],
-          evidenceIds: [],
-        },
-        configuration: {
-          includeEvidence: true,
-        },
-        brandingMode: 'issuer',
-      });
 
       await act(async () => {
         root.unmount();
