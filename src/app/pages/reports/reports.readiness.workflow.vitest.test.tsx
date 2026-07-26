@@ -34,7 +34,7 @@ const findCheckbox = (container: HTMLElement, value: string) =>
   ) as HTMLInputElement | undefined;
 
 describe('Report readiness through the production Report Builder route', () => {
-  it('renders blockers and opens unsaved-change confirmation for a target', async () => {
+  it('renders backend blockers and warnings, blocks Final, keeps Draft, and opens the returned target', async () => {
     const reportBodies: unknown[] = [];
     const readinessBodies: unknown[] = [];
     let createdReportListItem: Record<string, unknown> | undefined;
@@ -133,7 +133,9 @@ describe('Report readiness through the production Report Builder route', () => {
       }
 
       if (path === `/api/evidence?assessmentId=${previewAssessmentId}`) {
-        return createJsonResponse({ data: [] });
+        return createJsonResponse({
+          data: createdReportListItem ? [createdReportListItem] : [],
+        });
       }
 
       if (path === `/api/reports?assessmentId=${previewAssessmentId}`) {
@@ -186,7 +188,12 @@ describe('Report readiness through the production Report Builder route', () => {
           versions: [],
         };
 
-        return createJsonResponse({ data: createdReport }, { status: 201 });
+        return createJsonResponse(
+          {
+            data: createdReport,
+          },
+          { status: 201 },
+        );
       }
 
       if (
@@ -235,6 +242,10 @@ describe('Report readiness through the production Report Builder route', () => {
       const previewPath =
         routes.companyWorkspaceReportsPreview(previewCompanyId);
       const { container, root } = await renderApp(editorPath);
+      const findingsPath = routes.assessmentDetailsFindings(
+        previewCompanyId,
+        previewAssessmentId,
+      );
 
       await waitFor(() => {
         assert.ok(textContent(container).includes('Selection tree'));
@@ -284,6 +295,33 @@ describe('Report readiness through the production Report Builder route', () => {
         assert.ok(textContent(container).includes('No Evidence is selected.'));
       });
 
+      const checklist = container.querySelector('.report-readiness-checklist');
+      const finalButton = findButton(container, 'Save as final');
+      const draftButton = findButton(container, 'Save draft');
+
+      assert.ok(checklist);
+      assert.equal(checklist.getAttribute('data-print-hidden'), 'true');
+      assert.equal(checklist.closest('.report-preview-shell-paper'), null);
+      assert.ok(finalButton);
+      assert.equal(finalButton.disabled, true);
+      assert.ok(draftButton);
+      assert.equal(draftButton.disabled, false);
+
+      assert.equal(reportBodies.length, 1);
+      assert.equal(readinessBodies.length, 1);
+      assert.deepEqual(readinessBodies[0], {
+        companyId: previewCompanyId,
+        assessmentId: previewAssessmentId,
+        selection: {
+          threatIds: [previewThreatId],
+          evidenceIds: [],
+        },
+        configuration: {
+          includeEvidence: true,
+        },
+        brandingMode: 'issuer',
+      });
+
       const targetButton = Array.from(
         container.querySelectorAll('button'),
       ).find(button =>
@@ -302,9 +340,24 @@ describe('Report readiness through the production Report Builder route', () => {
         assert.ok(textContent(document.body).includes('Unsaved changes'));
       });
 
-      assert.ok(findButton(document.body, 'Discard changes'));
-      assert.equal(reportBodies.length, 1);
-      assert.equal(readinessBodies.length, 1);
+      const discardButton = findButton(document.body, 'Discard changes');
+
+      assert.ok(discardButton);
+
+      await act(async () => {
+        discardButton.click();
+        await renderTick();
+        await renderTick();
+      });
+
+      await waitFor(() => {
+        assert.equal(window.location.pathname, findingsPath);
+
+        const descriptionField = document.getElementById('threat-observation');
+
+        assert.ok(descriptionField);
+        assert.ok(document.body.textContent?.includes('Edit threat'));
+      });
 
       await act(async () => {
         root.unmount();
