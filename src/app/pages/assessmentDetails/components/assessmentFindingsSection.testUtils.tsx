@@ -244,9 +244,7 @@ export const renderHarness = async (
           },
         }}
         initialEditTarget={options.initialEditTarget}
-        onInitialEditTargetHandled={() =>
-          events.push('initial-target-handled')
-        }
+        onInitialEditTargetHandled={() => events.push('initial-target-handled')}
       />
     );
   };
