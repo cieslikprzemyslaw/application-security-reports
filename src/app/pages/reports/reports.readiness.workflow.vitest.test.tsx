@@ -38,6 +38,7 @@ describe('Report readiness through the production Report Builder route', () => {
     const reportBodies: unknown[] = [];
     const readinessBodies: unknown[] = [];
     let createdReportListItem: Record<string, unknown> | undefined;
+    let unmount: (() => void) | undefined;
 
     setFetch(async (input, init) => {
       const path = String(input);
@@ -241,7 +242,9 @@ describe('Report readiness through the production Report Builder route', () => {
       const editorPath = routes.companyWorkspaceReports(previewCompanyId);
       const previewPath =
         routes.companyWorkspaceReportsPreview(previewCompanyId);
-      const { container, root } = await renderApp(editorPath);
+      const rendered = await renderApp(editorPath);
+      const { container } = rendered;
+      unmount = () => rendered.root.unmount();
       const findingsPath = routes.assessmentDetailsFindings(
         previewCompanyId,
         previewAssessmentId,
@@ -359,11 +362,12 @@ describe('Report readiness through the production Report Builder route', () => {
         assert.equal(document.activeElement, descriptionField);
         assert.ok(document.body.textContent?.includes('Edit threat'));
       });
-
-      await act(async () => {
-        root.unmount();
-      });
     } finally {
+      if (unmount) {
+        await act(async () => {
+          unmount?.();
+        });
+      }
       restoreFetch();
     }
   });
