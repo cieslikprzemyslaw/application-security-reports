@@ -24,7 +24,9 @@ import {
 } from '../assessmentDetails.mapper';
 import type { AssessmentDetailsAssessment } from '../assessmentDetails.type';
 
-import AssessmentFindingsSection from './assessmentFindingsSection.component';
+import AssessmentFindingsSection, {
+  type AssessmentFindingsInitialEditTarget,
+} from './assessmentFindingsSection.component';
 
 export const owaspCategoryValue = (code: string) =>
   getOwaspTop10CategoryOption(code)?.value ?? `${code}:2025`;
@@ -128,6 +130,7 @@ interface RenderHarnessOptions {
   isRefreshing?: boolean;
   hasLoadedFindings?: boolean;
   loadError?: string;
+  initialEditTarget?: AssessmentFindingsInitialEditTarget;
 }
 
 export const renderHarness = async (
@@ -240,6 +243,10 @@ export const renderHarness = async (
             return true;
           },
         }}
+        initialEditTarget={options.initialEditTarget}
+        onInitialEditTargetHandled={() =>
+          events.push('initial-target-handled')
+        }
       />
     );
   };
