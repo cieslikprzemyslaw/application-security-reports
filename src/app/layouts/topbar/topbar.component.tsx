@@ -10,6 +10,7 @@ const Topbar = ({
   onMenuClick,
   menuButtonControls,
   menuButtonExpanded = false,
+  menuButtonRef,
   search,
   actions,
   userMenu,
@@ -19,6 +20,7 @@ const Topbar = ({
     {onMenuClick && (
       <div className="topbar-menu">
         <button
+          ref={menuButtonRef}
           type="button"
           className="topbar-menu-button"
           aria-label="Open navigation menu"

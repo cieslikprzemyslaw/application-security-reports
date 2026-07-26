@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 
 import { describe, it } from 'vitest';
 
@@ -240,7 +240,7 @@ describe('Save draft through the production Report Builder route', () => {
       await waitFor(() => {
         assert.ok(textContent(container).includes('Draft saved as v0.1.'));
         assert.ok(textContent(container).includes('Saved Customer Portal'));
-        assert.ok(textContent(container).includes(`${reportId} Â· v0.1`));
+        assert.ok(textContent(container).includes(`${reportId} · v0.1`));
       });
 
       assert.equal(reportBodies.length, 1);

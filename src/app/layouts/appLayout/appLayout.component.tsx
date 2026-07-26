@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { matchPath, Outlet, useLocation } from 'react-router-dom';
 import type { CompanyListItem } from '~/domain';
 import { routes, routePatterns } from '~/routes';
@@ -19,6 +19,7 @@ import type { CompanyIdentity } from '~/app/pages/companies';
 import type { SidebarNavigationGroup } from '../sidebar';
 
 const sidebarId = 'app-layout-sidebar';
+const mainContentId = 'app-main-content';
 
 interface AppLayoutProps {
   activeCompany?: CompanyIdentity;
@@ -48,6 +49,8 @@ const AppLayout = ({
   onActiveCompanyChange,
 }: AppLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const wasSidebarOpenRef = useRef(false);
   const location = useLocation();
   const reportPreviewMatch = matchPath(
     { path: routePatterns.companyWorkspaceReportsPreview, end: true },
@@ -57,6 +60,27 @@ const AppLayout = ({
   const routeBoundaryKey = reportPreviewCompanyId
     ? routes.companyWorkspaceReports(reportPreviewCompanyId)
     : location.pathname;
+
+  useEffect(() => {
+    if (isSidebarOpen) {
+      wasSidebarOpenRef.current = true;
+      const frameId = window.requestAnimationFrame(() => {
+        document
+          .getElementById(sidebarId)
+          ?.querySelector<HTMLElement>('.sidebar-close-button')
+          ?.focus();
+      });
+
+      return () => window.cancelAnimationFrame(frameId);
+    }
+
+    if (wasSidebarOpenRef.current) {
+      wasSidebarOpenRef.current = false;
+      menuButtonRef.current?.focus();
+    }
+
+    return undefined;
+  }, [isSidebarOpen]);
 
   const openSidebar = () => {
     setIsSidebarOpen(true);
@@ -88,6 +112,7 @@ const AppLayout = ({
   return (
     <AppShell
       sidebarId={sidebarId}
+      mainContentId={mainContentId}
       isSidebarOpen={isSidebarOpen}
       onSidebarClose={closeSidebar}
       sidebar={
@@ -105,6 +130,7 @@ const AppLayout = ({
           onMenuClick={openSidebar}
           menuButtonControls={sidebarId}
           menuButtonExpanded={isSidebarOpen}
+          menuButtonRef={menuButtonRef}
           userMenu={
             <TopbarUserIdentity fullName="Alex Mercer" role="Lead Pentester" />
           }

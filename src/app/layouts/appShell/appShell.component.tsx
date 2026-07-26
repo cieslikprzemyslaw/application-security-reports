@@ -11,9 +11,14 @@ const AppShell = ({
   isSidebarOpen = false,
   onSidebarClose,
   sidebarId,
+  mainContentId = 'app-main-content',
   ...rest
 }: AppShellProps) => (
   <StyledAppShell {...rest}>
+    <a className="app-shell-skip-link" href={`#${mainContentId}`}>
+      Skip to main content
+    </a>
+
     <aside
       id={sidebarId}
       className="app-shell-sidebar"
@@ -40,7 +45,9 @@ const AppShell = ({
         {topbar}
       </div>
 
-      <main className="app-shell-content">{children}</main>
+      <main id={mainContentId} className="app-shell-content" tabIndex={-1}>
+        {children}
+      </main>
     </div>
   </StyledAppShell>
 );

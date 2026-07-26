@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useInRouterContext, useNavigate } from 'react-router-dom';
 
 import Button from '~/app/components/ui/button';
@@ -6,9 +6,11 @@ import Callout from '~/app/components/ui/callout';
 import Card from '~/app/components/ui/card';
 import Checkbox from '~/app/components/ui/checkbox';
 import EmptyState from '~/app/components/ui/emptyState';
+import Input from '~/app/components/ui/input';
 import { routes } from '~/routes';
 
 import StyledReportBuilderTree from './reportBuilderTree.styled';
+import { filterReportBuilderHierarchy } from './reportBuilderTree.filter';
 import {
   getReportBuilderExactSelection,
   toggleReportBuilderAssessmentSelection,
@@ -22,12 +24,18 @@ import {
   type ReportBuilderHierarchy,
 } from './reportBuilderTree.service';
 
-import type { ReportBuilderSelection, ReportReadinessTarget } from '~/domain';
+import type {
+  ReportBuilderConfiguration,
+  ReportBuilderSelection,
+  ReportReadinessTarget,
+} from '~/domain';
 
 interface ReportBuilderTreeProps {
   companyId: string;
   companyName: string;
   includeEvidence: boolean;
+  methodology?: string;
+  reportStyle?: string;
   selection: ReportBuilderSelection;
   selectionState: ReportBuilderSelectionTreeState;
   lockedAssessmentId?: string;
@@ -37,6 +45,7 @@ interface ReportBuilderTreeProps {
     exactSelection: ReportBuilderSelection,
   ) => void;
   onIncludeEvidenceChange: (includeEvidence: boolean) => void;
+  onConfigurationChange?: (patch: Partial<ReportBuilderConfiguration>) => void;
   loadHierarchy?: (
     companyId: string,
     signal?: AbortSignal,
@@ -83,17 +92,21 @@ const ReportBuilderTree = ({
   companyId,
   companyName,
   includeEvidence,
+  methodology = '',
+  reportStyle = '',
   selectionState,
   lockedAssessmentId,
   focusTarget,
   onSelectionChange,
   onIncludeEvidenceChange,
+  onConfigurationChange,
   loadHierarchy = reportBuilderHierarchyLoader,
 }: ReportBuilderTreeProps) => {
   const [hierarchy, setHierarchy] = useState<ReportBuilderHierarchy>();
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | undefined>();
   const [reloadKey, setReloadKey] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
 
   React.useEffect(() => {
     const controller = new AbortController();
@@ -137,6 +150,15 @@ const ReportBuilderTree = ({
     };
   }, [companyId, loadHierarchy, reloadKey]);
 
+  const filteredHierarchy = useMemo(
+    () =>
+      hierarchy
+        ? filterReportBuilderHierarchy(hierarchy, searchQuery)
+        : undefined,
+    [hierarchy, searchQuery],
+  );
+  const normalizedSearchQuery = searchQuery.trim();
+
   const commitSelection = (nextState: ReportBuilderSelectionTreeState) => {
     onSelectionChange(
       nextState,
@@ -147,7 +169,11 @@ const ReportBuilderTree = ({
   const showInitialError = loadError && hierarchy === undefined;
 
   return (
-    <StyledReportBuilderTree aria-labelledby="report-builder-tree-title">
+    <StyledReportBuilderTree
+      id="report-builder-select-section"
+      tabIndex={-1}
+      aria-labelledby="report-builder-tree-title"
+    >
       <Card
         title="Selection tree"
         subtitle="Company, assessment, threat, and evidence selection for the active report builder state."
@@ -170,7 +196,59 @@ const ReportBuilderTree = ({
           </p>
         </div>
 
-        <div className="report-builder-tree-configuration">
+        <div className="report-builder-tree-filter">
+          <Input
+            id="report-builder-tree-search"
+            label="Search report content"
+            description="Filter visible assessments, threats and evidence. Hidden selections remain selected."
+            type="search"
+            value={searchQuery}
+            onChange={event => setSearchQuery(event.target.value)}
+          />
+          {normalizedSearchQuery && (
+            <Button
+              title="Clear search"
+              variant="secondary"
+              onClick={() => setSearchQuery('')}
+            />
+          )}
+        </div>
+
+        <section
+          id="report-builder-configure-section"
+          className="report-builder-tree-configuration"
+          tabIndex={-1}
+          aria-labelledby="report-builder-configuration-heading"
+        >
+          <div>
+            <h3 id="report-builder-configuration-heading">Configure report</h3>
+            <p className="report-builder-tree-subtitle">
+              Use the existing report configuration fields without changing
+              selection state.
+            </p>
+          </div>
+
+          <div className="report-builder-tree-configuration-grid">
+            <Input
+              id="report-builder-methodology"
+              label="Methodology"
+              value={methodology}
+              placeholder="OWASP ASVS and WSTG"
+              onChange={event =>
+                onConfigurationChange?.({ methodology: event.target.value })
+              }
+            />
+            <Input
+              id="report-builder-report-style"
+              label="Report style"
+              value={reportStyle}
+              placeholder="Technical assessment"
+              onChange={event =>
+                onConfigurationChange?.({ reportStyle: event.target.value })
+              }
+            />
+          </div>
+
           <Checkbox
             id="report-builder-include-evidence"
             label="Include selected evidence"
@@ -180,7 +258,7 @@ const ReportBuilderTree = ({
             data-readiness-field="selection.evidenceIds"
             onChange={event => onIncludeEvidenceChange(event.target.checked)}
           />
-        </div>
+        </section>
 
         {showInitialLoading ? (
           <div
@@ -230,9 +308,10 @@ const ReportBuilderTree = ({
               </Callout>
             )}
 
-            {hierarchy?.assessments.length ? (
+            {filteredHierarchy?.assessments.length ? (
               <ReportBuilderTreeContent
-                hierarchy={hierarchy}
+                key={normalizedSearchQuery.toLocaleLowerCase()}
+                hierarchy={filteredHierarchy}
                 selectionState={selectionState}
                 lockedAssessmentId={lockedAssessmentId}
                 focusTarget={focusTarget}
@@ -274,6 +353,18 @@ const ReportBuilderTree = ({
                     ),
                   );
                 }}
+              />
+            ) : hierarchy?.assessments.length && normalizedSearchQuery ? (
+              <EmptyState
+                variant="no-results"
+                title="No matching report content"
+                description={`No assessments, threats or evidence match “${normalizedSearchQuery}”.`}
+                primaryAction={
+                  <Button
+                    title="Clear search"
+                    onClick={() => setSearchQuery('')}
+                  />
+                }
               />
             ) : (
               <ReportBuilderEmptyState companyId={companyId} />

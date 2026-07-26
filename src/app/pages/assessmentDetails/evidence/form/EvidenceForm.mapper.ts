@@ -31,6 +31,8 @@ export interface EvidenceHttpExchangeFormValue {
   responseStatusCode: string;
   responseStatusText: string;
   responseBody: string;
+  rawRequest?: string;
+  rawResponse?: string;
 }
 
 export interface EvidenceFormValue {

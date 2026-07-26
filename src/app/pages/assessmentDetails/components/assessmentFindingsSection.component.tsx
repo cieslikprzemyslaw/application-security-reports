@@ -90,43 +90,40 @@ const AssessmentFindingsSection = ({
   const cweCatalogVersion =
     assessment.cweCatalogVersion ?? CWE_CATALOG_CURRENT_VERSION;
   const handledTargetRef = useRef<string>();
-  const [readinessFocusField] = useState(initialEditTarget?.focusField);
+  const [readinessFocusTarget, setReadinessFocusTarget] =
+    useState(initialEditTarget);
 
   useEffect(() => {
     if (!initialEditTarget || isLoading || !hasLoadedFindings) {
-      return undefined;
+      return;
     }
 
     const targetKey = `${initialEditTarget.threatId}:${initialEditTarget.focusField}`;
 
     if (handledTargetRef.current === targetKey) {
-      return undefined;
+      return;
     }
 
     const targetThreat = threats.find(
       threat => threat.id === initialEditTarget.threatId,
     );
 
+    handledTargetRef.current = targetKey;
+
     if (!targetThreat) {
-      handledTargetRef.current = targetKey;
       onInitialEditTargetHandled?.();
-      return undefined;
+      return;
     }
 
-    handledTargetRef.current = targetKey;
-    const frameId = window.requestAnimationFrame(() => {
-      if (canEditFindings) {
-        openEditFinding(targetThreat);
-      } else {
-        openFindingDetails(targetThreat);
-      }
+    if (canEditFindings) {
+      openEditFinding(targetThreat);
+    } else {
+      openFindingDetails(targetThreat);
+    }
 
+    window.setTimeout(() => {
       onInitialEditTargetHandled?.();
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
+    }, 0);
   }, [
     canEditFindings,
     hasLoadedFindings,
@@ -177,7 +174,12 @@ const AssessmentFindingsSection = ({
           cweCatalogVersion={cweCatalogVersion}
           errors={fieldErrors}
           isSubmitting={isSubmitting}
-          focusField={readinessFocusField}
+          focusField={
+            readinessFocusTarget &&
+            selectedFinding?.id === readinessFocusTarget.threatId
+              ? readinessFocusTarget.focusField
+              : undefined
+          }
           submitLabel={
             drawerMode === 'create' ? 'Create threat' : 'Save threat'
           }
@@ -187,6 +189,10 @@ const AssessmentFindingsSection = ({
       </>
     ) : undefined;
   const showInitialError = Boolean(loadError && !hasLoadedFindings);
+  const handleDrawerClose = () => {
+    setReadinessFocusTarget(undefined);
+    closeFindingDrawer();
+  };
 
   return (
     <>
@@ -329,10 +335,13 @@ const AssessmentFindingsSection = ({
             </Callout>
           ) : undefined
         }
-        onClose={closeFindingDrawer}
+        onClose={handleDrawerClose}
         onEdit={
           drawerMode === 'view' && selectedFinding && canEditFindings
-            ? () => openEditFinding(selectedFinding)
+            ? () => {
+                setReadinessFocusTarget(undefined);
+                openEditFinding(selectedFinding);
+              }
             : undefined
         }
         onDelete={

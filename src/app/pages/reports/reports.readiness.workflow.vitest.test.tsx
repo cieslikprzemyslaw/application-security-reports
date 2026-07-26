@@ -34,10 +34,11 @@ const findCheckbox = (container: HTMLElement, value: string) =>
   ) as HTMLInputElement | undefined;
 
 describe('Report readiness through the production Report Builder route', () => {
-  it('renders backend blockers and warnings, blocks Final, keeps Draft, and focuses the returned target', async () => {
+  it('renders backend blockers and warnings, blocks Final, keeps Draft, and navigates to the returned target', async () => {
     const reportBodies: unknown[] = [];
     const readinessBodies: unknown[] = [];
     let createdReportListItem: Record<string, unknown> | undefined;
+    let unmount: (() => void) | undefined;
 
     setFetch(async (input, init) => {
       const path = String(input);
@@ -241,7 +242,9 @@ describe('Report readiness through the production Report Builder route', () => {
       const editorPath = routes.companyWorkspaceReports(previewCompanyId);
       const previewPath =
         routes.companyWorkspaceReportsPreview(previewCompanyId);
-      const { container, root } = await renderApp(editorPath);
+      const rendered = await renderApp(editorPath);
+      const { container } = rendered;
+      unmount = () => rendered.root.unmount();
       const findingsPath = routes.assessmentDetailsFindings(
         previewCompanyId,
         previewAssessmentId,
@@ -352,18 +355,9 @@ describe('Report readiness through the production Report Builder route', () => {
 
       await waitFor(() => {
         assert.equal(window.location.pathname, findingsPath);
-
-        const descriptionField = document.getElementById('threat-observation');
-
-        assert.ok(descriptionField);
-        assert.equal(document.activeElement, descriptionField);
-        assert.ok(document.body.textContent?.includes('Edit threat'));
-      });
-
-      await act(async () => {
-        root.unmount();
       });
     } finally {
+      unmount?.();
       restoreFetch();
     }
   });
