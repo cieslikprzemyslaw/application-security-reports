@@ -28,7 +28,7 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "vitest run --project frontend src/app/pages/reports/reports.bootstrap.workflow.vitest.test.tsx",
+    "test": "vitest run --project frontend src/app/pages/reports/reports.saveDraft.workflow.vitest.test.tsx",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.server.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
