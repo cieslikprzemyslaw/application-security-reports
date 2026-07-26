@@ -363,11 +363,7 @@ describe('Report readiness through the production Report Builder route', () => {
         assert.ok(document.body.textContent?.includes('Edit threat'));
       });
     } finally {
-      if (unmount) {
-        await act(async () => {
-          unmount?.();
-        });
-      }
+      unmount?.();
       restoreFetch();
     }
   });
