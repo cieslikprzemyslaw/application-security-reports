@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import Button from '~/app/components/ui/button';
 import Callout from '~/app/components/ui/callout';
@@ -90,8 +90,8 @@ const AssessmentFindingsSection = ({
   const cweCatalogVersion =
     assessment.cweCatalogVersion ?? CWE_CATALOG_CURRENT_VERSION;
   const handledTargetRef = useRef<string>();
-  const [readinessFocusTarget, setReadinessFocusTarget] =
-    useState<AssessmentFindingsInitialEditTarget>();
+  const readinessFocusTargetRef =
+    useRef<AssessmentFindingsInitialEditTarget>();
 
   useEffect(() => {
     if (!initialEditTarget || isLoading || !hasLoadedFindings) {
@@ -116,10 +116,10 @@ const AssessmentFindingsSection = ({
     }
 
     if (canEditFindings) {
-      setReadinessFocusTarget(initialEditTarget);
+      readinessFocusTargetRef.current = initialEditTarget;
       openEditFinding(targetThreat);
     } else {
-      setReadinessFocusTarget(undefined);
+      readinessFocusTargetRef.current = undefined;
       openFindingDetails(targetThreat);
     }
 
@@ -159,6 +159,7 @@ const AssessmentFindingsSection = ({
       : drawerMode === 'edit'
         ? 'Edit threat'
         : 'Threat details';
+  const readinessFocusTarget = readinessFocusTargetRef.current;
   const drawerContent =
     drawerMode === 'create' || drawerMode === 'edit' ? (
       <>
@@ -189,7 +190,7 @@ const AssessmentFindingsSection = ({
     ) : undefined;
   const showInitialError = Boolean(loadError && !hasLoadedFindings);
   const handleDrawerClose = () => {
-    setReadinessFocusTarget(undefined);
+    readinessFocusTargetRef.current = undefined;
     closeFindingDrawer();
   };
 
@@ -338,7 +339,7 @@ const AssessmentFindingsSection = ({
         onEdit={
           drawerMode === 'view' && selectedFinding && canEditFindings
             ? () => {
-                setReadinessFocusTarget(undefined);
+                readinessFocusTargetRef.current = undefined;
                 openEditFinding(selectedFinding);
               }
             : undefined
