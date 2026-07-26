@@ -121,7 +121,9 @@ const AssessmentFindingsSection = ({
       openFindingDetails(targetThreat);
     }
 
-    onInitialEditTargetHandled?.();
+    window.setTimeout(() => {
+      onInitialEditTargetHandled?.();
+    }, 0);
   }, [
     canEditFindings,
     hasLoadedFindings,
