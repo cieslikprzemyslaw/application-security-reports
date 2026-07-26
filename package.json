@@ -28,7 +28,7 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "vitest run --project frontend src/app/pages/reports/reports.saveFinal.workflow.vitest.test.tsx src/app/pages/reports/reports.readiness.workflow.vitest.test.tsx src/app/pages/reports/reports.navigation.workflow.vitest.test.tsx src/app/components/appsec/reportEvidence/reportEvidence.vitest.test.tsx src/app/pages/assessmentDetails/reports/assessmentReportsSection.vitest.test.tsx src/app/pages/assessmentDetails/assessmentDetails.reports.workflow.vitest.test.tsx src/app/components/appsec/reportActions/reportActions.vitest.test.tsx",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.server.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
