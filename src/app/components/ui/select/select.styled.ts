@@ -1,7 +1,9 @@
-import { styled, css } from 'styled-components';
+import { css, styled } from 'styled-components';
 
 const StyledSelect = styled.div`
-  ${({ theme: { colors, radii, spacing, transitions, typography } }) => css`
+  ${({
+    theme: { colors, radii, shadows, spacing, transitions, typography },
+  }) => css`
     display: flex;
     flex-direction: column;
     gap: ${spacing.xxxs};
@@ -48,18 +50,22 @@ const StyledSelect = styled.div`
       line-height: ${typography.body.medium.lineHeight};
       color: ${colors.text.primary};
       background-color: ${colors.surface.card};
+      box-shadow: ${shadows.xs};
 
       appearance: none;
       transition:
         border-color ${transitions.fast},
+        background-color ${transitions.fast},
         box-shadow ${transitions.fast};
+    }
+
+    .select-control:hover:not(:disabled) {
+      border-color: ${colors.border.strong};
     }
 
     .select-control:focus-visible {
       border-color: ${colors.border.focus};
-      box-shadow:
-        0 0 0 2px ${colors.neutral.white},
-        0 0 0 4px ${colors.brand.wash};
+      box-shadow: 0 0 0 3px ${colors.brand.wash};
     }
 
     .select-wrapper--has-error .select-control {
@@ -68,15 +74,14 @@ const StyledSelect = styled.div`
 
     .select-wrapper--has-error .select-control:focus-visible {
       border-color: ${colors.feedback.error};
-      box-shadow:
-        0 0 0 2px ${colors.neutral.white},
-        0 0 0 4px ${colors.severity.critical.background};
+      box-shadow: 0 0 0 3px ${colors.severity.critical.background};
     }
 
     .select-wrapper--disabled .select-control {
       cursor: not-allowed;
       color: ${colors.text.muted};
       background-color: ${colors.neutral.grey100};
+      box-shadow: none;
     }
 
     .select-chevron {

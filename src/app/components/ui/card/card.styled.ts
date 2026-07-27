@@ -1,4 +1,4 @@
-import { styled, css } from 'styled-components';
+import { css, styled } from 'styled-components';
 
 import type { CardPadding } from './card.type';
 
@@ -14,14 +14,33 @@ const getPadding = (padding: CardPadding) => {
 };
 
 const StyledCard = styled.section`
-  ${({ theme: { colors, radii, shadows, spacing, typography } }) => css`
+  ${({ theme: { colors, radii, shadows } }) => css`
+    position: relative;
     overflow: hidden;
 
     border: 1px solid ${colors.border.subtle};
     border-radius: ${radii.lg};
     background-color: ${colors.surface.card};
-    box-shadow: ${shadows.xs};
+    box-shadow: ${shadows.sm};
+  `}
 
+  &::before {
+    content: '';
+
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+
+    background: linear-gradient(
+      90deg,
+      transparent,
+      ${({ theme }) => theme.colors.brand.wash},
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  ${({ theme: { colors, spacing, typography } }) => css`
     .card-header {
       display: flex;
       align-items: flex-start;
@@ -31,6 +50,11 @@ const StyledCard = styled.section`
       padding: ${spacing.m};
 
       border-bottom: 1px solid ${colors.border.subtle};
+      background: linear-gradient(
+        180deg,
+        ${colors.surface.card},
+        ${colors.surface.subtle}
+      );
     }
 
     .card-title-group {
@@ -42,6 +66,7 @@ const StyledCard = styled.section`
     .card-title {
       font-size: ${typography.headings.h5.size};
       line-height: ${typography.headings.h5.lineHeight};
+      letter-spacing: -0.01em;
     }
 
     .card-subtitle {

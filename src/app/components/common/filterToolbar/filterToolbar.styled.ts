@@ -1,14 +1,20 @@
-import { styled, css } from 'styled-components';
+import { css, styled } from 'styled-components';
 
 const StyledFilterToolbar = styled.div`
-  ${({ theme: { colors, mq, spacing, typography } }) => css`
+  ${({ theme: { colors, mq, radii, spacing, typography } }) => css`
     display: flex;
     flex-direction: column;
     gap: ${spacing.s};
 
     padding: ${spacing.s};
 
-    border-bottom: 1px solid ${colors.border.subtle};
+    border: 1px solid ${colors.border.subtle};
+    border-radius: ${radii.lg};
+    background: linear-gradient(
+      180deg,
+      ${colors.surface.card},
+      ${colors.surface.subtle}
+    );
 
     @media ${mq.min.tablet} {
       flex-direction: row;
@@ -35,6 +41,7 @@ const StyledFilterToolbar = styled.div`
       margin-left: auto;
 
       font-size: ${typography.body.small.size};
+      font-weight: ${typography.fontWeights.medium};
       color: ${colors.text.muted};
     }
 

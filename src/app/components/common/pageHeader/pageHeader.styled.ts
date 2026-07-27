@@ -1,10 +1,14 @@
-import { styled, css } from 'styled-components';
+import { css, styled } from 'styled-components';
 
 const StyledPageHeader = styled.header`
-  ${({ theme: { colors, mq, spacing, typography } }) => css`
+  ${({ theme: { colors, mq, radii, spacing, typography } }) => css`
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: ${spacing.s};
+
+    padding-bottom: ${spacing.m};
+    border-bottom: 1px solid ${colors.border.subtle};
 
     @media ${mq.min.tablet} {
       flex-direction: row;
@@ -17,27 +21,36 @@ const StyledPageHeader = styled.header`
     }
 
     .page-header-eyebrow {
-      margin: 0 0 ${spacing.xxxs};
+      display: inline-flex;
+      align-items: center;
+
+      margin: 0 0 ${spacing.xxs};
+      padding: 0.25rem 0.5rem;
+
+      border: 1px solid ${colors.border.subtle};
+      border-radius: ${radii.pill};
 
       font-size: ${typography.label.small.size};
       line-height: ${typography.label.small.lineHeight};
-      font-weight: ${typography.label.small.weight};
+      font-weight: ${typography.fontWeights.semibold};
       color: ${colors.brand.primary};
+      background-color: ${colors.brand.wash};
 
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.09em;
     }
 
     .page-header-title {
       margin: 0;
       overflow-wrap: anywhere;
+      letter-spacing: -0.035em;
     }
 
     .page-header-subtitle {
       max-width: 48rem;
-      margin-top: ${spacing.xxxs};
+      margin-top: ${spacing.xxs};
 
-      color: ${colors.text.muted};
+      color: ${colors.text.secondary};
       overflow-wrap: anywhere;
     }
 
