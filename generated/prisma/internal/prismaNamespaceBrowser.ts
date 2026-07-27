@@ -53,6 +53,7 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   Company: 'Company',
   Assessment: 'Assessment',
+  AssessmentTemplate: 'AssessmentTemplate',
   Threat: 'Threat',
   ThreatCwe: 'ThreatCwe',
   Evidence: 'Evidence',
@@ -110,11 +111,28 @@ export const AssessmentScalarFieldEnum = {
   overallRisk: 'overallRisk',
   owaspTaxonomyVersion: 'owaspTaxonomyVersion',
   cweCatalogVersion: 'cweCatalogVersion',
+  archivedAt: 'archivedAt',
+  archivedFromStatus: 'archivedFromStatus',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type AssessmentScalarFieldEnum = (typeof AssessmentScalarFieldEnum)[keyof typeof AssessmentScalarFieldEnum]
+
+
+export const AssessmentTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  assessmentType: 'assessmentType',
+  environment: 'environment',
+  description: 'description',
+  scope: 'scope',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AssessmentTemplateScalarFieldEnum = (typeof AssessmentTemplateScalarFieldEnum)[keyof typeof AssessmentTemplateScalarFieldEnum]
 
 
 export const ThreatScalarFieldEnum = {
@@ -237,6 +255,16 @@ export const ActivityScalarFieldEnum = {
   entityId: 'entityId',
   action: 'action',
   message: 'message',
+  eventType: 'eventType',
+  result: 'result',
+  severity: 'severity',
+  actorType: 'actorType',
+  actorId: 'actorId',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  companyId: 'companyId',
+  assessmentId: 'assessmentId',
+  correlationId: 'correlationId',
   createdAt: 'createdAt'
 } as const
 

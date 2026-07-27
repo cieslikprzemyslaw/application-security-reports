@@ -30,6 +30,16 @@ export type ActivityMinAggregateOutputType = {
   entityId: string | null
   action: string | null
   message: string | null
+  eventType: string | null
+  result: string | null
+  severity: string | null
+  actorType: string | null
+  actorId: string | null
+  resourceType: $Enums.ActivityEntityType | null
+  resourceId: string | null
+  companyId: string | null
+  assessmentId: string | null
+  correlationId: string | null
   createdAt: Date | null
 }
 
@@ -39,6 +49,16 @@ export type ActivityMaxAggregateOutputType = {
   entityId: string | null
   action: string | null
   message: string | null
+  eventType: string | null
+  result: string | null
+  severity: string | null
+  actorType: string | null
+  actorId: string | null
+  resourceType: $Enums.ActivityEntityType | null
+  resourceId: string | null
+  companyId: string | null
+  assessmentId: string | null
+  correlationId: string | null
   createdAt: Date | null
 }
 
@@ -48,6 +68,16 @@ export type ActivityCountAggregateOutputType = {
   entityId: number
   action: number
   message: number
+  eventType: number
+  result: number
+  severity: number
+  actorType: number
+  actorId: number
+  resourceType: number
+  resourceId: number
+  companyId: number
+  assessmentId: number
+  correlationId: number
   createdAt: number
   _all: number
 }
@@ -59,6 +89,16 @@ export type ActivityMinAggregateInputType = {
   entityId?: true
   action?: true
   message?: true
+  eventType?: true
+  result?: true
+  severity?: true
+  actorType?: true
+  actorId?: true
+  resourceType?: true
+  resourceId?: true
+  companyId?: true
+  assessmentId?: true
+  correlationId?: true
   createdAt?: true
 }
 
@@ -68,6 +108,16 @@ export type ActivityMaxAggregateInputType = {
   entityId?: true
   action?: true
   message?: true
+  eventType?: true
+  result?: true
+  severity?: true
+  actorType?: true
+  actorId?: true
+  resourceType?: true
+  resourceId?: true
+  companyId?: true
+  assessmentId?: true
+  correlationId?: true
   createdAt?: true
 }
 
@@ -77,6 +127,16 @@ export type ActivityCountAggregateInputType = {
   entityId?: true
   action?: true
   message?: true
+  eventType?: true
+  result?: true
+  severity?: true
+  actorType?: true
+  actorId?: true
+  resourceType?: true
+  resourceId?: true
+  companyId?: true
+  assessmentId?: true
+  correlationId?: true
   createdAt?: true
   _all?: true
 }
@@ -159,6 +219,16 @@ export type ActivityGroupByOutputType = {
   entityId: string | null
   action: string
   message: string
+  eventType: string
+  result: string
+  severity: string
+  actorType: string
+  actorId: string | null
+  resourceType: $Enums.ActivityEntityType
+  resourceId: string
+  companyId: string | null
+  assessmentId: string | null
+  correlationId: string | null
   createdAt: Date
   _count: ActivityCountAggregateOutputType | null
   _min: ActivityMinAggregateOutputType | null
@@ -189,6 +259,16 @@ export type ActivityWhereInput = {
   entityId?: Prisma.StringNullableFilter<"Activity"> | string | null
   action?: Prisma.StringFilter<"Activity"> | string
   message?: Prisma.StringFilter<"Activity"> | string
+  eventType?: Prisma.StringFilter<"Activity"> | string
+  result?: Prisma.StringFilter<"Activity"> | string
+  severity?: Prisma.StringFilter<"Activity"> | string
+  actorType?: Prisma.StringFilter<"Activity"> | string
+  actorId?: Prisma.StringNullableFilter<"Activity"> | string | null
+  resourceType?: Prisma.EnumActivityEntityTypeFilter<"Activity"> | $Enums.ActivityEntityType
+  resourceId?: Prisma.StringFilter<"Activity"> | string
+  companyId?: Prisma.StringNullableFilter<"Activity"> | string | null
+  assessmentId?: Prisma.StringNullableFilter<"Activity"> | string | null
+  correlationId?: Prisma.StringNullableFilter<"Activity"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Activity"> | Date | string
 }
 
@@ -198,6 +278,16 @@ export type ActivityOrderByWithRelationInput = {
   entityId?: Prisma.SortOrderInput | Prisma.SortOrder
   action?: Prisma.SortOrder
   message?: Prisma.SortOrder
+  eventType?: Prisma.SortOrder
+  result?: Prisma.SortOrder
+  severity?: Prisma.SortOrder
+  actorType?: Prisma.SortOrder
+  actorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  resourceType?: Prisma.SortOrder
+  resourceId?: Prisma.SortOrder
+  companyId?: Prisma.SortOrderInput | Prisma.SortOrder
+  assessmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  correlationId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -210,6 +300,16 @@ export type ActivityWhereUniqueInput = Prisma.AtLeast<{
   entityId?: Prisma.StringNullableFilter<"Activity"> | string | null
   action?: Prisma.StringFilter<"Activity"> | string
   message?: Prisma.StringFilter<"Activity"> | string
+  eventType?: Prisma.StringFilter<"Activity"> | string
+  result?: Prisma.StringFilter<"Activity"> | string
+  severity?: Prisma.StringFilter<"Activity"> | string
+  actorType?: Prisma.StringFilter<"Activity"> | string
+  actorId?: Prisma.StringNullableFilter<"Activity"> | string | null
+  resourceType?: Prisma.EnumActivityEntityTypeFilter<"Activity"> | $Enums.ActivityEntityType
+  resourceId?: Prisma.StringFilter<"Activity"> | string
+  companyId?: Prisma.StringNullableFilter<"Activity"> | string | null
+  assessmentId?: Prisma.StringNullableFilter<"Activity"> | string | null
+  correlationId?: Prisma.StringNullableFilter<"Activity"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Activity"> | Date | string
 }, "id">
 
@@ -219,6 +319,16 @@ export type ActivityOrderByWithAggregationInput = {
   entityId?: Prisma.SortOrderInput | Prisma.SortOrder
   action?: Prisma.SortOrder
   message?: Prisma.SortOrder
+  eventType?: Prisma.SortOrder
+  result?: Prisma.SortOrder
+  severity?: Prisma.SortOrder
+  actorType?: Prisma.SortOrder
+  actorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  resourceType?: Prisma.SortOrder
+  resourceId?: Prisma.SortOrder
+  companyId?: Prisma.SortOrderInput | Prisma.SortOrder
+  assessmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  correlationId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ActivityCountOrderByAggregateInput
   _max?: Prisma.ActivityMaxOrderByAggregateInput
@@ -234,6 +344,16 @@ export type ActivityScalarWhereWithAggregatesInput = {
   entityId?: Prisma.StringNullableWithAggregatesFilter<"Activity"> | string | null
   action?: Prisma.StringWithAggregatesFilter<"Activity"> | string
   message?: Prisma.StringWithAggregatesFilter<"Activity"> | string
+  eventType?: Prisma.StringWithAggregatesFilter<"Activity"> | string
+  result?: Prisma.StringWithAggregatesFilter<"Activity"> | string
+  severity?: Prisma.StringWithAggregatesFilter<"Activity"> | string
+  actorType?: Prisma.StringWithAggregatesFilter<"Activity"> | string
+  actorId?: Prisma.StringNullableWithAggregatesFilter<"Activity"> | string | null
+  resourceType?: Prisma.EnumActivityEntityTypeWithAggregatesFilter<"Activity"> | $Enums.ActivityEntityType
+  resourceId?: Prisma.StringWithAggregatesFilter<"Activity"> | string
+  companyId?: Prisma.StringNullableWithAggregatesFilter<"Activity"> | string | null
+  assessmentId?: Prisma.StringNullableWithAggregatesFilter<"Activity"> | string | null
+  correlationId?: Prisma.StringNullableWithAggregatesFilter<"Activity"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Activity"> | Date | string
 }
 
@@ -243,6 +363,16 @@ export type ActivityCreateInput = {
   entityId?: string | null
   action: string
   message: string
+  eventType?: string
+  result?: string
+  severity?: string
+  actorType?: string
+  actorId?: string | null
+  resourceType?: $Enums.ActivityEntityType
+  resourceId?: string
+  companyId?: string | null
+  assessmentId?: string | null
+  correlationId?: string | null
   createdAt?: Date | string
 }
 
@@ -252,6 +382,16 @@ export type ActivityUncheckedCreateInput = {
   entityId?: string | null
   action: string
   message: string
+  eventType?: string
+  result?: string
+  severity?: string
+  actorType?: string
+  actorId?: string | null
+  resourceType?: $Enums.ActivityEntityType
+  resourceId?: string
+  companyId?: string | null
+  assessmentId?: string | null
+  correlationId?: string | null
   createdAt?: Date | string
 }
 
@@ -261,6 +401,16 @@ export type ActivityUpdateInput = {
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   action?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  result?: Prisma.StringFieldUpdateOperationsInput | string
+  severity?: Prisma.StringFieldUpdateOperationsInput | string
+  actorType?: Prisma.StringFieldUpdateOperationsInput | string
+  actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resourceType?: Prisma.EnumActivityEntityTypeFieldUpdateOperationsInput | $Enums.ActivityEntityType
+  resourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assessmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  correlationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -270,6 +420,16 @@ export type ActivityUncheckedUpdateInput = {
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   action?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  result?: Prisma.StringFieldUpdateOperationsInput | string
+  severity?: Prisma.StringFieldUpdateOperationsInput | string
+  actorType?: Prisma.StringFieldUpdateOperationsInput | string
+  actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resourceType?: Prisma.EnumActivityEntityTypeFieldUpdateOperationsInput | $Enums.ActivityEntityType
+  resourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assessmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  correlationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -279,6 +439,16 @@ export type ActivityCreateManyInput = {
   entityId?: string | null
   action: string
   message: string
+  eventType?: string
+  result?: string
+  severity?: string
+  actorType?: string
+  actorId?: string | null
+  resourceType?: $Enums.ActivityEntityType
+  resourceId?: string
+  companyId?: string | null
+  assessmentId?: string | null
+  correlationId?: string | null
   createdAt?: Date | string
 }
 
@@ -288,6 +458,16 @@ export type ActivityUpdateManyMutationInput = {
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   action?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  result?: Prisma.StringFieldUpdateOperationsInput | string
+  severity?: Prisma.StringFieldUpdateOperationsInput | string
+  actorType?: Prisma.StringFieldUpdateOperationsInput | string
+  actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resourceType?: Prisma.EnumActivityEntityTypeFieldUpdateOperationsInput | $Enums.ActivityEntityType
+  resourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assessmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  correlationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -297,6 +477,16 @@ export type ActivityUncheckedUpdateManyInput = {
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   action?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  result?: Prisma.StringFieldUpdateOperationsInput | string
+  severity?: Prisma.StringFieldUpdateOperationsInput | string
+  actorType?: Prisma.StringFieldUpdateOperationsInput | string
+  actorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resourceType?: Prisma.EnumActivityEntityTypeFieldUpdateOperationsInput | $Enums.ActivityEntityType
+  resourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assessmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  correlationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -306,6 +496,16 @@ export type ActivityCountOrderByAggregateInput = {
   entityId?: Prisma.SortOrder
   action?: Prisma.SortOrder
   message?: Prisma.SortOrder
+  eventType?: Prisma.SortOrder
+  result?: Prisma.SortOrder
+  severity?: Prisma.SortOrder
+  actorType?: Prisma.SortOrder
+  actorId?: Prisma.SortOrder
+  resourceType?: Prisma.SortOrder
+  resourceId?: Prisma.SortOrder
+  companyId?: Prisma.SortOrder
+  assessmentId?: Prisma.SortOrder
+  correlationId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -315,6 +515,16 @@ export type ActivityMaxOrderByAggregateInput = {
   entityId?: Prisma.SortOrder
   action?: Prisma.SortOrder
   message?: Prisma.SortOrder
+  eventType?: Prisma.SortOrder
+  result?: Prisma.SortOrder
+  severity?: Prisma.SortOrder
+  actorType?: Prisma.SortOrder
+  actorId?: Prisma.SortOrder
+  resourceType?: Prisma.SortOrder
+  resourceId?: Prisma.SortOrder
+  companyId?: Prisma.SortOrder
+  assessmentId?: Prisma.SortOrder
+  correlationId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -324,6 +534,16 @@ export type ActivityMinOrderByAggregateInput = {
   entityId?: Prisma.SortOrder
   action?: Prisma.SortOrder
   message?: Prisma.SortOrder
+  eventType?: Prisma.SortOrder
+  result?: Prisma.SortOrder
+  severity?: Prisma.SortOrder
+  actorType?: Prisma.SortOrder
+  actorId?: Prisma.SortOrder
+  resourceType?: Prisma.SortOrder
+  resourceId?: Prisma.SortOrder
+  companyId?: Prisma.SortOrder
+  assessmentId?: Prisma.SortOrder
+  correlationId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -339,6 +559,16 @@ export type ActivitySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   entityId?: boolean
   action?: boolean
   message?: boolean
+  eventType?: boolean
+  result?: boolean
+  severity?: boolean
+  actorType?: boolean
+  actorId?: boolean
+  resourceType?: boolean
+  resourceId?: boolean
+  companyId?: boolean
+  assessmentId?: boolean
+  correlationId?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["activity"]>
 
@@ -348,6 +578,16 @@ export type ActivitySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   entityId?: boolean
   action?: boolean
   message?: boolean
+  eventType?: boolean
+  result?: boolean
+  severity?: boolean
+  actorType?: boolean
+  actorId?: boolean
+  resourceType?: boolean
+  resourceId?: boolean
+  companyId?: boolean
+  assessmentId?: boolean
+  correlationId?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["activity"]>
 
@@ -357,6 +597,16 @@ export type ActivitySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   entityId?: boolean
   action?: boolean
   message?: boolean
+  eventType?: boolean
+  result?: boolean
+  severity?: boolean
+  actorType?: boolean
+  actorId?: boolean
+  resourceType?: boolean
+  resourceId?: boolean
+  companyId?: boolean
+  assessmentId?: boolean
+  correlationId?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["activity"]>
 
@@ -366,10 +616,20 @@ export type ActivitySelectScalar = {
   entityId?: boolean
   action?: boolean
   message?: boolean
+  eventType?: boolean
+  result?: boolean
+  severity?: boolean
+  actorType?: boolean
+  actorId?: boolean
+  resourceType?: boolean
+  resourceId?: boolean
+  companyId?: boolean
+  assessmentId?: boolean
+  correlationId?: boolean
   createdAt?: boolean
 }
 
-export type ActivityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "entityType" | "entityId" | "action" | "message" | "createdAt", ExtArgs["result"]["activity"]>
+export type ActivityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "entityType" | "entityId" | "action" | "message" | "eventType" | "result" | "severity" | "actorType" | "actorId" | "resourceType" | "resourceId" | "companyId" | "assessmentId" | "correlationId" | "createdAt", ExtArgs["result"]["activity"]>
 
 export type $ActivityPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Activity"
@@ -380,6 +640,16 @@ export type $ActivityPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     entityId: string | null
     action: string
     message: string
+    eventType: string
+    result: string
+    severity: string
+    actorType: string
+    actorId: string | null
+    resourceType: $Enums.ActivityEntityType
+    resourceId: string
+    companyId: string | null
+    assessmentId: string | null
+    correlationId: string | null
     createdAt: Date
   }, ExtArgs["result"]["activity"]>
   composites: {}
@@ -809,6 +1079,16 @@ export interface ActivityFieldRefs {
   readonly entityId: Prisma.FieldRef<"Activity", 'String'>
   readonly action: Prisma.FieldRef<"Activity", 'String'>
   readonly message: Prisma.FieldRef<"Activity", 'String'>
+  readonly eventType: Prisma.FieldRef<"Activity", 'String'>
+  readonly result: Prisma.FieldRef<"Activity", 'String'>
+  readonly severity: Prisma.FieldRef<"Activity", 'String'>
+  readonly actorType: Prisma.FieldRef<"Activity", 'String'>
+  readonly actorId: Prisma.FieldRef<"Activity", 'String'>
+  readonly resourceType: Prisma.FieldRef<"Activity", 'ActivityEntityType'>
+  readonly resourceId: Prisma.FieldRef<"Activity", 'String'>
+  readonly companyId: Prisma.FieldRef<"Activity", 'String'>
+  readonly assessmentId: Prisma.FieldRef<"Activity", 'String'>
+  readonly correlationId: Prisma.FieldRef<"Activity", 'String'>
   readonly createdAt: Prisma.FieldRef<"Activity", 'DateTime'>
 }
     

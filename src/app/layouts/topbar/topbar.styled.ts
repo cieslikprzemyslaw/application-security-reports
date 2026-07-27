@@ -1,8 +1,8 @@
-import { styled, css } from 'styled-components';
+import { css, styled } from 'styled-components';
 
 const StyledTopbar = styled.header.attrs({ className: 'topbar' })`
   ${({
-    theme: { colors, layoutSizes, mq, radii, spacing, transitions },
+    theme: { colors, layoutSizes, mq, radii, shadows, spacing, transitions },
   }) => css`
     display: flex;
     align-items: center;
@@ -13,6 +13,16 @@ const StyledTopbar = styled.header.attrs({ className: 'topbar' })`
 
     border-bottom: 1px solid ${colors.border.subtle};
     background-color: ${colors.surface.card};
+    box-shadow: ${shadows.xs};
+
+    @supports (backdrop-filter: blur(1rem)) {
+      background-color: color-mix(
+        in srgb,
+        ${colors.surface.card} 88%,
+        transparent
+      );
+      backdrop-filter: blur(1rem) saturate(135%);
+    }
 
     @media ${mq.min.tablet} {
       padding: 0 ${spacing.m};
@@ -40,11 +50,13 @@ const StyledTopbar = styled.header.attrs({ className: 'topbar' })`
 
       color: ${colors.text.secondary};
       background-color: ${colors.surface.card};
+      box-shadow: ${shadows.xs};
       transition:
         color ${transitions.fast},
         background-color ${transitions.fast},
         border-color ${transitions.fast},
-        box-shadow ${transitions.fast};
+        box-shadow ${transitions.fast},
+        transform ${transitions.fast};
     }
 
     .topbar-menu-button svg {
@@ -53,15 +65,16 @@ const StyledTopbar = styled.header.attrs({ className: 'topbar' })`
     }
 
     .topbar-menu-button:hover {
-      color: ${colors.text.primary};
-      background-color: ${colors.surface.subtle};
+      color: ${colors.brand.primary};
+      border-color: ${colors.border.default};
+      background-color: ${colors.brand.wash};
+      transform: translateY(-1px);
     }
 
     .topbar-menu-button:focus-visible {
       outline: none;
-      box-shadow:
-        0 0 0 2px ${colors.neutral.white},
-        0 0 0 4px ${colors.border.focus};
+      border-color: ${colors.border.focus};
+      box-shadow: 0 0 0 3px ${colors.brand.wash};
     }
 
     .topbar-title {

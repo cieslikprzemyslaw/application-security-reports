@@ -1,4 +1,4 @@
-import { styled, css } from 'styled-components';
+import { css, styled } from 'styled-components';
 
 import type { StatIconTone, StatTrendTone } from './statCard.type';
 
@@ -63,20 +63,57 @@ const StyledStatCard = styled.div.attrs({ className: 'stat-card' })<{
   $trendTone: StatTrendTone;
 }>`
   ${({
-    theme: { colors, radii, shadows, spacing, typography },
+    theme: { colors, radii, shadows, spacing, transitions, typography },
     $iconTone,
     $trendTone,
   }) => css`
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: ${spacing.s};
+    overflow: hidden;
 
     padding: ${spacing.m};
 
     border: 1px solid ${colors.border.subtle};
     border-radius: ${radii.lg};
-    background-color: ${colors.surface.card};
-    box-shadow: ${shadows.xs};
+    background: linear-gradient(
+      145deg,
+      ${colors.surface.card},
+      ${colors.surface.subtle}
+    );
+    box-shadow: ${shadows.sm};
+    transition:
+      border-color ${transitions.fast},
+      box-shadow ${transitions.fast},
+      transform ${transitions.fast};
+
+    &:hover {
+      border-color: ${colors.border.default};
+      box-shadow: ${shadows.md};
+      transform: translateY(-0.125rem);
+    }
+
+    &::after {
+      content: '';
+
+      position: absolute;
+      inset: 0 0 auto auto;
+      width: 5rem;
+      height: 5rem;
+
+      border-radius: 0 0 0 100%;
+      background: ${getIconToneStyles($iconTone, colors).background};
+      opacity: 0.65;
+      pointer-events: none;
+    }
+
+    .stat-card-top,
+    .stat-card-value,
+    .stat-card-footer {
+      position: relative;
+      z-index: 1;
+    }
 
     .stat-card-top {
       display: flex;
@@ -89,14 +126,16 @@ const StyledStatCard = styled.div.attrs({ className: 'stat-card' })<{
       align-items: center;
       justify-content: center;
 
-      width: 2rem;
-      height: 2rem;
+      width: 2.25rem;
+      height: 2.25rem;
       flex-shrink: 0;
 
+      border: 1px solid ${colors.border.subtle};
       border-radius: ${radii.md};
 
       color: ${getIconToneStyles($iconTone, colors).color};
       background-color: ${getIconToneStyles($iconTone, colors).background};
+      box-shadow: ${shadows.xs};
     }
 
     .stat-card-icon svg {
@@ -107,8 +146,9 @@ const StyledStatCard = styled.div.attrs({ className: 'stat-card' })<{
     .stat-card-label {
       font-size: ${typography.body.small.size};
       line-height: ${typography.body.small.lineHeight};
-      font-weight: ${typography.fontWeights.medium};
+      font-weight: ${typography.fontWeights.semibold};
       color: ${colors.text.muted};
+      letter-spacing: 0.02em;
     }
 
     .stat-card-value {
@@ -116,6 +156,7 @@ const StyledStatCard = styled.div.attrs({ className: 'stat-card' })<{
       line-height: ${typography.headings.h2.lineHeight};
       font-weight: ${typography.headings.h2.weight};
       color: ${colors.text.primary};
+      letter-spacing: -0.035em;
     }
 
     .stat-card-footer {

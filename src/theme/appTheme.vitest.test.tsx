@@ -10,6 +10,8 @@ import {
 
 import { useTheme } from 'styled-components';
 
+import { darkColors, lightColors } from './colors';
+
 import {
   AppThemeProvider,
   themePreferenceStorageKey,
@@ -247,7 +249,7 @@ describe('appTheme', () => {
 
       assert.equal(
         container.querySelector('[data-testid="surface-page"]')?.textContent,
-        '#F4F6FA',
+        '#F4F8FF',
       );
 
       assert.equal(window.document.documentElement.dataset.theme, 'light');
@@ -272,7 +274,7 @@ describe('appTheme', () => {
 
       assert.equal(
         container.querySelector('[data-testid="surface-page"]')?.textContent,
-        '#0E1421',
+        '#111827',
       );
 
       assert.equal(window.document.documentElement.dataset.theme, 'dark');
@@ -297,7 +299,7 @@ describe('appTheme', () => {
 
       assert.equal(
         container.querySelector('[data-testid="surface-page"]')?.textContent,
-        '#F4F6FA',
+        '#F4F8FF',
       );
 
       assert.equal(window.document.documentElement.dataset.theme, 'light');
@@ -337,7 +339,7 @@ describe('appTheme', () => {
 
       assert.equal(
         container.querySelector('[data-testid="surface-page"]')?.textContent,
-        '#0E1421',
+        '#111827',
       );
 
       assert.equal(window.document.documentElement.dataset.theme, 'dark');
@@ -346,5 +348,139 @@ describe('appTheme', () => {
         root.unmount();
       });
     })();
+  });
+});
+
+const hexToRelativeLuminance = (hexColor: string) => {
+  const channels = hexColor
+    .replace('#', '')
+    .match(/.{2}/g)
+    ?.map(channel => Number.parseInt(channel, 16) / 255);
+
+  assert.ok(channels && channels.length === 3, `Invalid colour: ${hexColor}`);
+
+  const [red, green, blue] = channels.map(channel =>
+    channel <= 0.04045
+      ? channel / 12.92
+      : Math.pow((channel + 0.055) / 1.055, 2.4),
+  );
+
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+};
+
+const getContrastRatio = (foreground: string, background: string) => {
+  const foregroundLuminance = hexToRelativeLuminance(foreground);
+  const backgroundLuminance = hexToRelativeLuminance(background);
+  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+  const darker = Math.min(foregroundLuminance, backgroundLuminance);
+
+  return (lighter + 0.05) / (darker + 0.05);
+};
+
+const assertContrast = (
+  label: string,
+  foreground: string,
+  background: string,
+  minimumRatio: number,
+) => {
+  const ratio = getContrastRatio(foreground, background);
+
+  assert.ok(
+    ratio >= minimumRatio,
+    `${label} contrast ${ratio.toFixed(2)} is below ${minimumRatio}:1`,
+  );
+};
+
+describe('theme accessibility contrast', () => {
+  it('keeps text, controls, statuses and focus indicators at AA contrast', () => {
+    for (const [themeName, colors] of [
+      ['light', lightColors],
+      ['dark', darkColors],
+    ] as const) {
+      assertContrast(
+        `${themeName} primary text`,
+        colors.text.primary,
+        colors.surface.page,
+        4.5,
+      );
+      assertContrast(
+        `${themeName} secondary text`,
+        colors.text.secondary,
+        colors.surface.card,
+        4.5,
+      );
+      assertContrast(
+        `${themeName} muted text`,
+        colors.text.muted,
+        colors.surface.card,
+        4.5,
+      );
+      assertContrast(
+        `${themeName} link`,
+        colors.text.link,
+        colors.surface.card,
+        4.5,
+      );
+      assertContrast(
+        `${themeName} inverse text`,
+        colors.text.inverse,
+        colors.surface.inverse,
+        4.5,
+      );
+      assertContrast(
+        `${themeName} inverse secondary text`,
+        colors.text.inverseSecondary,
+        colors.surface.inverse,
+        4.5,
+      );
+      assertContrast(
+        `${themeName} inverse muted text`,
+        colors.text.inverseMuted,
+        colors.surface.inverse,
+        4.5,
+      );
+      assertContrast(
+        `${themeName} sidebar accent`,
+        colors.brand.accent,
+        colors.surface.inverse,
+        3,
+      );
+      assertContrast(
+        `${themeName} primary button`,
+        colors.button.primary.default.text,
+        colors.button.primary.default.background,
+        4.5,
+      );
+      assertContrast(
+        `${themeName} focus indicator`,
+        colors.border.focus,
+        colors.surface.card,
+        3,
+      );
+      assertContrast(
+        `${themeName} control border`,
+        colors.border.default,
+        colors.surface.card,
+        3,
+      );
+
+      for (const [severityName, severity] of Object.entries(colors.severity)) {
+        assertContrast(
+          `${themeName} ${severityName} severity`,
+          severity.text,
+          severity.background,
+          4.5,
+        );
+      }
+
+      for (const [statusName, status] of Object.entries(colors.status)) {
+        assertContrast(
+          `${themeName} ${statusName} status`,
+          status.text,
+          status.background,
+          4.5,
+        );
+      }
+    }
   });
 });

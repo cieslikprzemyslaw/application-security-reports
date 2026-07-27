@@ -12,6 +12,7 @@ const GlobalStyle = createGlobalStyle`
     -moz-text-size-adjust: none;
     -webkit-text-size-adjust: none;
     text-size-adjust: none;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -21,13 +22,31 @@ const GlobalStyle = createGlobalStyle`
     font-size: 1rem;
     line-height: 1.5;
     color: ${({ theme }) => theme.colors.text.primary};
-    background: ${({ theme }) => theme.colors.surface.page};
+    background-color: ${({ theme }) => theme.colors.surface.page};
+    background-image:
+      radial-gradient(
+        circle at 92% -8%,
+        ${({ theme }) => theme.colors.brand.wash} 0,
+        transparent 30rem
+      ),
+      radial-gradient(
+        circle at -8% 18%,
+        ${({ theme }) => theme.colors.surface.subtle} 0,
+        transparent 26rem
+      );
+    background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
   #root {
     isolation: isolate;
     min-height: 100vh;
+  }
+
+  ::selection {
+    color: ${({ theme }) => theme.colors.text.primary};
+    background: ${({ theme }) => theme.colors.brand.wash};
   }
 
   h1,
@@ -90,12 +109,13 @@ const GlobalStyle = createGlobalStyle`
     margin-bottom: ${({ theme }) => theme.spacing.xs};
     color: ${({ theme }) => theme.colors.brand.primary};
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.09em;
   }
 
   a {
     color: ${({ theme }) => theme.colors.text.link};
-    text-underline-offset: 0.15em;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.18em;
   }
 
   a:hover {
@@ -124,7 +144,7 @@ const GlobalStyle = createGlobalStyle`
 
   :focus-visible {
     outline: 2px solid ${({ theme }) => theme.colors.border.focus};
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
 
   .visually-hidden,
@@ -142,6 +162,10 @@ const GlobalStyle = createGlobalStyle`
   }
 
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
     *,
     *::before,
     *::after {
