@@ -386,6 +386,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   Company: 'Company',
   Assessment: 'Assessment',
+  AssessmentTemplate: 'AssessmentTemplate',
   Threat: 'Threat',
   ThreatCwe: 'ThreatCwe',
   Evidence: 'Evidence',
@@ -411,7 +412,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "company" | "assessment" | "threat" | "threatCwe" | "evidence" | "evidenceExchange" | "report" | "reportVersion" | "evidenceThreat" | "reportThreat" | "activity" | "settings"
+    modelProps: "company" | "assessment" | "assessmentTemplate" | "threat" | "threatCwe" | "evidence" | "evidenceExchange" | "report" | "reportVersion" | "evidenceThreat" | "reportThreat" | "activity" | "settings"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -560,6 +561,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AssessmentCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AssessmentCountAggregateOutputType> | number
+        }
+      }
+    }
+    AssessmentTemplate: {
+      payload: Prisma.$AssessmentTemplatePayload<ExtArgs>
+      fields: Prisma.AssessmentTemplateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AssessmentTemplateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AssessmentTemplateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>
+        }
+        findFirst: {
+          args: Prisma.AssessmentTemplateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AssessmentTemplateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>
+        }
+        findMany: {
+          args: Prisma.AssessmentTemplateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>[]
+        }
+        create: {
+          args: Prisma.AssessmentTemplateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>
+        }
+        createMany: {
+          args: Prisma.AssessmentTemplateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AssessmentTemplateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>[]
+        }
+        delete: {
+          args: Prisma.AssessmentTemplateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>
+        }
+        update: {
+          args: Prisma.AssessmentTemplateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>
+        }
+        deleteMany: {
+          args: Prisma.AssessmentTemplateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AssessmentTemplateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AssessmentTemplateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>[]
+        }
+        upsert: {
+          args: Prisma.AssessmentTemplateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>
+        }
+        aggregate: {
+          args: Prisma.AssessmentTemplateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAssessmentTemplate>
+        }
+        groupBy: {
+          args: Prisma.AssessmentTemplateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssessmentTemplateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AssessmentTemplateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssessmentTemplateCountAggregateOutputType> | number
         }
       }
     }
@@ -1371,11 +1446,28 @@ export const AssessmentScalarFieldEnum = {
   overallRisk: 'overallRisk',
   owaspTaxonomyVersion: 'owaspTaxonomyVersion',
   cweCatalogVersion: 'cweCatalogVersion',
+  archivedAt: 'archivedAt',
+  archivedFromStatus: 'archivedFromStatus',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type AssessmentScalarFieldEnum = (typeof AssessmentScalarFieldEnum)[keyof typeof AssessmentScalarFieldEnum]
+
+
+export const AssessmentTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  assessmentType: 'assessmentType',
+  environment: 'environment',
+  description: 'description',
+  scope: 'scope',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AssessmentTemplateScalarFieldEnum = (typeof AssessmentTemplateScalarFieldEnum)[keyof typeof AssessmentTemplateScalarFieldEnum]
 
 
 export const ThreatScalarFieldEnum = {
@@ -1498,6 +1590,16 @@ export const ActivityScalarFieldEnum = {
   entityId: 'entityId',
   action: 'action',
   message: 'message',
+  eventType: 'eventType',
+  result: 'result',
+  severity: 'severity',
+  actorType: 'actorType',
+  actorId: 'actorId',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  companyId: 'companyId',
+  assessmentId: 'assessmentId',
+  correlationId: 'correlationId',
   createdAt: 'createdAt'
 } as const
 
@@ -1792,6 +1894,7 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   company?: Prisma.CompanyOmit
   assessment?: Prisma.AssessmentOmit
+  assessmentTemplate?: Prisma.AssessmentTemplateOmit
   threat?: Prisma.ThreatOmit
   threatCwe?: Prisma.ThreatCweOmit
   evidence?: Prisma.EvidenceOmit

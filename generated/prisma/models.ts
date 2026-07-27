@@ -10,6 +10,7 @@
  */
 export type * from './models/Company'
 export type * from './models/Assessment'
+export type * from './models/AssessmentTemplate'
 export type * from './models/Threat'
 export type * from './models/ThreatCwe'
 export type * from './models/Evidence'
