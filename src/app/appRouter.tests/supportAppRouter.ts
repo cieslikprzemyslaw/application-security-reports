@@ -205,7 +205,7 @@ export const setupAssessmentWorkspaceFetchFixture = () => {
       respond: () => createJsonResponse(companyListResponse),
     },
     {
-      path: '/api/assessments?companyId=cmp_1',
+      path: '/api/assessments?companyId=cmp_1&includeArchived=true',
       respond: () => createJsonResponse(assessmentListResponse),
     },
     {

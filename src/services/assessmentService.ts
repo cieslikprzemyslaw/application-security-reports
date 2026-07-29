@@ -260,7 +260,7 @@ export const createAssessmentService = (
           method: 'GET',
           query: {
             companyId: filters?.companyId,
-            includeArchived: filters?.includeArchived ? 'true' : undefined,
+            ...(filters?.includeArchived ? { includeArchived: 'true' } : {}),
           },
           signal,
         },
