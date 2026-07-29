@@ -1,4 +1,4 @@
-import { styled, css } from 'styled-components';
+import { css, styled } from 'styled-components';
 
 import type { StyledInputProps } from './input.type';
 
@@ -36,7 +36,9 @@ const getInputSizeStyles = (size: StyledInputProps['$inputSize']) => {
 };
 
 const StyledInput = styled.div`
-  ${({ theme: { colors, radii, spacing, typography, transitions } }) => css`
+  ${({
+    theme: { colors, radii, shadows, spacing, transitions, typography },
+  }) => css`
     display: flex;
     flex-direction: column;
     gap: ${spacing.xxxs};
@@ -73,17 +75,21 @@ const StyledInput = styled.div`
       border: 1px solid var(--input-border, ${colors.border.default});
       border-radius: ${radii.md};
       background-color: var(--input-background, ${colors.surface.card});
+      box-shadow: ${shadows.xs};
 
       transition:
         border-color ${transitions.fast},
+        background-color ${transitions.fast},
         box-shadow ${transitions.fast};
+    }
+
+    .input-wrapper:hover:not(.input-wrapper--disabled) {
+      border-color: ${colors.border.strong};
     }
 
     .input-wrapper:focus-within {
       border-color: var(--input-focus-border, ${colors.border.focus});
-      box-shadow:
-        0 0 0 2px ${colors.neutral.white},
-        0 0 0 4px var(--input-focus-ring, ${colors.brand.wash});
+      box-shadow: 0 0 0 3px var(--input-focus-ring, ${colors.brand.wash});
     }
 
     .input-wrapper--has-error {
@@ -94,6 +100,7 @@ const StyledInput = styled.div`
 
     .input-wrapper--disabled {
       --input-background: ${colors.neutral.grey100};
+      box-shadow: none;
     }
 
     .input {
@@ -108,8 +115,6 @@ const StyledInput = styled.div`
 
       color: ${colors.text.primary};
       background: transparent;
-
-      ${'' /* size styles injected from component via class name */}
     }
 
     .input--small {

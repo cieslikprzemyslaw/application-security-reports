@@ -1,4 +1,4 @@
-import { styled, css } from 'styled-components';
+import { css, styled } from 'styled-components';
 
 const StyledAppShell = styled.div.attrs({ className: 'app-shell' })`
   ${({
@@ -6,6 +6,13 @@ const StyledAppShell = styled.div.attrs({ className: 'app-shell' })`
   }) => css`
     min-height: 100vh;
     background-color: ${colors.surface.page};
+    background-image:
+      radial-gradient(
+        circle at 84% 4%,
+        ${colors.brand.wash} 0,
+        transparent 28rem
+      ),
+      linear-gradient(180deg, ${colors.surface.page}, ${colors.surface.page});
 
     .app-shell-skip-link {
       position: fixed;
@@ -14,11 +21,12 @@ const StyledAppShell = styled.div.attrs({ className: 'app-shell' })`
       z-index: ${zIndices.modal};
 
       padding: ${spacing.xs} ${spacing.s};
+      border: 1px solid ${colors.border.focus};
       border-radius: ${radii.md};
 
       color: ${colors.text.primary};
       background-color: ${colors.surface.card};
-      box-shadow: 0 0 0 2px ${colors.border.focus};
+      box-shadow: 0 0 0 3px ${colors.brand.wash};
       text-decoration: none;
       transform: translateY(calc(-100% - ${spacing.m}));
       transition: transform ${transitions.fast};
@@ -56,7 +64,8 @@ const StyledAppShell = styled.div.attrs({ className: 'app-shell' })`
       padding: 0;
       border: 0;
 
-      background-color: rgb(16 24 40 / 45%);
+      background-color: rgb(5 9 20 / 62%);
+      backdrop-filter: blur(0.25rem);
     }
 
     .app-shell-overlay--open {
@@ -93,6 +102,8 @@ const StyledAppShell = styled.div.attrs({ className: 'app-shell' })`
     }
 
     @media print {
+      background: transparent;
+
       .app-shell-skip-link,
       .app-shell-sidebar,
       .app-shell-topbar,

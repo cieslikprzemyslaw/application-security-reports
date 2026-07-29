@@ -1,9 +1,9 @@
-import { styled, css } from 'styled-components';
+import { css, styled } from 'styled-components';
 
 const StyledDataTable = styled.div.attrs({
   className: 'data-table-wrapper',
 })`
-  ${({ theme: { colors, radii, spacing, typography } }) => css`
+  ${({ theme: { colors, radii, spacing, transitions, typography } }) => css`
     width: 100%;
     overflow-x: auto;
 
@@ -13,20 +13,25 @@ const StyledDataTable = styled.div.attrs({
     }
 
     .data-table-head {
-      background-color: ${colors.neutral.grey50};
+      background: linear-gradient(
+        180deg,
+        ${colors.surface.subtle},
+        ${colors.neutral.grey50}
+      );
     }
 
     .data-table-header-cell {
       padding: ${spacing.xs} ${spacing.s};
 
-      border-bottom: 1px solid ${colors.border.subtle};
+      border-bottom: 1px solid ${colors.border.default};
 
       font-size: ${typography.label.small.size};
       line-height: ${typography.label.small.lineHeight};
       font-weight: ${typography.fontWeights.semibold};
-      color: ${colors.text.muted};
+      color: ${colors.text.secondary};
 
       text-align: left;
+      letter-spacing: 0.025em;
       white-space: nowrap;
     }
 
@@ -38,12 +43,13 @@ const StyledDataTable = styled.div.attrs({
       text-align: right;
     }
 
-    .data-table-body {
-    }
-
     .data-table-row {
       border-bottom: 1px solid ${colors.border.subtle};
+      background-color: ${colors.surface.card};
       cursor: default;
+      transition:
+        background-color ${transitions.fast},
+        box-shadow ${transitions.fast};
     }
 
     .data-table-row--clickable {
@@ -51,7 +57,8 @@ const StyledDataTable = styled.div.attrs({
     }
 
     .data-table-row--clickable:hover {
-      background-color: ${colors.neutral.grey50};
+      background-color: ${colors.brand.wash};
+      box-shadow: inset 0.1875rem 0 0 ${colors.brand.accent};
     }
 
     .data-table-row:last-child {
@@ -86,7 +93,7 @@ const StyledDataTable = styled.div.attrs({
       background: linear-gradient(
         90deg,
         ${colors.neutral.grey100},
-        ${colors.neutral.grey200},
+        ${colors.brand.wash},
         ${colors.neutral.grey100}
       );
 

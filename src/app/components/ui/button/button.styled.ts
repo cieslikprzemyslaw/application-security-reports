@@ -1,4 +1,4 @@
-import { styled, css, keyframes } from 'styled-components';
+import { css, keyframes, styled } from 'styled-components';
 
 import type {
   ButtonSize,
@@ -53,10 +53,9 @@ const getSizeStyles = (size: ButtonSize, isIconOnly: boolean) => {
 const getTertiaryStyles = (isSelected: boolean) => css`
   ${({ theme: { colors } }) => css`
     color: ${isSelected ? colors.brand.primary : colors.text.secondary};
-
     background-color: ${isSelected ? colors.brand.wash : 'transparent'};
-
     border-color: transparent;
+    box-shadow: none;
 
     &:hover:not(:disabled) {
       color: ${colors.text.primary};
@@ -72,6 +71,7 @@ const getTertiaryStyles = (isSelected: boolean) => css`
       color: ${colors.neutral.grey400};
       background-color: transparent;
       border-color: transparent;
+      box-shadow: none;
     }
   `}
 `;
@@ -80,7 +80,7 @@ const getStandardVariantStyles = (
   variant: Exclude<ButtonVariant, 'tertiary'>,
   isSelected: boolean,
 ) => css`
-  ${({ theme: { colors } }) => {
+  ${({ theme: { colors, shadows } }) => {
     const buttonColors = colors.button[variant];
 
     return css`
@@ -96,22 +96,28 @@ const getStandardVariantStyles = (
         ? buttonColors.active.border
         : buttonColors.default.border};
 
+      box-shadow: ${variant === 'primary' ? shadows.sm : shadows.xs};
+
       &:hover:not(:disabled) {
         color: ${buttonColors.hover.text};
         background-color: ${buttonColors.hover.background};
         border-color: ${buttonColors.hover.border};
+        box-shadow: ${variant === 'primary' ? shadows.md : shadows.sm};
       }
 
       &:active:not(:disabled) {
         color: ${buttonColors.active.text};
         background-color: ${buttonColors.active.background};
         border-color: ${buttonColors.active.border};
+        box-shadow: ${shadows.xs};
+        transform: translateY(0);
       }
 
       &:disabled {
         color: ${buttonColors.disabled.text};
         background-color: ${buttonColors.disabled.background};
         border-color: ${buttonColors.disabled.border};
+        box-shadow: none;
       }
     `;
   }}
@@ -158,10 +164,15 @@ const StyledButton = styled.button.attrs({
       color ${transitions.fast},
       background-color ${transitions.fast},
       border-color ${transitions.fast},
-      box-shadow ${transitions.fast};
+      box-shadow ${transitions.fast},
+      transform ${transitions.fast};
 
     ${({ $size, $isIconOnly }) => getSizeStyles($size, $isIconOnly)}
     ${({ $variant, $isSelected }) => getVariantStyles($variant, $isSelected)}
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
 
     &:disabled {
       cursor: not-allowed;
@@ -169,10 +180,8 @@ const StyledButton = styled.button.attrs({
 
     &:focus-visible {
       outline: none;
-
-      box-shadow:
-        0 0 0 2px ${colors.neutral.white},
-        0 0 0 4px ${colors.border.focus};
+      border-color: ${colors.border.focus};
+      box-shadow: 0 0 0 3px ${colors.brand.wash};
     }
 
     ${({ $isLoading }) =>
