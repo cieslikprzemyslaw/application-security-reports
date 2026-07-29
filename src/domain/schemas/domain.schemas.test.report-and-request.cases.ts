@@ -272,8 +272,16 @@ assertValid(
   'Evidence route params should pass',
 );
 assertValid(
-  assessmentListQuerySchema.safeParse({ companyId: validCompany.id }).success,
+  assessmentListQuerySchema.safeParse({
+    companyId: validCompany.id,
+    includeArchived: 'true',
+  }).success,
   'Assessment list query should pass',
+);
+assertValid(
+  assessmentListQuerySchema.parse({ includeArchived: 'false' })
+    .includeArchived === false,
+  'Assessment list query should parse explicit false',
 );
 assertValid(
   threatListQuerySchema.safeParse({ assessmentId: validAssessment.id }).success,

@@ -49,6 +49,28 @@ const StyledActivityFeed = styled.div.attrs({ className: 'activity-feed' })`
       gap: ${spacing.xxs};
 
       padding: 0 0 ${spacing.m};
+
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .activity-feed-item--interactive {
+      margin: -${spacing.xxs};
+      padding: ${spacing.xxs} ${spacing.xxs} ${spacing.m};
+      border-radius: ${radii.md};
+      transition:
+        background-color 160ms ease,
+        transform 160ms ease;
+    }
+
+    .activity-feed-item--interactive:hover {
+      background-color: ${colors.surface.subtle};
+      transform: translateX(0.125rem);
+    }
+
+    .activity-feed-item--interactive:focus-visible {
+      outline: 3px solid ${colors.border.focus};
+      outline-offset: 2px;
     }
 
     .activity-feed-item:not(:last-child)::after {
@@ -109,11 +131,13 @@ const StyledActivityFeed = styled.div.attrs({ className: 'activity-feed' })`
     }
 
     .activity-feed-content {
+      display: block;
       min-width: 0;
       padding-top: 0.125rem;
     }
 
     .activity-feed-title {
+      display: block;
       color: ${colors.text.secondary};
     }
 
@@ -122,6 +146,7 @@ const StyledActivityFeed = styled.div.attrs({ className: 'activity-feed' })`
     }
 
     .activity-feed-meta {
+      display: block;
       margin-top: 0.125rem;
 
       font-size: ${typography.body.small.size};
@@ -133,6 +158,16 @@ const StyledActivityFeed = styled.div.attrs({ className: 'activity-feed' })`
       padding: ${spacing.l};
       color: ${colors.text.muted};
       text-align: center;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .activity-feed-item--interactive {
+        transition: none;
+      }
+
+      .activity-feed-item--interactive:hover {
+        transform: none;
+      }
     }
   `}
 `;

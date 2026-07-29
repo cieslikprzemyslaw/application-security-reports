@@ -16,6 +16,7 @@ export interface Settings extends TimestampedEntity {
   id: SettingsId;
   organisationName?: string;
   consultantName?: string;
+  consultantRole?: string;
   consultantEmail?: string;
   issuerLogoId?: string;
   defaultReportTitle?: string;

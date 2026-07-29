@@ -38,6 +38,16 @@ export type AssessmentDeletionDb = Pick<
 
 const toRecordVersion = (updatedAt: Date): number => updatedAt.getTime();
 
+type DeletionEntityIdRow = {
+  id: string;
+};
+
+type DeletionReportVersionCountRow = {
+  _count: {
+    versions: number;
+  };
+};
+
 const loadDeletionImpact = async (
   db: Omit<AssessmentDeletionDb, '$transaction'>,
   id: string,
@@ -75,7 +85,8 @@ const loadDeletionImpact = async (
     ]);
 
   const reportVersionCount = reportRows.reduce(
-    (total, report) => total + report._count.versions,
+    (total: number, report: DeletionReportVersionCountRow) =>
+      total + report._count.versions,
     0,
   );
   const warnings: string[] = [];
@@ -128,9 +139,9 @@ const deleteAssessmentChildren = async (
       select: { id: true },
     }),
   ]);
-  const threatIds = threats.map(threat => threat.id);
-  const evidenceIds = evidence.map(item => item.id);
-  const reportIds = reports.map(report => report.id);
+  const threatIds = threats.map((threat: DeletionEntityIdRow) => threat.id);
+  const evidenceIds = evidence.map((item: DeletionEntityIdRow) => item.id);
+  const reportIds = reports.map((report: DeletionEntityIdRow) => report.id);
 
   if (evidenceIds.length > 0) {
     await tx.evidenceExchange.deleteMany({

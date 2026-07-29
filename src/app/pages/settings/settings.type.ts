@@ -5,6 +5,7 @@ import type { DateFormat, Severity, ThemePreference } from '~/domain';
 export interface SettingsValue {
   organisationName: string;
   consultantName: string;
+  consultantRole: string;
   consultantEmail: string;
   defaultReportTitle: string;
   defaultSeverity: Severity;

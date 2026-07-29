@@ -13,6 +13,7 @@ export interface ActivityItem {
   meta?: ReactNode;
   icon?: ReactNode;
   tone?: ActivityTone;
+  href?: string;
 }
 
 export interface ActivityFeedProps extends HTMLAttributes<HTMLDivElement> {

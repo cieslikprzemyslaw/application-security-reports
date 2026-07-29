@@ -77,6 +77,16 @@ const threatCweMigrationSql = readFileSync(
   ),
   'utf8',
 );
+const consultantRoleMigrationSql = readFileSync(
+  path.resolve(
+    repoRoot,
+    'prisma',
+    'migrations',
+    '20260727150000_add_consultant_role_to_settings',
+    'migration.sql',
+  ),
+  'utf8',
+);
 const nodeRequire = createRequire(import.meta.url);
 const Database = nodeRequire('better-sqlite3') as new (
   databasePath: string,
@@ -129,6 +139,7 @@ describe('issuer logo API integration', () => {
       bootstrapDb.exec(reportVersionMigrationSql);
       bootstrapDb.exec(cweCatalogMigrationSql);
       bootstrapDb.exec(threatCweMigrationSql);
+      bootstrapDb.exec(consultantRoleMigrationSql);
     } finally {
       bootstrapDb.close();
     }

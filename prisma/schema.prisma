@@ -300,6 +300,7 @@ model Settings {
   id                         String              @id
   organisationName           String?
   consultantName             String?
+  consultantRole             String?
   consultantEmail            String?
   issuerLogoId               String?
   defaultReportTitle         String?

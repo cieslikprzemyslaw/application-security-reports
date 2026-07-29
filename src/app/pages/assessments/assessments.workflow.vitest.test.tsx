@@ -16,7 +16,7 @@ import {
 
 const companyId = 'cmp_00000000-0000-0000-0000-000000000001';
 const assessmentId = 'asm_00000000-0000-0000-0000-000000000001';
-const assessmentsPath = `/api/assessments?companyId=${companyId}`;
+const assessmentsPath = `/api/assessments?companyId=${companyId}&includeArchived=true`;
 
 const companyResponse = {
   data: [
@@ -32,6 +32,8 @@ const companyResponse = {
   ],
 };
 
+const archivedAssessmentId = 'asm_00000000-0000-0000-0000-000000000002';
+
 const assessmentResponse = {
   data: [
     {
@@ -45,6 +47,18 @@ const assessmentResponse = {
       updatedAt: '2026-06-22T09:00:00.000Z',
       description: 'Assessment of the public customer portal.',
       scope: 'Frontend application and supporting APIs.',
+    },
+    {
+      id: archivedAssessmentId,
+      companyId,
+      name: 'Archived API Review',
+      applicationName: 'Partner API',
+      type: 'API',
+      status: 'archived',
+      findingsCount: 2,
+      updatedAt: '2026-06-21T09:00:00.000Z',
+      description: 'Archived assessment fixture.',
+      scope: 'Partner API.',
     },
   ],
 };
@@ -127,9 +141,33 @@ describe('assessment workflow states', () => {
         assert.ok(textContent(container).includes('Customer Portal Review'));
       });
 
-      assert.ok(textContent(container).includes('1 assessments'));
+      assert.ok(textContent(container).includes('2 assessments'));
       assert.ok(textContent(container).includes('Web App'));
       assert.ok(textContent(container).includes('In Progress'));
+
+      await unmount(root);
+    } finally {
+      restoreFetch();
+    }
+  });
+
+  it('shows archived Assessments when the Archived status filter is selected', async () => {
+    setupAssessmentListFetch(() => createJsonResponse(assessmentResponse));
+
+    try {
+      const { container, root } = await renderApp(
+        `${routes.companyWorkspaceAssessments(companyId)}?status=archived`,
+      );
+
+      await waitFor(() => {
+        assert.ok(textContent(container).includes('Archived API Review'));
+      });
+
+      assert.equal(
+        textContent(container).includes('Customer Portal Review'),
+        false,
+      );
+      assert.ok(textContent(container).includes('1 assessments'));
 
       await unmount(root);
     } finally {

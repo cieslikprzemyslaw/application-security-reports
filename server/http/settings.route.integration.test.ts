@@ -34,6 +34,17 @@ const settingsBrandingMigrationSql = readFileSync(
   settingsBrandingMigrationPath,
   'utf8',
 );
+const consultantRoleMigrationPath = path.resolve(
+  repoRoot,
+  'prisma',
+  'migrations',
+  '20260727150000_add_consultant_role_to_settings',
+  'migration.sql',
+);
+const consultantRoleMigrationSql = readFileSync(
+  consultantRoleMigrationPath,
+  'utf8',
+);
 const allowedOrigin = 'http://localhost:5173';
 const config = loadServerConfig({
   FRONTEND_ORIGIN: allowedOrigin,
@@ -90,6 +101,7 @@ const bootstrapDb = new Database(databasePath);
 try {
   bootstrapDb.exec(schemaSql);
   bootstrapDb.exec(settingsBrandingMigrationSql);
+  bootstrapDb.exec(consultantRoleMigrationSql);
 } finally {
   bootstrapDb.close();
 }
@@ -106,6 +118,7 @@ try {
   const seededSettings = await repository.upsert({
     organisationName: 'Northstar Digital',
     consultantName: 'Alex Mercer',
+    consultantRole: 'Lead Pentester',
     consultantEmail: 'alex.mercer@appsec.io',
     issuerLogoId: 'logo_00000000-0000-0000-0000-000000000001',
     defaultReportTitle: 'Application Security Assessment',
@@ -149,6 +162,7 @@ try {
       },
       body: JSON.stringify({
         defaultReportTitle: 'Updated application security assessment',
+        consultantRole: 'Application Security Engineer',
         includeEvidence: false,
         issuerLogoId: 'logo_00000000-0000-0000-0000-000000000002',
         defaultBrandingMode: 'client',
@@ -160,6 +174,7 @@ try {
       data: {
         id: string;
         defaultReportTitle: string;
+        consultantRole?: string;
         includeEvidence: boolean;
         issuerLogoId?: string;
         defaultBrandingMode?: string;
@@ -169,6 +184,10 @@ try {
     assert.equal(
       patchJson.data.defaultReportTitle,
       'Updated application security assessment',
+    );
+    assert.equal(
+      patchJson.data.consultantRole,
+      'Application Security Engineer',
     );
     assert.equal(patchJson.data.includeEvidence, false);
     assert.equal(
@@ -182,6 +201,7 @@ try {
     const updatedJson = (await updatedResponse.json()) as {
       data: {
         defaultReportTitle: string;
+        consultantRole?: string;
         includeEvidence: boolean;
         issuerLogoId?: string;
         defaultBrandingMode?: string;
@@ -190,6 +210,10 @@ try {
     assert.equal(
       updatedJson.data.defaultReportTitle,
       'Updated application security assessment',
+    );
+    assert.equal(
+      updatedJson.data.consultantRole,
+      'Application Security Engineer',
     );
     assert.equal(updatedJson.data.includeEvidence, false);
     assert.equal(

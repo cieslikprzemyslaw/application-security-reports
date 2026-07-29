@@ -11,6 +11,7 @@ import type {
 const settingsFieldNames: SettingsFieldName[] = [
   'organisationName',
   'consultantName',
+  'consultantRole',
   'consultantEmail',
   'defaultReportTitle',
   'defaultSeverity',
@@ -34,6 +35,7 @@ const toOptionalText = (value: string): string | undefined => {
 export const createEmptySettingsValue = (): SettingsValue => ({
   organisationName: '',
   consultantName: '',
+  consultantRole: '',
   consultantEmail: '',
   defaultReportTitle: '',
   defaultSeverity: 'medium',
@@ -49,6 +51,7 @@ export const createEmptySettingsValue = (): SettingsValue => ({
 export const settingsToValue = (settings: DomainSettings): SettingsValue => ({
   organisationName: settings.organisationName ?? '',
   consultantName: settings.consultantName ?? '',
+  consultantRole: settings.consultantRole ?? '',
   consultantEmail: settings.consultantEmail ?? '',
   defaultReportTitle: settings.defaultReportTitle ?? '',
   defaultSeverity: settings.defaultSeverity,
@@ -79,6 +82,13 @@ export const valueToSettingsPatch = (
     normalizeText(baseline.consultantName)
   ) {
     patch.consultantName = toOptionalText(value.consultantName);
+  }
+
+  if (
+    normalizeText(value.consultantRole) !==
+    normalizeText(baseline.consultantRole)
+  ) {
+    patch.consultantRole = toOptionalText(value.consultantRole);
   }
 
   if (

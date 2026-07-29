@@ -10,6 +10,7 @@ import type { SettingsValue } from './settings.type';
 const initialValue: SettingsValue = {
   organisationName: 'Northstar Digital',
   consultantName: 'Alex Mercer',
+  consultantRole: 'Lead Pentester',
   consultantEmail: 'alex.mercer@appsec.io',
   defaultReportTitle: 'Northstar Digital Security Assessment',
   defaultSeverity: 'high',

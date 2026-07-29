@@ -132,14 +132,18 @@ export const createAssessmentsRouter = (
     '/',
     createRequestValidationMiddleware({ query: assessmentListQuerySchema }),
     asyncRoute(async (_req, res) => {
-      const { companyId } = res.locals.validatedRequest?.query as {
+      const { companyId, includeArchived } = res.locals.validatedRequest
+        ?.query as {
         companyId?: string;
+        includeArchived?: boolean;
       };
+      const listOptions =
+        includeArchived === undefined ? undefined : { includeArchived };
 
       try {
         const assessments = companyId
-          ? await assessmentRepository.findByCompanyId(companyId)
-          : await assessmentRepository.findAll();
+          ? await assessmentRepository.findByCompanyId(companyId, listOptions)
+          : await assessmentRepository.findAll(listOptions);
         res.status(200).json({ data: assessments });
       } catch (error) {
         if (!handleAssessmentRepositoryError(error, res, 'list')) throw error;

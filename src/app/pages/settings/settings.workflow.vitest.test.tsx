@@ -17,6 +17,7 @@ const settings = {
   id: 'set_00000000-0000-0000-0000-000000000001',
   organisationName: 'Northstar Digital',
   consultantName: 'Alex Mercer',
+  consultantRole: 'Lead Pentester',
   consultantEmail: 'alex.mercer@appsec.io',
   defaultReportTitle: 'Application Security Assessment',
   defaultSeverity: 'medium',
@@ -191,6 +192,109 @@ describe('Settings workflow through the production router', () => {
       assert.deepEqual(patchBody, { consultantName: 'Jordan Lee' });
       assert.equal(consultantName.value, 'Jordan Lee');
       assert.equal(textContent(container).includes('Settings saved.'), false);
+
+      await unmount(root);
+    } finally {
+      restoreFetch();
+    }
+  });
+
+  it('updates the topbar identity after saving the consultant name and role', async () => {
+    let patchBody: Record<string, unknown> | undefined;
+
+    setFetch(async (input, init) => {
+      const path = String(input);
+      const method = init?.method ?? 'GET';
+
+      if (path === '/api/companies' && method === 'GET') {
+        return createJsonResponse({ data: [] });
+      }
+
+      if (path !== '/api/settings') {
+        throw new Error(`Unexpected request: ${path}`);
+      }
+
+      if (method === 'GET') {
+        return createJsonResponse({ data: settings });
+      }
+
+      if (method === 'PATCH') {
+        patchBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+
+        return createJsonResponse({
+          data: {
+            ...settings,
+            consultantName: 'Jordan Lee',
+            consultantRole: 'Application Security Engineer',
+            updatedAt: '2026-07-27T12:00:00.000Z',
+          },
+        });
+      }
+
+      throw new Error(`Unexpected method: ${method}`);
+    });
+
+    try {
+      const { container, root } = await renderApp(routes.settings);
+
+      const consultantName = await waitFor(() => {
+        const input = document.querySelector(
+          '#consultantName',
+        ) as HTMLInputElement | null;
+
+        assert.ok(input, 'Expected consultantName field');
+        return input;
+      });
+      const consultantRole = document.querySelector(
+        '#consultantRole',
+      ) as HTMLInputElement | null;
+
+      assert.ok(consultantRole, 'Expected consultantRole field');
+
+      await waitFor(() => {
+        assert.ok(textContent(container).includes('Lead Pentester'));
+      });
+
+      await act(async () => {
+        fireEvent.change(consultantName, {
+          target: { value: 'Jordan Lee' },
+        });
+        fireEvent.change(consultantRole, {
+          target: { value: 'Application Security Engineer' },
+        });
+        await renderTick();
+      });
+
+      const saveButton = Array.from(container.querySelectorAll('button')).find(
+        button => button.textContent?.includes('Save settings'),
+      );
+
+      assert.ok(saveButton, 'Expected Save settings action');
+
+      await act(async () => {
+        saveButton!.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            button: 0,
+          }),
+        );
+        await renderTick();
+        await renderTick();
+      });
+
+      await waitFor(() => {
+        assert.ok(textContent(container).includes('Settings saved.'));
+        assert.ok(textContent(container).includes('Jordan Lee'));
+        assert.ok(
+          textContent(container).includes('Application Security Engineer'),
+        );
+      });
+
+      assert.deepEqual(patchBody, {
+        consultantName: 'Jordan Lee',
+        consultantRole: 'Application Security Engineer',
+      });
 
       await unmount(root);
     } finally {

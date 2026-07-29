@@ -47,6 +47,7 @@ export const settingsObjectBaseSchema = z
     id: nonEmptyIdSchema,
     organisationName: optionalTrimmedTextSchema,
     consultantName: optionalTrimmedTextSchema,
+    consultantRole: optionalTrimmedTextSchema,
     consultantEmail: optionalEmailSchema,
     issuerLogoId: prefixedUuidSchema('logo_', 'Issuer logo').optional(),
     defaultReportTitle: optionalTrimmedTextSchema,

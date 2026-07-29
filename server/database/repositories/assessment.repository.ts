@@ -35,9 +35,12 @@ export interface AssessmentRepository
   extends
     Partial<AssessmentLifecycleOperations>,
     Partial<AssessmentDeletionOperations> {
-  findAll(): Promise<Assessment[]>;
+  findAll(options?: { includeArchived?: boolean }): Promise<Assessment[]>;
   findById(id: string): Promise<Assessment | null>;
-  findByCompanyId(companyId: string): Promise<Assessment[]>;
+  findByCompanyId(
+    companyId: string,
+    options?: { includeArchived?: boolean },
+  ): Promise<Assessment[]>;
   create(input: CreateAssessmentInput): Promise<Assessment>;
   update(id: string, input: UpdateAssessmentInput): Promise<Assessment>;
   delete(id: string): Promise<void>;
@@ -128,9 +131,9 @@ export function createAssessmentRepository(
     ...lifecycle,
     ...deletion,
 
-    async findAll() {
+    async findAll(options) {
       const assessments = await db.assessment.findMany({
-        where: activeAssessmentWhere,
+        ...(options?.includeArchived ? {} : { where: activeAssessmentWhere }),
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
         select: assessmentListSelect,
       });
@@ -147,9 +150,12 @@ export function createAssessmentRepository(
       return assessment ? toAssessment(assessment) : null;
     },
 
-    async findByCompanyId(companyId) {
+    async findByCompanyId(companyId, options) {
       const assessments = await db.assessment.findMany({
-        where: { companyId, ...activeAssessmentWhere },
+        where: {
+          companyId,
+          ...(options?.includeArchived ? {} : activeAssessmentWhere),
+        },
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
         select: assessmentListSelect,
       });

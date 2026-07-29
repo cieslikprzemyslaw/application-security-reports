@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 import { describe, it } from 'vitest';
 
-import type { Evidence, Threat } from '~/domain';
+import type { Evidence, ThreatResponse } from '~/domain';
 import type { AssessmentListItem } from '~/services';
 
 import {
@@ -37,7 +37,10 @@ describe('reportBuilderHierarchyLoader', () => {
       description: 'Assessment of the payments API',
       scope: 'API endpoints',
     };
-    const threatOne: Threat = {
+    const threatOne: ThreatResponse = {
+      assessmentOwaspTaxonomyVersion: '2025',
+      recordVersion: 1,
+      reviewActions: [],
       cweCatalogVersion: '4.20',
       cweMappings: [],
       id: 'thr_00000000-0000-0000-0000-000000000001',
@@ -50,7 +53,10 @@ describe('reportBuilderHierarchyLoader', () => {
       createdAt: '2026-06-03T00:00:00.000Z',
       updatedAt: '2026-06-12T00:00:00.000Z',
     };
-    const threatTwo: Threat = {
+    const threatTwo: ThreatResponse = {
+      assessmentOwaspTaxonomyVersion: '2025',
+      recordVersion: 1,
+      reviewActions: [],
       cweCatalogVersion: '4.20',
       cweMappings: [],
       id: 'thr_00000000-0000-0000-0000-000000000002',

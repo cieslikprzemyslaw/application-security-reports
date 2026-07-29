@@ -88,6 +88,18 @@ describe('createAssessmentRepository', () => {
     });
   });
 
+  it('includes archived assessments only when explicitly requested', async () => {
+    const { assessment, db } = createDb();
+    const repository = createAssessmentRepository(db);
+
+    await repository.findAll({ includeArchived: true });
+
+    expect(assessment.findMany).toHaveBeenCalledWith({
+      orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+      select: expect.any(Object),
+    });
+  });
+
   it('returns null when an assessment does not exist', async () => {
     const { db } = createDb({
       findUnique: vi.fn().mockResolvedValue(null),
@@ -108,6 +120,21 @@ describe('createAssessmentRepository', () => {
         companyId: assessmentRow.companyId,
         status: { not: 'archived' },
       },
+      orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+      select: expect.any(Object),
+    });
+  });
+
+  it('includes archived Company assessments only when explicitly requested', async () => {
+    const { assessment, db } = createDb();
+    const repository = createAssessmentRepository(db);
+
+    await repository.findByCompanyId(assessmentRow.companyId, {
+      includeArchived: true,
+    });
+
+    expect(assessment.findMany).toHaveBeenCalledWith({
+      where: { companyId: assessmentRow.companyId },
       orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
       select: expect.any(Object),
     });

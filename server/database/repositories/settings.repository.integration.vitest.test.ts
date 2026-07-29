@@ -9,6 +9,7 @@ import { createSettingsRepository } from './settings.repository.js';
 const settingsInput = {
   organisationName: 'Northstar Digital',
   consultantName: 'Alex Mercer',
+  consultantRole: 'Lead Pentester',
   consultantEmail: 'alex.mercer@appsec.io',
   defaultReportTitle: 'Application Security Assessment',
   defaultSeverity: 'medium' as const,
@@ -37,11 +38,13 @@ describe.sequential('Settings repository integration', () => {
     const updated = await repository.upsert({
       ...settingsInput,
       organisationName: 'Updated Organisation',
+      consultantRole: 'Application Security Engineer',
       includeEvidence: false,
     });
 
     expect(updated.id).toBe(created.id);
     expect(updated.organisationName).toBe('Updated Organisation');
+    expect(updated.consultantRole).toBe('Application Security Engineer');
     expect(updated.includeEvidence).toBe(false);
     await expect(database.prisma.settings.count()).resolves.toBe(1);
   });

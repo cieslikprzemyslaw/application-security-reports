@@ -57,6 +57,7 @@ export const createSettingsRouter = (
       const body = res.locals.validatedRequest?.body as {
         organisationName?: string;
         consultantName?: string;
+        consultantRole?: string;
         consultantEmail?: string;
         issuerLogoId?: string;
         defaultReportTitle?: string;

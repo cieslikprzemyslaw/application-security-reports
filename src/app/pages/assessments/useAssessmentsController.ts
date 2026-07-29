@@ -82,6 +82,7 @@ export const useAssessmentsController = ({
         const nextAssessments = await assessmentService.list(
           {
             companyId,
+            includeArchived: true,
           },
           controller.signal,
         );

@@ -178,7 +178,7 @@ const runAssessmentCommand = async (
 
 export interface AssessmentService {
   list(
-    filters?: { companyId?: string },
+    filters?: { companyId?: string; includeArchived?: boolean },
     signal?: AbortSignal,
   ): Promise<AssessmentListItem[]>;
   getById(assessmentId: string, signal?: AbortSignal): Promise<Assessment>;
@@ -258,7 +258,10 @@ export const createAssessmentService = (
         '/api/assessments',
         {
           method: 'GET',
-          query: { companyId: filters?.companyId },
+          query: {
+            companyId: filters?.companyId,
+            ...(filters?.includeArchived ? { includeArchived: 'true' } : {}),
+          },
           signal,
         },
       );
