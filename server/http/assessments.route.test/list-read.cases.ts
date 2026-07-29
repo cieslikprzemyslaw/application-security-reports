@@ -66,6 +66,31 @@ import {
 
 {
   const { calls, repository } = createAssessmentRepository({
+    findByCompanyId: async () => [{ ...defaultAssessment, status: 'archived' }],
+  });
+  const { repository: companyRepository } = createCompanyRepository();
+  const server = await startTestServer(
+    createApp(repository, companyRepository),
+  );
+
+  try {
+    const response = await fetch(
+      `${server.baseUrl}/api/assessments?companyId=${defaultCompany.id}&includeArchived=true`,
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(calls.findByCompanyId, 1);
+    assert.deepEqual(calls.findByCompanyIdArgs, {
+      companyId: defaultCompany.id,
+      options: { includeArchived: true },
+    });
+  } finally {
+    await server.close();
+  }
+}
+
+{
+  const { calls, repository } = createAssessmentRepository({
     findById: async () => defaultAssessment,
   });
   const { repository: companyRepository } = createCompanyRepository();

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Activity } from '~/domain';
 import { renderWithProviders, screen, waitFor } from '~/test/render';
+import { routes } from '~/routes';
 
 const activityServiceMocks = vi.hoisted(() => ({
   listByCompany: vi.fn(),
@@ -52,7 +53,16 @@ describe('ActivityHistory', () => {
     renderWithProviders(<ActivityHistory scope={companyScope} />);
 
     expect(screen.getByRole('status')).toHaveTextContent('Loading activity');
-    expect(await screen.findByText('Assessment completed.')).toBeVisible();
+    const activityLink = await screen.findByRole('link', {
+      name: /Assessment completed\./,
+    });
+    expect(activityLink).toHaveAttribute(
+      'href',
+      routes.assessmentDetailsOverview(
+        companyScope.companyId,
+        activity.resource.id,
+      ),
+    );
     expect(activityServiceMocks.listByCompany).toHaveBeenCalledWith(
       companyScope.companyId,
       50,
@@ -88,6 +98,24 @@ describe('ActivityHistory', () => {
     await waitFor(() =>
       expect(activityServiceMocks.listByCompany).toHaveBeenCalledTimes(2),
     );
+  });
+
+  it('does not link deleted resources that no longer have a destination', async () => {
+    activityServiceMocks.listByCompany.mockResolvedValue([
+      {
+        ...activity,
+        id: 'act_00000000-0000-0000-0000-000000000002',
+        eventType: 'legacy.deleted',
+        message: 'Assessment deleted.',
+      },
+    ]);
+
+    renderWithProviders(<ActivityHistory scope={companyScope} />);
+
+    expect(await screen.findByText('Assessment deleted.')).toBeVisible();
+    expect(
+      screen.queryByRole('link', { name: /Assessment deleted\./ }),
+    ).not.toBeInTheDocument();
   });
 
   it('uses the Assessment-scoped service for History', async () => {

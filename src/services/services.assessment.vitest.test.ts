@@ -129,14 +129,19 @@ describe('services.assessment', () => {
       });
       const service = createAssessmentService(request);
 
-      assert.deepEqual(await service.list({ companyId: company.id }), [
-        assessmentSummary,
-      ]);
+      assert.deepEqual(
+        await service.list({
+          companyId: company.id,
+          includeArchived: true,
+        }),
+        [assessmentSummary],
+      );
       expectSingleCall(calls, {
         input: '/api/assessments',
         method: 'GET',
         query: {
           companyId: company.id,
+          includeArchived: 'true',
         },
       });
     }

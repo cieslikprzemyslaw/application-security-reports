@@ -92,10 +92,13 @@ const defaultAssessment: Assessment = {
 };
 
 type AssessmentRepositoryOverrides = Partial<{
-  findAll: () => Promise<Array<typeof defaultAssessment>>;
+  findAll: (options?: {
+    includeArchived?: boolean;
+  }) => Promise<Array<typeof defaultAssessment>>;
   findById: (id: string) => Promise<typeof defaultAssessment | null>;
   findByCompanyId: (
     companyId: string,
+    options?: { includeArchived?: boolean },
   ) => Promise<Array<typeof defaultAssessment>>;
   create: (
     input: Parameters<AssessmentRepository['create']>[0],
@@ -116,8 +119,15 @@ const createAssessmentRepository = (
 ) => {
   const calls = {
     findAll: 0,
+    findAllOptions: undefined as { includeArchived?: boolean } | undefined,
     findById: 0,
     findByCompanyId: 0,
+    findByCompanyIdArgs: undefined as
+      | {
+          companyId: string;
+          options?: { includeArchived?: boolean };
+        }
+      | undefined,
     create: 0,
     update: 0,
     delete: 0,
@@ -135,9 +145,10 @@ const createAssessmentRepository = (
   };
 
   const repository: AssessmentRepository = {
-    async findAll() {
+    async findAll(options) {
       calls.findAll += 1;
-      return overrides.findAll?.() ?? [defaultAssessment];
+      calls.findAllOptions = options;
+      return overrides.findAll?.(options) ?? [defaultAssessment];
     },
 
     async findById(id) {
@@ -145,9 +156,12 @@ const createAssessmentRepository = (
       return overrides.findById?.(id) ?? defaultAssessment;
     },
 
-    async findByCompanyId(companyId) {
+    async findByCompanyId(companyId, options) {
       calls.findByCompanyId += 1;
-      return overrides.findByCompanyId?.(companyId) ?? [defaultAssessment];
+      calls.findByCompanyIdArgs = { companyId, options };
+      return (
+        overrides.findByCompanyId?.(companyId, options) ?? [defaultAssessment]
+      );
     },
 
     async create(input) {

@@ -1508,6 +1508,7 @@ export const SettingsScalarFieldEnum = {
   id: 'id',
   organisationName: 'organisationName',
   consultantName: 'consultantName',
+  consultantRole: 'consultantRole',
   consultantEmail: 'consultantEmail',
   issuerLogoId: 'issuerLogoId',
   defaultReportTitle: 'defaultReportTitle',

@@ -8,6 +8,7 @@ import { ApiError } from '~/services/apiClient';
 import { settingsService } from '~/services';
 import { useLocation } from 'react-router-dom';
 import { useDirtyFormGuard } from '~/app/hooks/useDirtyFormGuard';
+import { publishAppUserIdentity } from '~/app/layouts/appLayout/appUserIdentity';
 
 import { useThemePreference } from '~/theme';
 
@@ -63,6 +64,7 @@ const SettingsRoute = () => {
         setValue(nextValue);
         setBaselineValue(nextValue);
         setThemePreference(settings.theme);
+        publishAppUserIdentity(settings);
       } catch (error) {
         if (
           !isActive ||
@@ -183,6 +185,7 @@ const SettingsRoute = () => {
       setValue(nextValue);
       setBaselineValue(nextValue);
       setThemePreference(savedSettings.theme);
+      publishAppUserIdentity(savedSettings);
       setStatusMessage('Settings saved.');
     } catch (error) {
       if (error instanceof ApiError && error.status === 400) {

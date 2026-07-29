@@ -166,6 +166,18 @@ const Settings = ({
                 />
 
                 <Input
+                  id="consultantRole"
+                  label="Consultant role"
+                  value={value.consultantRole}
+                  error={fieldErrors?.consultantRole}
+                  onChange={event =>
+                    onChange(
+                      updateField(value, 'consultantRole', event.target.value),
+                    )
+                  }
+                />
+
+                <Input
                   id="consultantEmail"
                   label="Consultant email"
                   value={value.consultantEmail}

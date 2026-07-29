@@ -28,6 +28,7 @@ export type SettingsMinAggregateOutputType = {
   id: string | null
   organisationName: string | null
   consultantName: string | null
+  consultantRole: string | null
   consultantEmail: string | null
   issuerLogoId: string | null
   defaultReportTitle: string | null
@@ -49,6 +50,7 @@ export type SettingsMaxAggregateOutputType = {
   id: string | null
   organisationName: string | null
   consultantName: string | null
+  consultantRole: string | null
   consultantEmail: string | null
   issuerLogoId: string | null
   defaultReportTitle: string | null
@@ -70,6 +72,7 @@ export type SettingsCountAggregateOutputType = {
   id: number
   organisationName: number
   consultantName: number
+  consultantRole: number
   consultantEmail: number
   issuerLogoId: number
   defaultReportTitle: number
@@ -94,6 +97,7 @@ export type SettingsMinAggregateInputType = {
   id?: true
   organisationName?: true
   consultantName?: true
+  consultantRole?: true
   consultantEmail?: true
   issuerLogoId?: true
   defaultReportTitle?: true
@@ -115,6 +119,7 @@ export type SettingsMaxAggregateInputType = {
   id?: true
   organisationName?: true
   consultantName?: true
+  consultantRole?: true
   consultantEmail?: true
   issuerLogoId?: true
   defaultReportTitle?: true
@@ -136,6 +141,7 @@ export type SettingsCountAggregateInputType = {
   id?: true
   organisationName?: true
   consultantName?: true
+  consultantRole?: true
   consultantEmail?: true
   issuerLogoId?: true
   defaultReportTitle?: true
@@ -231,6 +237,7 @@ export type SettingsGroupByOutputType = {
   id: string
   organisationName: string | null
   consultantName: string | null
+  consultantRole: string | null
   consultantEmail: string | null
   issuerLogoId: string | null
   defaultReportTitle: string | null
@@ -274,6 +281,7 @@ export type SettingsWhereInput = {
   id?: Prisma.StringFilter<"Settings"> | string
   organisationName?: Prisma.StringNullableFilter<"Settings"> | string | null
   consultantName?: Prisma.StringNullableFilter<"Settings"> | string | null
+  consultantRole?: Prisma.StringNullableFilter<"Settings"> | string | null
   consultantEmail?: Prisma.StringNullableFilter<"Settings"> | string | null
   issuerLogoId?: Prisma.StringNullableFilter<"Settings"> | string | null
   defaultReportTitle?: Prisma.StringNullableFilter<"Settings"> | string | null
@@ -296,6 +304,7 @@ export type SettingsOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   organisationName?: Prisma.SortOrderInput | Prisma.SortOrder
   consultantName?: Prisma.SortOrderInput | Prisma.SortOrder
+  consultantRole?: Prisma.SortOrderInput | Prisma.SortOrder
   consultantEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   issuerLogoId?: Prisma.SortOrderInput | Prisma.SortOrder
   defaultReportTitle?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -321,6 +330,7 @@ export type SettingsWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.SettingsWhereInput | Prisma.SettingsWhereInput[]
   organisationName?: Prisma.StringNullableFilter<"Settings"> | string | null
   consultantName?: Prisma.StringNullableFilter<"Settings"> | string | null
+  consultantRole?: Prisma.StringNullableFilter<"Settings"> | string | null
   consultantEmail?: Prisma.StringNullableFilter<"Settings"> | string | null
   issuerLogoId?: Prisma.StringNullableFilter<"Settings"> | string | null
   defaultReportTitle?: Prisma.StringNullableFilter<"Settings"> | string | null
@@ -343,6 +353,7 @@ export type SettingsOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   organisationName?: Prisma.SortOrderInput | Prisma.SortOrder
   consultantName?: Prisma.SortOrderInput | Prisma.SortOrder
+  consultantRole?: Prisma.SortOrderInput | Prisma.SortOrder
   consultantEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   issuerLogoId?: Prisma.SortOrderInput | Prisma.SortOrder
   defaultReportTitle?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -371,6 +382,7 @@ export type SettingsScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Settings"> | string
   organisationName?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
   consultantName?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
+  consultantRole?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
   consultantEmail?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
   issuerLogoId?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
   defaultReportTitle?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
@@ -393,6 +405,7 @@ export type SettingsCreateInput = {
   id: string
   organisationName?: string | null
   consultantName?: string | null
+  consultantRole?: string | null
   consultantEmail?: string | null
   issuerLogoId?: string | null
   defaultReportTitle?: string | null
@@ -415,6 +428,7 @@ export type SettingsUncheckedCreateInput = {
   id: string
   organisationName?: string | null
   consultantName?: string | null
+  consultantRole?: string | null
   consultantEmail?: string | null
   issuerLogoId?: string | null
   defaultReportTitle?: string | null
@@ -437,6 +451,7 @@ export type SettingsUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organisationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultantRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerLogoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultReportTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -459,6 +474,7 @@ export type SettingsUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organisationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultantRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerLogoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultReportTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -481,6 +497,7 @@ export type SettingsCreateManyInput = {
   id: string
   organisationName?: string | null
   consultantName?: string | null
+  consultantRole?: string | null
   consultantEmail?: string | null
   issuerLogoId?: string | null
   defaultReportTitle?: string | null
@@ -503,6 +520,7 @@ export type SettingsUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organisationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultantRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerLogoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultReportTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -525,6 +543,7 @@ export type SettingsUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organisationName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consultantRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   consultantEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerLogoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultReportTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -547,6 +566,7 @@ export type SettingsCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   organisationName?: Prisma.SortOrder
   consultantName?: Prisma.SortOrder
+  consultantRole?: Prisma.SortOrder
   consultantEmail?: Prisma.SortOrder
   issuerLogoId?: Prisma.SortOrder
   defaultReportTitle?: Prisma.SortOrder
@@ -569,6 +589,7 @@ export type SettingsMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   organisationName?: Prisma.SortOrder
   consultantName?: Prisma.SortOrder
+  consultantRole?: Prisma.SortOrder
   consultantEmail?: Prisma.SortOrder
   issuerLogoId?: Prisma.SortOrder
   defaultReportTitle?: Prisma.SortOrder
@@ -590,6 +611,7 @@ export type SettingsMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   organisationName?: Prisma.SortOrder
   consultantName?: Prisma.SortOrder
+  consultantRole?: Prisma.SortOrder
   consultantEmail?: Prisma.SortOrder
   issuerLogoId?: Prisma.SortOrder
   defaultReportTitle?: Prisma.SortOrder
@@ -625,6 +647,7 @@ export type SettingsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   id?: boolean
   organisationName?: boolean
   consultantName?: boolean
+  consultantRole?: boolean
   consultantEmail?: boolean
   issuerLogoId?: boolean
   defaultReportTitle?: boolean
@@ -647,6 +670,7 @@ export type SettingsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   organisationName?: boolean
   consultantName?: boolean
+  consultantRole?: boolean
   consultantEmail?: boolean
   issuerLogoId?: boolean
   defaultReportTitle?: boolean
@@ -669,6 +693,7 @@ export type SettingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   organisationName?: boolean
   consultantName?: boolean
+  consultantRole?: boolean
   consultantEmail?: boolean
   issuerLogoId?: boolean
   defaultReportTitle?: boolean
@@ -691,6 +716,7 @@ export type SettingsSelectScalar = {
   id?: boolean
   organisationName?: boolean
   consultantName?: boolean
+  consultantRole?: boolean
   consultantEmail?: boolean
   issuerLogoId?: boolean
   defaultReportTitle?: boolean
@@ -709,7 +735,7 @@ export type SettingsSelectScalar = {
   updatedAt?: boolean
 }
 
-export type SettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organisationName" | "consultantName" | "consultantEmail" | "issuerLogoId" | "defaultReportTitle" | "defaultSeverity" | "theme" | "dateFormat" | "reportFooterText" | "reportConfidentialityLabel" | "methodology" | "reportStyle" | "includeEvidence" | "confidentialReports" | "allowedBrandingModes" | "defaultBrandingMode" | "createdAt" | "updatedAt", ExtArgs["result"]["settings"]>
+export type SettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organisationName" | "consultantName" | "consultantRole" | "consultantEmail" | "issuerLogoId" | "defaultReportTitle" | "defaultSeverity" | "theme" | "dateFormat" | "reportFooterText" | "reportConfidentialityLabel" | "methodology" | "reportStyle" | "includeEvidence" | "confidentialReports" | "allowedBrandingModes" | "defaultBrandingMode" | "createdAt" | "updatedAt", ExtArgs["result"]["settings"]>
 
 export type $SettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Settings"
@@ -718,6 +744,7 @@ export type $SettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     id: string
     organisationName: string | null
     consultantName: string | null
+    consultantRole: string | null
     consultantEmail: string | null
     issuerLogoId: string | null
     defaultReportTitle: string | null
@@ -1160,6 +1187,7 @@ export interface SettingsFieldRefs {
   readonly id: Prisma.FieldRef<"Settings", 'String'>
   readonly organisationName: Prisma.FieldRef<"Settings", 'String'>
   readonly consultantName: Prisma.FieldRef<"Settings", 'String'>
+  readonly consultantRole: Prisma.FieldRef<"Settings", 'String'>
   readonly consultantEmail: Prisma.FieldRef<"Settings", 'String'>
   readonly issuerLogoId: Prisma.FieldRef<"Settings", 'String'>
   readonly defaultReportTitle: Prisma.FieldRef<"Settings", 'String'>

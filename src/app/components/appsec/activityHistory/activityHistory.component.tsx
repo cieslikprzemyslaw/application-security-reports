@@ -11,6 +11,7 @@ import IconSVG, { type IconName } from '~/app/components/ui/iconSVG';
 import { formatDateTime } from '~/app/utils/formatters';
 import type { Activity } from '~/domain';
 import { activityService } from '~/services';
+import { routes } from '~/routes';
 
 type ActivityHistoryScope =
   | { type: 'company'; companyId: string }
@@ -36,12 +37,59 @@ const iconByResource: Record<Activity['resource']['type'], IconName> = {
   settings: 'settings',
 };
 
+const getActivityHref = (activity: Activity): string | undefined => {
+  if (activity.eventType === 'legacy.deleted') {
+    return undefined;
+  }
+
+  const { resource } = activity;
+
+  switch (resource.type) {
+    case 'company': {
+      const companyId = resource.companyId ?? resource.id;
+
+      return routes.companyWorkspaceOverview(companyId);
+    }
+    case 'assessment': {
+      if (!resource.companyId) {
+        return undefined;
+      }
+
+      return routes.assessmentDetailsOverview(
+        resource.companyId,
+        resource.assessmentId ?? resource.id,
+      );
+    }
+    case 'threat':
+      return resource.companyId && resource.assessmentId
+        ? routes.assessmentDetailsFindings(
+            resource.companyId,
+            resource.assessmentId,
+          )
+        : undefined;
+    case 'evidence':
+      return resource.companyId && resource.assessmentId
+        ? routes.assessmentDetailsEvidence(
+            resource.companyId,
+            resource.assessmentId,
+          )
+        : undefined;
+    case 'report':
+      return resource.companyId
+        ? routes.reportDetails(resource.companyId, resource.id)
+        : undefined;
+    case 'settings':
+      return routes.settings;
+  }
+};
+
 const toActivityItem = (activity: Activity): ActivityItem => ({
   id: activity.id,
   title: activity.message,
   meta: `${formatDateTime(activity.createdAt)} · ${activity.eventType}`,
   icon: <IconSVG name={iconByResource[activity.resource.type]} />,
   tone: toneByResult[activity.result],
+  href: getActivityHref(activity),
 });
 
 const ActivityHistory = ({

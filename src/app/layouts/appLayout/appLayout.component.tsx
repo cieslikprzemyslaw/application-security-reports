@@ -17,6 +17,11 @@ import TopbarUserIdentity from '../topbar/topbarUserIdentity.component';
 import { formatReportVersion } from '~/app/utils/formatters';
 import type { CompanyIdentity } from '~/app/pages/companies';
 import type { SidebarNavigationGroup } from '../sidebar';
+import {
+  appUserIdentityChangedEvent,
+  readAppUserIdentity,
+  type AppUserIdentity,
+} from './appUserIdentity';
 
 const sidebarId = 'app-layout-sidebar';
 const mainContentId = 'app-main-content';
@@ -49,6 +54,7 @@ const AppLayout = ({
   onActiveCompanyChange,
 }: AppLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [userIdentity, setUserIdentity] = useState(readAppUserIdentity);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const wasSidebarOpenRef = useRef(false);
   const location = useLocation();
@@ -60,6 +66,25 @@ const AppLayout = ({
   const routeBoundaryKey = reportPreviewCompanyId
     ? routes.companyWorkspaceReports(reportPreviewCompanyId)
     : location.pathname;
+
+  useEffect(() => {
+    const handleIdentityChange = (event: Event) => {
+      const identity = (event as CustomEvent<AppUserIdentity>).detail;
+
+      if (identity) {
+        setUserIdentity(identity);
+      }
+    };
+
+    window.addEventListener(appUserIdentityChangedEvent, handleIdentityChange);
+
+    return () => {
+      window.removeEventListener(
+        appUserIdentityChangedEvent,
+        handleIdentityChange,
+      );
+    };
+  }, []);
 
   useEffect(() => {
     if (isSidebarOpen) {
@@ -132,7 +157,10 @@ const AppLayout = ({
           menuButtonExpanded={isSidebarOpen}
           menuButtonRef={menuButtonRef}
           userMenu={
-            <TopbarUserIdentity fullName="Alex Mercer" role="Lead Pentester" />
+            <TopbarUserIdentity
+              fullName={userIdentity.fullName}
+              role={userIdentity.role}
+            />
           }
         />
       }

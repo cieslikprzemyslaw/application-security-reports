@@ -6,6 +6,7 @@ const validSettings = {
   id: 'set_00000000-0000-0000-0000-000000000001',
   organisationName: 'Northstar Digital',
   consultantName: 'Alex Mercer',
+  consultantRole: 'Lead Pentester',
   consultantEmail: 'alex.mercer@appsec.io',
   defaultReportTitle: 'Application Security Assessment',
   defaultSeverity: 'medium' as const,

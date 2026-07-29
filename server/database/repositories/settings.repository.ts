@@ -25,6 +25,7 @@ type SettingsRow = {
   id: string;
   organisationName: string | null;
   consultantName: string | null;
+  consultantRole: string | null;
   consultantEmail: string | null;
   issuerLogoId: string | null;
   defaultReportTitle: string | null;
@@ -61,6 +62,7 @@ const settingsSelect = {
   id: true,
   organisationName: true,
   consultantName: true,
+  consultantRole: true,
   consultantEmail: true,
   issuerLogoId: true,
   defaultReportTitle: true,
@@ -107,6 +109,7 @@ const toSettings = (row: SettingsRow): Settings => {
     id: row.id,
     organisationName: toOptionalText(row.organisationName),
     consultantName: toOptionalText(row.consultantName),
+    consultantRole: toOptionalText(row.consultantRole),
     consultantEmail: toOptionalText(row.consultantEmail),
     issuerLogoId: toOptionalText(row.issuerLogoId),
     defaultReportTitle: toOptionalText(row.defaultReportTitle),
@@ -140,6 +143,7 @@ const mergeSettingsInput = (
     organisationName:
       input.organisationName ?? existing?.organisationName ?? null,
     consultantName: input.consultantName ?? existing?.consultantName ?? null,
+    consultantRole: input.consultantRole ?? existing?.consultantRole ?? null,
     consultantEmail: input.consultantEmail ?? existing?.consultantEmail ?? null,
     issuerLogoId: input.issuerLogoId ?? existing?.issuerLogoId ?? null,
     defaultReportTitle:

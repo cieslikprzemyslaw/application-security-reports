@@ -99,6 +99,10 @@ export const assessmentRouteParamsSchema = z
 export const assessmentListQuerySchema = z
   .object({
     companyId: prefixedUuidSchema('cmp_', 'Company').optional(),
+    includeArchived: z
+      .enum(['true', 'false'])
+      .transform(value => value === 'true')
+      .optional(),
   })
   .strict();
 
